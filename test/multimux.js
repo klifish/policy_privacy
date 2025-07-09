@@ -1,35 +1,34 @@
-const path = require('path');
-const wasm_tester = require("circom_tester").wasm;
+const path = require('path');const wasm_tester = require('circom_tester').wasm;
 
-describe("Multimux Test", function () {
-    this.timeout(100000);
+describe('Multimux Test', function () {
+  this.timeout(100000);
 
-    let circuit;
+  let circuit;
 
-    before(async () => {
-        circom_path = path.join(__dirname, "circuits", "test_multimux.circom");
-        console.log(`Loading circuit from: ${circom_path}`);
-        circuit = await wasm_tester(path.join(__dirname, "circuits", "test_multimux.circom"));
-    });
+  before(async () => {
+    circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_multimux.circom'));
+  });
 
-    it("should compute the correct output for a simple case", async () => {
-        const input = {
-            a: 1,
-            b: 2,
-            c: 3,
-            d: 4,
-            e: 5,
-            f: 6,
-            g: 7,
-            h: 8
-        };
+  it('selects the second input', async () => {
+    const input = {
+      in: [10, 20, 30, 40],
+      sel: [1, 0]
+    };
 
-        const witness = await circuit.calculateWitness(input);
-        await circuit.checkConstraints(witness);
-        const output = await circuit.getOutput(witness);
+    const witness = await circuit.calculateWitness(input, true);
+    await circuit.checkConstraints(witness);
+    await circuit.assertOut(witness, { out: 20 });
+  });
 
-        // Check if the output is as expected
-        // Replace with actual expected output based on your circuit logic
-        console.log(output);
-    });
+  it('selects the fourth input', async () => {
+    const input = {
+      in: [10, 20, 30, 40],
+      sel: [1, 1]
+    };
+
+    const witness = await circuit.calculateWitness(input, true);
+    await circuit.checkConstraints(witness);
+    await circuit.assertOut(witness, { out: 40 });
+  });
 });
+

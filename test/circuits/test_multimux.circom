@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "../../circuits/MultiMux.circom";
+include "../../circuits/multimux.circom";
 
 template TestMultiMux() {
     signal input in[4];
@@ -12,5 +12,5 @@ template TestMultiMux() {
     mux.sel <== sel;
     out <== mux.out;
 }
-
 component main = TestMultiMux();
+
