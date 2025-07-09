@@ -8,8 +8,14 @@ template TestMultiMux() {
     signal output out;
 
     component mux = MultiMux(4, 2);
-    mux.in <== in;
-    mux.sel <== sel;
+
+    for (var i = 0; i < 4; i++) {
+        mux.in[i] <== in[i];
+    }
+
+    for (var j = 0; j < 2; j++) {
+        mux.sel[j] <== sel[j];
+    }
     out <== mux.out;
 }
 component main = TestMultiMux();
