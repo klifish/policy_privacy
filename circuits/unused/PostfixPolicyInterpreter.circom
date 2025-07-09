@@ -1,7 +1,8 @@
 pragma circom 2.0.0;
 
 // include "circomlib/mux.circom";
-include "./MultiMux.circom";
+include "./multimux.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 template PostfixPolicyInterpreter(N, DEPTH, K) {
     /*
@@ -27,6 +28,8 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     // Predeclare arrays for components and signals
     component attrMux[DEPTH];
     component opMux[DEPTH];
+    component attrSelBits[DEPTH];
+    component opSelBits[DEPTH];
     signal isOperand[DEPTH];
     signal andResult[DEPTH];
     signal orResult[DEPTH];
@@ -36,6 +39,8 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     for (var i = 0; i < DEPTH; i++) {
         attrMux[i] = MultiMux(N, K);
         opMux[i] = MultiMux(3, 2);
+        attrSelBits[i] = Num2Bits(K);
+        opSelBits[i] = Num2Bits(2);
     }
 
     // Loop over the postfix expression
@@ -43,7 +48,8 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         isOperand[i] <== postfixExpr[i] < N;
 
         attrMux[i].in <== requesterPolicy;
-        attrMux[i].sel <== postfixExpr[i];
+        attrSelBits[i].in <== postfixExpr[i];
+        attrMux[i].sel <== attrSelBits[i].out;
 
         andResult[i] <== stack[sp-2] * stack[sp-1];
         orResult[i] <== stack[sp-2] + stack[sp-1] - (stack[sp-2] * stack[sp-1]);
@@ -52,7 +58,8 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         opMux[i].in[0] <== andResult[i];
         opMux[i].in[1] <== orResult[i];
         opMux[i].in[2] <== notResult[i];
-        opMux[i].sel <== postfixExpr[i] - N;
+        opSelBits[i].in <== postfixExpr[i] - N;
+        opMux[i].sel <== opSelBits[i].out;
 
         if (i < numOperations) {
             // Operand path: push attribute value onto the stack
@@ -68,5 +75,5 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     // The result is the final value on top of the stack
     isValid <== stack[0];
 }
-
 component main {public [postfixExpr,numOperations]}= PostfixPolicyInterpreter(3, 10, 2);
+
