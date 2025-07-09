@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:circuit:compile:postfixpolicyinterpreter": "npx circom2 circuits/postfixpolicyinterpreter.circom --r1cs --wasm --sym -o build/circuits",
-    "build:circuit:compile": "mkdir -p build/circuits && for f in circuits/*.circom; do npx circom2 \"$f\" --r1cs --wasm --sym -o build/circuits; done",
+    "build:circuit:compile": "mkdir -p build/circuits && npm run build:circuit:compile:postfixpolicyinterpreter",
     "build:circuit:info": "npx snarkjs r1cs info build/circuits/*.r1cs",
     "build:circuit:setup": "node scripts/plonk_trust_setup.js",
     "build:circuit:export:verificationkey": "npx snarkjs zkey export verificationkey build/circuits/commitment_final.zkey build/circuits/commitment_vk.json ",

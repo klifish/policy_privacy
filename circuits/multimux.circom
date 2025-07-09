@@ -37,4 +37,5 @@ template MultiMux(N, K) {
     }
 
     // The final output is in stage[K][0]
-    out <== stage[K][0];}
+    out <== stage[K][0];
+}
