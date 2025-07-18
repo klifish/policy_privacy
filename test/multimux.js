@@ -1,4 +1,5 @@
-const path = require('path');const wasm_tester = require('circom_tester').wasm;
+const path = require('path');
+const wasm_tester = require('circom_tester').wasm;
 
 describe('Multimux Test', function () {
   this.timeout(100000);

@@ -45,9 +45,11 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
 
     signal active[DEPTH];
     signal attrVal[DEPTH];
+
     signal andResult[DEPTH];
     signal orResult[DEPTH];
     signal notResult[DEPTH];
+
     signal opVal[DEPTH];
     signal delta[DEPTH];
 
@@ -66,6 +68,7 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     component operandCmp[DEPTH];
     component eqTop[DEPTH][DEPTH];
     component eqDest[DEPTH][DEPTH];
+
     for (var i = 0; i < DEPTH; i++) {
         attrMux[i] = MultiMux(NP2, K);
         opMux[i] = MultiMux(4, 2);
@@ -112,6 +115,7 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     for (var j = N; j < NP2; j++) {
         requesterPolicyPad[j] <== 0;
     }
+
     // Pad initial stackState row to DP2 length
     for (var j = 0; j < DEPTH; j++) {
         stackStatePad[0][j] <== stackState[0][j];
@@ -119,6 +123,7 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     for (var j = DEPTH; j < DP2; j++) {
         stackStatePad[0][j] <== 0;
     }
+    
     for (var i = 0; i < DEPTH; i++) {
 
         // Pad current stackState row to DP2 length (skip i == 0)
@@ -141,19 +146,42 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
 
         ptrBits[i].in <== sp[i];
         ptrM1Bits[i].in <== sp[i] - 1;
+        log(sp[i] - 2);
         ptrM2Bits[i].in <== sp[i] - 2;
+        
 
         attrSelBits[i].in <== postfixExpr[i];
 
-        attrMux[i].in <== requesterPolicyPad;
-        attrMux[i].sel <== attrSelBits[i].out;
+        // attrMux[i].in <== requesterPolicyPad;
+        for (var j = 0; j < NP2; j++) {
+            attrMux[i].in[j] <== requesterPolicyPad[j];
+        }
+
+        // attrMux[i].sel <== attrSelBits[i].out;
+        for (var j = 0; j < K; j++) {
+            attrMux[i].sel[j] <== attrSelBits[i].out[j];
+        }
+
         attrVal[i] <== attrMux[i].out;
 
-        top1Mux[i].in <== stackStatePad[i];
-        top1Mux[i].sel <== ptrM2Bits[i].out;
+        // top1Mux[i].in <== stackStatePad[i];
+        for (var j = 0; j < DP2; j++) {
+            top1Mux[i].in[j] <== stackStatePad[i][j];
+        }
 
-        top2Mux[i].in <== stackStatePad[i];
-        top2Mux[i].sel <== ptrM1Bits[i].out;
+        // top1Mux[i].sel <== ptrM2Bits[i].out;
+        for (var j = 0; j < KP; j++) {
+            top1Mux[i].sel[j] <== ptrM2Bits[i].out[j];
+        }
+
+        // top2Mux[i].in <== stackStatePad[i];
+        for (var j = 0; j < DP2; j++) {
+            top2Mux[i].in[j] <== stackStatePad[i][j];
+        }
+        // top2Mux[i].sel <== ptrM1Bits[i].out;
+        for (var j = 0; j < KP; j++) {
+            top2Mux[i].sel[j] <== ptrM1Bits[i].out[j];
+        }
 
         andResult[i] <== top1Mux[i].out * top2Mux[i].out;
         orResult[i]  <== top1Mux[i].out + top2Mux[i].out - (top1Mux[i].out * top2Mux[i].out);
@@ -166,7 +194,10 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         opMux[i].in[2] <== notResult[i];
         // Pad fourth input for 4-way mux
         opMux[i].in[3] <== 0;
-        opMux[i].sel <== opSelBits[i].out;
+        // opMux[i].sel <== opSelBits[i].out;
+        for (var j = 0; j < 2; j++) {
+            opMux[i].sel[j] <== opSelBits[i].out[j];
+        }
 
         opVal[i] <== opMux[i].out;
 
