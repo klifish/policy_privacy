@@ -52,6 +52,13 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
 
     signal opVal[DEPTH];
     signal delta[DEPTH];
+    signal canPtrM1[DEPTH];
+    signal canPtrM2[DEPTH];
+    signal spM1[DEPTH];
+    signal spM2[DEPTH];
+    signal bothTop[DEPTH];
+    signal orCore[DEPTH];
+    signal opCode[DEPTH];
 
     // Compute ⌈log2(DEPTH)⌉ at compile‑time
 
@@ -66,6 +73,10 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     component top2Mux[DEPTH];
     component activeCmp[DEPTH];
     component operandCmp[DEPTH];
+    component depthCmp1[DEPTH];
+    component depthCmp2[DEPTH];
+    signal depthGE1[DEPTH];
+    signal depthGE2[DEPTH];
     component eqTop[DEPTH][DEPTH];
     component eqDest[DEPTH][DEPTH];
 
@@ -81,6 +92,8 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         top2Mux[i] = MultiMux(DP2, KP);
         activeCmp[i] = LessThan(32);
         operandCmp[i] = LessThan(N);
+        depthCmp1[i] = LessThan(32);
+        depthCmp2[i] = LessThan(32);
     }
 
     for (var i = 0; i < DEPTH; i++) {
@@ -146,8 +159,19 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
 
         ptrBits[i].in <== sp[i];
 
-        ptrM1Bits[i].in <== active[i] * (sp[i] - 1);
-        ptrM2Bits[i].in <== active[i] * (sp[i] - 2);
+        depthCmp1[i].in[0] <== sp[i];
+        depthCmp1[i].in[1] <== 1;
+        depthCmp2[i].in[0] <== sp[i];
+        depthCmp2[i].in[1] <== 2;
+        depthGE1[i] <== 1 - depthCmp1[i].out;
+        depthGE2[i] <== 1 - depthCmp2[i].out;
+
+        canPtrM1[i] <== active[i] * depthGE1[i];
+        canPtrM2[i] <== active[i] * depthGE2[i];
+        spM1[i] <== sp[i] - 1;
+        spM2[i] <== sp[i] - 2;
+        ptrM1Bits[i].in <== canPtrM1[i] * spM1[i];
+        ptrM2Bits[i].in <== canPtrM2[i] * spM2[i];
 
         attrSelBits[i].in <== isOperand[i] * postfixExpr[i];
 
@@ -182,11 +206,14 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
             top2Mux[i].sel[j] <== ptrM1Bits[i].out[j];
         }
 
-        andResult[i] <== top1Mux[i].out * top2Mux[i].out;
-        orResult[i]  <== top1Mux[i].out + top2Mux[i].out - (top1Mux[i].out * top2Mux[i].out);
-        notResult[i] <== 1 - top2Mux[i].out;
+        bothTop[i] <== top1Mux[i].out * top2Mux[i].out;
+        andResult[i] <== depthGE2[i] * bothTop[i];
+        orCore[i] <== top1Mux[i].out + top2Mux[i].out - bothTop[i];
+        orResult[i] <== depthGE2[i] * orCore[i];
+        notResult[i] <== depthGE1[i] * (1 - top2Mux[i].out);
 
-        opSelBits[i].in <== postfixExpr[i] - N;
+        opCode[i] <== (1 - isOperand[i]) * (postfixExpr[i] - N);
+        opSelBits[i].in <== opCode[i];
 
         opMux[i].in[0] <== andResult[i];
         opMux[i].in[1] <== orResult[i];
