@@ -145,12 +145,11 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         isOperand[i] <== operandCmp[i].out;
 
         ptrBits[i].in <== sp[i];
-        ptrM1Bits[i].in <== sp[i] - 1;
-        log(sp[i] - 2);
-        ptrM2Bits[i].in <== sp[i] - 2;
-        
 
-        attrSelBits[i].in <== postfixExpr[i];
+        ptrM1Bits[i].in <== active[i] * (sp[i] - 1);
+        ptrM2Bits[i].in <== active[i] * (sp[i] - 2);
+
+        attrSelBits[i].in <== isOperand[i] * postfixExpr[i];
 
         // attrMux[i].in <== requesterPolicyPad;
         for (var j = 0; j < NP2; j++) {
