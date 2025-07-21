@@ -4,260 +4,301 @@ include "./multimux.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";   // IsEqual, LessThan
 
+/*
+    PostfixPolicyInterpreter
+    ------------------------
+    Evaluate a Boolean postfix (RPN) expression over N private Boolean attributes.
+
+    Token encoding:
+      - 0 .. N-1          : attribute index
+      - N + 0 (code 0)    : AND (binary)
+      - N + 1 (code 1)    : OR  (binary)
+      - N + 2 (code 2)    : NOT (unary)
+      - N + 3 (code 3)    : reserved / unused
+
+    Inputs:
+      postfixExpr[DEPTH]  : token array (only first numOperations meaningful)
+      numOperations       : actual length (public)
+      requesterPolicy[N]  : private attribute bitmap (Boolean)
+
+    Output:
+      isValid             : final Boolean value of the expression
+
+    Invariants enforced:
+      * Sufficient stack depth for each operator (binary needs >=2, unary >=1)
+      * Final stack depth == 1
+
+    Design notes:
+      * Uses a stack model encoded in arrays (no dynamic indexing).
+      * Each step writes exactly one slot: push (sp), unary overwrite (sp-1), binary reduce (sp-2).
+      * Conditional write pattern: new = old + flag * (val - old) keeps constraints quadratic.
+*/
+
 template PostfixPolicyInterpreter(N, DEPTH, K) {
-    /*
-        N      : number of Boolean attributes (requesterPolicy size)
-        DEPTH  : maximum length of the postfix expression as well as
-                 the maximum stack depth during evaluation
-        K      : number of bits required to address requesterPolicy (⌈log2(N)⌉)
-    */
-
-    // ──────────────────  Internal bookkeeping  ──────────────────
-    // Flags telling whether token i is an operand (1) or operator (0)
-    signal isOperand[DEPTH]; 
-
-    // Stack pointer after each step (sp[0] == 0 initially)
-    signal sp[DEPTH + 1];
-
-    // Complete stack snapshot *after* each step
-    signal stackState[DEPTH + 1][DEPTH];
-
-    // Intermediate signals to keep constraints quadratic
-    signal prefOperand[DEPTH];
-    signal prefOp[DEPTH];
-    signal tmpAttr[DEPTH][DEPTH];
-    signal tmpOp[DEPTH][DEPTH];
-
-    // Further intermediate updates to enforce quadratic constraints
-    signal update1[DEPTH][DEPTH];
-    signal update2[DEPTH][DEPTH];
-
+    // ───────────── Derived sizes ─────────────
     var KP = 0;
-    while ((1 << KP) < DEPTH) {
-        KP++;
-    }
-    // Next power-of-two sizes for muxes
-    var NP2 = 1 << K;
-    var DP2 = 1 << KP;
+    while ((1 << KP) < DEPTH) { KP++; }     // bits for stack pointer
+    var NP2 = 1 << K;                       // next power-of-two for attributes
+    var DP2 = 1 << KP;                      // next power-of-two for stack depth
 
-    // Padded stackState for power-of-two mux input
-    signal stackStatePad[DEPTH + 1][DP2];
+    // ───────────── Inputs / Outputs ─────────────
+    signal input postfixExpr[DEPTH];
+    signal input numOperations;
+    signal input requesterPolicy[N];
+    signal output isValid;
 
-    signal active[DEPTH];
-    signal attrVal[DEPTH];
+    // ───────────── Global state ─────────────
+    signal sp[DEPTH + 1];                   // stack height (sp[0] = 0)
+    signal stackState[DEPTH + 1][DEPTH];    // stack snapshot after each step
 
-    signal andResult[DEPTH];
-    signal orResult[DEPTH];
-    signal notResult[DEPTH];
+    // Padded arrays for mux components
+    signal policyPad[NP2];
+    signal stackPad[DEPTH + 1][DP2];
 
-    signal opVal[DEPTH];
-    signal delta[DEPTH];
-    signal canPtrM1[DEPTH];
-    signal canPtrM2[DEPTH];
-    signal spM1[DEPTH];
-    signal spM2[DEPTH];
+    // ───────────── Per-step flags / values ─────────────
+    signal active[DEPTH];                   // i < numOperations
+    signal isOperand[DEPTH];                // token < N
+    signal isOper[DEPTH];                   // 1 - isOperand
+    signal opIdx[DEPTH];                    // operator code (0..3) or 0 when operand
+
+    signal have1[DEPTH];                    // stack depth >= 1
+    signal have2[DEPTH];                    // stack depth >= 2
+
+    // Stack top values (binary operations need two)
+    signal topA[DEPTH];
+    signal topB[DEPTH];
+
+    // Operation intermediate & results
+    signal andRes[DEPTH];
+    signal orRes[DEPTH];
+    signal notRes[DEPTH];
+    signal calcVal[DEPTH];
+
+    // Attribute value (push) / unified write value
+    signal pushVal[DEPTH];
+    signal writeVal[DEPTH];
+
+    // Operator arity flags
+    signal isBinary[DEPTH];
+    signal isUnary[DEPTH];
+
+    // Destination index expression & equality flags
+    signal destIdx[DEPTH];
+    signal destBits[DEPTH][KP];
+    signal eqDest[DEPTH][DEPTH];
+    signal writeFlag[DEPTH][DEPTH];
+
+    // Stack pointer delta
+    signal spDelta[DEPTH];
+
+    // Helper products / bits decomposition
     signal bothTop[DEPTH];
-    signal orCore[DEPTH];
-    signal opCode[DEPTH];
+    signal opMSB[DEPTH]; // Most Significant Bit
+    signal opLSB[DEPTH]; // Least Significant Bit
+    signal notOpLSB[DEPTH];
+    signal tmpUnary1[DEPTH];
 
-    // Compute ⌈log2(DEPTH)⌉ at compile‑time
+    // Helper signals to keep constraints quadratic
+    signal tmpPushVal[DEPTH];
+    signal tmpCalcVal[DEPTH];
+    signal diffVal[DEPTH];
+    signal tmpDestOpnd[DEPTH];
+    signal tmpDestUnary[DEPTH];
+    signal tmpDestBinary[DEPTH];
 
+    // ───────────── Component arrays ─────────────
+    component attrBits[DEPTH];
+    component opBits[DEPTH];
+    component spBits[DEPTH];
+    component spM1Bits[DEPTH];
+    component spM2Bits[DEPTH];
     component attrMux[DEPTH];
-    component opMux[DEPTH];
-    component attrSelBits[DEPTH];
-    component opSelBits[DEPTH];
-    component ptrBits[DEPTH];
-    component ptrM1Bits[DEPTH];
-    component ptrM2Bits[DEPTH];
-    component top1Mux[DEPTH];
-    component top2Mux[DEPTH];
-    component activeCmp[DEPTH];
-    component operandCmp[DEPTH];
-    component depthCmp1[DEPTH];
-    component depthCmp2[DEPTH];
-    signal depthGE1[DEPTH];
-    signal depthGE2[DEPTH];
-    component eqTop[DEPTH][DEPTH];
-    component eqDest[DEPTH][DEPTH];
+    component topMuxA[DEPTH];
+    component topMuxB[DEPTH];
+    component valMux[DEPTH];
+    component cmpActive[DEPTH];
+    component cmpIsOperand[DEPTH];
+    component cmpDepth1[DEPTH];
+    component cmpDepth2[DEPTH];
+    component destBitsNC[DEPTH];
+    component eqDestCmp[DEPTH][DEPTH];
 
-    for (var i = 0; i < DEPTH; i++) {
-        attrMux[i] = MultiMux(NP2, K);
-        opMux[i] = MultiMux(4, 2);
-        attrSelBits[i] = Num2Bits(K);
-        opSelBits[i] = Num2Bits(2);
-        ptrBits[i] = Num2Bits(KP);
-        ptrM1Bits[i] = Num2Bits(KP);
-        ptrM2Bits[i] = Num2Bits(KP);
-        top1Mux[i] = MultiMux(DP2, KP);
-        top2Mux[i] = MultiMux(DP2, KP);
-        activeCmp[i] = LessThan(32);
-        operandCmp[i] = LessThan(N);
-        depthCmp1[i] = LessThan(32);
-        depthCmp2[i] = LessThan(32);
-    }
-
-    for (var i = 0; i < DEPTH; i++) {
-        for (var j = 0; j < DEPTH; j++) {
-            eqTop[i][j] = IsEqual();
-            eqDest[i][j] = IsEqual();
-        }
-    }
-
-    // ────────────────────────  I/O  ────────────────────────
-    signal input postfixExpr[DEPTH];   // The postfix program, tokenised as integers
-    signal input numOperations;        // How many tokens are meaningful (≤ DEPTH)
-
-    signal input requesterPolicy[N];   // Private bitmap of the data requester
-
-    // Padded policy for power-of-two mux input
-    signal requesterPolicyPad[NP2];
-
-    signal output isValid;             // 1 ⇒ the policy matches the consent
-
-    // ───────────────────────  Main loop  ───────────────────────
-    // Initialize stack pointer and state
+    // ───────────── Initialization ─────────────
     sp[0] <== 0;
     for (var j = 0; j < DEPTH; j++) {
         stackState[0][j] <== 0;
     }
-
-    // Pad requesterPolicy to NP2 length
     for (var j = 0; j < N; j++) {
-        requesterPolicyPad[j] <== requesterPolicy[j];
+        requesterPolicy[j] * (requesterPolicy[j] - 1) === 0; // enforce Boolean if needed
+        policyPad[j] <== requesterPolicy[j];
     }
     for (var j = N; j < NP2; j++) {
-        requesterPolicyPad[j] <== 0;
+        policyPad[j] <== 0;
     }
-
-    // Pad initial stackState row to DP2 length
     for (var j = 0; j < DEPTH; j++) {
-        stackStatePad[0][j] <== stackState[0][j];
+        stackPad[0][j] <== 0;
     }
     for (var j = DEPTH; j < DP2; j++) {
-        stackStatePad[0][j] <== 0;
+        stackPad[0][j] <== 0;
     }
-    
+
+    // ───────────── Main loop ─────────────
     for (var i = 0; i < DEPTH; i++) {
 
-        // Pad current stackState row to DP2 length (skip i == 0)
+        // Component instantiation per step
+        attrBits[i] = Num2Bits(K);
+        opBits[i]   = Num2Bits(2);          // up to 4 operators
+        spBits[i]   = Num2Bits(KP);
+        spM1Bits[i] = Num2Bits(KP);
+        spM2Bits[i] = Num2Bits(KP);
+        attrMux[i]  = MultiMux(NP2, K);
+        topMuxA[i]  = MultiMux(DP2, KP);
+        topMuxB[i]  = MultiMux(DP2, KP);
+        valMux[i]   = MultiMux(4, 2);
+
+        cmpActive[i]    = LessThan(32);
+        cmpIsOperand[i] = LessThan(N);
+        cmpDepth1[i]    = LessThan(32);
+        cmpDepth2[i]    = LessThan(32);
+        destBitsNC[i]   = Num2Bits(KP);
+
+        // Activate row padding
         if (i > 0) {
             for (var j = 0; j < DEPTH; j++) {
-                stackStatePad[i][j] <== stackState[i][j];
+                stackPad[i][j] <== stackState[i][j];
             }
             for (var j = DEPTH; j < DP2; j++) {
-                stackStatePad[i][j] <== 0;
+                stackPad[i][j] <== 0;
             }
         }
 
-        activeCmp[i].in[0] <== i;
-        activeCmp[i].in[1] <== numOperations;
-        active[i] <== activeCmp[i].out;
+        // Active flag
+        cmpActive[i].in[0] <== i;
+        cmpActive[i].in[1] <== numOperations;
+        active[i] <== cmpActive[i].out;
 
-        operandCmp[i].in[0] <== postfixExpr[i];
-        operandCmp[i].in[1] <== N;
-        isOperand[i] <== operandCmp[i].out;
+        // Operand flag
+        cmpIsOperand[i].in[0] <== postfixExpr[i];
+        cmpIsOperand[i].in[1] <== N;
+        isOperand[i] <== cmpIsOperand[i].out;
+        isOper[i]    <== 1 - isOperand[i];
 
-        ptrBits[i].in <== sp[i];
+        // Stack pointer bits
+        spBits[i].in <== sp[i];
 
-        depthCmp1[i].in[0] <== sp[i];
-        depthCmp1[i].in[1] <== 1;
-        depthCmp2[i].in[0] <== sp[i];
-        depthCmp2[i].in[1] <== 2;
-        depthGE1[i] <== 1 - depthCmp1[i].out;
-        depthGE2[i] <== 1 - depthCmp2[i].out;
+        // Depth availability
+        cmpDepth1[i].in[0] <== sp[i];
+        cmpDepth1[i].in[1] <== 1;
+        cmpDepth2[i].in[0] <== sp[i];
+        cmpDepth2[i].in[1] <== 2;
+        have1[i] <== 1 - cmpDepth1[i].out;
+        have2[i] <== 1 - cmpDepth2[i].out;
 
-        canPtrM1[i] <== active[i] * depthGE1[i];
-        canPtrM2[i] <== active[i] * depthGE2[i];
-        spM1[i] <== sp[i] - 1;
-        spM2[i] <== sp[i] - 2;
-        ptrM1Bits[i].in <== canPtrM1[i] * spM1[i];
-        ptrM2Bits[i].in <== canPtrM2[i] * spM2[i];
-
-        attrSelBits[i].in <== isOperand[i] * postfixExpr[i];
-
-        // attrMux[i].in <== requesterPolicyPad;
+        // Attribute selection (mask with isOperand)
+        attrBits[i].in <== isOperand[i] * postfixExpr[i];
+        for (var b = 0; b < K; b++) {
+            attrMux[i].sel[b] <== attrBits[i].out[b];
+        }
         for (var j = 0; j < NP2; j++) {
-            attrMux[i].in[j] <== requesterPolicyPad[j];
+            attrMux[i].in[j] <== policyPad[j];
         }
+        pushVal[i] <== attrMux[i].out;
 
-        // attrMux[i].sel <== attrSelBits[i].out;
-        for (var j = 0; j < K; j++) {
-            attrMux[i].sel[j] <== attrSelBits[i].out[j];
-        }
+        // Operator code (masked)
+        opIdx[i] <== isOper[i] * (postfixExpr[i] - N);
+        opBits[i].in <== opIdx[i];
 
-        attrVal[i] <== attrMux[i].out;
+        // Arity detection:
+        // code 0 or 1 => AND / OR (binary) (MSB=0)
+        // code 2      => NOT (unary)         (binary 10)
+        opMSB[i]    <== opBits[i].out[1];
+        isBinary[i] <== isOper[i] * (1 - opMSB[i]);   // degree 2
+        opLSB[i]    <== opBits[i].out[0];
+        notOpLSB[i] <== 1 - opLSB[i];
+        tmpUnary1[i] <== isOper[i] * opMSB[i];         // degree 2
+        isUnary[i]   <== tmpUnary1[i] * notOpLSB[i];   // degree 2
 
-        // top1Mux[i].in <== stackStatePad[i];
+        // Binary needs depth >=2 ; Unary needs depth >=1
+        isBinary[i] * (1 - have2[i]) === 0;
+        isUnary[i]  * (1 - have1[i]) === 0;
+
+        // Stack top indices (masked to 0 when insufficient depth)
+        // have1*(sp-1), have2*(sp-2)
+        spM1Bits[i].in <== have1[i] * sp[i] - have1[i];
+        spM2Bits[i].in <== have2[i] * sp[i] - 2 * have2[i];
+
+        // top mux inputs
         for (var j = 0; j < DP2; j++) {
-            top1Mux[i].in[j] <== stackStatePad[i][j];
+            topMuxA[i].in[j] <== stackPad[i][j];
+            topMuxB[i].in[j] <== stackPad[i][j];
+        }
+        for (var b = 0; b < KP; b++) {
+            topMuxA[i].sel[b] <== spM2Bits[i].out[b];
+            topMuxB[i].sel[b] <== spM1Bits[i].out[b];
+        }
+        topA[i] <== topMuxA[i].out;
+        topB[i] <== topMuxB[i].out;
+
+        // Operation core (no gating here; arity constraints ensure correctness)
+        bothTop[i] <== topA[i] * topB[i];
+        andRes[i]  <== bothTop[i];
+        orRes[i]   <== topA[i] + topB[i] - bothTop[i];
+        notRes[i]  <== 1 - topB[i];
+
+        // Select operator result (AND / OR / NOT / 0)
+        valMux[i].in[0] <== andRes[i];
+        valMux[i].in[1] <== orRes[i];
+        valMux[i].in[2] <== notRes[i];
+        valMux[i].in[3] <== 0;
+        for (var b = 0; b < 2; b++) {
+            valMux[i].sel[b] <== opBits[i].out[b];
+        }
+        calcVal[i] <== valMux[i].out;
+
+        // Unified write value
+        // writeVal = isOperand? pushVal : calcVal
+        diffVal[i] <== pushVal[i] - calcVal[i];
+        writeVal[i] <== calcVal[i] + isOperand[i] * diffVal[i];
+
+        // Destination index expression
+        // destIdx = (operand ? sp) + (unary ? sp-1) + (binary ? sp-2)
+        tmpDestOpnd[i]  <== isOperand[i] * sp[i];
+        tmpDestUnary[i] <== isUnary[i] * (sp[i] - 1);
+        tmpDestBinary[i] <== isBinary[i] * (sp[i] - 2);
+        destIdx[i] <== tmpDestOpnd[i] + tmpDestUnary[i] + tmpDestBinary[i];
+
+        // Bits for equality (only used; not fed to another Num2Bits)
+        destBitsNC[i].in <== destIdx[i];
+        for (var b = 0; b < KP; b++) {
+            destBits[i][b] <== destBitsNC[i].out[b];
         }
 
-        // top1Mux[i].sel <== ptrM2Bits[i].out;
-        for (var j = 0; j < KP; j++) {
-            top1Mux[i].sel[j] <== ptrM2Bits[i].out[j];
-        }
-
-        // top2Mux[i].in <== stackStatePad[i];
-        for (var j = 0; j < DP2; j++) {
-            top2Mux[i].in[j] <== stackStatePad[i][j];
-        }
-        // top2Mux[i].sel <== ptrM1Bits[i].out;
-        for (var j = 0; j < KP; j++) {
-            top2Mux[i].sel[j] <== ptrM1Bits[i].out[j];
-        }
-
-        bothTop[i] <== top1Mux[i].out * top2Mux[i].out;
-        andResult[i] <== depthGE2[i] * bothTop[i];
-        orCore[i] <== top1Mux[i].out + top2Mux[i].out - bothTop[i];
-        orResult[i] <== depthGE2[i] * orCore[i];
-        notResult[i] <== depthGE1[i] * (1 - top2Mux[i].out);
-
-        opCode[i] <== (1 - isOperand[i]) * (postfixExpr[i] - N);
-        opSelBits[i].in <== opCode[i];
-
-        opMux[i].in[0] <== andResult[i];
-        opMux[i].in[1] <== orResult[i];
-        opMux[i].in[2] <== notResult[i];
-        // Pad fourth input for 4-way mux
-        opMux[i].in[3] <== 0;
-        // opMux[i].sel <== opSelBits[i].out;
-        for (var j = 0; j < 2; j++) {
-            opMux[i].sel[j] <== opSelBits[i].out[j];
-        }
-
-        opVal[i] <== opMux[i].out;
-
+        // Equality & conditional write
         for (var j = 0; j < DEPTH; j++) {
-            eqTop[i][j].in[0] <== j;
-            eqTop[i][j].in[1] <== sp[i];
+            eqDestCmp[i][j] = IsEqual();
+            eqDestCmp[i][j].in[0] <== j;
+            eqDestCmp[i][j].in[1] <== destIdx[i];
+            eqDest[i][j] <== eqDestCmp[i][j].out;
 
-            eqDest[i][j].in[0] <== j;
-            eqDest[i][j].in[1] <== sp[i] - 2;
+            writeFlag[i][j] <== active[i] * eqDest[i][j]; // since isOperand + isOper == 1
+            stackState[i + 1][j] <== stackState[i][j] + writeFlag[i][j] * (writeVal[i] - stackState[i][j]);
         }
 
-        delta[i] <== isOperand[i] - (1 - isOperand[i]);
+        // Stack pointer delta: push +1, binary -1, unary 0
+        spDelta[i] <== isOperand[i] - isBinary[i];
+        sp[i + 1] <== sp[i] + active[i] * spDelta[i];
 
-        // Compute prefix products to stay within quadratic constraints
-        prefOperand[i] <== active[i] * isOperand[i];
-        prefOp[i]      <== active[i] * (1 - isOperand[i]);
-
-        for (var j = 0; j < DEPTH; j++) {
-            tmpAttr[i][j] <== eqTop[i][j].out * (attrVal[i] - stackState[i][j]);
-            tmpOp[i][j]   <== eqDest[i][j].out * (opVal[i] - stackState[i][j]);
-            // First update term
-            update1[i][j] <== prefOperand[i] * tmpAttr[i][j];
-            // Second update term
-            update2[i][j] <== prefOp[i] * tmpOp[i][j];
-            // Final stack update (linear sum)
-            stackState[i + 1][j] <== stackState[i][j] + update1[i][j] + update2[i][j];
-        }
-
-        sp[i + 1] <== sp[i] + active[i] * delta[i];
+        // Optional: enforce Boolean nature of writeVal (cheap assurance)
+        // writeVal[i] * (writeVal[i] - 1) === 0;
     }
 
+    // Final stack depth must be exactly 1
+    sp[DEPTH] === 1;
+
+    // Output (stack no longer mutates after last active step)
     isValid <== stackState[DEPTH][0];
 }
 
-// 3 attributes, max postfix length 10,
-// K = ⌈log2(3)⌉ = 2
+// Example instantiation:
+//  N = 3 attributes, DEPTH = 10 tokens, K = ⌈log2(3)⌉ = 2
 component main { public [postfixExpr, numOperations] } = PostfixPolicyInterpreter(3, 10, 2);
