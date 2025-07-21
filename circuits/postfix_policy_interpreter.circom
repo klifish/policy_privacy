@@ -106,6 +106,11 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     signal tmpDestUnary[DEPTH];
     signal tmpDestBinary[DEPTH];
 
+    // Reserved operator code (11b) detection
+    signal tmpCode3Bits[DEPTH];   // MSB * LSB
+    signal code3Flag[DEPTH];      // isOper * tmpCode3Bits
+    signal _dummyZero[DEPTH];     // forced to 0 for constraint
+
     // ───────────── Component arrays ─────────────
     component attrBits[DEPTH];
     component opBits[DEPTH];
@@ -217,6 +222,11 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         notOpLSB[i] <== 1 - opLSB[i];
         tmpUnary1[i] <== isOper[i] * opMSB[i];         // degree 2
         isUnary[i]   <== tmpUnary1[i] * notOpLSB[i];   // degree 2
+
+        // ----- Disallow reserved operator code 3 (bit pattern 11) -----
+        tmpCode3Bits[i] <== opBits[i].out[1] * opBits[i].out[0];   // degree 2
+        code3Flag[i]    <== isOper[i] * tmpCode3Bits[i];           // degree 2
+        active[i] * code3Flag[i] === 0 ; // active step cannot have code 3
 
         // Binary needs depth >=2 ; Unary needs depth >=1
         isBinary[i] * (1 - have2[i]) === 0;

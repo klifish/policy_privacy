@@ -56,7 +56,7 @@ function genRandomValid(N, DEPTH) {
     // 目标：生成 operands O, binary ops B = O-1, unary ops U 任意（不改变最终深度）
     const maxOperands = Math.min(N, Math.max(1, DEPTH)); // 简化
     const O = 1 + randomInt(Math.min(3, maxOperands));   // 控制小一些，避免复杂调试
-    const U = randomInt(3); // 0..2 unary ops
+    let U = randomInt(3); // 0..2 unary ops
     const tokens = [];
     let depth = 0;
     let operandsUsed = 0;
