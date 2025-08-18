@@ -3,11 +3,36 @@ const wasm_tester = require('circom_tester').wasm;
 const assert = require('assert');
 
 function evalPostfix(tokens, attrs, N) {
-    const st = [];
+    /*
+     * Evaluate a Boolean postfix (Reverse Polish) expression in plain JS.
+     *
+     * Parameters
+     * ----------
+     * tokens : number[]
+     *    Encoded postfix expression. 0‥N‑1 = attribute index,
+     *    N+0 = AND, N+1 = OR, N+2 = NOT, N+3 = reserved/invalid.
+     * attrs  : number[]
+     *    Attribute bitmap. attrs[i] must be 0 or 1.
+     * N      : number
+     *    Number of attributes (length of attrs).
+     *
+     * Returns
+     * -------
+     * 0 or 1 : evaluation result.
+     *
+     * Throws
+     * ------
+     * Error if the expression is malformed (stack under‑/over‑flow,
+     * unsupported opcode, or final stack depth ≠ 1).
+     */
+    const st = [];                    // evaluation stack
+
     for (const t of tokens) {
         if (t < N) {
+            /* Operand  –  push attribute value onto the stack */
             st.push(attrs[t]);
         } else {
+            /* Operator  –  compute after popping required operands */
             const op = t - N;
             if (op === 0) { // AND
                 if (st.length < 2) throw new Error("Binary op depth");
@@ -26,6 +51,8 @@ function evalPostfix(tokens, attrs, N) {
             }
         }
     }
+
+    /* After processing all tokens, exactly one value must remain */
     if (st.length !== 1) throw new Error("Final stack depth != 1");
     return st[0];
 }
@@ -53,9 +80,9 @@ async function expectInvalid(circuit, input, reasonHint) {
 function randomInt(max) { return Math.floor(Math.random() * max); }
 
 function genRandomValid(N, DEPTH) {
-    // 目标：生成 operands O, binary ops B = O-1, unary ops U 任意（不改变最终深度）
-    const maxOperands = Math.min(N, Math.max(1, DEPTH)); // 简化
-    const O = 1 + randomInt(Math.min(3, maxOperands));   // 控制小一些，避免复杂调试
+    // Goal: generate O operands, binary ops B = O - 1, and any number of unary ops U (overall depth unchanged)
+    const maxOperands = Math.min(N, Math.max(1, DEPTH)); // at least one operand, at most N
+    const O = 1 + randomInt(Math.min(3, maxOperands));
     let U = randomInt(3); // 0..2 unary ops
     const tokens = [];
     let depth = 0;
