@@ -144,7 +144,7 @@ describe('Postfix Policy Interpreter Test', function () {
     let circuit;
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, '..', 'circuits', 'postfix_policy_interpreter.circom'));
+        circuit = await wasm_tester(path.join(__dirname, '..', 'circuits', "interpreter", 'postfix_policy_interpreter.circom'));
         console.log('Circuit loaded successfully');
     });
 

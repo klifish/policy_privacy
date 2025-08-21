@@ -1,8 +1,8 @@
 pragma circom 2.0.0;
 
-include "./multimux.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";   // IsEqual, LessThan
+include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/comparators.circom";   // IsEqual, LessThan
+include "../gadgets/multimux.circom";
 
 /*
     PostfixPolicyInterpreter
