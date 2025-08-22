@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "../node_modules/circomlib/circuits/mux1.circom";
+include "../../node_modules/circomlib/circuits/mux1.circom";
 
 template MultiMux(N, K) {
     // N = number of inputs (must be power of 2 or padded)

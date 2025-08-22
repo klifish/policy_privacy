@@ -1,0 +1,30 @@
+{
+    "atoms": [
+        {
+            "type": "ONT_IN_SET",
+            "params": {
+                "name": "disease_term"
+            }
+        },
+        {
+            "type": "TIME_WINDOW",
+            "params": {
+                "name": "access_time",
+                "t0": 1763400000,
+                "t1": 1766534400
+            },
+            "publicParams": [
+                "t0",
+                "t1"
+            ]
+        },
+        {
+            "type": "EQ_HASH",
+            "params": {
+                "name": "institution",
+                "expected_hash": "0xabc123"
+            }
+        }
+    ],
+    "expr": "(disease_term AND access_time) AND institution"
+}

@@ -1,0 +1,42 @@
+{
+  "N": 3,
+  "tokens": [
+    0,
+    1,
+    3,
+    2,
+    3
+  ],
+  "policy_commitment": "0x219f3ff76b854feac766cdde5440e13ce7cc5145e3c8dcacab718010151dbb1b",
+  "atom_meta_hash": "0x2240cb7b65f3a4f4038dd85ffa9381fe7562b769f18c372d523417537ba34084",
+  "atom_catalog": [
+    {
+      "index": 0,
+      "type": "ONT_IN_SET",
+      "params": {
+        "name": "disease_term"
+      }
+    },
+    {
+      "index": 1,
+      "type": "TIME_WINDOW",
+      "params": {
+        "name": "access_time",
+        "t0": 1763400000,
+        "t1": 1766534400
+      },
+      "publicParams": [
+        "t0",
+        "t1"
+      ]
+    },
+    {
+      "index": 2,
+      "type": "EQ_HASH",
+      "params": {
+        "name": "institution",
+        "expected_hash": "0xabc123"
+      }
+    }
+  ]
+}
