@@ -7,19 +7,22 @@ include "../gadgets/multimux.circom";
 /*
     PostfixPolicyInterpreter
     ------------------------
-    Evaluate a Boolean postfix (RPN) expression over N private Boolean attributes.
+    Evaluate a Boolean postfix (RPN) expression over N private Boolean attributes
+    and M external predicate values (ontology/credential checks).
 
     Token encoding:
-      - 0 .. N-1          : attribute index
-      - N + 0 (code 0)    : AND (binary)
-      - N + 1 (code 1)    : OR  (binary)
-      - N + 2 (code 2)    : NOT (unary)
-      - N + 3 (code 3)    : reserved / unused
+      - 0 .. N-1          : requester attribute index
+      - N .. N+M-1        : predicate value index (external checks)
+      - N+M + 0 (code 0)  : AND (binary)
+      - N+M + 1 (code 1)  : OR  (binary)
+      - N+M + 2 (code 2)  : NOT (unary)
+      - N+M + 3 (code 3)  : reserved / unused
 
     Inputs:
       postfixExpr[DEPTH]  : token array (only first numOperations meaningful)
       numOperations       : actual length (public)
       requesterPolicy[N]  : private attribute bitmap (Boolean)
+      predicateValues[M]  : external predicate results (Boolean)
 
     Output:
       isValid             : final Boolean value of the expression
@@ -32,19 +35,23 @@ include "../gadgets/multimux.circom";
       * Uses a stack model encoded in arrays (no dynamic indexing).
       * Each step writes exactly one slot: push (sp), unary overwrite (sp-1), binary reduce (sp-2).
       * Conditional write pattern: new = old + flag * (val - old) keeps constraints quadratic.
+      * Backward compatibility: when M=0, behaves identically to original implementation.
 */
 
-template PostfixPolicyInterpreter(N, DEPTH, K) {
+template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     // ───────────── Derived sizes ─────────────
     var KP = 0;
     while ((1 << KP) < DEPTH) { KP++; }     // bits for stack pointer
-    var NP2 = 1 << K;                       // next power-of-two for attributes
+    var KSEL = 0;
+    while ((1 << KSEL) < (N + M)) { KSEL++; }  // bits for operand selection (N+M operands)
+    var NMP2 = 1 << KSEL;                   // next power-of-two for operands (N+M)
     var DP2 = 1 << KP;                      // next power-of-two for stack depth
 
     // ───────────── Inputs / Outputs ─────────────
     signal input postfixExpr[DEPTH];
     signal input numOperations;
     signal input requesterPolicy[N];
+    signal input predicateValues[M];
     signal output isValid;
 
     // ───────────── Global state ─────────────
@@ -52,12 +59,12 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     signal stackState[DEPTH + 1][DEPTH];    // stack snapshot after each step
 
     // Padded arrays for mux components
-    signal policyPad[NP2];
+    signal operandPad[NMP2];
     signal stackPad[DEPTH + 1][DP2];
 
     // ───────────── Per-step flags / values ─────────────
     signal active[DEPTH];                   // i < numOperations
-    signal isOperand[DEPTH];                // token < N
+    signal isOperand[DEPTH];                // token < (N + M)
     signal isOper[DEPTH];                   // 1 - isOperand
     signal opIdx[DEPTH];                    // operator code (0..3) or 0 when operand
 
@@ -133,12 +140,17 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     for (var j = 0; j < DEPTH; j++) {
         stackState[0][j] <== 0;
     }
+    // Initialize operandPad with requesterPolicy and predicateValues
     for (var j = 0; j < N; j++) {
         requesterPolicy[j] * (requesterPolicy[j] - 1) === 0; // enforce Boolean if needed
-        policyPad[j] <== requesterPolicy[j];
+        operandPad[j] <== requesterPolicy[j];
     }
-    for (var j = N; j < NP2; j++) {
-        policyPad[j] <== 0;
+    for (var j = 0; j < M; j++) {
+        predicateValues[j] * (predicateValues[j] - 1) === 0; // enforce Boolean if needed
+        operandPad[N + j] <== predicateValues[j];
+    }
+    for (var j = N + M; j < NMP2; j++) {
+        operandPad[j] <== 0;
     }
     for (var j = 0; j < DEPTH; j++) {
         stackPad[0][j] <== 0;
@@ -151,18 +163,18 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
     for (var i = 0; i < DEPTH; i++) {
 
         // Component instantiation per step
-        attrBits[i] = Num2Bits(K);
+        attrBits[i] = Num2Bits(KSEL);        // Updated to use KSEL for operand selection
         opBits[i]   = Num2Bits(2);          // up to 4 operators
         spBits[i]   = Num2Bits(KP);
         spM1Bits[i] = Num2Bits(KP);
         spM2Bits[i] = Num2Bits(KP);
-        attrMux[i]  = MultiMux(NP2, K);
+        attrMux[i]  = MultiMux(NMP2, KSEL);  // Updated to use NMP2 and KSEL
         topMuxA[i]  = MultiMux(DP2, KP);
         topMuxB[i]  = MultiMux(DP2, KP);
         valMux[i]   = MultiMux(4, 2);
 
         cmpActive[i]    = LessThan(32);
-        cmpIsOperand[i] = LessThan(N);
+        cmpIsOperand[i] = LessThan(N + M);    // Updated to compare against N+M
         cmpDepth1[i]    = LessThan(32);
         cmpDepth2[i]    = LessThan(32);
         destBitsNC[i]   = Num2Bits(KP);
@@ -182,9 +194,9 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         cmpActive[i].in[1] <== numOperations;
         active[i] <== cmpActive[i].out;
 
-        // Operand flag
+        // Operand flag (token < N+M)
         cmpIsOperand[i].in[0] <== postfixExpr[i];
-        cmpIsOperand[i].in[1] <== N;
+        cmpIsOperand[i].in[1] <== N + M;
         isOperand[i] <== cmpIsOperand[i].out;
         isOper[i]    <== 1 - isOperand[i];
 
@@ -199,18 +211,18 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
         have1[i] <== 1 - cmpDepth1[i].out;
         have2[i] <== 1 - cmpDepth2[i].out;
 
-        // Attribute selection (mask with isOperand)
+        // Operand selection (mask with isOperand)
         attrBits[i].in <== isOperand[i] * postfixExpr[i];
-        for (var b = 0; b < K; b++) {
+        for (var b = 0; b < KSEL; b++) {
             attrMux[i].sel[b] <== attrBits[i].out[b];
         }
-        for (var j = 0; j < NP2; j++) {
-            attrMux[i].in[j] <== policyPad[j];
+        for (var j = 0; j < NMP2; j++) {
+            attrMux[i].in[j] <== operandPad[j];
         }
         pushVal[i] <== attrMux[i].out;
 
-        // Operator code (masked)
-        opIdx[i] <== isOper[i] * (postfixExpr[i] - N);
+        // Operator code (masked) - now subtract (N+M)
+        opIdx[i] <== isOper[i] * (postfixExpr[i] - (N + M));
         opBits[i].in <== opIdx[i];
 
         // Arity detection:
@@ -310,5 +322,5 @@ template PostfixPolicyInterpreter(N, DEPTH, K) {
 }
 
 // Example instantiation:
-//  N = 3 attributes, DEPTH = 10 tokens, K = ⌈log2(3)⌉ = 2
-component main { public [postfixExpr, numOperations] } = PostfixPolicyInterpreter(3, 10, 2);
+//  N = 3 attributes, M = 2 predicates, DEPTH = 10 tokens, K = ⌈log2(3+2)⌉ = 3
+// component main { public [postfixExpr, numOperations] } = PostfixPolicyInterpreter(3, 2, 10, 3);
