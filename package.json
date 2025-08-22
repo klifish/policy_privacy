@@ -7,7 +7,10 @@
     "debug:compile": "npx circom2 circuits/postfix_policy_interpreter.circom --r1cs --wasm --sym -o debug",
     "debug:witness": "npx snarkjs wtns calculate debug/postfix_policy_interpreter_js/postfix_policy_interpreter.wasm debug/input.json debug/witness.wtns",
     "debug": "npm run debug:compile && npm run debug:witness",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/postfix_policy_interpreter*.js --timeout 100000",
+    "test:all": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/*.js --timeout 100000",
+    "test:legacy": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/postfix_policy_interpreter.js --timeout 100000",
+    "test:extended": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/postfix_policy_interpreter_extended.js --timeout 100000",
     "build:circuit:compile:postfixpolicyinterpreter": "npx circom2 circuits/postfix_policy_interpreter.circom --r1cs --wasm --sym -o build/circuits",
     "build:circuit:compile": "mkdir -p build/circuits && npm run build:circuit:compile:postfixpolicyinterpreter",
     "build:circuit:info": "npx snarkjs r1cs info build/circuits/*.r1cs",
@@ -20,7 +23,9 @@
   "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.15"
+    "circom": "^0.5.46",
+    "hardhat": "^2.22.15",
+    "mocha": "^11.7.1"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
