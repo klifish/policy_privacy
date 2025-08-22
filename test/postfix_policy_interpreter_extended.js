@@ -82,7 +82,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
     let circuit;
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, '..', 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
+        circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
         console.log('Extended circuit loaded successfully');
     });
 
