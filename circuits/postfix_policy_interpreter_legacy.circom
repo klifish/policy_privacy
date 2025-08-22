@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "./postfix_policy_interpreter.circom";
+include "./interpreter/postfix_policy_interpreter.circom";
 
 // Legacy wrapper for backward compatibility
 // This allows existing tests to work without modification
