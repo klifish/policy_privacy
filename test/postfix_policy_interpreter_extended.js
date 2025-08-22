@@ -82,7 +82,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
     let circuit;
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
+        circuit = await wasm_tester(path.join(__dirname, '..', 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
         console.log('Extended circuit loaded successfully');
     });
 
@@ -110,7 +110,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("attribute AND predicate (A AND P0)", async () => {
             const input = {
-                postfixExpr: [0, 3, 5, 0, 0, 0, 0, 0, 0, 0], // A0, P0, AND (5 = N+M+0 = 3+2+0)
+                postfixExpr: [0, 3, 8, 0, 0, 0, 0, 0, 0, 0], // A0, P0, AND (8 = N+M+0 = 3+2+0)
                 numOperations: 3,
                 requesterPolicy: [1, 0, 0],
                 predicateValues: [1, 0]
@@ -121,7 +121,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("attribute OR predicate (A OR P1)", async () => {
             const input = {
-                postfixExpr: [0, 4, 6, 0, 0, 0, 0, 0, 0, 0], // A0, P1, OR (6 = N+M+1 = 3+2+1)
+                postfixExpr: [0, 4, 9, 0, 0, 0, 0, 0, 0, 0], // A0, P1, OR (9 = N+M+1 = 3+2+1)
                 numOperations: 3,
                 requesterPolicy: [0, 0, 0],
                 predicateValues: [0, 1]
@@ -132,7 +132,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("NOT predicate", async () => {
             const input = {
-                postfixExpr: [3, 7, 0, 0, 0, 0, 0, 0, 0, 0], // P0, NOT (7 = N+M+2 = 3+2+2)
+                postfixExpr: [3, 10, 0, 0, 0, 0, 0, 0, 0, 0], // P0, NOT (10 = N+M+2 = 3+2+2)
                 numOperations: 2,
                 requesterPolicy: [1, 0, 0],
                 predicateValues: [1, 0]
@@ -143,7 +143,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("complex expression: DS AND IRB (example from issue)", async () => {
             const input = {
-                postfixExpr: [3, 4, 5, 0, 0, 0, 0, 0, 0, 0], // P0(DS), P1(IRB), AND
+                postfixExpr: [3, 4, 8, 0, 0, 0, 0, 0, 0, 0], // P0(DS), P1(IRB), AND
                 numOperations: 3,
                 requesterPolicy: [0, 0, 0],
                 predicateValues: [1, 1] // Both DS and IRB are true
@@ -154,7 +154,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("mixed expression: (A AND P0) OR (B AND P1)", async () => {
             const input = {
-                postfixExpr: [0, 3, 5, 1, 4, 5, 6, 0, 0, 0], // A0, P0, AND, A1, P1, AND, OR
+                postfixExpr: [0, 3, 8, 1, 4, 8, 9, 0, 0, 0], // A0, P0, AND, A1, P1, AND, OR
                 numOperations: 7,
                 requesterPolicy: [0, 1, 0], // A0=0, A1=1, A2=0
                 predicateValues: [0, 1]     // P0=0, P1=1
@@ -170,7 +170,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
         
         it("reserved operator code (N+M+3) should fail", async () => {
             await expectInvalid(circuit, {
-                postfixExpr: [3, 8, 0, 0, 0, 0, 0, 0, 0, 0], // P0 <reserved> (8 = N+M+3 = 3+2+3)
+                postfixExpr: [3, 11, 0, 0, 0, 0, 0, 0, 0, 0], // P0 <reserved> (11 = N+M+3 = 3+2+3)
                 numOperations: 2,
                 requesterPolicy: [1, 0, 0],
                 predicateValues: [1, 0]
@@ -179,7 +179,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
 
         it("binary op with insufficient stack depth", async () => {
             await expectInvalid(circuit, {
-                postfixExpr: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0], // AND with no operands
+                postfixExpr: [8, 0, 0, 0, 0, 0, 0, 0, 0, 0], // AND with no operands
                 numOperations: 1,
                 requesterPolicy: [1, 0, 0],
                 predicateValues: [1, 0]
@@ -200,7 +200,7 @@ describe('Extended Postfix Policy Interpreter Test', function () {
         
         it("should work with no predicates used (only attributes)", async () => {
             const input = {
-                postfixExpr: [0, 1, 5, 0, 0, 0, 0, 0, 0, 0], // A0, A1, AND
+                postfixExpr: [0, 1, 8, 0, 0, 0, 0, 0, 0, 0], // A0, A1, AND
                 numOperations: 3,
                 requesterPolicy: [1, 0, 0],
                 predicateValues: [0, 0] // predicates not used
