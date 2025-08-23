@@ -255,7 +255,7 @@ async function main() {
 
         const found = meta.leaves.find((x) => normCode(x.code) === normCode(code));
         if (!found) {
-            console.error(`Code ${code} not in allowed set`);
+            // console.error(`Code ${code} not in allowed set`);
             process.exit(2);
         }
 
