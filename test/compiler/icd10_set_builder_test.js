@@ -248,7 +248,10 @@ describe('ICD10 Set Builder', function () {
         fs.writeFileSync(invalidTreeFile, JSON.stringify(invalidTreeData));
         
         expect(() => {
-            execSync(`node ${builderScript} build --tree ${invalidTreeFile} --roots E10 --version-root 0x1234 --out ${invalidOutputFile}`);
+            execSync(
+                `node ${builderScript} build --tree ${invalidTreeFile} --roots E10 --version-root 0x1234 --out ${invalidOutputFile}`,
+                { stdio: ['ignore', 'pipe', 'ignore'] }
+            );
         }).to.throw();
         
         // Clean up
