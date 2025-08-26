@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load the witness calculator for the legacy circuit
-const wasm = fs.readFileSync('build/test/postfix_policy_interpreter_legacy_js/postfix_policy_interpreter_legacy.wasm');
+const wasm = fs.readFileSync('../../build/test/postfix_policy_interpreter_legacy_js/postfix_policy_interpreter_legacy.wasm');
 const { WitnessCalculatorBuilder } = require('circom_runtime');
 
 // Original evaluation function

@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load the witness calculator from the pre-built circuit
-const wasm = fs.readFileSync('build/test/test_postfix_policy_interpreter_extended_js/test_postfix_policy_interpreter_extended.wasm');
+const wasm = fs.readFileSync('../../build/test/test_postfix_policy_interpreter_extended_js/test_postfix_policy_interpreter_extended.wasm');
 const { WitnessCalculatorBuilder } = require('circom_runtime');
 
 // Extended evaluation function that handles predicates

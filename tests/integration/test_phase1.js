@@ -87,7 +87,7 @@ async function testPolicyPrivacyCircuit() {
         console.log("\nCalculating witness...");
         const { witness } = await snarkjs.wtns.calculate(
             input,
-            "build/circuits/policy_privacy_test_js/policy_privacy_test.wasm"
+            "../../build/circuits/policy_privacy_test_js/policy_privacy_test.wasm"
         );
         
         console.log("Witness calculated successfully!");
@@ -96,7 +96,7 @@ async function testPolicyPrivacyCircuit() {
         // Verify witness satisfies R1CS constraints
         console.log("\nVerifying R1CS constraints...");
         const isValid = await snarkjs.wtns.check(
-            "build/circuits/policy_privacy_test.r1cs",
+            "../../build/circuits/policy_privacy_test.r1cs",
             witness
         );
         
