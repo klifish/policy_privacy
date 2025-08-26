@@ -12,10 +12,11 @@ This repository implements a zero-knowledge approach for privacy-preserving cons
 ├── contracts/                 # Solidity smart contracts
 ├── compiler/                  # Policy compilation utilities
 ├── scripts/                   # Build and setup scripts
-├── test/                      # Unit tests (Mocha/Hardhat)
-├── tests/                     # Additional test files
-│   ├── integration/           # Integration tests
-│   └── data/                  # Test data files
+├── test/                      # All tests (Mocha/Hardhat)
+│   ├── data/                  # Test data files
+│   ├── circuits/              # Circuit test files
+│   ├── compiler/              # Compiler test files
+│   └── *.js                   # Unit and integration tests
 ├── utils/                     # Utility scripts
 │   └── validation/            # Validation and debugging tools
 ├── docs/                      # Documentation
@@ -64,7 +65,7 @@ npx hardhat test
 
 Run the integrated circuit test:
 ```bash
-node tests/integration/test_phase1.js
+npx mocha test/policy_privacy_phase1_integration.js --timeout 100000
 ```
 
 ## Validation Utilities
