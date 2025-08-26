@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "./policy_privacy_main.circom";
+include "../../circuits/policy_privacy_main.circom";
 
 /*
     Test instantiation of PolicyPrivacyMain circuit with concrete parameters

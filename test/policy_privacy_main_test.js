@@ -7,7 +7,7 @@ describe("Policy Privacy Main Circuit Test", function() {
     this.timeout(100000);
 
     before(async function() {
-        circuit = await wasm("circuits/policy_privacy_test.circom");
+        circuit = await wasm("test/circuits/policy_privacy_test.circom");
     });
 
     it("Should prove policy satisfaction with commitment consistency", async function() {

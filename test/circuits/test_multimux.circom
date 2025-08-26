@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "../../circuits/multimux.circom";
+include "../../circuits/gadgets/multimux.circom";
 
 template TestMultiMux() {
     signal input in[4];
