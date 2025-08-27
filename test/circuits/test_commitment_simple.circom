@@ -1,11 +1,11 @@
 pragma circom 2.0.0;
 
-include "../../circuits/gadgets/commitment.circom";
+include "../../circuits/gadgets/policy_commitment.circom";
 
 /*
-    Simple test for Commitment component with concrete parameters
+    Simple test for PolicyCommitmentVerifier component with concrete parameters
 */
 
 component main {
-    public [commitment]  
-} = Commitment(10);
+    public [expectedCommitment]  
+} = PolicyCommitmentVerifierDirect(10);
