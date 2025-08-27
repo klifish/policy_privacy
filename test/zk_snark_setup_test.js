@@ -9,7 +9,7 @@ function execSnarkjs(args, cwd = process.cwd()) {
         console.log('  $ npx snarkjs', args.join(' '));
         const process = spawn('npx', ['snarkjs', ...args], { 
             cwd,
-            stdio: ['inherit', 'pipe', 'pipe'] 
+            stdio: ['pipe', 'pipe', 'pipe'] 
         });
         
         let stdout = '';
@@ -74,10 +74,11 @@ describe('zk-SNARK Setup and Powers of Tau Generation', function() {
                 await execSnarkjs(['powersoftau', 'new', 'bn128', '10', pot0Path], setupDir);
                 console.log('  ✅ Powers of Tau initialized');
                 
-                // Step 2: Contribute to ceremony
-                console.log('📋 Step 2: Adding contribution to ceremony...');
-                await execSnarkjs(['powersoftau', 'contribute', pot0Path, pot1Path, '--name="Test Contribution"'], setupDir);
-                console.log('  ✅ Contribution added');
+                // Step 2: Add beacon contribution (non-interactive)
+                console.log('📋 Step 2: Adding beacon contribution (non-interactive)...');
+                const beaconHash = '0000000000000000000000000000000000000000000000000000000000000000'; // Test beacon hash
+                await execSnarkjs(['powersoftau', 'beacon', pot0Path, pot1Path, beaconHash, '10'], setupDir);
+                console.log('  ✅ Beacon contribution added');
                 
                 // Step 3: Prepare Phase 2
                 console.log('📋 Step 3: Preparing Phase 2 (circuit-specific setup)...');

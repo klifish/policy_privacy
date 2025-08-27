@@ -13,7 +13,7 @@ function execSnarkjs(args, cwd = process.cwd()) {
         console.log('  $ npx snarkjs', args.join(' '));
         const process = spawn('npx', ['snarkjs', ...args], { 
             cwd,
-            stdio: ['inherit', 'pipe', 'pipe'] 
+            stdio: ['pipe', 'pipe', 'pipe'] 
         });
         
         let stdout = '';
@@ -127,10 +127,11 @@ describe('Commitment Gadget Tests', function() {
                 await execSnarkjs(['powersoftau', 'new', 'bn128', '10', pot0Path]);
                 console.log('  ✅ Powers of Tau initialized');
                 
-                // Contribute to ceremony
-                console.log('  - Contributing to ceremony...');
-                await execSnarkjs(['powersoftau', 'contribute', pot0Path, pot1Path, '--name="Test Contribution"']);
-                console.log('  ✅ Contribution added');
+                // Add beacon contribution (non-interactive)
+                console.log('  - Adding beacon contribution (non-interactive)...');
+                const beaconHash = '0000000000000000000000000000000000000000000000000000000000000000'; // Test beacon hash
+                await execSnarkjs(['powersoftau', 'beacon', pot0Path, pot1Path, beaconHash, '10']);
+                console.log('  ✅ Beacon contribution added');
                 
                 // Prepare Phase 2
                 console.log('  - Preparing Phase 2...');
