@@ -153,9 +153,10 @@ describe('Commitment Gadget Tests', function() {
             await execSnarkjs(['zkey', 'new', r1csPath, potFinalPath, zkey0Path]);
             console.log('  ✅ Initial zkey created');
             
-            // Contribute to zkey
-            console.log('  - Contributing to zkey...');
-            await execSnarkjs(['zkey', 'contribute', zkey0Path, zkeyPath, '--name="Test zkey contribution"']);
+            // Contribute to zkey using non-interactive beacon approach
+            console.log('  - Contributing to zkey (non-interactive beacon)...');
+            const zkeyBeaconHash = '0000000000000000000000000000000000000000000000000000000000000001'; // Test beacon hash for zkey
+            await execSnarkjs(['zkey', 'beacon', zkey0Path, zkeyPath, zkeyBeaconHash, '10']);
             console.log('  ✅ Final zkey created');
             
             // Export verification key
