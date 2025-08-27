@@ -18,7 +18,7 @@
     "test:phase1": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/policy_privacy_phase1_integration.js --timeout 100000",
     "build:circuit:compile:postfixpolicyinterpreter": "npx circom2 circuits/postfix_policy_interpreter_legacy.circom --r1cs --wasm --sym -o build/circuits",
     "build:circuit:compile:main": "npx circom2 test/circuits/policy_privacy_test.circom --r1cs --wasm --sym -o build/circuits",
-    "build:circuit:compile:commitment": "npx circom2 test/circuits/test_commitment.circom --r1cs --wasm --sym -o build/circuits", 
+    "build:circuit:compile:commitment": "npx circom2 test/circuits/test_commitment.circom --r1cs --wasm --sym -o build/circuits",
     "build:circuit:compile:merkle": "npx circom2 test/circuits/test_merkle.circom --r1cs --wasm --sym -o build/circuits",
     "build:circuit:compile:credential": "npx circom2 test/circuits/test_credential_signature.circom --r1cs --wasm --sym -o build/circuits",
     "build:circuit:compile:range": "npx circom2 test/circuits/test_range_proof.circom --r1cs --wasm --sym -o build/circuits",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "circom": "^0.5.46",
-    "hardhat": "^2.22.15",
+    "hardhat": "^2.26.3",
     "mocha": "^11.7.1"
   },
   "dependencies": {
