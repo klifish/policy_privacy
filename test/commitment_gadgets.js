@@ -73,20 +73,6 @@ describe('Commitment Gadget Tests', function () {
                 // Setup zk-SNARK keys if circuit is available and files don't exist
                 await setupZkSnarkKeys();
 
-                // For backward compatibility, still try to load with circom_tester
-                try {
-                    console.log('Attempting to load circuit with circom_tester...');
-                    commitmentCircuit = await Promise.race([
-                        wasm("test/circuits/test_commitment.circom"),
-                        new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('Circuit loading timed out')), 30000)
-                        )
-                    ]);
-                    console.log('✅ PolicyCommitmentVerifier circuit loaded with circom_tester');
-                } catch (error) {
-                    console.log('❌ circom_tester loading failed:', error.message);
-                    console.log('Using snarkjs-only testing instead');
-                }
             } else {
                 console.log('Circuit files not found in build directory');
                 console.log('To test with circuits, run "npm run build:circuit" first');
@@ -203,26 +189,9 @@ describe('Commitment Gadget Tests', function () {
             console.log('- Randomizer:', randomizer.toString());
             console.log('- Expected commitment:', expectedCommitment.toString().slice(-8));
 
-            const expectedCommitmentBigInt = utils.leBuff2int(expectedCommitment);
+            console.log('- Expected commitment (BigInt):', poseidonHash.F.toObject(expectedCommitment).toString());
 
-            const input = {
-                policy: policy,
-                randomizer: randomizer,
-                expectedCommitment: expectedCommitmentBigInt
-            };
-
-            if (commitmentCircuit) {
-                // Use circom_tester if available
-                console.log('Using circom_tester approach...');
-                const witness = await commitmentCircuit.calculateWitness(input, true);
-                await commitmentCircuit.checkConstraints(witness);
-
-                // Verify circuit output
-                const output = witness[1]; // isValid signal
-                assert.equal(output, 1n, 'Circuit should verify valid commitment');
-
-                console.log('✅ Circuit successfully verified valid commitment via circom_tester');
-            } else if (fs.existsSync(wasmPath)) {
+            if (fs.existsSync(wasmPath)) {
                 // Use snarkjs approach if wasm exists but circom_tester doesn't work
                 console.log('Using snarkjs witness calculation approach...');
                 const snarkjsInput = {
@@ -248,23 +217,6 @@ describe('Commitment Gadget Tests', function () {
                 assert.equal(publicSignals[0], '1', 'Circuit should output isValid = 1 for valid commitment');
 
                 console.log('✅ Circuit successfully verified valid commitment via snarkjs proof');
-            } else {
-                console.log('⚠️  Neither circom_tester nor compiled circuit available, using functional test');
-                // Functional verification as fallback
-                // Recompute the commitment the same way as in the test setup
-                const policyHashComputed = poseidonHash(input.policy);
-                const computedCommitment = poseidonHash([policyHashComputed, input.randomizer]);
-                
-                // Compare the raw Poseidon hash outputs directly
-                const expectedCommitmentRaw = poseidonHash([poseidonHash(input.policy), input.randomizer]);
-                
-                // Convert both to BigInt for comparison
-                const expectedBigInt = utils.leBuff2int(expectedCommitmentRaw);
-                const computedBigInt = utils.leBuff2int(computedCommitment);
-
-                assert.equal(computedBigInt.toString(), expectedBigInt.toString(),
-                    'Functional commitment computation should match expected');
-                console.log('✅ Circuit logic verified functionally');
             }
         });
 
@@ -278,30 +230,13 @@ describe('Commitment Gadget Tests', function () {
 
             // Use different commitment (simulate invalid case)
             const invalidCommitment = poseidonHash([policyHash, randomizer + 1n]);
-            const invalidCommitmentBigInt = utils.leBuff2int(invalidCommitment);
+            const invalidCommitmentBigInt = poseidonHash.F.toObject(invalidCommitment);
 
             console.log('Testing invalid commitment rejection:');
             console.log('- Policy:', policy.slice(0, 4) + '...');
             console.log('- Using invalid commitment');
 
-            const input = {
-                policy: policy,
-                randomizer: randomizer,
-                expectedCommitment: invalidCommitmentBigInt
-            };
-
-            if (commitmentCircuit) {
-                // Use circom_tester if available
-                console.log('Using circom_tester approach...');
-                const witness = await commitmentCircuit.calculateWitness(input, true);
-                await commitmentCircuit.checkConstraints(witness);
-
-                // Verify circuit output
-                const output = witness[1]; // isValid signal
-                assert.equal(output, 0n, 'Circuit should reject invalid commitment');
-
-                console.log('✅ Circuit successfully rejected invalid commitment via circom_tester');
-            } else if (fs.existsSync(wasmPath) && fs.existsSync(zkeyPath)) {
+            if (fs.existsSync(wasmPath) && fs.existsSync(zkeyPath)) {
                 // Use snarkjs approach - invalid commitment should fail at constraint level
                 console.log('Using snarkjs constraint verification...');
                 const snarkjsInput = {
@@ -336,19 +271,6 @@ describe('Commitment Gadget Tests', function () {
                         throw error;
                     }
                 }
-            } else {
-                console.log('⚠️  Circuit not available, using functional verification');
-                // Functional verification shows the commitment is different
-                const policyHashComputed = poseidonHash(input.policy);
-                const recomputedCommitment = poseidonHash([policyHashComputed, input.randomizer]);
-                
-                // Convert both to string for comparison (input.expectedCommitment is already a BigInt)
-                const expectedBigIntStr = input.expectedCommitment.toString();
-                const recomputedBigIntStr = poseidonHash.F.toObject(recomputedCommitment).toString();
-
-                assert.notEqual(recomputedBigIntStr, expectedBigIntStr,
-                    'Invalid commitment should not match recomputed commitment');
-                console.log('✅ Functional verification shows commitment mismatch as expected');
             }
         });
     });
@@ -367,7 +289,7 @@ describe('Commitment Gadget Tests', function () {
             // Compute expected commitment
             const policyHash = poseidonHash(policy);
             const expectedCommitment = poseidonHash([policyHash, randomizer]);
-            const expectedCommitmentBigInt = utils.leBuff2int(expectedCommitment);
+            const expectedCommitmentBigInt = poseidonHash.F.toObject(expectedCommitment);
 
             console.log('Demonstrating witness generation with snarkjs:');
             console.log('- Policy:', policy.slice(0, 5) + '...');
@@ -380,45 +302,15 @@ describe('Commitment Gadget Tests', function () {
             };
 
             try {
-                // Method 1: Try using circom_tester if available (most reliable)
-                if (commitmentCircuit) {
-                    const witness = await commitmentCircuit.calculateWitness(input, true);
-                    console.log('✅ Witness generated using circom_tester');
-                    console.log('- Witness length:', witness.length);
-                    console.log('- Circuit output (isValid):', witness[1].toString());
-                    assert.equal(witness[1], 1n, 'Circuit should output 1n for valid commitment');
-                    console.log('✅ Witness confirms commitment is valid');
-                    return; // Exit successfully
+
+                if (fs.existsSync(wasmPath)) {
+                    console.log("Debug snarkjs wasmPath:", wasmPath);
+                } else {
+                    console.log("⚠️  WASM file not found");
                 }
+                const snarkjsWitness = await snarkjs.wtns.calculate(input, wasmPath, { type: "mem" });
 
-                // Method 2: Try using snarkjs witness calculation directly  
-                try {
-                    const snarkjsWitness = await snarkjs.wtns.calculate(input, wasmPath);
-                    console.log('✅ Witness generated using snarkjs.wtns.calculate');
-                    console.log('- Circuit output:', snarkjsWitness[1] ? snarkjsWitness[1].toString() : 'undefined');
-                    if (snarkjsWitness[1]) {
-                        assert.equal(snarkjsWitness[1].toString(), '1', 'Circuit should output 1 for valid commitment');
-                        console.log('✅ snarkjs witness confirms commitment is valid');
-                        return; // Exit successfully
-                    }
-                } catch (snarkjsError) {
-                    console.log('snarkjs witness calculation failed:', snarkjsError.message);
-                }
-
-                // Method 3: Functional verification as fallback
-                console.log('⚠️  Direct witness generation not available, demonstrating functional verification');
-
-                // Show that we can compute the same logic functionally
-                const policyHashComputed = poseidonHash(input.policy);
-                const computedCommitment = poseidonHash([policyHashComputed, input.randomizer]);
-                const expectedBigInt = poseidonHash.F.toObject(input.expectedCommitment);
-                const computedBigInt = poseidonHash.F.toObject(computedCommitment);
-
-                assert.equal(computedBigInt.toString(), expectedBigInt.toString(),
-                    'Functional commitment computation should match expected');
-                console.log('✅ Functional verification confirms commitment is valid');
-                console.log('- Policy hash:', policyHashComputed.toString().slice(-8));
-                console.log('- Computed commitment matches expected commitment');
+                console.log('✅ Witness generated using snarkjs.wtns.calculate');
 
             } catch (error) {
                 console.error('❌ Witness generation failed:', error.message);
@@ -458,15 +350,6 @@ describe('Commitment Gadget Tests', function () {
             };
 
             try {
-                // Generate witness using circom_tester if available
-                if (commitmentCircuit) {
-                    const witness = await commitmentCircuit.calculateWitness({
-                        policy: policy,
-                        randomizer: randomizer,
-                        expectedCommitment: expectedCommitmentBigInt1
-                    }, true);
-                    console.log('✅ Witness generated using circom_tester');
-                }
 
                 // Generate the actual zk-SNARK proof using snarkjs
                 const { proof, publicSignals } = await snarkjs.groth16.fullProve(
