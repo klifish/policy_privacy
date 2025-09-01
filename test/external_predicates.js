@@ -16,7 +16,7 @@ describe('External Predicates Tests', function () {
 
         try {
             // Try to load the external predicate test circuits if available
-            merkleCircuit = await wasm("test/circuits/test_merkle.circom");
+            merkleCircuit = await wasm("test/circuits/test_merkle_proof_verifier.circom");
             credentialCircuit = await wasm("test/circuits/test_credential_signature.circom");
             rangeCircuit = await wasm("test/circuits/test_range_proof.circom");
         } catch (error) {

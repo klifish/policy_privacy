@@ -14,8 +14,8 @@ describe('Policy Privacy - Comprehensive Functional Tests', function () {
 
     describe('Circuit Compilation Status', function () {
         it('should have compiled main circuit files', function () {
-            const mainWasmPath = path.join(__dirname, '..', 'build', 'circuits', 'policy_privacy_test_js', 'policy_privacy_test.wasm');
-            const mainR1csPath = path.join(__dirname, '..', 'build', 'circuits', 'policy_privacy_test.r1cs');
+            const mainWasmPath = path.join(__dirname, '..', 'build', 'circuits', 'test_policy_privacy_main_js', 'test_policy_privacy_main.wasm');
+            const mainR1csPath = path.join(__dirname, '..', 'build', 'circuits', 'test_policy_privacy_main.r1cs');
 
             if (!fs.existsSync(mainWasmPath) || !fs.existsSync(mainR1csPath)) {
                 console.log('\nTo compile circuits, run: npm run build:circuit');
