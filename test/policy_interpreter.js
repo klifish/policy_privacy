@@ -41,13 +41,13 @@ describe('Policy Interpreter Tests', function () {
         const stack = [];
         const N = requesterAttrs.length; // Number of requester attributes
         const M = externalPredicates.length; // Number of external predicates
-        
+
         for (let i = 0; i < policy.length; i++) {
             const token = policy[i];
-            
+
             // Skip zero padding
             if (token === 0 && i > 0) continue;
-            
+
             // Operands: 0 to N-1 are requester attributes, N to N+M-1 are external predicates
             if (token < N) {
                 // Requester attribute
@@ -60,7 +60,7 @@ describe('Policy Interpreter Tests', function () {
                 const expectedAND = N + M;      // 5
                 const expectedOR = N + M + 1;   // 6  
                 const expectedNOT = N + M + 2;  // 7
-                
+
                 if (token === expectedAND) {
                     // AND operation
                     if (stack.length < 2) return 0; // Stack underflow
@@ -81,7 +81,7 @@ describe('Policy Interpreter Tests', function () {
                 }
             }
         }
-        
+
         // Should have exactly one result on the stack
         return stack.length === 1 ? stack[0] : 0;
     }
@@ -96,13 +96,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 3,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 1 }); // Should evaluate to true
+            await circuit.assertOut(witness, { isValid: 1 }); // Should evaluate to true
             console.log('✅ Circuit test passed: AND policy evaluation');
         } else if (fs.existsSync(wasmPath)) {
             // Use snarkjs for circuit testing
@@ -127,13 +128,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 3,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 1 }); // Should evaluate to true
+            await circuit.assertOut(witness, { isValid: 1 }); // Should evaluate to true
             console.log('✅ Circuit test passed: OR policy evaluation');
         }
 
@@ -153,13 +155,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 2,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 1 }); // NOT 0 = 1
+            await circuit.assertOut(witness, { isValid: 1 }); // NOT 0 = 1
             console.log('✅ Circuit test passed: NOT policy evaluation');
         }
 
@@ -179,13 +182,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 6,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 1 }); // (0 AND 0) OR (NOT 0) = 0 OR 1 = 1
+            await circuit.assertOut(witness, { isValid: 1 }); // (0 AND 0) OR (NOT 0) = 0 OR 1 = 1
             console.log('✅ Circuit test passed: Complex policy evaluation');
         }
 
@@ -205,13 +209,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 3,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 1 }); // 1 AND 1 = 1
+            await circuit.assertOut(witness, { isValid: 1 }); // 1 AND 1 = 1
             console.log('✅ Circuit test passed: External predicate policy evaluation');
         }
 
@@ -230,13 +235,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 1,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 0 }); // Malformed = 0
+            await circuit.assertOut(witness, { isValid: 0 }); // Malformed = 0
             console.log('✅ Circuit test passed: Malformed policy handling');
         }
 
@@ -255,13 +261,14 @@ describe('Policy Interpreter Tests', function () {
         // Test with circuit if available
         if (circuit) {
             const witness = await circuit.calculateWitness({
-                policy: policy,
-                requesterAttrs: requesterAttrs,
-                externalPredicates: externalPredicates
+                postfixExpr: policy,
+                numOperations: 3,
+                requesterPolicy: requesterAttrs,
+                predicateValues: externalPredicates
             });
 
             await circuit.checkConstraints(witness);
-            await circuit.assertOut(witness, { out: 0 }); // 1 AND 0 = 0
+            await circuit.assertOut(witness, { isValid: 0 }); // 1 AND 0 = 0
             console.log('✅ Circuit test passed: Policy rejection when attributes do not match');
         }
 
