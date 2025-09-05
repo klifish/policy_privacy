@@ -73,14 +73,14 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
             console.log('📋 Step 1: Generating Powers of Tau ceremony files...');
 
             // Initialize Powers of Tau
-            console.log('  - Initializing Powers of Tau (bn128, 2^10 constraints)...');
-            await execSnarkjs(['powersoftau', 'new', 'bn128', '10', pot0Path]);
+            console.log('  - Initializing Powers of Tau (bn128, 2^16 constraints)...');
+            await execSnarkjs(['powersoftau', 'new', 'bn128', '16', pot0Path]);
             console.log('  ✅ Powers of Tau initialized');
 
             // Add beacon contribution (non-interactive)
             console.log('  - Adding beacon contribution (non-interactive)...');
             const beaconHash = '0000000000000000000000000000000000000000000000000000000000000000'; // Test beacon hash
-            await execSnarkjs(['powersoftau', 'beacon', pot0Path, pot1Path, beaconHash, '10']);
+            await execSnarkjs(['powersoftau', 'beacon', pot0Path, pot1Path, beaconHash, '16']);
             console.log('  ✅ Beacon contribution added');
 
             // Prepare Phase 2
@@ -89,8 +89,8 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
             console.log('  ✅ Phase 2 prepared');
 
             // Cleanup intermediate files
-            if (fs.existsSync(pot0Path)) fs.unlinkSync(pot0Path);
-            if (fs.existsSync(pot1Path)) fs.unlinkSync(pot1Path);
+            // if (fs.existsSync(pot0Path)) fs.unlinkSync(pot0Path);
+            // if (fs.existsSync(pot1Path)) fs.unlinkSync(pot1Path);
         } else {
             console.log('📋 Step 1: Powers of Tau files already exist, skipping...');
         }
@@ -106,7 +106,7 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         // Contribute to zkey using non-interactive beacon approach
         console.log('  - Contributing to zkey (non-interactive beacon)...');
         const zkeyBeaconHash = '0000000000000000000000000000000000000000000000000000000000000001'; // Test beacon hash for zkey
-        await execSnarkjs(['zkey', 'beacon', zkey0Path, zkeyPath, zkeyBeaconHash, '10']);
+        await execSnarkjs(['zkey', 'beacon', zkey0Path, zkeyPath, zkeyBeaconHash, '16']);
         console.log('  ✅ Final zkey created');
 
         // Export verification key
@@ -115,7 +115,7 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         console.log('  ✅ Verification key exported');
 
         // Cleanup intermediate zkey
-        if (fs.existsSync(zkey0Path)) fs.unlinkSync(zkey0Path);
+        // if (fs.existsSync(zkey0Path)) fs.unlinkSync(zkey0Path);
 
         console.log('🎉 Complete zk-SNARK setup finished successfully!');
         console.log('  - Powers of Tau: ' + path.basename(potFinalPath));
