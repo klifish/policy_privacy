@@ -2,8 +2,43 @@ const fs = require('fs');
 const snarkjs = require("snarkjs");
 const path = require('path');
 const { spawn } = require('child_process');
+const https = require('https');
 
 
+
+// Function to download file from URL
+function downloadFile(url, filePath) {
+    return new Promise((resolve, reject) => {
+        console.log(`  - Downloading: ${url}`);
+        const file = fs.createWriteStream(filePath);
+        
+        https.get(url, (response) => {
+            const totalSize = parseInt(response.headers['content-length'], 10);
+            let downloadedSize = 0;
+            
+            response.pipe(file);
+            
+            response.on('data', (chunk) => {
+                downloadedSize += chunk.length;
+                const progress = ((downloadedSize / totalSize) * 100).toFixed(1);
+                process.stdout.write(`\r    Progress: ${progress}% (${(downloadedSize / 1024 / 1024).toFixed(1)}MB/${(totalSize / 1024 / 1024).toFixed(1)}MB)`);
+            });
+            
+            file.on('finish', () => {
+                file.close();
+                console.log('\n  ✅ Download completed');
+                resolve();
+            });
+            
+            file.on('error', (err) => {
+                fs.unlink(filePath, () => {}); // Delete the file on error
+                reject(err);
+            });
+        }).on('error', (err) => {
+            reject(err);
+        });
+    });
+}
 
 // Utility function to execute snarkjs commands via child process
 function execSnarkjs(args, cwd = process.cwd()) {
@@ -68,31 +103,16 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         const potFinalPath = path.join(setupDir, "pot10_final.ptau");
         const zkey0Path = zkeyPath.replace('_final.zkey', '_0000.zkey');
 
-        // Step 1: Generate Powers of Tau if not exists
+        // Step 1: Download Powers of Tau if not exists
         if (!fs.existsSync(potFinalPath)) {
-            console.log('📋 Step 1: Generating Powers of Tau ceremony files...');
-
-            // Initialize Powers of Tau
-            console.log('  - Initializing Powers of Tau (bn128, 2^16 constraints)...');
-            await execSnarkjs(['powersoftau', 'new', 'bn128', '16', pot0Path]);
-            console.log('  ✅ Powers of Tau initialized');
-
-            // Add beacon contribution (non-interactive)
-            console.log('  - Adding beacon contribution (non-interactive)...');
-            const beaconHash = '0000000000000000000000000000000000000000000000000000000000000000'; // Test beacon hash
-            await execSnarkjs(['powersoftau', 'beacon', pot0Path, pot1Path, beaconHash, '16']);
-            console.log('  ✅ Beacon contribution added');
-
-            // Prepare Phase 2
-            console.log('  - Preparing Phase 2...');
-            await execSnarkjs(['powersoftau', 'prepare', 'phase2', pot1Path, potFinalPath]);
-            console.log('  ✅ Phase 2 prepared');
-
-            // Cleanup intermediate files
-            // if (fs.existsSync(pot0Path)) fs.unlinkSync(pot0Path);
-            // if (fs.existsSync(pot1Path)) fs.unlinkSync(pot1Path);
+            console.log('📋 Step 1: Downloading Powers of Tau trusted setup...');
+            
+            const powersOfTauUrl = 'https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_16.ptau';
+            await downloadFile(powersOfTauUrl, potFinalPath);
+            
+            console.log('  ✅ Powers of Tau trusted setup downloaded');
         } else {
-            console.log('📋 Step 1: Powers of Tau files already exist, skipping...');
+            console.log('📋 Step 1: Powers of Tau file already exists, skipping download...');
         }
 
         // Step 2: Generate circuit-specific keys
@@ -118,7 +138,7 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         // if (fs.existsSync(zkey0Path)) fs.unlinkSync(zkey0Path);
 
         console.log('🎉 Complete zk-SNARK setup finished successfully!');
-        console.log('  - Powers of Tau: ' + path.basename(potFinalPath));
+        console.log('  - Powers of Tau: ' + path.basename(potFinalPath) + ' (downloaded from trusted setup)');
         console.log('  - Proving key: ' + path.basename(zkeyPath));
         console.log('  - Verification key: ' + path.basename(vkeyPath));
 
@@ -129,4 +149,4 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
     }
 }
 
-module.exports = { execSnarkjs, setupZkSnarkKeys };
+module.exports = { execSnarkjs, setupZkSnarkKeys, downloadFile };
