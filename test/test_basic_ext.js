@@ -1,13 +1,13 @@
 const path = require('path');
 const wasm_tester = require('circom_tester').wasm;
+const assert = require('assert');
 
 describe('Basic EXT Circuit Test', function () {
     this.timeout(100000);
     let circuit;
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, 'test', 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
-        console.log('Extended circuit loaded successfully');
+        circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_postfix_policy_interpreter_extended.circom'));
     });
 
     it('should handle basic operations without EXT', async () => {
@@ -17,7 +17,7 @@ describe('Basic EXT Circuit Test', function () {
             numOperations: 3,
             requesterPolicy: [1, 0, 0],
             predicateValues: [1, 0],
-            
+
             // EXT operation inputs (not used but required)
             bindingRoot: 0,
             duoId: 0,
@@ -32,10 +32,6 @@ describe('Basic EXT Circuit Test', function () {
         };
 
         const witness = await circuit.calculateWitness(input, true);
-        const result = witness[1]; // isValid output
-        console.log('Result:', result);
-        
-        // Expected: A0(1) AND P0(1) = 1
-        assert.equal(result, '1');
+        await circuit.assertOut(witness, { isValid: 1 });
     });
 });

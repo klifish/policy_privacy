@@ -13,7 +13,6 @@ const path = require("path");
 const { expect } = require("chai");
 
 const ROOT = path.resolve(__dirname, "../..");
-// Use the JS compiler now that we converted the implementation to CommonJS
 const COMPILER_JS = path.join(ROOT, "compiler/duo_policy_compiler.js");
 const EXAMPLES_DIR = path.join(ROOT, "examples/diabetes_case");
 const IN_JSON = path.join(EXAMPLES_DIR, "policy.input.json");
@@ -41,14 +40,11 @@ describe("duo_policy_compiler", function () {
         cleanOutput();
         const cmd = `node ${COMPILER_JS} --in ${IN_JSON} --out ${OUT_JSON}`;
         const log = run(cmd);
-        console.log(log);
 
         expect(fs.existsSync(OUT_JSON)).to.equal(true);
         const out = JSON.parse(fs.readFileSync(OUT_JSON, "utf8"));
 
-        // Field sanity
-        // expect(out.policy_id).to.be.a("string");
-        // expect(out.dataset_id).to.be.a("string");
+        // Field sanity checks
         expect(out.N).to.be.a("number").and.satisfy(n => Number.isInteger(n) && n > 0);
         expect(out.tokens).to.be.an("array");
         expect(out.policy_commitment).to.match(/^0x[0-9a-fA-F]+$/);
@@ -117,7 +113,7 @@ describe("duo_policy_compiler", function () {
         };
         const tmpIn = path.join(EXAMPLES_DIR, "policy.simple.json");
         const tmpOut = path.join(EXAMPLES_DIR, "policy.simple.public.json");
-        
+
         fs.writeFileSync(tmpIn, JSON.stringify(simple, null, 2));
         const cmd = `node ${COMPILER_JS} --in ${tmpIn} --out ${tmpOut}`;
         const log = run(cmd);
@@ -139,7 +135,7 @@ describe("duo_policy_compiler", function () {
     it("[6] handles NOT operator correctly", () => {
         const notExpr = {
             policy_id: "pol_not",
-            dataset_id: "ds_not", 
+            dataset_id: "ds_not",
             atoms: [
                 { type: "EQ_HASH", params: { name: "test_atom", expected_hash: "0x456" } }
             ],
@@ -285,13 +281,13 @@ describe("duo_policy_compiler", function () {
     it("[11] fails gracefully on malformed JSON input", () => {
         const tmpIn = path.join(EXAMPLES_DIR, "policy.malformed.json");
         const tmpOut = path.join(EXAMPLES_DIR, "policy.malformed.public.json");
-        
+
         // Write invalid JSON
         fs.writeFileSync(tmpIn, "{ invalid json content");
-        
+
         const cmd = `node ${COMPILER_JS} --in ${tmpIn} --out ${tmpOut}`;
         const res = spawnSync(cmd, { shell: true, encoding: "utf8" });
-        
+
         expect(res.status).to.not.equal(0);
         expect((res.stderr || "") + (res.stdout || "")).to.match(/(Unexpected|JSON|parse)/i);
 
@@ -309,11 +305,11 @@ describe("duo_policy_compiler", function () {
         };
         const tmpIn = path.join(EXAMPLES_DIR, "policy.empty.json");
         const tmpOut = path.join(EXAMPLES_DIR, "policy.empty.public.json");
-        
+
         fs.writeFileSync(tmpIn, JSON.stringify(emptyAtoms, null, 2));
         const cmd = `node ${COMPILER_JS} --in ${tmpIn} --out ${tmpOut}`;
         const res = spawnSync(cmd, { shell: true, encoding: "utf8" });
-        
+
         expect(res.status).to.not.equal(0);
         expect((res.stderr || "") + (res.stdout || "")).to.match(/Unknown atom reference/);
 
@@ -379,7 +375,7 @@ describe("duo_policy_compiler", function () {
 
         expect(out.N).to.equal(3);
         expect(out.atom_catalog).to.have.lengthOf(3);
-        
+
         // Verify atom types are preserved
         expect(out.atom_catalog[0].type).to.equal("ONT_IN_SET");
         expect(out.atom_catalog[1].type).to.equal("TIME_WINDOW");
