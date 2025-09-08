@@ -2,7 +2,9 @@ pragma circom 2.0.0;
 
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";   // IsEqual, LessThan
+include "../../node_modules/circomlib/circuits/poseidon.circom";      // For hashing binding leaf
 include "../gadgets/multimux.circom";
+include "../gadgets/external_predicates.circom";
 
 /*
     PostfixPolicyInterpreter
@@ -16,7 +18,7 @@ include "../gadgets/multimux.circom";
       - N+M + 0 (code 0)  : AND (binary)
       - N+M + 1 (code 1)  : OR  (binary)
       - N+M + 2 (code 2)  : NOT (unary)
-      - N+M + 3 (code 3)  : reserved / unused
+      - N+M + 3 (code 3)  : EXT (extended operator for ICD_MEMBER_REQ)
 
     Inputs:
       postfixExpr[DEPTH]  : token array (only first numOperations meaningful)
@@ -38,7 +40,7 @@ include "../gadgets/multimux.circom";
       * Backward compatibility: when M=0, behaves identically to original implementation.
 */
 
-template PostfixPolicyInterpreter(N, M, DEPTH, K) {
+template PostfixPolicyInterpreter(N, M, DEPTH, K, MERKLE_LEVELS) {
     // ───────────── Derived sizes ─────────────
     var KP = 0;
     while ((1 << KP) < DEPTH) { KP++; }     // bits for stack pointer
@@ -52,11 +54,28 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     signal input numOperations;
     signal input requesterPolicy[N];
     signal input predicateValues[M];
+    
+    // EXT operator inputs for ICD_MEMBER_REQ functionality
+    signal input bindingRoot;                         // Merkle root for binding map (duo_id, icd_root, version, salt)
+    signal input duoId;                              // DUO clause identifier for current EXT operation  
+    signal input icdRoot;                            // ICD set Merkle root for current EXT operation
+    signal input bindingVersion;                     // Version for binding map
+    signal input bindingSalt;                        // Salt for binding map
+    signal input bindingPathElements[MERKLE_LEVELS]; // Merkle proof for binding verification
+    signal input bindingPathIndices[MERKLE_LEVELS];  // Merkle proof indices for binding verification
+    signal input icdCode;                           // ICD code being checked for membership
+    signal input icdPathElements[MERKLE_LEVELS];    // Merkle proof for ICD membership
+    signal input icdPathIndices[MERKLE_LEVELS];     // Merkle proof indices for ICD membership
+    
     signal output isValid;
 
     // ───────────── Global state ─────────────
     signal sp[DEPTH + 1];                   // stack height (sp[0] = 0)
     signal stackState[DEPTH + 1][DEPTH];    // stack snapshot after each step
+    
+    // Global dependency tracking for EXT operations
+    signal depsOK[DEPTH + 1];               // tracks if all dependencies are satisfied
+    signal extResult[DEPTH];                // result of EXT operations
 
     // Padded arrays for mux components
     signal operandPad[NMP2];
@@ -88,6 +107,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     // Operator arity flags
     signal isBinary[DEPTH];
     signal isUnary[DEPTH];
+    signal isExt[DEPTH];                    // EXT operator flag
 
     // Destination index expression & equality flags
     signal destIdx[DEPTH];
@@ -112,8 +132,19 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     signal tmpDestOpnd[DEPTH];
     signal tmpDestUnary[DEPTH];
     signal tmpDestBinary[DEPTH];
+    signal tmpDestExt[DEPTH];
 
-    // Reserved operator code (11b) detection
+    // EXT operation helper signals
+    signal bindingAndMembership[DEPTH];
+    signal extClause[DEPTH];
+    signal notTopB[DEPTH];
+    signal extOk[DEPTH];
+    signal extDependency[DEPTH];
+    signal notIsExt[DEPTH];
+    signal extTimesOk[DEPTH];              // isExt * extOk
+    signal notExtTimesExtOk[DEPTH];        // notIsExt * isExt * extOk
+
+    // Reserved operator code (11b) detection - now used for EXT
     signal tmpCode3Bits[DEPTH];   // MSB * LSB
     signal code3Flag[DEPTH];      // isOper * tmpCode3Bits
     signal _dummyZero[DEPTH];     // forced to 0 for constraint
@@ -134,9 +165,15 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     component cmpDepth2[DEPTH];
     component destBitsNC[DEPTH];
     component eqDestCmp[DEPTH][DEPTH];
+    
+    // EXT operation components
+    component bindingVerifier;              // Merkle proof verifier for binding map
+    component icdMembershipVerifier;        // Merkle proof verifier for ICD membership
+    component bindingLeafHasher;            // Hash (duo_id, icd_root, version, salt)
 
     // ───────────── Initialization ─────────────
     sp[0] <== 0;
+    depsOK[0] <== 1;  // Initialize dependency tracking as satisfied
     for (var j = 0; j < DEPTH; j++) {
         stackState[0][j] <== 0;
     }
@@ -157,6 +194,33 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     }
     for (var j = DEPTH; j < DP2; j++) {
         stackPad[0][j] <== 0;
+    }
+
+    // ───────────── EXT Operation Setup ─────────────
+    // Instantiate Merkle proof verifiers for EXT operations
+    bindingVerifier = MerkleProofVerifier(MERKLE_LEVELS);
+    icdMembershipVerifier = MerkleProofVerifier(MERKLE_LEVELS);
+    bindingLeafHasher = Poseidon(4);
+    
+    // Connect binding verifier inputs (computes binding leaf hash)
+    bindingLeafHasher.inputs[0] <== duoId;
+    bindingLeafHasher.inputs[1] <== icdRoot;
+    bindingLeafHasher.inputs[2] <== bindingVersion;
+    bindingLeafHasher.inputs[3] <== bindingSalt;
+    
+    bindingVerifier.leaf <== bindingLeafHasher.out;
+    bindingVerifier.root <== bindingRoot;
+    for (var j = 0; j < MERKLE_LEVELS; j++) {
+        bindingVerifier.pathElements[j] <== bindingPathElements[j];
+        bindingVerifier.pathIndices[j] <== bindingPathIndices[j];
+    }
+    
+    // Connect ICD membership verifier inputs
+    icdMembershipVerifier.leaf <== icdCode;
+    icdMembershipVerifier.root <== icdRoot;
+    for (var j = 0; j < MERKLE_LEVELS; j++) {
+        icdMembershipVerifier.pathElements[j] <== icdPathElements[j];
+        icdMembershipVerifier.pathIndices[j] <== icdPathIndices[j];
     }
 
     // ───────────── Main loop ─────────────
@@ -228,6 +292,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         // Arity detection:
         // code 0 or 1 => AND / OR (binary) (MSB=0)
         // code 2      => NOT (unary)         (binary 10)
+        // code 3      => EXT (special)       (binary 11)
         opMSB[i]    <== opBits[i].out[1];
         isBinary[i] <== isOper[i] * (1 - opMSB[i]);   // degree 2
         opLSB[i]    <== opBits[i].out[0];
@@ -235,14 +300,15 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         tmpUnary1[i] <== isOper[i] * opMSB[i];         // degree 2
         isUnary[i]   <== tmpUnary1[i] * notOpLSB[i];   // degree 2
 
-        // ----- Disallow reserved operator code 3 (bit pattern 11) -----
+        // ----- EXT operator detection (code 3, bit pattern 11) -----
         tmpCode3Bits[i] <== opBits[i].out[1] * opBits[i].out[0];   // degree 2
         code3Flag[i]    <== isOper[i] * tmpCode3Bits[i];           // degree 2
-        active[i] * code3Flag[i] === 0 ; // active step cannot have code 3
+        isExt[i] <== code3Flag[i];  // EXT operator when code = 3
 
-        // Binary needs depth >=2 ; Unary needs depth >=1
+        // Binary needs depth >=2 ; Unary needs depth >=1 ; EXT needs depth >=1
         isBinary[i] * (1 - have2[i]) === 0;
         isUnary[i]  * (1 - have1[i]) === 0;
+        isExt[i]    * (1 - have1[i]) === 0;
 
         // Stack top indices (masked to 0 when insufficient depth)
         // have1*(sp-1), have2*(sp-2)
@@ -266,16 +332,34 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         andRes[i]  <== bothTop[i];
         orRes[i]   <== topA[i] + topB[i] - bothTop[i];
         notRes[i]  <== 1 - topB[i];
+        
+        // EXT operation logic: ICD_MEMBER_REQ
+        // extResult[i] = topB[i] && bindingVerifier.isValid && icdMembershipVerifier.isValid
+        // Also compute ok = ¬topB[i] ∨ (bindingVerifier.isValid && icdMembershipVerifier.isValid)
+        bindingAndMembership[i] <== bindingVerifier.isValid * icdMembershipVerifier.isValid;
+        extClause[i] <== topB[i] * bindingAndMembership[i];  // clause = p && m
+        notTopB[i] <== 1 - topB[i];
+        extOk[i] <== notTopB[i] + bindingAndMembership[i] - notTopB[i] * bindingAndMembership[i]; // ¬p ∨ m
+        extResult[i] <== extClause[i];
 
-        // Select operator result (AND / OR / NOT / 0)
+        // Select operator result (AND / OR / NOT / EXT)
         valMux[i].in[0] <== andRes[i];
         valMux[i].in[1] <== orRes[i];
         valMux[i].in[2] <== notRes[i];
-        valMux[i].in[3] <== 0;
+        valMux[i].in[3] <== extResult[i];
         for (var b = 0; b < 2; b++) {
             valMux[i].sel[b] <== opBits[i].out[b];
         }
         calcVal[i] <== valMux[i].out;
+        
+        // Update depsOK register
+        // depsOK[i+1] = depsOK[i] && (¬isExt[i] ∨ extOk[i])
+        // Break down: extDependency = notIsExt + isExt * extOk - notIsExt * isExt * extOk
+        notIsExt[i] <== 1 - isExt[i];
+        extTimesOk[i] <== isExt[i] * extOk[i];
+        notExtTimesExtOk[i] <== notIsExt[i] * extTimesOk[i];
+        extDependency[i] <== notIsExt[i] + extTimesOk[i] - notExtTimesExtOk[i];
+        depsOK[i + 1] <== depsOK[i] * extDependency[i];
 
         // Unified write value
         // writeVal = isOperand? pushVal : calcVal
@@ -283,11 +367,12 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         writeVal[i] <== calcVal[i] + isOperand[i] * diffVal[i];
 
         // Destination index expression
-        // destIdx = (operand ? sp) + (unary ? sp-1) + (binary ? sp-2)
+        // destIdx = (operand ? sp) + (unary ? sp-1) + (binary ? sp-2) + (ext ? sp-1)
         tmpDestOpnd[i]  <== isOperand[i] * sp[i];
         tmpDestUnary[i] <== isUnary[i] * (sp[i] - 1);
         tmpDestBinary[i] <== isBinary[i] * (sp[i] - 2);
-        destIdx[i] <== tmpDestOpnd[i] + tmpDestUnary[i] + tmpDestBinary[i];
+        tmpDestExt[i]   <== isExt[i] * (sp[i] - 1);  // EXT overwrites top stack element
+        destIdx[i] <== tmpDestOpnd[i] + tmpDestUnary[i] + tmpDestBinary[i] + tmpDestExt[i];
 
         // Bits for equality (only used; not fed to another Num2Bits)
         destBitsNC[i].in <== destIdx[i];
@@ -306,7 +391,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
             stackState[i + 1][j] <== stackState[i][j] + writeFlag[i][j] * (writeVal[i] - stackState[i][j]);
         }
 
-        // Stack pointer delta: push +1, binary -1, unary 0
+        // Stack pointer delta: push +1, binary -1, unary 0, ext 0
         spDelta[i] <== isOperand[i] - isBinary[i];
         sp[i + 1] <== sp[i] + active[i] * spDelta[i];
 
@@ -317,10 +402,13 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     // Final stack depth must be exactly 1
     sp[DEPTH] === 1;
 
-    // Output (stack no longer mutates after last active step)
-    isValid <== stackState[DEPTH][0];
+    // Output: Final result combines RPN evaluation with all dependency checks
+    // isValid = RPN_result ∧ depsOK
+    signal rpnResult;
+    rpnResult <== stackState[DEPTH][0];
+    isValid <== rpnResult * depsOK[DEPTH];
 }
 
 // Example instantiation:
-//  N = 3 attributes, M = 2 predicates, DEPTH = 10 tokens, K = ⌈log2(3+2)⌉ = 3
-// component main { public [postfixExpr, numOperations] } = PostfixPolicyInterpreter(3, 2, 10, 3);
+//  N = 3 attributes, M = 2 predicates, DEPTH = 10 tokens, K = ⌈log2(3+2)⌉ = 3, MERKLE_LEVELS = 8
+// component main { public [postfixExpr, numOperations] } = PostfixPolicyInterpreter(3, 2, 10, 3, 8);
