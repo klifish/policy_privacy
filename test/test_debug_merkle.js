@@ -1,3 +1,21 @@
+/*
+ * Debug Merkle Proof Verification Test
+ * ====================================
+ * 
+ * This test validates the EXT operator implementation and investigates
+ * the MerkleProofVerifier component behavior.
+ * 
+ * IMPORTANT: Before running this test, ensure the circuit is properly compiled:
+ *   npm run build:circuit:compile:test:interpreter
+ * 
+ * Or manually:
+ *   mkdir -p build/circuits
+ *   npx circom2 test/circuits/test_postfix_policy_interpreter_extended.circom \
+ *     --r1cs --wasm --sym -o build/circuits -l node_modules
+ * 
+ * This ensures the test uses the correct circuit with EXT operator support.
+ */
+
 import fs from 'fs';
 import path from 'path';
 import * as circomlib from 'circomlibjs';
@@ -32,14 +50,40 @@ describe('Debug Merkle Proof Verification', function () {
         
         // Load circuit using the original approach
         const wasmPath = path.join(__dirname, '..', 'build', 'circuits', 'test_postfix_policy_interpreter_extended_js', 'test_postfix_policy_interpreter_extended.wasm');
+        const symPath = path.join(__dirname, '..', 'build', 'circuits', 'test_postfix_policy_interpreter_extended.sym');
         
         if (!fs.existsSync(wasmPath)) {
-            throw new Error(`WASM file not found at ${wasmPath}. Please run 'npm run build:circuit' first.`);
+            throw new Error(`WASM file not found at ${wasmPath}. Please run 'npm run build:circuit:compile:test:interpreter' first.`);
+        }
+        
+        if (!fs.existsSync(symPath)) {
+            throw new Error(`SYM file not found at ${symPath}. Please run 'npm run build:circuit:compile:test:interpreter' first.`);
+        }
+        
+        // Validate circuit compilation by checking symbol file
+        const symContent = fs.readFileSync(symPath, 'utf8');
+        console.log('Circuit validation:');
+        console.log('  WASM file size:', fs.statSync(wasmPath).size, 'bytes');
+        
+        // Check for expected signals in symbol file
+        const hasBindingRoot = symContent.includes('main.bindingRoot');
+        const hasDuoId = symContent.includes('main.duoId');
+        const hasIcdRoot = symContent.includes('main.icdRoot');
+        
+        console.log('  Expected signals found:');
+        console.log('    bindingRoot:', hasBindingRoot ? '✓' : '✗');
+        console.log('    duoId:', hasDuoId ? '✓' : '✗');
+        console.log('    icdRoot:', hasIcdRoot ? '✓' : '✗');
+        
+        if (!hasBindingRoot || !hasDuoId || !hasIcdRoot) {
+            throw new Error('Circuit missing expected EXT operator signals. Please rebuild with: npm run build:circuit:compile:test:interpreter');
         }
         
         // WitnessCalculatorBuilder already imported at the top
         const wasm = fs.readFileSync(wasmPath);
         wc = await WitnessCalculatorBuilder(wasm);
+        
+        console.log('  Circuit loaded successfully');
     });
 
     it('should work with basic attribute evaluation (no EXT)', async () => {
@@ -65,14 +109,31 @@ describe('Debug Merkle Proof Verification', function () {
             icdPathIndices: Array(8).fill(0)
         };
         
-        const witness = await wc.calculateWitness(basicInput, true);
-        const result = witness[1];
+        console.log('Input validation:');
+        console.log('  bindingRoot type:', typeof basicInput.bindingRoot);
+        console.log('  bindingRoot value:', basicInput.bindingRoot);
+        console.log('  bindingPathElements length:', basicInput.bindingPathElements.length);
+        console.log('  bindingPathIndices length:', basicInput.bindingPathIndices.length);
         
-        console.log('✓ Basic attribute test executed');
-        console.log('  Result:', result.toString());
-        console.log('  Expected: 1 (A0 = true should evaluate to true)');
-        
-        assert.strictEqual(result.toString(), '1', 'Basic attribute evaluation should work');
+        try {
+            const witness = await wc.calculateWitness(basicInput, true);
+            const result = witness[1];
+            
+            console.log('✓ Basic attribute test executed');
+            console.log('  Result:', result.toString());
+            console.log('  Expected: 1 (A0 = true should evaluate to true)');
+            
+            assert.strictEqual(result.toString(), '1', 'Basic attribute evaluation should work');
+        } catch (error) {
+            console.error('ERROR: Failed to calculate witness for basic test');
+            console.error('Error message:', error.message);
+            console.error('Input object keys:', Object.keys(basicInput));
+            console.error('Input values:');
+            for (const [key, value] of Object.entries(basicInput)) {
+                console.error(`  ${key}:`, Array.isArray(value) ? `[${value.length} elements]` : value);
+            }
+            throw error;
+        }
     });
 
     it('should demonstrate MerkleProofVerifier component issue', async () => {
@@ -146,26 +207,48 @@ describe('Debug Merkle Proof Verification', function () {
             icdPathIndices: Array(8).fill(0) // Left path
         };
         
-        const witness = await wc.calculateWitness(testInput, true);
-        const result = witness[1];
+        console.log('Input validation for EXT test:');
+        console.log('  bindingRoot type:', typeof testInput.bindingRoot);
+        console.log('  bindingRoot value:', testInput.bindingRoot);
+        console.log('  bindingPathElements type:', typeof testInput.bindingPathElements);
+        console.log('  bindingPathElements length:', testInput.bindingPathElements.length);
+        console.log('  All input keys:', Object.keys(testInput));
         
-        console.log('\n=== Test Results ===');
-        console.log('Circuit result:', result.toString());
-        console.log('Expected result: 1 (if MerkleProofVerifier worked correctly)');
-        console.log('');
-        console.log('FINDING: The MerkleProofVerifier component in external_predicates.circom');
-        console.log('appears to have an implementation bug. Manual verification of the Merkle');
-        console.log('proofs confirms they are correctly constructed, but the circuit component');
-        console.log('still returns isValid = 0.');
-        console.log('');
-        console.log('This affects the EXT operator which depends on MerkleProofVerifier for');
-        console.log('both binding verification and ICD membership verification.');
-        
-        // For now, we expect this to fail due to the component issue
-        // When the MerkleProofVerifier is fixed, this test should pass
-        assert.strictEqual(result.toString(), '0', 'Expected to fail due to MerkleProofVerifier component issue');
-        
-        console.log('✓ Test correctly identifies MerkleProofVerifier component issue');
+        try {
+            const witness = await wc.calculateWitness(testInput, true);
+            const result = witness[1];
+            
+            console.log('\n=== Test Results ===');
+            console.log('Circuit result:', result.toString());
+            console.log('Expected result: 1 (if MerkleProofVerifier worked correctly)');
+            console.log('');
+            console.log('FINDING: The MerkleProofVerifier component in external_predicates.circom');
+            console.log('appears to have an implementation bug. Manual verification of the Merkle');
+            console.log('proofs confirms they are correctly constructed, but the circuit component');
+            console.log('still returns isValid = 0.');
+            console.log('');
+            console.log('This affects the EXT operator which depends on MerkleProofVerifier for');
+            console.log('both binding verification and ICD membership verification.');
+            
+            // For now, we expect this to fail due to the component issue
+            // When the MerkleProofVerifier is fixed, this test should pass
+            assert.strictEqual(result.toString(), '0', 'Expected to fail due to MerkleProofVerifier component issue');
+            
+            console.log('✓ Test correctly identifies MerkleProofVerifier component issue');
+        } catch (error) {
+            console.error('ERROR: Failed to calculate witness for EXT test');
+            console.error('Error message:', error.message);
+            console.error('This might indicate a circuit compilation or input format issue.');
+            console.error('Input object details:');
+            for (const [key, value] of Object.entries(testInput)) {
+                if (Array.isArray(value)) {
+                    console.error(`  ${key}: [${value.length} elements] = [${value.slice(0, 3).join(', ')}${value.length > 3 ? '...' : ''}]`);
+                } else {
+                    console.error(`  ${key}: ${typeof value} = ${value}`);
+                }
+            }
+            throw error;
+        }
     });
 
     it('should reject invalid Merkle proofs', async () => {
@@ -221,13 +304,23 @@ describe('Debug Merkle Proof Verification', function () {
             icdPathIndices: Array(8).fill(0)
         };
         
-        const witness = await wc.calculateWitness(invalidInput, true);
-        const result = witness[1];
+        console.log('Input validation for invalid proof test:');
+        console.log('  bindingRoot type:', typeof invalidInput.bindingRoot);
+        console.log('  All input keys:', Object.keys(invalidInput));
         
-        console.log('✓ Invalid proof test executed');
-        console.log('  Result:', result.toString());
-        console.log('  Expected: 0 (should reject invalid proof)');
-        
-        assert.strictEqual(result.toString(), '0', 'Invalid Merkle proof should be rejected');
+        try {
+            const witness = await wc.calculateWitness(invalidInput, true);
+            const result = witness[1];
+            
+            console.log('✓ Invalid proof test executed');
+            console.log('  Result:', result.toString());
+            console.log('  Expected: 0 (should reject invalid proof)');
+            
+            assert.strictEqual(result.toString(), '0', 'Invalid Merkle proof should be rejected');
+        } catch (error) {
+            console.error('ERROR: Failed to calculate witness for invalid proof test');
+            console.error('Error message:', error.message);
+            throw error;
+        }
     });
 });
