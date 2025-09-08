@@ -72,10 +72,11 @@ function hashAtomSchema(poseidon, atoms) {
 const OP_AND = "AND";
 const OP_OR = "OR";
 const OP_NOT = "NOT";
+const OP_EXT = "EXT";  // New extended operator for ICD_MEMBER_REQ
 
 function tokenize(expr) {
-  // tokens: parentheses, AND/OR/NOT, #idx, identifiers (A_Z,0_9,_)
-  const re = /(\()|(\))|\bAND\b|\bOR\b|\bNOT\b|#[0-9]+|[A-Za-z_][A-Za-z0-9_]*|\s+/g;
+  // tokens: parentheses, AND/OR/NOT/EXT, #idx, identifiers (A_Z,0_9,_)
+  const re = /(\()|(\))|\bAND\b|\bOR\b|\bNOT\b|\bEXT\b|#[0-9]+|[A-Za-z_][A-Za-z0-9_]*|\s+/g;
   const out = [];
   const iter = expr.matchAll(re);
   for (const m of iter) {
@@ -87,9 +88,9 @@ function tokenize(expr) {
 }
 
 function infixToRPN(tokens) {
-  const prec = { [OP_NOT]: 3, [OP_AND]: 2, [OP_OR]: 1 };
-  const rightAssoc = { [OP_NOT]: true, [OP_AND]: false, [OP_OR]: false };
-  const isOp = (t) => t === OP_AND || t === OP_OR || t === OP_NOT;
+  const prec = { [OP_NOT]: 3, [OP_EXT]: 3, [OP_AND]: 2, [OP_OR]: 1 };
+  const rightAssoc = { [OP_NOT]: true, [OP_EXT]: true, [OP_AND]: false, [OP_OR]: false };
+  const isOp = (t) => t === OP_AND || t === OP_OR || t === OP_NOT || t === OP_EXT;
 
   const out = [];
   const st = [];
@@ -134,6 +135,7 @@ function rpnToNumericTokens(rpn, nameToIdx, N) {
     if (tok === OP_AND) return N + 0;
     if (tok === OP_OR) return N + 1;
     if (tok === OP_NOT) return N + 2;
+    if (tok === OP_EXT) return N + 3;  // EXT operator maps to code 3
     // if (tok.startsWith("#")) return parseInt(tok.slice(1), 10);
     const idx = nameToIdx[tok];
     if (idx === undefined) throw new Error(`Unknown atom reference: ${tok}`);

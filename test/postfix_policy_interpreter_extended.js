@@ -2,6 +2,22 @@ const path = require('path');
 const wasm_tester = require('circom_tester').wasm;
 const assert = require('assert');
 
+// Helper function to create default EXT inputs for tests
+function createDefaultExtInputs() {
+    return {
+        bindingRoot: 0,
+        duoId: 0,
+        icdRoot: 0,
+        bindingVersion: 0,
+        bindingSalt: 0,
+        bindingPathElements: Array(8).fill(0),
+        bindingPathIndices: Array(8).fill(0),
+        icdCode: 0,
+        icdPathElements: Array(8).fill(0),
+        icdPathIndices: Array(8).fill(0)
+    };
+}
+
 // Extended evaluation function that handles predicates
 function evalPostfixExtended(tokens, attrs, predicates, N, M) {
     /*
@@ -47,6 +63,12 @@ function evalPostfixExtended(tokens, attrs, predicates, N, M) {
                 if (st.length < 1) throw new Error("Unary op depth");
                 const a = st.pop();
                 st.push(1 - a);
+            } else if (op === 3) { // EXT (for testing, assume valid membership)
+                if (st.length < 1) throw new Error("EXT op depth");
+                const p = st.pop();
+                // For testing purposes, assume EXT always succeeds if clause is true
+                // In real implementation, this would depend on Merkle proofs
+                st.push(p);  // clause = p && membership (assuming membership = true for tests)
             } else {
                 throw new Error("Unsupported op code");
             }
@@ -59,15 +81,19 @@ function evalPostfixExtended(tokens, attrs, predicates, N, M) {
 }
 
 async function expectValid(circuit, input, expectedIsValid) {
-    const witness = await circuit.calculateWitness(input, true);
+    // Merge with default EXT inputs if not provided
+    const fullInput = { ...createDefaultExtInputs(), ...input };
+    const witness = await circuit.calculateWitness(fullInput, true);
     await circuit.checkConstraints(witness);
     await circuit.assertOut(witness, { isValid: expectedIsValid });
 }
 
 async function expectInvalid(circuit, input, reasonHint) {
+    // Merge with default EXT inputs if not provided
+    const fullInput = { ...createDefaultExtInputs(), ...input };
     let ok = false;
     try {
-        await circuit.calculateWitness(input, true);
+        await circuit.calculateWitness(fullInput, true);
     } catch (e) {
         ok = true;
         // console.log("Expected failure:", reasonHint, e.message);
