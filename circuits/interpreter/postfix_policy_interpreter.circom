@@ -143,6 +143,8 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K, MERKLE_LEVELS) {
     signal notIsExt[DEPTH];
     signal extTimesOk[DEPTH];              // isExt * extOk
     signal notExtTimesExtOk[DEPTH];        // notIsExt * isExt * extOk
+    signal activeExt[DEPTH];               // active * isExt
+    signal notActiveExt[DEPTH];            // 1 - activeExt
 
     // Reserved operator code (11b) detection - now used for EXT
     signal tmpCode3Bits[DEPTH];   // MSB * LSB
@@ -353,12 +355,13 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K, MERKLE_LEVELS) {
         calcVal[i] <== valMux[i].out;
         
         // Update depsOK register
-        // depsOK[i+1] = depsOK[i] && (¬isExt[i] ∨ extOk[i])
-        // Break down: extDependency = notIsExt + isExt * extOk - notIsExt * isExt * extOk
-        notIsExt[i] <== 1 - isExt[i];
-        extTimesOk[i] <== isExt[i] * extOk[i];
-        notExtTimesExtOk[i] <== notIsExt[i] * extTimesOk[i];
-        extDependency[i] <== notIsExt[i] + extTimesOk[i] - notExtTimesExtOk[i];
+        // depsOK[i+1] = depsOK[i] && (¬(active[i] && isExt[i]) ∨ extOk[i])
+        // Only check extOk when this step is active AND is an EXT operation
+        activeExt[i] <== active[i] * isExt[i];
+        notActiveExt[i] <== 1 - activeExt[i];
+        extTimesOk[i] <== activeExt[i] * extOk[i];
+        notExtTimesExtOk[i] <== notActiveExt[i] * extTimesOk[i];
+        extDependency[i] <== notActiveExt[i] + extTimesOk[i] - notExtTimesExtOk[i];
         depsOK[i + 1] <== depsOK[i] * extDependency[i];
 
         // Unified write value
