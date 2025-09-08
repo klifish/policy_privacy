@@ -1,7 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const circomlib = require('circomlibjs');
-const assert = require('assert');
+import fs from 'fs';
+import path from 'path';
+import * as circomlib from 'circomlibjs';
+import assert from 'assert';
+import { WitnessCalculatorBuilder } from 'circom_runtime';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('Debug Merkle Proof Verification', function () {
     this.timeout(100000);
@@ -32,7 +37,7 @@ describe('Debug Merkle Proof Verification', function () {
             throw new Error(`WASM file not found at ${wasmPath}. Please run 'npm run build:circuit' first.`);
         }
         
-        const WitnessCalculatorBuilder = require('circom_runtime').WitnessCalculatorBuilder;
+        // WitnessCalculatorBuilder already imported at the top
         const wasm = fs.readFileSync(wasmPath);
         wc = await WitnessCalculatorBuilder(wasm);
     });
