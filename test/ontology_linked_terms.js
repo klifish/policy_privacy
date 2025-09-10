@@ -15,7 +15,7 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
 
     try {
       // Load the ontology-linked terms test circuit
-      circuit = await wasm(path.join(__dirname, ".", "circuits/test_ontology_linked_terms.circom"));
+      circuit = await wasm(path.join(__dirname, "circuits", "test_ontology_linked_terms.circom"));
       console.log('✅ OntologyLinkedTermsVerifier circuit loaded successfully');
     } catch (error) {
       console.log('Circuits not available, testing functional ontology logic');
@@ -49,10 +49,20 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
 
     for (let level = 0; level < LEVELS; level++) {
       if (currentLevel.length === 1) {
-        // Pad remaining levels with zeros
-        pathElements[level] = 0n;
-        pathIndices[level] = 0;
-        continue;
+        // Tree is complete - for remaining levels, the circuit will hash with 0
+        // We need to continue the hash computation to match what the circuit does
+        for (let remainingLevel = level; remainingLevel < LEVELS; remainingLevel++) {
+          // Circuit will hash current value with 0 on the right (pathIndex = 0)
+          pathElements[remainingLevel] = 0n;
+          pathIndices[remainingLevel] = 0;
+          
+          // Compute what the circuit will compute: Hash(currentValue, 0)
+          if (remainingLevel < LEVELS - 1 || currentLevel.length === 1) {
+            const hashResult = poseidonHash([currentLevel[0], 0n]);
+            currentLevel[0] = poseidonHash.F.toObject(hashResult);
+          }
+        }
+        break;
       }
 
       const nextLevel = [];
@@ -124,10 +134,43 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
       console.log('  - Policy ID:', input.policyId.toString());
       console.log('  - Epoch:', input.epoch.toString());
       console.log('  - Merkle Root:', merkleData.root.toString());
+      console.log('  - Tree leaves:', validIcdCodes.map(x => x.toString()));
+      console.log('  - Target index in tree:', validIcdCodes.indexOf(icdCode));
+      console.log('  - Path elements:', merkleData.pathElements.map(x => x.toString()));
+      console.log('  - Path indices:', merkleData.pathIndices);
 
       // Generate witness and verify
       const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
+      
+      // Debug: Manually verify the Merkle proof to match circuit logic exactly
+      let currentHash = icdCode;
+      console.log('  - Manual Merkle verification (matching circuit):');
+      console.log('    Starting with leaf:', currentHash.toString());
+      
+      for (let i = 0; i < 8; i++) { // Always process 8 levels like the circuit
+        const pathElement = merkleData.pathElements[i];
+        const pathIndex = merkleData.pathIndices[i];
+        
+        let left, right;
+        if (pathIndex === 0) {
+          // Current hash is left, path element is right
+          left = currentHash;
+          right = pathElement;
+        } else {
+          // Current hash is right, path element is left
+          left = pathElement;
+          right = currentHash;
+        }
+        
+        const hashResult = poseidonHash([left, right]);
+        currentHash = poseidonHash.F.toObject(hashResult);
+        console.log(`    Level ${i}: Hash(${left}, ${right}) = ${currentHash}`);
+      }
+      
+      console.log('    Final computed root:', currentHash.toString());
+      console.log('    Expected root:', merkleData.root.toString());
+      console.log('    Roots match:', currentHash === merkleData.root);
 
       // Check output - should be 1 (valid)
       await circuit.assertOut(witness, { pred: 1 });
