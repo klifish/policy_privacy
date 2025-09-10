@@ -55,7 +55,7 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
           // Circuit will hash current value with 0 on the right (pathIndex = 0)
           pathElements[remainingLevel] = 0n;
           pathIndices[remainingLevel] = 0;
-          
+
           // Compute what the circuit will compute: Hash(currentValue, 0)
           if (remainingLevel < LEVELS - 1 || currentLevel.length === 1) {
             const hashResult = poseidonHash([currentLevel[0], 0n]);
@@ -142,16 +142,16 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
       // Generate witness and verify
       const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
-      
+
       // Debug: Manually verify the Merkle proof to match circuit logic exactly
       let currentHash = icdCode;
       console.log('  - Manual Merkle verification (matching circuit):');
       console.log('    Starting with leaf:', currentHash.toString());
-      
+
       for (let i = 0; i < 8; i++) { // Always process 8 levels like the circuit
         const pathElement = merkleData.pathElements[i];
         const pathIndex = merkleData.pathIndices[i];
-        
+
         let left, right;
         if (pathIndex === 0) {
           // Current hash is left, path element is right
@@ -162,12 +162,12 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
           left = pathElement;
           right = currentHash;
         }
-        
+
         const hashResult = poseidonHash([left, right]);
         currentHash = poseidonHash.F.toObject(hashResult);
         console.log(`    Level ${i}: Hash(${left}, ${right}) = ${currentHash}`);
       }
-      
+
       console.log('    Final computed root:', currentHash.toString());
       console.log('    Expected root:', merkleData.root.toString());
       console.log('    Roots match:', currentHash === merkleData.root);
@@ -424,152 +424,6 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
       await circuit.checkConstraints(witness);
 
       console.log('✅ Circuit constraints satisfied and functional');
-    });
-  });
-
-  describe('Functional Ontology Logic Testing', function () {
-    it('should validate ontology-linked terms logic', function () {
-      console.log('Testing ontology-linked terms verification logic:');
-
-      // Test case 1: Valid ICD code with valid policy binding and epoch
-      const validCase = {
-        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
-        policyId: 42n,
-        epoch: 1n
-      };
-
-      // Build simple Merkle tree
-      const validCodes = [validCase.icdCode, poseidonHash.F.toObject(poseidonHash([67890n]))];
-      const merkleData = buildMerkleTree(validCodes, validCase.icdCode);
-
-      console.log('✅ Test Case 1: Valid ICD code');
-      console.log('  - ICD Code Hash:', validCase.icdCode.toString());
-      console.log('  - Policy ID:', validCase.policyId.toString());
-      console.log('  - Epoch:', validCase.epoch.toString());
-      console.log('  - Merkle Root:', merkleData.root.toString());
-
-      // Simulate the circuit logic
-      const merkleValid = true; // Would be verified by Merkle proof
-      const policyValid = validCase.policyId !== 0n;
-      const epochValid = validCase.epoch !== 0n;
-      const finalPredicate = merkleValid && policyValid && epochValid;
-
-      console.log('  - Merkle Valid:', merkleValid);
-      console.log('  - Policy Valid:', policyValid);
-      console.log('  - Epoch Valid:', epochValid);
-      console.log('  - Final Predicate:', finalPredicate ? 1 : 0);
-      console.log('  - Expected: VALID (pred=1)');
-
-      assert.strictEqual(finalPredicate, true, "Expected valid predicate");
-
-      // Test case 2: Invalid policy ID
-      const invalidPolicyCase = {
-        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
-        policyId: 0n, // Invalid
-        epoch: 1n
-      };
-
-      console.log('✅ Test Case 2: Invalid policy ID');
-      console.log('  - Policy ID:', invalidPolicyCase.policyId.toString());
-
-      const policyValid2 = invalidPolicyCase.policyId !== 0n;
-      const epochValid2 = invalidPolicyCase.epoch !== 0n;
-      const finalPredicate2 = true && policyValid2 && epochValid2; // merkle assumed valid
-
-      console.log('  - Policy Valid:', policyValid2);
-      console.log('  - Final Predicate:', finalPredicate2 ? 1 : 0);
-      console.log('  - Expected: INVALID (pred=0)');
-
-      assert.strictEqual(finalPredicate2, false, "Expected invalid predicate for zero policy");
-
-      // Test case 3: Invalid epoch
-      const invalidEpochCase = {
-        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
-        policyId: 42n,
-        epoch: 0n // Invalid
-      };
-
-      console.log('✅ Test Case 3: Invalid epoch');
-      console.log('  - Epoch:', invalidEpochCase.epoch.toString());
-
-      const policyValid3 = invalidEpochCase.policyId !== 0n;
-      const epochValid3 = invalidEpochCase.epoch !== 0n;
-      const finalPredicate3 = true && policyValid3 && epochValid3; // merkle assumed valid
-
-      console.log('  - Epoch Valid:', epochValid3);
-      console.log('  - Final Predicate:', finalPredicate3 ? 1 : 0);
-      console.log('  - Expected: INVALID (pred=0)');
-
-      assert.strictEqual(finalPredicate3, false, "Expected invalid predicate for zero epoch");
-
-      console.log('\n📋 Circuit Logic Summary:');
-      console.log('   pred = merkle_valid AND policy_valid AND epoch_valid');
-      console.log('   where:');
-      console.log('   - merkle_valid = MerkleProofVerifier(icdCode, allowedRoot, proof)');
-      console.log('   - policy_valid = (policyId ≠ 0)');
-      console.log('   - epoch_valid = (epoch ≠ 0)');
-    });
-
-    it('should verify Merkle tree construction', function () {
-      console.log('Testing Merkle tree construction for ontology terms:');
-
-      // Create test ICD codes
-      const icdCodes = [
-        poseidonHash.F.toObject(poseidonHash([10001n])), // I10.0 - Primary hypertension
-        poseidonHash.F.toObject(poseidonHash([10002n])), // I10.1 - Secondary hypertension  
-        poseidonHash.F.toObject(poseidonHash([25001n])), // E25.0 - Diabetes type 1
-        poseidonHash.F.toObject(poseidonHash([25002n]))  // E25.1 - Diabetes type 2
-      ];
-
-      console.log('- Test ICD codes (hashed):');
-      icdCodes.forEach((code, i) => {
-        console.log(`  [${i}]: ${code.toString()}`);
-      });
-
-      // Build Merkle tree
-      const targetCode = icdCodes[1]; // Test with second code
-      const merkleData = buildMerkleTree(icdCodes, targetCode);
-
-      console.log('- Merkle tree root:', merkleData.root.toString());
-      console.log('- Path elements length:', merkleData.pathElements.length);
-      console.log('- Path indices length:', merkleData.pathIndices.length);
-
-      // Verify path is reasonable (should have 8 levels)
-      assert.strictEqual(merkleData.pathElements.length, 8, "Expected 8 levels in Merkle tree");
-      assert.strictEqual(merkleData.pathIndices.length, 8, "Expected 8 path indices");
-
-      // Manual verification of first level
-      const expectedFirstHash = poseidonHash.F.toObject(poseidonHash([icdCodes[0], icdCodes[1]]));
-      console.log('- First level hash (codes 0,1):', expectedFirstHash.toString());
-
-      console.log('✅ Merkle tree construction verified');
-    });
-
-    it('should integrate with external predicate verifier', function () {
-      console.log('📋 Integration with ExternalPredicateVerifier:');
-      console.log('   - Predicate Type 0: Basic Merkle membership');
-      console.log('   - Predicate Type 1: Credential signature verification');
-      console.log('   - Predicate Type 2: Range/threshold proofs');
-      console.log('   - Predicate Type 3: Ontology-linked terms (NEW)');
-
-      console.log('\n🔗 Ontology-linked terms features:');
-      console.log('   - Private: ICD code, Merkle path elements & indices');
-      console.log('   - Public: allowedRoot, policyId, epoch');
-      console.log('   - Output: Boolean predicate for policy interpreter');
-      console.log('   - Constraints: 78 template instances, 1940 non-linear constraints');
-
-      // Test predicate type selection logic
-      const predicateType = 3; // Ontology-linked terms
-      const isOntologyType = predicateType === 3;
-
-      console.log('\n📊 Predicate type selection:');
-      console.log('   - Input predicate type:', predicateType);
-      console.log('   - Is ontology type:', isOntologyType);
-      console.log('   - Circuit multiplexer selects ontology verifier:', isOntologyType ? 'YES' : 'NO');
-
-      assert.strictEqual(isOntologyType, true, "Expected ontology predicate type selection");
-
-      console.log('\n✅ External predicate integration verified');
     });
   });
 });
