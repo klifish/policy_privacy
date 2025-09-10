@@ -53,6 +53,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Range proof inputs (for predicates that use them)
     signal input rangeValues[M];
     
+    // Ontology-linked terms inputs (for predicates that use them)
+    signal input ontologyCodes[M];                   // ICD codes or other ontology terms
+    
     // Commitment randomizer r
     signal input randomizer;
     
@@ -68,6 +71,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input credPublicKeys[M];                     // Institution public keys (simplified)
     signal input rangeMin[M];                           // Range minimum values
     signal input rangeMax[M];                           // Range maximum values
+    signal input ontologyPolicyIds[M];                  // Policy IDs for ontology-linked terms
+    signal input ontologyEpochs[M];                     // Policy epochs for ontology-linked terms
     
     // Policy evaluation inputs (made public for verification)
     signal input numOperations;                         // Actual policy length
@@ -137,6 +142,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].rangeValue <== rangeValues[i];
         predicateVerifiers[i].rangeMin <== rangeMin[i];
         predicateVerifiers[i].rangeMax <== rangeMax[i];
+        
+        // Connect ontology-linked terms inputs
+        predicateVerifiers[i].ontologyCode <== ontologyCodes[i];
+        predicateVerifiers[i].ontologyPolicyId <== ontologyPolicyIds[i];
+        predicateVerifiers[i].ontologyEpoch <== ontologyEpochs[i];
         
         // Extract verified predicate value
         predicateValues[i] <== predicateVerifiers[i].isValid;
