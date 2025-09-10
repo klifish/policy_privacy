@@ -166,6 +166,7 @@ describe("Policy Privacy Main Circuit Test", function () {
             credMessages: credMessages.map(x => x.toString()),
             credSignatures: credSignatures.map(x => x.toString()),
             rangeValues: rangeValues,
+            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
             randomizer: randomizer.toString(),
 
             // Public inputs  
@@ -174,6 +175,8 @@ describe("Policy Privacy Main Circuit Test", function () {
             credPublicKeys: credPublicKeys.map(x => x.toString()),
             rangeMin: rangeMin,
             rangeMax: rangeMax,
+            ontologyPolicyIds: [0, 0], // Policy IDs for ontology-linked terms (unused)
+            ontologyEpochs: [0, 0], // Policy epochs for ontology-linked terms (unused)
             numOperations: numOperations
         };
 
@@ -250,6 +253,7 @@ describe("Policy Privacy Main Circuit Test", function () {
             credMessages: ['0', '0'],
             credSignatures: ['0', '0'],
             rangeValues: [0, 0],
+            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
             randomizer: randomizer.toString(), // Correct randomizer in witness
 
             // Public inputs - with WRONG commitment
@@ -258,6 +262,8 @@ describe("Policy Privacy Main Circuit Test", function () {
             credPublicKeys: ['0', '0'],
             rangeMin: [0, 0],
             rangeMax: [100, 100],
+            ontologyPolicyIds: [0, 0], // Policy IDs for ontology-linked terms (unused)
+            ontologyEpochs: [0, 0], // Policy epochs for ontology-linked terms (unused)
             numOperations: numOperations
         };
 
@@ -324,12 +330,15 @@ describe("Policy Privacy Main Circuit Test", function () {
             credMessages: ['0', '0'],
             credSignatures: ['0', '0'],
             rangeValues: [0, 0],
+            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
             randomizer: randomizer.toString(),
             policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
             merkleRoots: ['0', '0'],
             credPublicKeys: ['0', '0'],
             rangeMin: [0, 0],
             rangeMax: [100, 100],
+            ontologyPolicyIds: [0, 0], // Policy IDs for ontology-linked terms (unused)
+            ontologyEpochs: [0, 0], // Policy epochs for ontology-linked terms (unused)
             numOperations: 5
         };
 
