@@ -14,11 +14,12 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
 
     try {
       // Load the ontology-linked terms test circuit
-      circuit = await wasm("test/circuits/test_ontology_linked_terms.circom");
+      circuit = await wasm("build/circuits/test_ontology_linked_terms");
       console.log('✅ OntologyLinkedTermsVerifier circuit loaded successfully');
     } catch (error) {
       console.log('Circuits not available, testing functional ontology logic');
       console.log('To test with circuits, run "npm run build:circuit" first');
+      console.log('Error:', error.message);
     }
   });
 
@@ -28,9 +29,22 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
     const pathElements = new Array(LEVELS).fill(0n);
     const pathIndices = new Array(LEVELS).fill(0);
     
-    // For simplicity, create a binary tree where our target is at index 0
+    // Find the index of the target leaf in the leaves array
+    let targetIndex = -1;
+    for (let i = 0; i < leaves.length; i++) {
+      if (leaves[i] === targetLeaf) {
+        targetIndex = i;
+        break;
+      }
+    }
+    
+    if (targetIndex === -1) {
+      throw new Error('Target leaf not found in leaves array');
+    }
+    
+    // Create a binary tree
     let currentLevel = [...leaves];
-    let targetIndex = 0;
+    let currentTargetIndex = targetIndex;
     
     for (let level = 0; level < LEVELS; level++) {
       if (currentLevel.length === 1) {
@@ -48,9 +62,9 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
         const hash = poseidonHash.F.toObject(hashResult);
         nextLevel.push(hash);
         
-        // If this is where our target is, record the sibling
-        if (i === targetIndex || i + 1 === targetIndex) {
-          if (targetIndex % 2 === 0) {
+        // If this pair contains our target, record the sibling
+        if (i === (currentTargetIndex & ~1)) { // Round down to even number
+          if (currentTargetIndex % 2 === 0) {
             // Target is left child, sibling is right
             pathElements[level] = right;
             pathIndices[level] = 0;
@@ -59,7 +73,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
             pathElements[level] = left;
             pathIndices[level] = 1;
           }
-          targetIndex = Math.floor(targetIndex / 2);
+          currentTargetIndex = Math.floor(currentTargetIndex / 2);
         }
       }
       currentLevel = nextLevel;
