@@ -187,15 +187,13 @@ template OntologyLinkedTermsVerifier(LEVELS) {
     // For Phase 1, we'll use a simple constraint that policyId must be non-zero
     // In production, this would involve more sophisticated policy binding
     policyBinding = IsEqual();
-    policyBinding.in[0] <== 0;  // Compare with 0
-    policyBinding.in[1] <== 0;  // Always 0
+    policyBinding.in[0] <== policyId;  // Compare policyId with 0
+    policyBinding.in[1] <== 0;         // Always 0
     signal policyValid;
     policyValid <== 1 - policyBinding.out;  // policyValid = 1 if policyId != 0
     
-    // Force policyId to be considered (prevent unused signal warnings)
-    // This creates a constraint that policyId * 0 = 0, which is always true
-    signal policyConstraint;
-    policyConstraint <== policyId * 0;
+    // Note: policyId is now properly used in the constraint above
+    // No need for additional policyConstraint
     
     // 3. Epoch validation: Ensure epoch is valid (non-zero for now)
     // In production, this would check against allowed epoch ranges

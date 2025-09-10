@@ -44,7 +44,8 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       for (let i = 0; i < currentLevel.length; i += 2) {
         const left = currentLevel[i] || 0n;
         const right = currentLevel[i + 1] || 0n;
-        const hash = poseidonHash([left, right]);
+        const hashResult = poseidonHash([left, right]);
+        const hash = poseidonHash.F.toObject(hashResult);
         nextLevel.push(hash);
         
         // If this is where our target is, record the sibling
@@ -79,12 +80,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       }
       
       // Create test data
-      const icdCode = poseidonHash([12345n]); // Hash the ICD code
+      const icdCodeResult = poseidonHash([12345n]);
+      const icdCode = poseidonHash.F.toObject(icdCodeResult); // Convert to BigInt
       const validIcdCodes = [
         icdCode,
-        poseidonHash([67890n]),
-        poseidonHash([11111n]),
-        poseidonHash([22222n])
+        poseidonHash.F.toObject(poseidonHash([67890n])),
+        poseidonHash.F.toObject(poseidonHash([11111n])),
+        poseidonHash.F.toObject(poseidonHash([22222n]))
       ];
       
       // Build Merkle tree with valid ICD codes
@@ -109,14 +111,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('  - Merkle Root:', merkleData.root.toString());
       
       // Generate witness and verify
-      const witness = await circuit.calculateWitness(input);
+      const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
       
       // Check output - should be 1 (valid)
-      const output = await circuit.getOutput(witness, ["pred"]);
-      assert.strictEqual(output.pred.toString(), "1", "Expected valid predicate (1)");
+      await circuit.assertOut(witness, { pred: 1 });
       
-      console.log('✅ Circuit output: pred =', output.pred.toString());
+      console.log('✅ Circuit output: pred = 1');
     });
 
     it('should reject invalid ICD code', async function() {
@@ -126,14 +127,14 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       }
       
       // Create test data with different ICD code not in tree
-      const validIcdCode = poseidonHash([12345n]);
-      const invalidIcdCode = poseidonHash([99999n]); // Not in tree
+      const validIcdCode = poseidonHash.F.toObject(poseidonHash([12345n]));
+      const invalidIcdCode = poseidonHash.F.toObject(poseidonHash([99999n])); // Not in tree
       
       const validIcdCodes = [
         validIcdCode,
-        poseidonHash([67890n]),
-        poseidonHash([11111n]),
-        poseidonHash([22222n])
+        poseidonHash.F.toObject(poseidonHash([67890n])),
+        poseidonHash.F.toObject(poseidonHash([11111n])),
+        poseidonHash.F.toObject(poseidonHash([22222n]))
       ];
       
       // Build Merkle tree with valid codes
@@ -156,14 +157,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('  - Tree contains valid code:', validIcdCode.toString());
       
       // Generate witness and verify
-      const witness = await circuit.calculateWitness(input);
+      const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
       
       // Check output - should be 0 (invalid)
-      const output = await circuit.getOutput(witness, ["pred"]);
-      assert.strictEqual(output.pred.toString(), "0", "Expected invalid predicate (0)");
+      await circuit.assertOut(witness, { pred: 0 });
       
-      console.log('✅ Circuit output: pred =', output.pred.toString());
+      console.log('✅ Circuit output: pred = 0');
     });
 
     it('should reject zero policy ID', async function() {
@@ -173,8 +173,8 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       }
       
       // Create valid test data but with invalid policy ID
-      const icdCode = poseidonHash([12345n]);
-      const validIcdCodes = [icdCode, poseidonHash([67890n])];
+      const icdCode = poseidonHash.F.toObject(poseidonHash([12345n]));
+      const validIcdCodes = [icdCode, poseidonHash.F.toObject(poseidonHash([67890n]))];
       const merkleData = buildMerkleTree(validIcdCodes, icdCode);
       
       const input = {
@@ -193,14 +193,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('  - Policy ID:', input.policyId.toString());
       
       // Generate witness and verify
-      const witness = await circuit.calculateWitness(input);
+      const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
       
       // Check output - should be 0 (invalid due to policy constraint)
-      const output = await circuit.getOutput(witness, ["pred"]);
-      assert.strictEqual(output.pred.toString(), "0", "Expected invalid predicate (0)");
+      await circuit.assertOut(witness, { pred: 0 });
       
-      console.log('✅ Circuit output: pred =', output.pred.toString());
+      console.log('✅ Circuit output: pred = 0');
     });
 
     it('should reject zero epoch', async function() {
@@ -210,8 +209,8 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       }
       
       // Create valid test data but with invalid epoch
-      const icdCode = poseidonHash([12345n]);
-      const validIcdCodes = [icdCode, poseidonHash([67890n])];
+      const icdCode = poseidonHash.F.toObject(poseidonHash([12345n]));
+      const validIcdCodes = [icdCode, poseidonHash.F.toObject(poseidonHash([67890n]))];
       const merkleData = buildMerkleTree(validIcdCodes, icdCode);
       
       const input = {
@@ -230,14 +229,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('  - Epoch:', input.epoch.toString());
       
       // Generate witness and verify
-      const witness = await circuit.calculateWitness(input);
+      const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
       
       // Check output - should be 0 (invalid due to epoch constraint)
-      const output = await circuit.getOutput(witness, ["pred"]);
-      assert.strictEqual(output.pred.toString(), "0", "Expected invalid predicate (0)");
+      await circuit.assertOut(witness, { pred: 0 });
       
-      console.log('✅ Circuit output: pred =', output.pred.toString());
+      console.log('✅ Circuit output: pred = 0');
     });
   });
 
@@ -250,7 +248,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       
       console.log('📋 Testing Circuit Logic: pred = merkle_valid AND policy_valid AND epoch_valid');
       
-      const icdCode = poseidonHash([12345n]);
+      const icdCode = poseidonHash.F.toObject(poseidonHash([12345n]));
       const validIcdCodes = [icdCode];
       const merkleData = buildMerkleTree(validIcdCodes, icdCode);
       
@@ -264,33 +262,29 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
         epoch: 1n
       };
       
-      let witness = await circuit.calculateWitness(input);
-      let output = await circuit.getOutput(witness, ["pred"]);
-      console.log('  All valid (merkle=1, policy=1, epoch=1):', output.pred.toString());
-      assert.strictEqual(output.pred.toString(), "1");
+      let witness = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness, { pred: 1 });
+      console.log('  All valid (merkle=1, policy=1, epoch=1): 1');
       
       // Test invalid merkle (wrong code)
-      input.icdCode = poseidonHash([99999n]);
-      witness = await circuit.calculateWitness(input);
-      output = await circuit.getOutput(witness, ["pred"]);
-      console.log('  Invalid merkle (merkle=0, policy=1, epoch=1):', output.pred.toString());
-      assert.strictEqual(output.pred.toString(), "0");
+      input.icdCode = poseidonHash.F.toObject(poseidonHash([99999n]));
+      witness = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness, { pred: 0 });
+      console.log('  Invalid merkle (merkle=0, policy=1, epoch=1): 0');
       
       // Reset merkle, test invalid policy
       input.icdCode = icdCode;
       input.policyId = 0n;
-      witness = await circuit.calculateWitness(input);
-      output = await circuit.getOutput(witness, ["pred"]);
-      console.log('  Invalid policy (merkle=1, policy=0, epoch=1):', output.pred.toString());
-      assert.strictEqual(output.pred.toString(), "0");
+      witness = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness, { pred: 0 });
+      console.log('  Invalid policy (merkle=1, policy=0, epoch=1): 0');
       
       // Reset policy, test invalid epoch
       input.policyId = 42n;
       input.epoch = 0n;
-      witness = await circuit.calculateWitness(input);
-      output = await circuit.getOutput(witness, ["pred"]);
-      console.log('  Invalid epoch (merkle=1, policy=1, epoch=0):', output.pred.toString());
-      assert.strictEqual(output.pred.toString(), "0");
+      witness = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness, { pred: 0 });
+      console.log('  Invalid epoch (merkle=1, policy=1, epoch=0): 0');
       
       console.log('✅ Triple validation logic confirmed');
     });
@@ -304,7 +298,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('📋 Testing with various Merkle tree configurations');
       
       // Test with single item tree (depth 1 effectively)
-      const singleCode = poseidonHash([42424n]);
+      const singleCode = poseidonHash.F.toObject(poseidonHash([42424n]));
       const singleTree = buildMerkleTree([singleCode], singleCode);
       
       const input = {
@@ -316,15 +310,14 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
         epoch: 1n
       };
       
-      const witness = await circuit.calculateWitness(input);
-      const output = await circuit.getOutput(witness, ["pred"]);
-      console.log('  Single item tree result:', output.pred.toString());
-      assert.strictEqual(output.pred.toString(), "1");
+      const witness = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness, { pred: 1 });
+      console.log('  Single item tree result: 1');
       
       // Test with larger tree (8 items)
       const codes = [];
       for (let i = 0; i < 8; i++) {
-        codes.push(poseidonHash([1000n + BigInt(i)]));
+        codes.push(poseidonHash.F.toObject(poseidonHash([1000n + BigInt(i)])));
       }
       const largeTree = buildMerkleTree(codes, codes[3]); // Test with middle item
       
@@ -333,10 +326,9 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       input.merklePathIndices = largeTree.pathIndices;
       input.allowedRoot = largeTree.root;
       
-      const witness2 = await circuit.calculateWitness(input);
-      const output2 = await circuit.getOutput(witness2, ["pred"]);
-      console.log('  Large tree (8 items) result:', output2.pred.toString());
-      assert.strictEqual(output2.pred.toString(), "1");
+      const witness2 = await circuit.calculateWitness(input, true);
+      await circuit.assertOut(witness2, { pred: 1 });
+      console.log('  Large tree (8 items) result: 1');
       
       console.log('✅ Merkle tree depth variations work correctly');
     });
@@ -358,7 +350,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       console.log('  - Logic gates: Merkle verification + 2 equality checks + 2 AND gates');
       
       // Simple test to ensure the circuit is working
-      const icdCode = poseidonHash([1n]);
+      const icdCode = poseidonHash.F.toObject(poseidonHash([1n]));
       const tree = buildMerkleTree([icdCode], icdCode);
       
       const input = {
@@ -370,7 +362,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
         epoch: 1n
       };
       
-      const witness = await circuit.calculateWitness(input);
+      const witness = await circuit.calculateWitness(input, true);
       await circuit.checkConstraints(witness);
       
       console.log('✅ Circuit constraints satisfied and functional');
@@ -383,13 +375,13 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       
       // Test case 1: Valid ICD code with valid policy binding and epoch
       const validCase = {
-        icdCode: poseidonHash([12345n]),
+        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
         policyId: 42n,
         epoch: 1n
       };
       
       // Build simple Merkle tree
-      const validCodes = [validCase.icdCode, poseidonHash([67890n])];
+      const validCodes = [validCase.icdCode, poseidonHash.F.toObject(poseidonHash([67890n]))];
       const merkleData = buildMerkleTree(validCodes, validCase.icdCode);
       
       console.log('✅ Test Case 1: Valid ICD code');
@@ -414,7 +406,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       
       // Test case 2: Invalid policy ID
       const invalidPolicyCase = {
-        icdCode: poseidonHash([12345n]),
+        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
         policyId: 0n, // Invalid
         epoch: 1n
       };
@@ -434,7 +426,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       
       // Test case 3: Invalid epoch
       const invalidEpochCase = {
-        icdCode: poseidonHash([12345n]),
+        icdCode: poseidonHash.F.toObject(poseidonHash([12345n])),
         policyId: 42n,
         epoch: 0n // Invalid
       };
@@ -465,10 +457,10 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       
       // Create test ICD codes
       const icdCodes = [
-        poseidonHash([10001n]), // I10.0 - Primary hypertension
-        poseidonHash([10002n]), // I10.1 - Secondary hypertension  
-        poseidonHash([25001n]), // E25.0 - Diabetes type 1
-        poseidonHash([25002n])  // E25.1 - Diabetes type 2
+        poseidonHash.F.toObject(poseidonHash([10001n])), // I10.0 - Primary hypertension
+        poseidonHash.F.toObject(poseidonHash([10002n])), // I10.1 - Secondary hypertension  
+        poseidonHash.F.toObject(poseidonHash([25001n])), // E25.0 - Diabetes type 1
+        poseidonHash.F.toObject(poseidonHash([25002n]))  // E25.1 - Diabetes type 2
       ];
       
       console.log('- Test ICD codes (hashed):');
@@ -489,7 +481,7 @@ describe('Ontology-Linked Terms Verifier Tests', function() {
       assert.strictEqual(merkleData.pathIndices.length, 8, "Expected 8 path indices");
       
       // Manual verification of first level
-      const expectedFirstHash = poseidonHash([icdCodes[0], icdCodes[1]]);
+      const expectedFirstHash = poseidonHash.F.toObject(poseidonHash([icdCodes[0], icdCodes[1]]));
       console.log('- First level hash (codes 0,1):', expectedFirstHash.toString());
       
       console.log('✅ Merkle tree construction verified');
