@@ -53,6 +53,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Range proof inputs (for predicates that use them)
     signal input rangeValues[M];
     
+    // Ontology-linked terms inputs (for predicates that use them)
+    signal input ontologyCodes[M];                   // ICD codes or other ontology terms
+    
     // Commitment randomizer r
     signal input randomizer;
     
@@ -68,6 +71,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input credPublicKeys[M];                     // Institution public keys (simplified)
     signal input rangeMin[M];                           // Range minimum values
     signal input rangeMax[M];                           // Range maximum values
+    signal input ontologyPolicyIds[M];                  // Policy IDs for ontology-linked terms
+    signal input ontologyEpochs[M];                     // Policy epochs for ontology-linked terms
     
     // Policy evaluation inputs (made public for verification)
     signal input numOperations;                         // Actual policy length
@@ -138,6 +143,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].rangeMin <== rangeMin[i];
         predicateVerifiers[i].rangeMax <== rangeMax[i];
         
+        // Connect ontology-linked terms inputs
+        predicateVerifiers[i].ontologyCode <== ontologyCodes[i];
+        predicateVerifiers[i].ontologyPolicyId <== ontologyPolicyIds[i];
+        predicateVerifiers[i].ontologyEpoch <== ontologyEpochs[i];
+        
         // Extract verified predicate value
         predicateValues[i] <== predicateVerifiers[i].isValid;
     }
@@ -181,6 +191,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Internal signals for type checking
     signal tmp1[M];
     signal tmp2[M];
+    signal tmp3[M];
     
     // ═══════════════════════════════════════════════════════════════════════
     // ADDITIONAL CONSTRAINTS
@@ -191,12 +202,13 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         requesterAttrs[i] * (requesterAttrs[i] - 1) === 0;
     }
     
-    // Ensure predicate types are valid (0, 1, or 2) using quadratic constraints
+    // Ensure predicate types are valid (0, 1, 2, or 3) using quadratic constraints
     for (var i = 0; i < M; i++) {
-        // Check that predicateTypes[i] * (predicateTypes[i] - 1) * (predicateTypes[i] - 2) == 0
+        // Check that predicateTypes[i] * (predicateTypes[i] - 1) * (predicateTypes[i] - 2) * (predicateTypes[i] - 3) == 0
         // Break down into quadratic operations
         tmp1[i] <== predicateTypes[i] * (predicateTypes[i] - 1);
         tmp2[i] <== tmp1[i] * (predicateTypes[i] - 2);
-        tmp2[i] === 0;
+        tmp3[i] <== tmp2[i] * (predicateTypes[i] - 3);
+        tmp3[i] === 0;
     }
 }
