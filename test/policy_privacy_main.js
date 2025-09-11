@@ -120,6 +120,13 @@ describe("Policy Privacy Main Circuit Test", function () {
         // where: 0=attr0, 1=attr1, 5=AND(N+M+0)
         const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0];
 
+        // Requester attributes: attr0=1, attr1=1, attr2=0
+        // Expected: 1 AND 1 = 1 (authorized)
+        const requesterAttrs = [1, 1, 0];
+
+        // External predicate setup 
+        const predicateTypes = [0, 0]; // Both predicates disabled for this test (policy doesn't use external predicates)
+
         // Commitment randomizer  
         const randomizer = 12345n;
 
@@ -127,12 +134,7 @@ describe("Policy Privacy Main Circuit Test", function () {
         const policyHash = poseidonHash(policy);
         const policyCommitment = poseidonHash([policyHash, randomizer]);
 
-        // Requester attributes: attr0=1, attr1=1, attr2=0
-        // Expected: 1 AND 1 = 1 (authorized)
-        const requesterAttrs = [1, 1, 0];
 
-        // External predicate setup 
-        const predicateTypes = [0, 0]; // Both predicates disabled for this test (policy doesn't use external predicates)
 
         // Mock external predicate inputs (unused when predicateTypes=[0,0] meaning both disabled)
         const merkleLeaves = [0, 0];
@@ -308,15 +310,18 @@ describe("Policy Privacy Main Circuit Test", function () {
         // Test with a policy that should fail: attr0 AND attr1 AND attr2  
         // where attr2=0, so the result should be 0
         const policy = [0, 1, 5, 2, 5, 0, 0, 0, 0, 0]; // [attr0, attr1, AND, attr2, AND]
+
+        // Requester attributes where attr2=0 makes the policy fail
+        const requesterAttrs = [1, 1, 0]; // attr0=1, attr1=1, attr2=0
+        // Expected: 1 AND 1 AND 0 = 0 (not authorized)
+
         const randomizer = 54321n;
 
         // Correct commitment
         const policyHash = poseidonHash(policy);
         const policyCommitment = poseidonHash([policyHash, randomizer]);
 
-        // Requester attributes where attr2=0 makes the policy fail
-        const requesterAttrs = [1, 1, 0]; // attr0=1, attr1=1, attr2=0
-        // Expected: 1 AND 1 AND 0 = 0 (not authorized)
+
 
         console.log('Testing policy evaluation with failing case:');
         console.log('- Policy: attr0 AND attr1 AND attr2');
@@ -615,7 +620,7 @@ describe("Policy Privacy Main Circuit Test", function () {
 
             // Hash all leaves
             let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
-            
+
             // Build tree level by level, always processing all levels up to depth
             for (let level = 0; level < depth; level++) {
                 const nextLevel = [];
@@ -626,7 +631,7 @@ describe("Policy Privacy Main Circuit Test", function () {
                 }
                 currentLevel = nextLevel;
             }
-            
+
             return currentLevel[0]; // Root
         }
 
@@ -646,17 +651,17 @@ describe("Policy Privacy Main Circuit Test", function () {
             // Build Merkle proof
             const pathElements = [];
             const pathIndices = [];
-            
+
             let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
             let currentIndex = targetIndex;
-            
+
             for (let level = 0; level < depth; level++) {
                 const siblingIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1;
                 const sibling = siblingIndex < currentLevel.length ? currentLevel[siblingIndex] : poseidonHash([0n]);
-                
+
                 pathElements.push(poseidonHash.F.toObject(sibling));
                 pathIndices.push(currentIndex % 2);
-                
+
                 // Build next level
                 const nextLevel = [];
                 for (let i = 0; i < currentLevel.length; i += 2) {
@@ -667,7 +672,7 @@ describe("Policy Privacy Main Circuit Test", function () {
                 currentLevel = nextLevel;
                 currentIndex = Math.floor(currentIndex / 2);
             }
-            
+
             return { pathElements, pathIndices };
         }
 
@@ -921,7 +926,7 @@ describe("Policy Privacy Main Circuit Test", function () {
             }
 
             let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
-            
+
             for (let level = 0; level < depth; level++) {
                 const nextLevel = [];
                 for (let i = 0; i < currentLevel.length; i += 2) {
@@ -931,7 +936,7 @@ describe("Policy Privacy Main Circuit Test", function () {
                 }
                 currentLevel = nextLevel;
             }
-            
+
             return currentLevel[0];
         }
 
@@ -948,17 +953,17 @@ describe("Policy Privacy Main Circuit Test", function () {
 
             const pathElements = [];
             const pathIndices = [];
-            
+
             let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
             let currentIndex = targetIndex;
-            
+
             for (let level = 0; level < depth; level++) {
                 const siblingIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1;
                 const sibling = siblingIndex < currentLevel.length ? currentLevel[siblingIndex] : poseidonHash([0n]);
-                
+
                 pathElements.push(poseidonHash.F.toObject(sibling));
                 pathIndices.push(currentIndex % 2);
-                
+
                 const nextLevel = [];
                 for (let i = 0; i < currentLevel.length; i += 2) {
                     const left = currentLevel[i];
@@ -968,7 +973,7 @@ describe("Policy Privacy Main Circuit Test", function () {
                 currentLevel = nextLevel;
                 currentIndex = Math.floor(currentIndex / 2);
             }
-            
+
             return { pathElements, pathIndices };
         }
 
