@@ -131,8 +131,8 @@ describe("Policy Privacy Main Circuit Test", function () {
         // Expected: 1 AND 1 = 1 (authorized)
         const requesterAttrs = [1, 1, 0];
 
-        // External predicate setup - both predicates set to pass (type 0 disabled)
-        const predicateTypes = [0, 0]; // Both disabled for this test 
+        // External predicate setup 
+        const predicateTypes = [0, 0]; // Both disabled for this test because policy doesn't use them
 
         // Mock external predicate inputs (unused when type=0)
         const merkleLeaves = [0, 0];
@@ -166,7 +166,7 @@ describe("Policy Privacy Main Circuit Test", function () {
             credMessages: credMessages.map(x => x.toString()),
             credSignatures: credSignatures.map(x => x.toString()),
             rangeValues: rangeValues,
-            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
+            ontologyCodes: [0, 0], // Ontology codes
             randomizer: randomizer.toString(),
 
             // Public inputs  
@@ -256,7 +256,7 @@ describe("Policy Privacy Main Circuit Test", function () {
             credMessages: ['0', '0'],
             credSignatures: ['0', '0'],
             rangeValues: [0, 0],
-            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
+            ontologyCodes: [0, 0], // Ontology codes
             randomizer: randomizer.toString(), // Correct randomizer in witness
 
             // Public inputs - with WRONG commitment
