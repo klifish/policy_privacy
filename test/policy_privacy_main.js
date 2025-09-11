@@ -222,6 +222,9 @@ describe("Policy Privacy Main Circuit Test", function () {
             this.skip();
         }
 
+        // RPN encoding: [0, 1, 5, 0, 0, 0, 0, 0, 0, 0]  
+        // Translation: attr0 attr1 AND
+        // where: 0=attr0, 1=attr1, 5=AND(N+M+0)
         // Same policy and inputs as valid test
         const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0];
         const randomizer = 12345n;
@@ -379,6 +382,12 @@ describe("Policy Privacy Main Circuit Test", function () {
         // where: 0=attr0, 3=predicate0, 4=predicate1, 5=AND(N+M+0)
         const policy = [0, 3, 5, 4, 5, 0, 0, 0, 0, 0];
 
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - both using range proofs (type 2)
+        const predicateTypes = [2, 2]; // Both are range proofs
+
         // Commitment randomizer  
         const randomizer = 98765n;
 
@@ -386,11 +395,7 @@ describe("Policy Privacy Main Circuit Test", function () {
         const policyHash = poseidonHash(policy);
         const policyCommitment = poseidonHash([policyHash, randomizer]);
 
-        // Requester attributes: attr0=1 (should pass)
-        const requesterAttrs = [1, 0, 0];
 
-        // External predicate setup - both using range proofs (type 2)
-        const predicateTypes = [2, 2]; // Both are range proofs
 
         // Range predicate inputs
         const rangeValues = [25, 75]; // Values to check: 25 and 75
