@@ -362,4 +362,212 @@ describe("Policy Privacy Main Circuit Test", function () {
             console.log('✅ Circuit correctly evaluated failing policy (output = 0)');
         }
     });
+
+    it("Should handle policy with predicateValues (range verification)", async function () {
+        if (!fs.existsSync(wasmPath)) {
+            console.log('⚠️  Test skipped - circuit WASM file not found');
+            this.skip();
+        }
+
+        // Test parameters: N=3, M=2, DEPTH=10
+        const N = 3;  // requester attributes  
+        const M = 2;  // external predicates
+
+        // Policy: attr0 AND predicate0 (range check) AND predicate1 (another range check)
+        // RPN encoding: [0, 3, 5, 4, 5, 0, 0, 0, 0, 0]  
+        // Translation: attr0 predicate0 AND predicate1 AND
+        // where: 0=attr0, 3=predicate0, 4=predicate1, 5=AND(N+M+0)
+        const policy = [0, 3, 5, 4, 5, 0, 0, 0, 0, 0];
+
+        // Commitment randomizer  
+        const randomizer = 98765n;
+
+        // Compute policy commitment
+        const policyHash = poseidonHash(policy);
+        const policyCommitment = poseidonHash([policyHash, randomizer]);
+
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - both using range proofs (type 2)
+        const predicateTypes = [2, 2]; // Both are range proofs
+
+        // Range predicate inputs
+        const rangeValues = [25, 75]; // Values to check: 25 and 75
+        const rangeMin = [10, 50];    // Min values: 10 and 50  
+        const rangeMax = [100, 100];  // Max values: 100 and 100
+        // Expected: 10 <= 25 <= 100 = 1, 50 <= 75 <= 100 = 1
+
+        // Mock unused predicate inputs
+        const merkleLeaves = [0, 0];
+        const merklePathElements = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merklePathIndices = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merkleRoots = [0, 0];
+        const credMessages = [0, 0];
+        const credSignatures = [0, 0];
+        const credPublicKeys = [0, 0];
+        const ontologyCodes = [0, 0];
+        const ontologyPolicyIds = [0, 0];
+        const ontologyEpochs = [0, 0];
+
+        // Number of operations in policy: 5 tokens used
+        const numOperations = 5;
+
+        console.log('Testing policy with predicateValues (range verification):');
+        console.log('- Policy (RPN):', policy.slice(0, 5));
+        console.log('- Policy logic: attr0 AND range_check(25, 10-100) AND range_check(75, 50-100)');
+        console.log('- Requester attrs:', requesterAttrs);
+        console.log('- Range values:', rangeValues);
+        console.log('- Range bounds: [10-100], [50-100]');
+        console.log('- Expected result: AUTHORIZED (1 AND 1 AND 1 = 1)');
+
+        // Prepare circuit inputs
+        const input = {
+            // Private inputs
+            policy: policy,
+            requesterAttrs: requesterAttrs,
+            predicateTypes: predicateTypes,
+            merkleLeaves: merkleLeaves.map(x => x.toString()),
+            merklePathElements: merklePathElements.map(row => row.map(x => x.toString())),
+            merklePathIndices: merklePathIndices,
+            credMessages: credMessages.map(x => x.toString()),
+            credSignatures: credSignatures.map(x => x.toString()),
+            rangeValues: rangeValues,
+            ontologyCodes: ontologyCodes,
+            randomizer: randomizer.toString(),
+
+            // Public inputs  
+            policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
+            merkleRoots: merkleRoots.map(x => x.toString()),
+            credPublicKeys: credPublicKeys.map(x => x.toString()),
+            rangeMin: rangeMin,
+            rangeMax: rangeMax,
+            ontologyPolicyIds: ontologyPolicyIds,
+            ontologyEpochs: ontologyEpochs,
+            numOperations: numOperations
+        };
+
+        console.log('- Policy commitment:', input.policyCommitment.slice(-8) + '...');
+
+        if (fs.existsSync(zkeyPath) && fs.existsSync(vkeyPath)) {
+            // Full zk-SNARK proof generation and verification
+            console.log('Generating zk-SNARK proof with predicateValues...');
+            const startTime = Date.now();
+
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+                input,
+                wasmPath,
+                zkeyPath
+            );
+
+            const proofTime = Date.now() - startTime;
+            console.log(`✅ Proof generated in ${proofTime}ms`);
+
+            // Verify the proof
+            const vKey = JSON.parse(fs.readFileSync(vkeyPath));
+            const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+            assert(verified, 'zk-SNARK proof should be valid');
+
+            // Check circuit output (isAuthorized) - should be 1
+            assert.equal(publicSignals[0], '1', 'Circuit should output isAuthorized = 1 for valid predicate case');
+            console.log('✅ Circuit correctly authorized request with predicateValues');
+
+        } else {
+            // Use snarkjs command line for witness calculation
+            await testWithSnarkjs(input, 1, 'Valid policy with predicateValues (range proofs)');
+            console.log('✅ Circuit correctly processed policy with predicateValues');
+        }
+    });
+
+    it("Should reject policy when predicateValues fail verification", async function () {
+        if (!fs.existsSync(wasmPath)) {
+            console.log('⚠️  Test skipped - circuit WASM file not found');
+            this.skip();
+        }
+
+        // Same policy as previous test but with failing range values
+        const policy = [0, 3, 5, 4, 5, 0, 0, 0, 0, 0]; // attr0 AND predicate0 AND predicate1
+        const randomizer = 11111n;
+
+        // Compute policy commitment
+        const policyHash = poseidonHash(policy);
+        const policyCommitment = poseidonHash([policyHash, randomizer]);
+
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - both using range proofs (type 2)
+        const predicateTypes = [2, 2];
+
+        // Range predicate inputs - FAILING case
+        const rangeValues = [5, 45];    // Values to check: 5 and 45
+        const rangeMin = [10, 50];      // Min values: 10 and 50  
+        const rangeMax = [100, 100];    // Max values: 100 and 100
+        // Expected: 10 <= 5 <= 100 = 0 (FAIL), 50 <= 45 <= 100 = 0 (FAIL)
+
+        // Mock unused inputs
+        const merkleLeaves = [0, 0];
+        const merklePathElements = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merklePathIndices = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merkleRoots = [0, 0];
+        const credMessages = [0, 0];
+        const credSignatures = [0, 0];
+        const credPublicKeys = [0, 0];
+        const ontologyCodes = [0, 0];
+        const ontologyPolicyIds = [0, 0];
+        const ontologyEpochs = [0, 0];
+        const numOperations = 5;
+
+        console.log('Testing policy with failing predicateValues:');
+        console.log('- Policy logic: attr0 AND range_check(5, 10-100) AND range_check(45, 50-100)');
+        console.log('- Requester attrs:', requesterAttrs);
+        console.log('- Range values:', rangeValues, '(both should fail)');
+        console.log('- Range bounds: [10-100], [50-100]');
+        console.log('- Expected result: NOT AUTHORIZED (1 AND 0 AND 0 = 0)');
+
+        const input = {
+            // Private inputs
+            policy: policy,
+            requesterAttrs: requesterAttrs,
+            predicateTypes: predicateTypes,
+            merkleLeaves: merkleLeaves.map(x => x.toString()),
+            merklePathElements: merklePathElements.map(row => row.map(x => x.toString())),
+            merklePathIndices: merklePathIndices,
+            credMessages: credMessages.map(x => x.toString()),
+            credSignatures: credSignatures.map(x => x.toString()),
+            rangeValues: rangeValues,
+            ontologyCodes: ontologyCodes,
+            randomizer: randomizer.toString(),
+
+            // Public inputs  
+            policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
+            merkleRoots: merkleRoots.map(x => x.toString()),
+            credPublicKeys: credPublicKeys.map(x => x.toString()),
+            rangeMin: rangeMin,
+            rangeMax: rangeMax,
+            ontologyPolicyIds: ontologyPolicyIds,
+            ontologyEpochs: ontologyEpochs,
+            numOperations: numOperations
+        };
+
+        if (fs.existsSync(zkeyPath) && fs.existsSync(vkeyPath)) {
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+                input,
+                wasmPath,
+                zkeyPath
+            );
+
+            const vKey = JSON.parse(fs.readFileSync(vkeyPath));
+            const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+            assert(verified, 'Proof should be cryptographically valid');
+
+            // Circuit should output 0 due to failed predicate verification
+            assert.equal(publicSignals[0], '0', 'Circuit should output 0 for failing predicateValues');
+            console.log('✅ Circuit correctly rejected due to failing predicateValues');
+
+        } else {
+            await testWithSnarkjs(input, 0, 'Policy with failing predicateValues');
+            console.log('✅ Circuit correctly rejected failing predicateValues');
+        }
+    });
 });
