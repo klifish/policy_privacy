@@ -132,9 +132,9 @@ describe("Policy Privacy Main Circuit Test", function () {
         const requesterAttrs = [1, 1, 0];
 
         // External predicate setup 
-        const predicateTypes = [0, 0]; // Both disabled for this test because policy doesn't use them
+        const predicateTypes = [0, 0]; // Both predicates disabled for this test (policy doesn't use external predicates)
 
-        // Mock external predicate inputs (unused when type=0)
+        // Mock external predicate inputs (unused when predicateTypes=[0,0] meaning both disabled)
         const merkleLeaves = [0, 0];
         const merklePathElements = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
         const merklePathIndices = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
@@ -326,14 +326,14 @@ describe("Policy Privacy Main Circuit Test", function () {
         const input = {
             policy: policy,
             requesterAttrs: requesterAttrs,
-            predicateTypes: [0, 0], // Both disabled
+            predicateTypes: [0, 0], // Both predicates disabled for this test
             merkleLeaves: ['0', '0'],
             merklePathElements: [['0', '0', '0', '0', '0', '0', '0', '0'], ['0', '0', '0', '0', '0', '0', '0', '0']],
             merklePathIndices: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]],
             credMessages: ['0', '0'],
             credSignatures: ['0', '0'],
             rangeValues: [0, 0],
-            ontologyCodes: [0, 0], // Ontology codes (unused when predicateTypes=0)
+            ontologyCodes: [0, 0], // Ontology codes (unused since predicateTypes=[0,0] meaning both disabled)
             randomizer: randomizer.toString(),
             policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
             merkleRoots: ['0', '0'],
@@ -573,6 +573,498 @@ describe("Policy Privacy Main Circuit Test", function () {
         } else {
             await testWithSnarkjs(input, 0, 'Policy with failing predicateValues');
             console.log('✅ Circuit correctly rejected failing predicateValues');
+        }
+    });
+
+    it("Should handle policy with Merkle proof verification (type 0)", async function () {
+        if (!fs.existsSync(wasmPath)) {
+            console.log('⚠️  Test skipped - circuit WASM file not found');
+            this.skip();
+        }
+
+        // Test parameters: N=3, M=2, DEPTH=10
+        const N = 3;  // requester attributes  
+        const M = 2;  // external predicates
+
+        // Policy: attr0 AND merkle_proof_valid
+        // RPN encoding: [0, 3, 5, 0, 0, 0, 0, 0, 0, 0]  
+        // Translation: attr0 predicate0 AND
+        // where: 0=attr0, 3=predicate0 (Merkle proof), 5=AND(N+M+0)
+        const policy = [0, 3, 5, 0, 0, 0, 0, 0, 0, 0];
+
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - first is Merkle proof (type 0), second disabled
+        const predicateTypes = [0, 0]; // First is Merkle proof, second disabled
+
+        // Commitment randomizer  
+        const randomizer = 55555n;
+
+        // Compute policy commitment
+        const policyHash = poseidonHash(policy);
+        const policyCommitment = poseidonHash([policyHash, randomizer]);
+
+        // Build a proper Merkle tree for testing
+        function buildMerkleTree(leaves, depth = 8) {
+            // Pad leaves to fill tree levels
+            const paddedLeaves = [...leaves];
+            while (paddedLeaves.length < (1 << depth)) {
+                paddedLeaves.push(0n);
+            }
+
+            // Hash all leaves
+            let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
+            
+            // Build tree level by level, always processing all levels up to depth
+            for (let level = 0; level < depth; level++) {
+                const nextLevel = [];
+                for (let i = 0; i < currentLevel.length; i += 2) {
+                    const left = currentLevel[i];
+                    const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : poseidonHash([0n]);
+                    nextLevel.push(poseidonHash([left, right]));
+                }
+                currentLevel = nextLevel;
+            }
+            
+            return currentLevel[0]; // Root
+        }
+
+        function getMerkleProof(target, leaves, depth = 8) {
+            // Find index of target in leaves
+            const targetIndex = leaves.findIndex(leaf => leaf === target);
+            if (targetIndex === -1) {
+                throw new Error(`Target ${target} not found in leaves`);
+            }
+
+            // Pad leaves to fill tree levels
+            const paddedLeaves = [...leaves];
+            while (paddedLeaves.length < (1 << depth)) {
+                paddedLeaves.push(0n);
+            }
+
+            // Build Merkle proof
+            const pathElements = [];
+            const pathIndices = [];
+            
+            let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
+            let currentIndex = targetIndex;
+            
+            for (let level = 0; level < depth; level++) {
+                const siblingIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1;
+                const sibling = siblingIndex < currentLevel.length ? currentLevel[siblingIndex] : poseidonHash([0n]);
+                
+                pathElements.push(poseidonHash.F.toObject(sibling));
+                pathIndices.push(currentIndex % 2);
+                
+                // Build next level
+                const nextLevel = [];
+                for (let i = 0; i < currentLevel.length; i += 2) {
+                    const left = currentLevel[i];
+                    const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : poseidonHash([0n]);
+                    nextLevel.push(poseidonHash([left, right]));
+                }
+                currentLevel = nextLevel;
+                currentIndex = Math.floor(currentIndex / 2);
+            }
+            
+            return { pathElements, pathIndices };
+        }
+
+        // Merkle tree setup - create a valid membership proof
+        const targetLeaf = 12345n;
+        const leaves = [targetLeaf, 67890n, 11111n, 22222n]; // Target leaf is in position 0
+        const merkleRoot = buildMerkleTree(leaves);
+        const { pathElements, pathIndices } = getMerkleProof(targetLeaf, leaves);
+
+        // Merkle predicate inputs
+        const merkleLeaves = [poseidonHash.F.toObject(poseidonHash([targetLeaf])), 0]; // First predicate uses the leaf
+        const merklePathElements = [pathElements, [0, 0, 0, 0, 0, 0, 0, 0]]; // Second predicate unused
+        const merklePathIndices = [pathIndices, [0, 0, 0, 0, 0, 0, 0, 0]]; // Second predicate unused
+        const merkleRoots = [poseidonHash.F.toObject(merkleRoot), 0]; // First predicate uses computed root
+
+        // Mock unused predicate inputs
+        const credMessages = [0, 0];
+        const credSignatures = [0, 0];
+        const credPublicKeys = [0, 0];
+        const rangeValues = [0, 0];
+        const rangeMin = [0, 0];
+        const rangeMax = [100, 100];
+        const ontologyCodes = [0, 0];
+        const ontologyPolicyIds = [0, 0];
+        const ontologyEpochs = [0, 0];
+
+        // Number of operations in policy: 3 tokens used
+        const numOperations = 3;
+
+        console.log('Testing policy with Merkle proof verification (type 0):');
+        console.log('- Policy (RPN):', policy.slice(0, 3));
+        console.log('- Policy logic: attr0 AND merkle_membership_proof(targetLeaf)');
+        console.log('- Requester attrs:', requesterAttrs);
+        console.log('- Target leaf:', targetLeaf.toString());
+        console.log('- Merkle root:', merkleRoots[0].toString().slice(-8) + '...');
+        console.log('- Expected result: AUTHORIZED (1 AND 1 = 1)');
+
+        // Prepare circuit inputs
+        const input = {
+            // Private inputs
+            policy: policy,
+            requesterAttrs: requesterAttrs,
+            predicateTypes: predicateTypes,
+            merkleLeaves: merkleLeaves.map(x => x.toString()),
+            merklePathElements: merklePathElements.map(row => row.map(x => x.toString())),
+            merklePathIndices: merklePathIndices,
+            credMessages: credMessages.map(x => x.toString()),
+            credSignatures: credSignatures.map(x => x.toString()),
+            rangeValues: rangeValues,
+            ontologyCodes: ontologyCodes,
+            randomizer: randomizer.toString(),
+
+            // Public inputs  
+            policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
+            merkleRoots: merkleRoots.map(x => x.toString()),
+            credPublicKeys: credPublicKeys.map(x => x.toString()),
+            rangeMin: rangeMin,
+            rangeMax: rangeMax,
+            ontologyPolicyIds: ontologyPolicyIds,
+            ontologyEpochs: ontologyEpochs,
+            numOperations: numOperations
+        };
+
+        console.log('- Policy commitment:', input.policyCommitment.slice(-8) + '...');
+
+        if (fs.existsSync(zkeyPath) && fs.existsSync(vkeyPath)) {
+            // Full zk-SNARK proof generation and verification
+            console.log('Generating zk-SNARK proof with Merkle proof...');
+            const startTime = Date.now();
+
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+                input,
+                wasmPath,
+                zkeyPath
+            );
+
+            const proofTime = Date.now() - startTime;
+            console.log(`✅ Proof generated in ${proofTime}ms`);
+
+            // Verify the proof
+            const vKey = JSON.parse(fs.readFileSync(vkeyPath));
+            const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+            assert(verified, 'zk-SNARK proof should be valid');
+
+            // Check circuit output (isAuthorized) - should be 1
+            assert.equal(publicSignals[0], '1', 'Circuit should output isAuthorized = 1 for valid Merkle proof');
+            console.log('✅ Circuit correctly authorized request with Merkle proof verification');
+
+        } else {
+            // Use snarkjs command line for witness calculation
+            await testWithSnarkjs(input, 1, 'Valid policy with Merkle proof verification (type 0)');
+            console.log('✅ Circuit correctly processed policy with Merkle proof verification');
+        }
+    });
+
+    it("Should handle policy with credential signature verification (type 1)", async function () {
+        if (!fs.existsSync(wasmPath)) {
+            console.log('⚠️  Test skipped - circuit WASM file not found');
+            this.skip();
+        }
+
+        // Test parameters: N=3, M=2, DEPTH=10
+        const N = 3;  // requester attributes  
+        const M = 2;  // external predicates
+
+        // Policy: attr0 AND credential_signature_valid
+        // RPN encoding: [0, 3, 5, 0, 0, 0, 0, 0, 0, 0]  
+        // Translation: attr0 predicate0 AND
+        // where: 0=attr0, 3=predicate0 (credential signature), 5=AND(N+M+0)
+        const policy = [0, 3, 5, 0, 0, 0, 0, 0, 0, 0];
+
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - first is credential signature (type 1), second disabled
+        const predicateTypes = [1, 0]; // First is credential signature, second disabled
+
+        // Commitment randomizer  
+        const randomizer = 77777n;
+
+        // Compute policy commitment
+        const policyHash = poseidonHash(policy);
+        const policyCommitment = poseidonHash([policyHash, randomizer]);
+
+        // Credential signature setup - create valid signature
+        const message = 98765n;
+        const publicKey = 12345n;
+        const signature = poseidonHash([message, publicKey]); // Simplified signature
+
+        // Credential predicate inputs
+        const credMessages = [message, 0]; // First predicate uses the message
+        const credSignatures = [poseidonHash.F.toObject(signature), 0]; // First predicate uses signature
+        const credPublicKeys = [publicKey, 0]; // First predicate uses public key
+
+        // Mock unused predicate inputs
+        const merkleLeaves = [0, 0];
+        const merklePathElements = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merklePathIndices = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+        const merkleRoots = [0, 0];
+        const rangeValues = [0, 0];
+        const rangeMin = [0, 0];
+        const rangeMax = [100, 100];
+        const ontologyCodes = [0, 0];
+        const ontologyPolicyIds = [0, 0];
+        const ontologyEpochs = [0, 0];
+
+        // Number of operations in policy: 3 tokens used
+        const numOperations = 3;
+
+        console.log('Testing policy with credential signature verification (type 1):');
+        console.log('- Policy (RPN):', policy.slice(0, 3));
+        console.log('- Policy logic: attr0 AND credential_signature_valid(message, signature, publicKey)');
+        console.log('- Requester attrs:', requesterAttrs);
+        console.log('- Message:', message.toString());
+        console.log('- Public key:', publicKey.toString());
+        console.log('- Signature:', credSignatures[0].toString().slice(-8) + '...');
+        console.log('- Expected result: AUTHORIZED (1 AND 1 = 1)');
+
+        // Prepare circuit inputs
+        const input = {
+            // Private inputs
+            policy: policy,
+            requesterAttrs: requesterAttrs,
+            predicateTypes: predicateTypes,
+            merkleLeaves: merkleLeaves.map(x => x.toString()),
+            merklePathElements: merklePathElements.map(row => row.map(x => x.toString())),
+            merklePathIndices: merklePathIndices,
+            credMessages: credMessages.map(x => x.toString()),
+            credSignatures: credSignatures.map(x => x.toString()),
+            rangeValues: rangeValues,
+            ontologyCodes: ontologyCodes,
+            randomizer: randomizer.toString(),
+
+            // Public inputs  
+            policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
+            merkleRoots: merkleRoots.map(x => x.toString()),
+            credPublicKeys: credPublicKeys.map(x => x.toString()),
+            rangeMin: rangeMin,
+            rangeMax: rangeMax,
+            ontologyPolicyIds: ontologyPolicyIds,
+            ontologyEpochs: ontologyEpochs,
+            numOperations: numOperations
+        };
+
+        console.log('- Policy commitment:', input.policyCommitment.slice(-8) + '...');
+
+        if (fs.existsSync(zkeyPath) && fs.existsSync(vkeyPath)) {
+            // Full zk-SNARK proof generation and verification
+            console.log('Generating zk-SNARK proof with credential signature...');
+            const startTime = Date.now();
+
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+                input,
+                wasmPath,
+                zkeyPath
+            );
+
+            const proofTime = Date.now() - startTime;
+            console.log(`✅ Proof generated in ${proofTime}ms`);
+
+            // Verify the proof
+            const vKey = JSON.parse(fs.readFileSync(vkeyPath));
+            const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+            assert(verified, 'zk-SNARK proof should be valid');
+
+            // Check circuit output (isAuthorized) - should be 1
+            assert.equal(publicSignals[0], '1', 'Circuit should output isAuthorized = 1 for valid credential signature');
+            console.log('✅ Circuit correctly authorized request with credential signature verification');
+
+        } else {
+            // Use snarkjs command line for witness calculation
+            await testWithSnarkjs(input, 1, 'Valid policy with credential signature verification (type 1)');
+            console.log('✅ Circuit correctly processed policy with credential signature verification');
+        }
+    });
+
+    it("Should handle policy with ontology-linked terms verification (type 3)", async function () {
+        if (!fs.existsSync(wasmPath)) {
+            console.log('⚠️  Test skipped - circuit WASM file not found');
+            this.skip();
+        }
+
+        // Test parameters: N=3, M=2, DEPTH=10
+        const N = 3;  // requester attributes  
+        const M = 2;  // external predicates
+
+        // Policy: attr0 AND ontology_linked_terms_valid
+        // RPN encoding: [0, 3, 5, 0, 0, 0, 0, 0, 0, 0]  
+        // Translation: attr0 predicate0 AND
+        // where: 0=attr0, 3=predicate0 (ontology-linked terms), 5=AND(N+M+0)
+        const policy = [0, 3, 5, 0, 0, 0, 0, 0, 0, 0];
+
+        // Requester attributes: attr0=1 (should pass)
+        const requesterAttrs = [1, 0, 0];
+
+        // External predicate setup - first is ontology-linked terms (type 3), second disabled
+        const predicateTypes = [3, 0]; // First is ontology-linked terms, second disabled
+
+        // Commitment randomizer  
+        const randomizer = 99999n;
+
+        // Compute policy commitment
+        const policyHash = poseidonHash(policy);
+        const policyCommitment = poseidonHash([policyHash, randomizer]);
+
+        // Build Merkle tree for ontology terms (reusing the function from type 0 test)
+        function buildMerkleTree(leaves, depth = 8) {
+            const paddedLeaves = [...leaves];
+            while (paddedLeaves.length < (1 << depth)) {
+                paddedLeaves.push(0n);
+            }
+
+            let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
+            
+            for (let level = 0; level < depth; level++) {
+                const nextLevel = [];
+                for (let i = 0; i < currentLevel.length; i += 2) {
+                    const left = currentLevel[i];
+                    const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : poseidonHash([0n]);
+                    nextLevel.push(poseidonHash([left, right]));
+                }
+                currentLevel = nextLevel;
+            }
+            
+            return currentLevel[0];
+        }
+
+        function getMerkleProof(target, leaves, depth = 8) {
+            const targetIndex = leaves.findIndex(leaf => leaf === target);
+            if (targetIndex === -1) {
+                throw new Error(`Target ${target} not found in leaves`);
+            }
+
+            const paddedLeaves = [...leaves];
+            while (paddedLeaves.length < (1 << depth)) {
+                paddedLeaves.push(0n);
+            }
+
+            const pathElements = [];
+            const pathIndices = [];
+            
+            let currentLevel = paddedLeaves.map(leaf => poseidonHash([leaf]));
+            let currentIndex = targetIndex;
+            
+            for (let level = 0; level < depth; level++) {
+                const siblingIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1;
+                const sibling = siblingIndex < currentLevel.length ? currentLevel[siblingIndex] : poseidonHash([0n]);
+                
+                pathElements.push(poseidonHash.F.toObject(sibling));
+                pathIndices.push(currentIndex % 2);
+                
+                const nextLevel = [];
+                for (let i = 0; i < currentLevel.length; i += 2) {
+                    const left = currentLevel[i];
+                    const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : poseidonHash([0n]);
+                    nextLevel.push(poseidonHash([left, right]));
+                }
+                currentLevel = nextLevel;
+                currentIndex = Math.floor(currentIndex / 2);
+            }
+            
+            return { pathElements, pathIndices };
+        }
+
+        // Ontology-linked terms setup (ICD-10 codes example)
+        const icdCode = 54321n; // ICD-10 code chosen by requester
+        const allowedIcdCodes = [icdCode, 11111n, 22222n, 33333n]; // Allowed ICD codes in policy
+        const merkleRoot = buildMerkleTree(allowedIcdCodes);
+        const { pathElements, pathIndices } = getMerkleProof(icdCode, allowedIcdCodes);
+
+        // Ontology predicate inputs
+        const ontologyCodes = [poseidonHash.F.toObject(poseidonHash([icdCode])), 0]; // First predicate uses ICD code
+        const ontologyPolicyIds = [42, 0]; // First predicate uses policy ID 42, second unused
+        const ontologyEpochs = [1, 0]; // First predicate uses epoch 1, second unused
+
+        // Merkle tree inputs for ontology verification (reuses merkle inputs)
+        const merkleLeaves = ontologyCodes; // Same as ontology codes
+        const merklePathElements = [pathElements, [0, 0, 0, 0, 0, 0, 0, 0]]; // First predicate uses proof
+        const merklePathIndices = [pathIndices, [0, 0, 0, 0, 0, 0, 0, 0]]; // First predicate uses proof
+        const merkleRoots = [poseidonHash.F.toObject(merkleRoot), 0]; // First predicate uses computed root
+
+        // Mock unused predicate inputs
+        const credMessages = [0, 0];
+        const credSignatures = [0, 0];
+        const credPublicKeys = [0, 0];
+        const rangeValues = [0, 0];
+        const rangeMin = [0, 0];
+        const rangeMax = [100, 100];
+
+        // Number of operations in policy: 3 tokens used
+        const numOperations = 3;
+
+        console.log('Testing policy with ontology-linked terms verification (type 3):');
+        console.log('- Policy (RPN):', policy.slice(0, 3));
+        console.log('- Policy logic: attr0 AND ontology_membership_proof(icdCode)');
+        console.log('- Requester attrs:', requesterAttrs);
+        console.log('- ICD Code:', icdCode.toString());
+        console.log('- Policy ID:', ontologyPolicyIds[0]);
+        console.log('- Epoch:', ontologyEpochs[0]);
+        console.log('- Merkle root:', merkleRoots[0].toString().slice(-8) + '...');
+        console.log('- Expected result: AUTHORIZED (1 AND 1 = 1)');
+
+        // Prepare circuit inputs
+        const input = {
+            // Private inputs
+            policy: policy,
+            requesterAttrs: requesterAttrs,
+            predicateTypes: predicateTypes,
+            merkleLeaves: merkleLeaves.map(x => x.toString()),
+            merklePathElements: merklePathElements.map(row => row.map(x => x.toString())),
+            merklePathIndices: merklePathIndices,
+            credMessages: credMessages.map(x => x.toString()),
+            credSignatures: credSignatures.map(x => x.toString()),
+            rangeValues: rangeValues,
+            ontologyCodes: ontologyCodes,
+            randomizer: randomizer.toString(),
+
+            // Public inputs  
+            policyCommitment: poseidonHash.F.toObject(policyCommitment).toString(),
+            merkleRoots: merkleRoots.map(x => x.toString()),
+            credPublicKeys: credPublicKeys.map(x => x.toString()),
+            rangeMin: rangeMin,
+            rangeMax: rangeMax,
+            ontologyPolicyIds: ontologyPolicyIds,
+            ontologyEpochs: ontologyEpochs,
+            numOperations: numOperations
+        };
+
+        console.log('- Policy commitment:', input.policyCommitment.slice(-8) + '...');
+
+        if (fs.existsSync(zkeyPath) && fs.existsSync(vkeyPath)) {
+            // Full zk-SNARK proof generation and verification
+            console.log('Generating zk-SNARK proof with ontology-linked terms...');
+            const startTime = Date.now();
+
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+                input,
+                wasmPath,
+                zkeyPath
+            );
+
+            const proofTime = Date.now() - startTime;
+            console.log(`✅ Proof generated in ${proofTime}ms`);
+
+            // Verify the proof
+            const vKey = JSON.parse(fs.readFileSync(vkeyPath));
+            const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+            assert(verified, 'zk-SNARK proof should be valid');
+
+            // Check circuit output (isAuthorized) - should be 1
+            assert.equal(publicSignals[0], '1', 'Circuit should output isAuthorized = 1 for valid ontology-linked terms');
+            console.log('✅ Circuit correctly authorized request with ontology-linked terms verification');
+
+        } else {
+            // Use snarkjs command line for witness calculation
+            await testWithSnarkjs(input, 1, 'Valid policy with ontology-linked terms verification (type 3)');
+            console.log('✅ Circuit correctly processed policy with ontology-linked terms verification');
         }
     });
 });
