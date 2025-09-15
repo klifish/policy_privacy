@@ -68,8 +68,26 @@ async function main() {
 
   // Test access request
   console.log('\n🔐 Testing access request...');
-  const proof = Array(24).fill(42);
-  const accessTx = await policyPrivacy.requestAccess(1, proof);
+  
+  // Create Groth16 proof components (mock data for testing)
+  const pA = [42, 43];
+  const pB = [[44, 45], [46, 47]];
+  const pC = [48, 49];
+  
+  // Create public signals - first should be the policy commitment, others are circuit public inputs
+  const pubSignals = [
+    sampleCommitment,  // policyCommitment (must match)
+    0, 0,             // merkleRoots[2]
+    0, 0,             // credPublicKeys[2]  
+    0, 0,             // rangeMin[2]
+    0, 0,             // rangeMax[2]
+    0, 0,             // ontologyPolicyIds[2]
+    0, 0,             // ontologyEpochs[2]
+    5,                // numOperations
+    1                 // isAuthorized (output)
+  ];
+  
+  const accessTx = await policyPrivacy.requestAccess(1, pA, pB, pC, pubSignals);
   await accessTx.wait();
   console.log('✅ Access request submitted with ID: 1');
 
@@ -81,7 +99,8 @@ async function main() {
   console.log('1. Run: npx hardhat test');
   console.log('2. Start local node: npx hardhat node');
   console.log('3. Run integration tests with circuits');
-  console.log('4. Test with real ZK proofs when circuit artifacts are available');
+  console.log('4. Test with real Groth16 proofs when circuit artifacts are available');
+  console.log('5. Use PolicyPrivacyMainVerifier for production instead of MockVerifier');
 
   // Save deployment info for scripts
   const deploymentInfo = {

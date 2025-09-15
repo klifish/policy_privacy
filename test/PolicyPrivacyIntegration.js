@@ -2,6 +2,28 @@ const { expect } = require('chai');
 const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
 const circomlibjs = require('circomlibjs');
 
+// Helper function to create test Groth16 proof components
+function createTestProof(commitment, seedValue = 1) {
+  const pA = [seedValue, seedValue + 1];
+  const pB = [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]];
+  const pC = [seedValue + 6, seedValue + 7];
+  
+  // Create public signals - first should be the policy commitment
+  const pubSignals = [
+    commitment,        // policyCommitment (must match)
+    0, 0,             // merkleRoots[2]
+    0, 0,             // credPublicKeys[2]  
+    0, 0,             // rangeMin[2]
+    0, 0,             // rangeMax[2]
+    0, 0,             // ontologyPolicyIds[2]
+    0, 0,             // ontologyEpochs[2]
+    5,                // numOperations
+    1                 // isAuthorized (output)
+  ];
+  
+  return { pA, pB, pC, pubSignals };
+}
+
 describe('PolicyPrivacy Integration Tests', function () {
   let poseidon;
 
@@ -94,9 +116,9 @@ describe('PolicyPrivacy Integration Tests', function () {
       
       await mockVerifier.setResult(true); // Simulate valid proof verification
       
-      const zkProof = Array(24).fill(42); // Mock proof data
+      const { pA, pB, pC, pubSignals } = createTestProof(calculatedCommitment, 42);
       
-      await expect(policyPrivacy.connect(doctor1).requestAccess(1, zkProof))
+      await expect(policyPrivacy.connect(doctor1).requestAccess(1, pA, pB, pC, pubSignals))
         .to.emit(policyPrivacy, 'AccessRequested')
         .withArgs(doctor1.address, 1, 1)
         .and.to.emit(policyPrivacy, 'AccessGranted')

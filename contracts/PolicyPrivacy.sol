@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 interface IVerifier {
-  function verifyProof(uint256[24] calldata _proof, uint256[1] calldata _pubSignals) external view returns (bool);
+  function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[15] calldata _pubSignals) external view returns (bool);
 }
 
 /**
@@ -103,15 +103,27 @@ contract PolicyPrivacy {
     /**
      * @dev Request access to data protected by a policy using zero-knowledge proof
      * @param _policyId The policy ID to request access for
-     * @param _proof Zero-knowledge proof that policy is satisfied
+     * @param _pA Groth16 proof component A
+     * @param _pB Groth16 proof component B  
+     * @param _pC Groth16 proof component C
+     * @param _pubSignals Public signals for proof verification
      */
-    function requestAccess(uint256 _policyId, uint256[24] calldata _proof) external notPaused returns (uint256) {
+    function requestAccess(
+        uint256 _policyId, 
+        uint[2] calldata _pA, 
+        uint[2][2] calldata _pB, 
+        uint[2] calldata _pC, 
+        uint[15] calldata _pubSignals
+    ) external notPaused returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
+        
+        // Ensure the first public signal matches the committed policy
+        require(_pubSignals[0] == policies[_policyId].commitment, "Policy commitment mismatch");
         
         uint256 requestId = nextRequestId++;
         
         // Verify the zero-knowledge proof
-        bool isValid = verifier.verifyProof(_proof, [policies[_policyId].commitment]);
+        bool isValid = verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
         
         accessRequests[requestId] = AccessRequest({
             requester: msg.sender,
@@ -201,10 +213,17 @@ contract PolicyPrivacy {
 
     /**
      * @dev Verify a proof manually (view function for testing)
-     * @param _proof The zero-knowledge proof
-     * @param _commitment The policy commitment to verify against
+     * @param _pA Groth16 proof component A
+     * @param _pB Groth16 proof component B  
+     * @param _pC Groth16 proof component C
+     * @param _pubSignals Public signals for proof verification
      */
-    function verifyProof(uint256[24] calldata _proof, uint256 _commitment) external view returns (bool) {
-        return verifier.verifyProof(_proof, [_commitment]);
+    function verifyProof(
+        uint[2] calldata _pA, 
+        uint[2][2] calldata _pB, 
+        uint[2] calldata _pC, 
+        uint[15] calldata _pubSignals
+    ) external view returns (bool) {
+        return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }
 }

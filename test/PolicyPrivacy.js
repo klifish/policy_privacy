@@ -1,6 +1,28 @@
 const { expect } = require('chai');
 const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
 
+// Helper function to create test Groth16 proof components
+function createTestProof(commitment, seedValue = 1) {
+  const pA = [seedValue, seedValue + 1];
+  const pB = [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]];
+  const pC = [seedValue + 6, seedValue + 7];
+  
+  // Create public signals - first should be the policy commitment
+  const pubSignals = [
+    commitment,        // policyCommitment (must match)
+    0, 0,             // merkleRoots[2]
+    0, 0,             // credPublicKeys[2]  
+    0, 0,             // rangeMin[2]
+    0, 0,             // rangeMax[2]
+    0, 0,             // ontologyPolicyIds[2]
+    0, 0,             // ontologyEpochs[2]
+    5,                // numOperations
+    1                 // isAuthorized (output)
+  ];
+  
+  return { pA, pB, pC, pubSignals };
+}
+
 describe('PolicyPrivacy', function () {
   // Fixture for deploying the contract with fresh state
   async function deployPolicyPrivacyFixture() {
@@ -121,14 +143,15 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, requester1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy
-      await policyPrivacy.connect(requester1).commitPolicy(424242, 'test-uri');
+      const commitment = 424242;
+      await policyPrivacy.connect(requester1).commitPolicy(commitment, 'test-uri');
       
       // Set verifier to return true
       await mockVerifier.setResult(true);
       
-      const proof = Array(24).fill(1);
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
       
-      await expect(policyPrivacy.connect(requester1).requestAccess(1, proof))
+      await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
         .to.emit(policyPrivacy, 'AccessRequested')
         .withArgs(requester1.address, 1, 1)
         .and.to.emit(policyPrivacy, 'AccessGranted')
@@ -139,14 +162,15 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, requester1, dataSubject1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy  
-      await policyPrivacy.connect(dataSubject1).commitPolicy(424242, 'test-uri');
+      const commitment = 424242;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'test-uri');
       
       // Set verifier to return false
       await mockVerifier.setResult(false);
       
-      const proof = Array(24).fill(0);
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
       
-      await expect(policyPrivacy.connect(requester1).requestAccess(1, proof))
+      await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
         .to.emit(policyPrivacy, 'AccessRequested')
         .withArgs(requester1.address, 1, 1)
         .and.to.emit(policyPrivacy, 'AccessDenied')
@@ -180,31 +204,51 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, requester1, dataSubject1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy and revoke it
-      await policyPrivacy.connect(dataSubject1).commitPolicy(424242, 'test-uri');
+      const commitment = 424242;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'test-uri');
       await policyPrivacy.connect(dataSubject1).revokePolicy(1);
       
-      const proof = Array(24).fill(3);
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
       
-      await expect(policyPrivacy.connect(requester1).requestAccess(1, proof))
+      await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
         .to.be.revertedWith('Policy not active');
+    });
+
+    it('Should revert access requests with mismatched policy commitment', async function () {
+      const { policyPrivacy, mockVerifier, requester1, dataSubject1 } = await loadFixture(deployPolicyPrivacyFixture);
+      
+      // Setup policy 
+      const actualCommitment = 424242;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(actualCommitment, 'test-uri');
+      
+      // Set verifier to return true (proof is valid, but commitment is wrong)
+      await mockVerifier.setResult(true);
+      
+      // Create proof with wrong commitment
+      const wrongCommitment = 999999;
+      const { pA, pB, pC, pubSignals } = createTestProof(wrongCommitment);
+      
+      await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
+        .to.be.revertedWith('Policy commitment mismatch');
     });
 
     it('Should increment request IDs correctly', async function () {
       const { policyPrivacy, mockVerifier, requester1, requester2, dataSubject1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy
-      await policyPrivacy.connect(dataSubject1).commitPolicy(424242, 'test-uri');
+      const commitment = 424242;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'test-uri');
       
       await mockVerifier.setResult(true);
       
-      const proof = Array(24).fill(4);
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
       
       // First request
-      await policyPrivacy.connect(requester1).requestAccess(1, proof);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
       expect(await policyPrivacy.nextRequestId()).to.equal(2);
       
-      // Second request
-      await policyPrivacy.connect(requester2).requestAccess(1, proof);
+      // Second request  
+      await policyPrivacy.connect(requester2).requestAccess(1, pA, pB, pC, pubSignals);
       expect(await policyPrivacy.nextRequestId()).to.equal(3);
     });
   });
@@ -287,9 +331,11 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, dataSubject1, requester1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup test data
-      await policyPrivacy.connect(dataSubject1).commitPolicy(777777, 'view-test');
+      const commitment = 777777;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'view-test');
       await mockVerifier.setResult(true);
-      await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(7));
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
     });
 
     it('Should return correct access status', async function () {
@@ -297,9 +343,11 @@ describe('PolicyPrivacy', function () {
       const { mockVerifier, dataSubject1, requester1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup test data
-      await policyPrivacy.connect(dataSubject1).commitPolicy(777777, 'view-test');
+      const commitment = 777777;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'view-test');
       await mockVerifier.setResult(true);
-      await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(7));
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
       
       expect(await policyPrivacy.isAccessGranted(1)).to.equal(true);
     });
@@ -308,10 +356,12 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier } = await loadFixture(deployPolicyPrivacyFixture);
       
       await mockVerifier.setResult(true);
-      expect(await policyPrivacy.verifyProof(Array(24).fill(8), 888888)).to.equal(true);
+      const { pA: pA1, pB: pB1, pC: pC1, pubSignals: pubSignals1 } = createTestProof(888888, 8);
+      expect(await policyPrivacy.verifyProof(pA1, pB1, pC1, pubSignals1)).to.equal(true);
       
       await mockVerifier.setResult(false);
-      expect(await policyPrivacy.verifyProof(Array(24).fill(9), 999999)).to.equal(false);
+      const { pA: pA2, pB: pB2, pC: pC2, pubSignals: pubSignals2 } = createTestProof(999999, 9);
+      expect(await policyPrivacy.verifyProof(pA2, pB2, pC2, pubSignals2)).to.equal(false);
     });
   });
 
@@ -351,12 +401,14 @@ describe('PolicyPrivacy', function () {
       
       // Valid researcher request
       await mockVerifier.setResult(true);
-      await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(100));
+      const { pA: pA1, pB: pB1, pC: pC1, pubSignals: pubSignals1 } = createTestProof(researchPolicyCommitment, 100);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA1, pB1, pC1, pubSignals1);
       expect(await policyPrivacy.isAccessGranted(1)).to.equal(true);
       
       // Invalid researcher request (doesn't meet criteria)
       await mockVerifier.setResult(false);
-      await policyPrivacy.connect(requester2).requestAccess(1, Array(24).fill(200));
+      const { pA: pA2, pB: pB2, pC: pC2, pubSignals: pubSignals2 } = createTestProof(researchPolicyCommitment, 200);
+      await policyPrivacy.connect(requester2).requestAccess(1, pA2, pB2, pC2, pubSignals2);
       expect(await policyPrivacy.isAccessGranted(2)).to.equal(false);
     });
 
@@ -364,11 +416,13 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, dataSubject1, requester1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Patient initially gives consent
-      await policyPrivacy.connect(dataSubject1).commitPolicy(444555666, 'ipfs://QmInitialConsent');
+      const commitment = 444555666;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'ipfs://QmInitialConsent');
       
       // Provider successfully accesses data
       await mockVerifier.setResult(true);
-      await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(150));
+      const { pA: pA1, pB: pB1, pC: pC1, pubSignals: pubSignals1 } = createTestProof(commitment, 150);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA1, pB1, pC1, pubSignals1);
       expect(await policyPrivacy.isAccessGranted(1)).to.equal(true);
       
       // Patient revokes consent
@@ -377,7 +431,8 @@ describe('PolicyPrivacy', function () {
         .withArgs(dataSubject1.address, 1);
       
       // Future access attempts should fail
-      await expect(policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(160)))
+      const { pA: pA2, pB: pB2, pC: pC2, pubSignals: pubSignals2 } = createTestProof(commitment, 160);
+      await expect(policyPrivacy.connect(requester1).requestAccess(1, pA2, pB2, pC2, pubSignals2))
         .to.be.revertedWith('Policy not active');
     });
 
@@ -385,9 +440,10 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, dataSubject1, requester1, requester2 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Patient creates different policies for different data types
-      await policyPrivacy.connect(dataSubject1).commitPolicy(1001, 'ipfs://QmMedicalRecords');    // Medical records
-      await policyPrivacy.connect(dataSubject1).commitPolicy(1002, 'ipfs://QmLabResults');       // Lab results  
-      await policyPrivacy.connect(dataSubject1).commitPolicy(1003, 'ipfs://QmGenomicData');      // Genomic data
+      const commitments = [1001, 1002, 1003];
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitments[0], 'ipfs://QmMedicalRecords');    // Medical records
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitments[1], 'ipfs://QmLabResults');       // Lab results  
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitments[2], 'ipfs://QmGenomicData');      // Genomic data
       
       const policies = await policyPrivacy.getSubjectPolicies(dataSubject1.address);
       expect(policies).to.have.lengthOf(3);
@@ -396,10 +452,12 @@ describe('PolicyPrivacy', function () {
       await mockVerifier.setResult(true);
       
       // Doctor accesses medical records
-      await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(201));
+      const { pA: pA1, pB: pB1, pC: pC1, pubSignals: pubSignals1 } = createTestProof(commitments[0], 201);
+      await policyPrivacy.connect(requester1).requestAccess(1, pA1, pB1, pC1, pubSignals1);
       
       // Researcher accesses genomic data  
-      await policyPrivacy.connect(requester2).requestAccess(3, Array(24).fill(203));
+      const { pA: pA2, pB: pB2, pC: pC2, pubSignals: pubSignals2 } = createTestProof(commitments[2], 203);
+      await policyPrivacy.connect(requester2).requestAccess(3, pA2, pB2, pC2, pubSignals2);
       
       expect(await policyPrivacy.isAccessGranted(1)).to.equal(true);
       expect(await policyPrivacy.isAccessGranted(2)).to.equal(true);
@@ -423,10 +481,12 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, mockVerifier, dataSubject1, requester1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy
-      await policyPrivacy.connect(dataSubject1).commitPolicy(789012, 'test');
+      const commitment = 789012;
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'test');
       await mockVerifier.setResult(true);
       
-      const tx = await policyPrivacy.connect(requester1).requestAccess(1, Array(24).fill(50));
+      const { pA, pB, pC, pubSignals } = createTestProof(commitment, 50);
+      const tx = await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
       const receipt = await tx.wait();
       
       console.log(`    Access request gas used: ${receipt.gasUsed.toString()}`);
