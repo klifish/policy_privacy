@@ -117,27 +117,31 @@ contract PolicyPrivacy {
     ) external notPaused returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
         
-        // Ensure the first public signal matches the committed policy
-        require(_pubSignals[0] == policies[_policyId].commitment, "Policy commitment mismatch");
+        // Ensure the policy commitment public signal matches the committed policy
+        // Note: pubSignals[0] is isAuthorized output, pubSignals[1] is policyCommitment
+        require(_pubSignals[1] == policies[_policyId].commitment, "Policy commitment mismatch");
         
         uint256 requestId = nextRequestId++;
         
         // Verify the zero-knowledge proof
-        bool isValid = verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
+        bool isValidProof = verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
+        
+        // Check if the circuit output indicates authorization (pubSignals[0] is isAuthorized)
+        bool isAuthorized = isValidProof && (_pubSignals[0] == 1);
         
         accessRequests[requestId] = AccessRequest({
             requester: msg.sender,
             policyId: _policyId,
             timestamp: block.timestamp,
             isProcessed: true,
-            isGranted: isValid
+            isGranted: isAuthorized
         });
 
         requesterRequests[msg.sender].push(requestId);
         
         emit AccessRequested(msg.sender, _policyId, requestId);
         
-        if (isValid) {
+        if (isAuthorized) {
             emit AccessGranted(msg.sender, _policyId, requestId);
         } else {
             emit AccessDenied(msg.sender, _policyId, requestId);
