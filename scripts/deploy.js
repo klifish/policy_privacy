@@ -1,0 +1,108 @@
+const { ethers } = require('hardhat');
+
+async function main() {
+  console.log('🚀 Deploying PolicyPrivacy contracts to local blockchain...\n');
+
+  // Get deployment account
+  const [deployer] = await ethers.getSigners();
+  console.log('Deploying contracts with account:', deployer.address);
+  console.log('Account balance:', ethers.formatEther(await ethers.provider.getBalance(deployer.address)), 'ETH\n');
+
+  // Deploy MockVerifier first
+  console.log('📋 Deploying MockVerifier...');
+  const MockVerifier = await ethers.getContractFactory('MockVerifier');
+  const mockVerifier = await MockVerifier.deploy();
+  await mockVerifier.waitForDeployment();
+  console.log('✅ MockVerifier deployed to:', await mockVerifier.getAddress());
+
+  // Deploy PolicyPrivacy contract
+  console.log('\n📋 Deploying PolicyPrivacy...');
+  const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
+  const policyPrivacy = await PolicyPrivacy.deploy(await mockVerifier.getAddress());
+  await policyPrivacy.waitForDeployment();
+  console.log('✅ PolicyPrivacy deployed to:', await policyPrivacy.getAddress());
+
+  // Deploy Commitment contract for testing
+  console.log('\n📋 Deploying Commitment contract...');
+  const Commitment = await ethers.getContractFactory('Commitment');
+  const commitment = await Commitment.deploy(await mockVerifier.getAddress(), 42);
+  await commitment.waitForDeployment();
+  console.log('✅ Commitment deployed to:', await commitment.getAddress());
+
+  // Display contract addresses for reference
+  console.log('\n📊 Contract Deployment Summary:');
+  console.log('================================');
+  console.log('MockVerifier:   ', await mockVerifier.getAddress());
+  console.log('PolicyPrivacy:  ', await policyPrivacy.getAddress());
+  console.log('Commitment:     ', await commitment.getAddress());
+
+  // Test basic functionality
+  console.log('\n🧪 Testing basic functionality...');
+  
+  // Test MockVerifier
+  console.log('Setting MockVerifier result to true...');
+  await mockVerifier.setResult(true);
+  console.log('MockVerifier result:', await mockVerifier.result());
+
+  // Test PolicyPrivacy initial state
+  console.log('PolicyPrivacy owner:', await policyPrivacy.owner());
+  console.log('PolicyPrivacy nextPolicyId:', await policyPrivacy.nextPolicyId());
+  console.log('PolicyPrivacy verifier:', await policyPrivacy.verifier());
+
+  // Create a sample policy commitment
+  console.log('\n📝 Creating sample policy commitment...');
+  const sampleCommitment = 123456789;
+  const metadataURI = 'ipfs://QmSamplePolicyMetadata';
+  
+  const tx = await policyPrivacy.commitPolicy(sampleCommitment, metadataURI);
+  await tx.wait();
+  console.log('✅ Sample policy committed with ID: 1');
+
+  // Get policy details
+  const [dataSubject, storedCommitment, isActive, timestamp, storedMetadata] = await policyPrivacy.getPolicy(1);
+  console.log('Policy details:');
+  console.log('  Data Subject:', dataSubject);
+  console.log('  Commitment:', storedCommitment.toString());
+  console.log('  Active:', isActive);
+  console.log('  Metadata:', storedMetadata);
+
+  // Test access request
+  console.log('\n🔐 Testing access request...');
+  const proof = Array(24).fill(42);
+  const accessTx = await policyPrivacy.requestAccess(1, proof);
+  await accessTx.wait();
+  console.log('✅ Access request submitted with ID: 1');
+
+  const isGranted = await policyPrivacy.isAccessGranted(1);
+  console.log('Access granted:', isGranted);
+
+  console.log('\n🎉 Deployment and testing completed successfully!');
+  console.log('\n💡 Next steps:');
+  console.log('1. Run: npx hardhat test');
+  console.log('2. Start local node: npx hardhat node');
+  console.log('3. Run integration tests with circuits');
+  console.log('4. Test with real ZK proofs when circuit artifacts are available');
+
+  // Save deployment info for scripts
+  const deploymentInfo = {
+    network: 'localhost',
+    deployer: deployer.address,
+    contracts: {
+      MockVerifier: await mockVerifier.getAddress(),
+      PolicyPrivacy: await policyPrivacy.getAddress(),
+      Commitment: await commitment.getAddress()
+    },
+    timestamp: new Date().toISOString()
+  };
+
+  const fs = require('fs');
+  fs.writeFileSync('deployment.json', JSON.stringify(deploymentInfo, null, 2));
+  console.log('\n📄 Deployment info saved to deployment.json');
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('❌ Deployment failed:', error);
+    process.exit(1);
+  });
