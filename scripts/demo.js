@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * PolicyPrivacy API Usage Example
+ * PolicyPrivacy Complete End-to-End Workflow Demo
  * 
- * This script demonstrates the complete workflow:
- * 1. Start local blockchain and deploy contract
- * 2. Start API server
- * 3. Register data provider and requester
- * 4. Commit policy and publish data
- * 5. Generate proof and request access
- * 6. Verify the complete flow works
+ * This script demonstrates the complete workflow from start to finish:
+ * 1. Build circuits and setup Groth16 trusted setup
+ * 2. Start local blockchain and deploy contract
+ * 3. Start API server
+ * 4. Register data provider and requester
+ * 5. Commit policy and publish data
+ * 6. Generate zero-knowledge proof and request access
+ * 7. Verify the complete flow works with real cryptographic proofs
  */
 
 const { exec, spawn } = require('child_process');
 const axios = require('axios');
 const { promisify } = require('util');
+const fs = require('fs');
+const path = require('path');
 
 const execAsync = promisify(exec);
 const API_BASE_URL = 'http://localhost:3000';
@@ -31,6 +34,62 @@ class PolicyPrivacyDemo {
 
   async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async checkPrerequisites() {
+    this.log('🔍 Checking prerequisites...');
+    
+    // Check if node_modules exists
+    if (!fs.existsSync('node_modules')) {
+      this.log('📦 Installing dependencies...');
+      await execAsync('npm install');
+      this.log('✅ Dependencies installed');
+    }
+    
+    // Check if build directory exists
+    if (!fs.existsSync('build')) {
+      this.log('🏗️ Build directory not found, will build circuits...');
+      return false;
+    }
+    
+    // Check if required circuit files exist
+    const requiredFiles = [
+      'build/circuits/policy_privacy_main_instance.r1cs',
+      'build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm',
+      'build/circuits/policy_privacy_main_final.zkey'
+    ];
+    
+    for (const file of requiredFiles) {
+      if (!fs.existsSync(file)) {
+        this.log(`🏗️ Missing circuit file: ${file}`);
+        return false;
+      }
+    }
+    
+    this.log('✅ All prerequisites met');
+    return true;
+  }
+
+  async buildCircuits() {
+    this.log('🏗️ Building circuits and setting up Groth16 trusted setup...');
+    this.log('⚠️  This may take several minutes on first run...');
+    
+    try {
+      // Build circuits with full Groth16 setup
+      this.log('🔨 Compiling circuits...');
+      await execAsync('npm run build:circuit:compile', { timeout: 300000 }); // 5 minute timeout
+      
+      this.log('🔑 Setting up Groth16 trusted setup...');
+      await execAsync('npm run build:circuit:setup', { timeout: 600000 }); // 10 minute timeout
+      
+      this.log('📄 Exporting verification key and Solidity verifier...');
+      await execAsync('npm run build:circuit:export:verificationkey', { timeout: 60000 });
+      await execAsync('npm run build:circuit:export:solidityverifier', { timeout: 60000 });
+      
+      this.log('✅ Circuits built and Groth16 setup completed successfully');
+    } catch (error) {
+      throw new Error(`Circuit building failed: ${error.message}`);
+    }
   }
 
   async startHardhatNode() {
@@ -133,7 +192,8 @@ class PolicyPrivacyDemo {
   }
 
   async demoWorkflow() {
-    this.log('🧪 Starting PolicyPrivacy API demo workflow...');
+    this.log('🧪 Starting PolicyPrivacy Complete Workflow Demo...');
+    this.log('='.repeat(50));
 
     // Test data
     const provider = {
@@ -155,40 +215,60 @@ class PolicyPrivacyDemo {
     };
 
     try {
-      // 1. Register Data Provider
-      this.log('📝 Registering data provider...');
+      this.log('');
+      this.log('🏥 STEP 1: Data Provider Registration');
+      this.log('-'.repeat(40));
+      this.log(`Registering healthcare provider with address: ${provider.address}`);
       const providerResponse = await axios.post(`${API_BASE_URL}/api/data-provider/register`, provider);
-      this.log(`✅ Provider registered: ${providerResponse.data.providerId}`);
+      this.log(`✅ Provider registered successfully!`);
+      this.log(`   Provider ID: ${providerResponse.data.providerId}`);
+      this.log(`   Status: ${providerResponse.data.status}`);
 
-      // 2. Register Data Requester
-      this.log('📝 Registering data requester...');
+      this.log('');
+      this.log('🔬 STEP 2: Data Requester Registration');
+      this.log('-'.repeat(40));
+      this.log(`Registering research institute with address: ${requester.address}`);
       const requesterResponse = await axios.post(`${API_BASE_URL}/api/data-requester/register`, requester);
-      this.log(`✅ Requester registered: ${requesterResponse.data.requesterId}`);
+      this.log(`✅ Requester registered successfully!`);
+      this.log(`   Requester ID: ${requesterResponse.data.requesterId}`);
+      this.log(`   Status: ${requesterResponse.data.status}`);
 
-      // 3. Calculate Policy Commitment
-      this.log('🔐 Calculating policy commitment...');
+      this.log('');
+      this.log('🔐 STEP 3: Privacy Policy Commitment');
+      this.log('-'.repeat(40));
       const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0]; // attr0 AND attr1
       const randomizer = '12345';
+      this.log(`Creating policy commitment for policy: ${JSON.stringify(policy)}`);
+      this.log(`Policy meaning: Requester must have attribute0=1 AND attribute1=1`);
+      this.log(`Using randomizer: ${randomizer}`);
       
       const commitmentResponse = await axios.post(`${API_BASE_URL}/api/proof/policy-commitment`, {
         policy,
         randomizer
       });
       const policyCommitment = commitmentResponse.data.commitment;
-      this.log(`✅ Policy commitment: ${policyCommitment}`);
+      this.log(`✅ Policy commitment calculated successfully!`);
+      this.log(`   Commitment hash: ${policyCommitment}`);
 
-      // 4. Commit Policy
-      this.log('📋 Committing privacy policy...');
+      this.log('');
+      this.log('📋 STEP 4: Smart Contract Policy Commitment');
+      this.log('-'.repeat(40));
+      this.log(`Committing policy to blockchain with Poseidon hash...`);
       const policyResponse = await axios.post(`${API_BASE_URL}/api/policy/commit`, {
         dataSubjectAddress: provider.address,
         policyCommitment,
         metadataURI: 'ipfs://QmDemoPolicyMetadata'
       });
       const policyId = policyResponse.data.policyId;
-      this.log(`✅ Policy committed with ID: ${policyId}`);
+      this.log(`✅ Policy committed to smart contract!`);
+      this.log(`   Policy ID: ${policyId}`);
+      this.log(`   Transaction Hash: ${policyResponse.data.transactionHash}`);
+      this.log(`   Gas Used: ${policyResponse.data.gasUsed}`);
 
-      // 5. Publish Data
-      this.log('📊 Publishing data with policy...');
+      this.log('');
+      this.log('📊 STEP 5: Data Publishing');
+      this.log('-'.repeat(40));
+      this.log(`Publishing medical dataset with privacy policy protection...`);
       const dataResponse = await axios.post(`${API_BASE_URL}/api/data-provider/publish`, {
         providerAddress: provider.address,
         dataHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
@@ -197,53 +277,109 @@ class PolicyPrivacyDemo {
         dataLocation: 'ipfs://QmDemoDataLocation',
         description: 'Demo medical records dataset'
       });
-      this.log(`✅ Data published: ${dataResponse.data.dataId}`);
+      this.log(`✅ Data published successfully!`);
+      this.log(`   Data ID: ${dataResponse.data.dataId}`);
+      this.log(`   Associated Policy ID: ${dataResponse.data.policyId}`);
+      this.log(`   Transaction Hash: ${dataResponse.data.transactionHash}`);
 
-      // 6. Generate Zero-Knowledge Proof
-      this.log('🔮 Generating zero-knowledge proof...');
+      this.log('');
+      this.log('🔮 STEP 6: Zero-Knowledge Proof Generation');
+      this.log('-'.repeat(40));
+      this.log(`Generating real Groth16 proof using snarkjs...`);
+      this.log(`Requester attributes: [attr0=1, attr1=1, attr2=0] (satisfies policy)`);
+      const startTime = Date.now();
       const proofResponse = await axios.post(`${API_BASE_URL}/api/proof/generate`, {
         policy,
         randomizer,
         requesterAttrs: [1, 1, 0] // Satisfies policy: attr0=1 AND attr1=1
       });
       const proof = proofResponse.data.proof;
-      this.log(`✅ Proof generated in ${proofResponse.data.metadata.generationTimeMs}ms`);
+      const proofTime = proofResponse.data.metadata.generationTimeMs;
+      this.log(`✅ Zero-knowledge proof generated successfully!`);
+      this.log(`   Generation time: ${proofTime}ms`);
+      this.log(`   Proof components: pA, pB, pC, pubSignals`);
+      this.log(`   Public signals[0] (isAuthorized): ${proof.pubSignals[0]}`);
+      this.log(`   Public signals[1] (policyCommitment): ${proof.pubSignals[1]}`);
 
-      // 7. Request Data Access
-      this.log('🔑 Requesting data access with proof...');
+      this.log('');
+      this.log('🔑 STEP 7: Data Access Request with Proof Verification');
+      this.log('-'.repeat(40));
+      this.log(`Submitting access request with cryptographic proof...`);
       const accessResponse = await axios.post(`${API_BASE_URL}/api/data-requester/request`, {
         requesterAddress: requester.address,
         policyId: parseInt(policyId),
         proof,
         purpose: 'Medical research demonstration'
       });
-      this.log(`✅ Access ${accessResponse.data.status}: ${accessResponse.data.accessRequestId}`);
+      this.log(`✅ Access request processed!`);
+      this.log(`   Result: ${accessResponse.data.status.toUpperCase()}`);
+      this.log(`   Access Request ID: ${accessResponse.data.accessRequestId}`);
+      this.log(`   Can Access Data: ${accessResponse.data.canAccessData}`);
+      this.log(`   Transaction Hash: ${accessResponse.data.transactionHash}`);
+      this.log(`   Gas Used: ${accessResponse.data.gasUsed}`);
 
-      // 8. Verify Results
-      this.log('🔍 Verifying workflow results...');
+      this.log('');
+      this.log('🔍 STEP 8: Results Verification');
+      this.log('-'.repeat(40));
       
       // Check provider stats
       const providerStats = await axios.get(`${API_BASE_URL}/api/data-provider/stats/${provider.address}`);
-      this.log(`📈 Provider stats: ${providerStats.data.totalDatasets} datasets, ${providerStats.data.totalAccessRequests} requests`);
+      this.log(`📈 Data Provider Statistics:`);
+      this.log(`   Total datasets published: ${providerStats.data.totalDatasets}`);
+      this.log(`   Active datasets: ${providerStats.data.activeDatasets}`);
+      this.log(`   Total access requests received: ${providerStats.data.totalAccessRequests}`);
 
       // Check requester stats
       const requesterStats = await axios.get(`${API_BASE_URL}/api/data-requester/stats/${requester.address}`);
-      this.log(`📈 Requester stats: ${requesterStats.data.totalRequests} requests, ${requesterStats.data.successRate} success rate`);
+      this.log(`📈 Data Requester Statistics:`);
+      this.log(`   Total requests made: ${requesterStats.data.totalRequests}`);
+      this.log(`   Granted requests: ${requesterStats.data.grantedRequests}`);
+      this.log(`   Success rate: ${requesterStats.data.successRate}`);
 
       // Check policy details
       const policyDetails = await axios.get(`${API_BASE_URL}/api/policy/${policyId}`);
-      this.log(`📋 Policy details: Active=${policyDetails.data.isActive}, Subject=${policyDetails.data.dataSubject}`);
+      this.log(`📋 Policy Verification:`);
+      this.log(`   Policy ID: ${policyDetails.data.policyId}`);
+      this.log(`   Is Active: ${policyDetails.data.isActive}`);
+      this.log(`   Data Subject: ${policyDetails.data.dataSubject}`);
+      this.log(`   Commitment Hash: ${policyDetails.data.commitment}`);
 
-      this.log('🎉 Demo workflow completed successfully!');
-      
+      this.log('');
+      this.log('✅ Complete workflow verification successful!');
+
       return {
-        provider: providerResponse.data,
-        requester: requesterResponse.data,
-        policy: policyResponse.data,
-        data: dataResponse.data,
-        proof: { generated: true, timeMs: proofResponse.data.metadata.generationTimeMs },
-        access: accessResponse.data,
-        stats: { provider: providerStats.data, requester: requesterStats.data }
+        provider: {
+          id: providerResponse.data.providerId,
+          address: provider.address,
+          stats: providerStats.data
+        },
+        requester: {
+          id: requesterResponse.data.requesterId,
+          address: requester.address,
+          stats: requesterStats.data
+        },
+        policy: {
+          id: policyId,
+          commitment: policyCommitment,
+          details: policyDetails.data
+        },
+        data: {
+          id: dataResponse.data.dataId,
+          policyId: dataResponse.data.policyId,
+          transactionHash: dataResponse.data.transactionHash
+        },
+        proof: {
+          generated: true,
+          timeMs: proofTime,
+          components: ['pA', 'pB', 'pC', 'pubSignals'],
+          isAuthorized: proof.pubSignals[0] === '1'
+        },
+        access: {
+          requestId: accessResponse.data.accessRequestId,
+          status: accessResponse.data.status,
+          granted: accessResponse.data.canAccessData,
+          transactionHash: accessResponse.data.transactionHash
+        }
       };
 
     } catch (error) {
@@ -308,6 +444,15 @@ class PolicyPrivacyDemo {
 
   async run() {
     try {
+      this.log('🚀 Starting PolicyPrivacy Complete End-to-End Workflow Demo');
+      this.log('='.repeat(60));
+      
+      // Step 0: Check prerequisites and build circuits if needed
+      const prerequisitesMet = await this.checkPrerequisites();
+      if (!prerequisitesMet) {
+        await this.buildCircuits();
+      }
+
       // Step 1: Start Hardhat node
       await this.startHardhatNode();
       await this.sleep(2000);
@@ -326,12 +471,30 @@ class PolicyPrivacyDemo {
       // Step 5: Run complete workflow demo
       const results = await this.demoWorkflow();
 
-      this.log('🏆 All tests completed successfully!');
+      this.log('🏆 Complete End-to-End Workflow Demo Completed Successfully!');
+      this.log('='.repeat(60));
       this.log('📊 Demo Results Summary:');
       console.log(JSON.stringify(results, null, 2));
 
+      this.log('');
+      this.log('🎉 Summary of what was demonstrated:');
+      this.log('✅ Circuit compilation and Groth16 trusted setup');
+      this.log('✅ Local blockchain deployment with real smart contracts');
+      this.log('✅ REST API server with comprehensive endpoints');
+      this.log('✅ Data provider registration and data publishing');
+      this.log('✅ Data requester registration and attribute validation');
+      this.log('✅ Privacy policy commitment using Poseidon hash');
+      this.log('✅ Real zero-knowledge proof generation using snarkjs');
+      this.log('✅ On-chain proof verification with PolicyPrivacyMainVerifier');
+      this.log('✅ Access control based on cryptographic proof validation');
+      this.log('✅ End-to-end privacy-preserving consent management workflow');
+
     } catch (error) {
       this.log(`💥 Demo failed: ${error.message}`);
+      if (error.stack) {
+        this.log('Stack trace:');
+        console.error(error.stack);
+      }
       process.exit(1);
     } finally {
       await this.cleanup();

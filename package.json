@@ -39,7 +39,9 @@
     "api:start": "node api/server.js",
     "api:dev": "nodemon api/server.js",
     "api:test": "mocha test/api/*.js --timeout 10000",
-    "demo": "node scripts/demo.js"
+    "demo": "node scripts/demo.js",
+    "setup": "node scripts/setup.js",
+    "quick-test": "node scripts/quick-test.js"
   },
   "author": "",
   "license": "ISC",
