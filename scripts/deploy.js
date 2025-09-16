@@ -1,4 +1,5 @@
 const { ethers } = require('hardhat');
+const fs = require('fs');
 
 async function main() {
   console.log('🚀 Deploying PolicyPrivacy contracts to local blockchain...\n');
@@ -8,113 +9,58 @@ async function main() {
   console.log('Deploying contracts with account:', deployer.address);
   console.log('Account balance:', ethers.formatEther(await ethers.provider.getBalance(deployer.address)), 'ETH\n');
 
-  // Deploy MockVerifier first
-  console.log('📋 Deploying MockVerifier...');
-  const MockVerifier = await ethers.getContractFactory('MockVerifier');
-  const mockVerifier = await MockVerifier.deploy();
-  await mockVerifier.waitForDeployment();
-  console.log('✅ MockVerifier deployed to:', await mockVerifier.getAddress());
+  let verifierAddress;
+  let verifierType;
+
+  // Check if PolicyPrivacyMainVerifier exists (real Groth16 verifier)
+  try {
+    console.log('📋 Checking for PolicyPrivacyMainVerifier...');
+    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
+    const realVerifier = await PolicyPrivacyMainVerifier.deploy();
+    await realVerifier.waitForDeployment();
+    verifierAddress = await realVerifier.getAddress();
+    verifierType = 'PolicyPrivacyMainVerifier';
+    console.log('✅ PolicyPrivacyMainVerifier deployed to:', verifierAddress);
+  } catch (error) {
+    // Fall back to MockVerifier if real verifier not available
+    console.log('⚠️  PolicyPrivacyMainVerifier not available, using MockVerifier...');
+    console.log('📋 Deploying MockVerifier...');
+    const MockVerifier = await ethers.getContractFactory('MockVerifier');
+    const mockVerifier = await MockVerifier.deploy();
+    await mockVerifier.waitForDeployment();
+    verifierAddress = await mockVerifier.getAddress();
+    verifierType = 'MockVerifier';
+    console.log('✅ MockVerifier deployed to:', verifierAddress);
+  }
 
   // Deploy PolicyPrivacy contract
   console.log('\n📋 Deploying PolicyPrivacy...');
   const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-  const policyPrivacy = await PolicyPrivacy.deploy(await mockVerifier.getAddress());
+  const policyPrivacy = await PolicyPrivacy.deploy(verifierAddress);
   await policyPrivacy.waitForDeployment();
   console.log('✅ PolicyPrivacy deployed to:', await policyPrivacy.getAddress());
 
-  // Deploy Commitment contract for testing
-  console.log('\n📋 Deploying Commitment contract...');
-  const Commitment = await ethers.getContractFactory('Commitment');
-  const commitment = await Commitment.deploy(await mockVerifier.getAddress(), 42);
-  await commitment.waitForDeployment();
-  console.log('✅ Commitment deployed to:', await commitment.getAddress());
-
-  // Display contract addresses for reference
-  console.log('\n📊 Contract Deployment Summary:');
-  console.log('================================');
-  console.log('MockVerifier:   ', await mockVerifier.getAddress());
-  console.log('PolicyPrivacy:  ', await policyPrivacy.getAddress());
-  console.log('Commitment:     ', await commitment.getAddress());
-
-  // Test basic functionality
-  console.log('\n🧪 Testing basic functionality...');
+  console.log('\n🎉 Deployment completed successfully!');
+  console.log(`📋 Using ${verifierType} for proof verification`);
   
-  // Test MockVerifier
-  console.log('Setting MockVerifier result to true...');
-  await mockVerifier.setResult(true);
-  console.log('MockVerifier result:', await mockVerifier.result());
-
-  // Test PolicyPrivacy initial state
-  console.log('PolicyPrivacy owner:', await policyPrivacy.owner());
-  console.log('PolicyPrivacy nextPolicyId:', await policyPrivacy.nextPolicyId());
-  console.log('PolicyPrivacy verifier:', await policyPrivacy.verifier());
-
-  // Create a sample policy commitment
-  console.log('\n📝 Creating sample policy commitment...');
-  const sampleCommitment = 123456789;
-  const metadataURI = 'ipfs://QmSamplePolicyMetadata';
-  
-  const tx = await policyPrivacy.commitPolicy(sampleCommitment, metadataURI);
-  await tx.wait();
-  console.log('✅ Sample policy committed with ID: 1');
-
-  // Get policy details
-  const [dataSubject, storedCommitment, isActive, timestamp, storedMetadata] = await policyPrivacy.getPolicy(1);
-  console.log('Policy details:');
-  console.log('  Data Subject:', dataSubject);
-  console.log('  Commitment:', storedCommitment.toString());
-  console.log('  Active:', isActive);
-  console.log('  Metadata:', storedMetadata);
-
-  // Test access request
-  console.log('\n🔐 Testing access request...');
-  
-  // Create Groth16 proof components (mock data for testing)
-  const pA = [42, 43];
-  const pB = [[44, 45], [46, 47]];
-  const pC = [48, 49];
-  
-  // Create public signals - first should be the policy commitment, others are circuit public inputs
-  const pubSignals = [
-    sampleCommitment,  // policyCommitment (must match)
-    0, 0,             // merkleRoots[2]
-    0, 0,             // credPublicKeys[2]  
-    0, 0,             // rangeMin[2]
-    0, 0,             // rangeMax[2]
-    0, 0,             // ontologyPolicyIds[2]
-    0, 0,             // ontologyEpochs[2]
-    5,                // numOperations
-    1                 // isAuthorized (output)
-  ];
-  
-  const accessTx = await policyPrivacy.requestAccess(1, pA, pB, pC, pubSignals);
-  await accessTx.wait();
-  console.log('✅ Access request submitted with ID: 1');
-
-  const isGranted = await policyPrivacy.isAccessGranted(1);
-  console.log('Access granted:', isGranted);
-
-  console.log('\n🎉 Deployment and testing completed successfully!');
-  console.log('\n💡 Next steps:');
-  console.log('1. Run: npx hardhat test');
-  console.log('2. Start local node: npx hardhat node');
-  console.log('3. Run integration tests with circuits');
-  console.log('4. Test with real Groth16 proofs when circuit artifacts are available');
-  console.log('5. Use PolicyPrivacyMainVerifier for production instead of MockVerifier');
+  if (verifierType === 'MockVerifier') {
+    console.log('\n💡 Note: Using MockVerifier for testing.');
+    console.log('   Run "npm run build:circuit:full" to build real Groth16 verifier.');
+    console.log('   Then redeploy to use PolicyPrivacyMainVerifier.');
+  }
 
   // Save deployment info for scripts
   const deploymentInfo = {
     network: 'localhost',
     deployer: deployer.address,
     contracts: {
-      MockVerifier: await mockVerifier.getAddress(),
-      PolicyPrivacy: await policyPrivacy.getAddress(),
-      Commitment: await commitment.getAddress()
+      [verifierType]: verifierAddress,
+      PolicyPrivacy: await policyPrivacy.getAddress()
     },
+    verifierType: verifierType,
     timestamp: new Date().toISOString()
   };
 
-  const fs = require('fs');
   fs.writeFileSync('deployment.json', JSON.stringify(deploymentInfo, null, 2));
   console.log('\n📄 Deployment info saved to deployment.json');
 }

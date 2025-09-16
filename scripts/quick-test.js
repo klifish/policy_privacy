@@ -6,10 +6,19 @@
  */
 
 const { exec, spawn } = require('child_process');
-const axios = require('axios');
 const { promisify } = require('util');
 
 const execAsync = promisify(exec);
+
+// Axios will be loaded dynamically after dependencies are installed
+let axios = null;
+
+async function loadAxios() {
+  if (!axios) {
+    axios = require('axios');
+  }
+  return axios;
+}
 
 async function quickTest() {
   console.log('🚀 Running quick integration test...');
@@ -18,6 +27,13 @@ async function quickTest() {
   let apiProcess = null;
   
   try {
+    // Install dependencies if needed
+    const fs = require('fs');
+    if (!fs.existsSync('node_modules')) {
+      console.log('📦 Installing dependencies...');
+      await execAsync('npm install');
+      console.log('✅ Dependencies installed');
+    }
     // Start Hardhat node
     console.log('📦 Starting local blockchain...');
     hardhatProcess = spawn('npx', ['hardhat', 'node'], {
@@ -66,6 +82,9 @@ async function quickTest() {
     
     // Wait a bit more for API to be ready
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Load axios after dependencies are installed
+    const axios = await loadAxios();
     
     // Test API endpoints
     console.log('🧪 Testing API endpoints...');

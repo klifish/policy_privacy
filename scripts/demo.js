@@ -14,13 +14,22 @@
  */
 
 const { exec, spawn } = require('child_process');
-const axios = require('axios');
 const { promisify } = require('util');
 const fs = require('fs');
 const path = require('path');
 
 const execAsync = promisify(exec);
 const API_BASE_URL = 'http://localhost:3000';
+
+// Axios will be loaded dynamically after dependencies are installed
+let axios = null;
+
+async function loadAxios() {
+  if (!axios) {
+    axios = require('axios');
+  }
+  return axios;
+}
 
 class PolicyPrivacyDemo {
   constructor() {
@@ -176,6 +185,8 @@ class PolicyPrivacyDemo {
   async waitForAPI() {
     this.log('⏳ Waiting for API to be ready...');
     
+    const axios = await loadAxios();
+    
     for (let i = 0; i < 10; i++) {
       try {
         const response = await axios.get(`${API_BASE_URL}/health`);
@@ -194,6 +205,9 @@ class PolicyPrivacyDemo {
   async demoWorkflow() {
     this.log('🧪 Starting PolicyPrivacy Complete Workflow Demo...');
     this.log('='.repeat(50));
+
+    // Load axios after dependencies are installed
+    const axios = await loadAxios();
 
     // Test data
     const provider = {
@@ -393,6 +407,8 @@ class PolicyPrivacyDemo {
 
   async testAPIEndpoints() {
     this.log('🧪 Testing API endpoints...');
+
+    const axios = await loadAxios();
 
     const tests = [
       {
