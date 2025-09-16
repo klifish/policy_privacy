@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolicyPrivacyMain Circuit Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .circuit-diagram {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .component {
+            position: absolute;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 120px;
+        }
+        
+        .input-box {
+            background: #e8f5e8;
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+        
+        .output-box {
+            background: #fdf2e9;
+            border-color: #e67e22;
+            color: #e67e22;
+        }
+        
+        .component-box {
+            background: #ebf3fd;
+            border-color: #3498db;
+            color: #3498db;
+        }
+        
+        .constraint-box {
+            background: #f4ecf7;
+            border-color: #9b59b6;
+            color: #9b59b6;
+        }
+        
+        .connection {
+            position: absolute;
+            background: #34495e;
+            z-index: 0;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #34495e;
+            z-index: 1;
+        }
+        
+        .parameters {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .parameter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .parameter-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .parameter-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .parameter-value {
+            color: #e74c3c;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .parameter-desc {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+        
+        .flow-description {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .flow-step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .step-desc {
+            color: #5d6d7e;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PolicyPrivacyMain Circuit Visualization</h1>
+        <p class="subtitle">Zero-Knowledge Privacy-Preserving Consent Management System</p>
+        
+        <!-- Circuit Parameters -->
+        <div class="parameters">
+            <h3>🔧 Circuit Parameters</h3>
+            <div class="parameter-grid">
+                <div class="parameter-item">
+                    <div class="parameter-name">N (Attributes)</div>
+                    <div class="parameter-value">3</div>
+                    <div class="parameter-desc">Number of requester attributes</div>
+                </div>
+                <div class="parameter-item">
+                    <div class="parameter-name">M (Predicates)</div>
+                    <div class="parameter-value">2</div>
+                    <div class="parameter-desc">Number of external predicates</div>
+                </div>
+                <div class="parameter-item">
+                    <div class="parameter-name">DEPTH</div>
+                    <div class="parameter-value">10</div>
+                    <div class="parameter-desc">Maximum policy token depth</div>
+                </div>
+                <div class="parameter-item">
+                    <div class="parameter-name">K (Index Bits)</div>
+                    <div class="parameter-value">3</div>
+                    <div class="parameter-desc">Operand indexing bit width</div>
+                </div>
+                <div class="parameter-item">
+                    <div class="parameter-name">MERKLE_LEVELS</div>
+                    <div class="parameter-value">8</div>
+                    <div class="parameter-desc">Merkle tree depth (256 leaves)</div>
+                </div>
+                <div class="parameter-item">
+                    <div class="parameter-name">RANGE_BITS</div>
+                    <div class="parameter-value">32</div>
+                    <div class="parameter-desc">Range proof bit width</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color input-box" style="border-color: #27ae60; background: #e8f5e8;"></div>
+                <span>Private Inputs</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color output-box" style="border-color: #e67e22; background: #fdf2e9;"></div>
+                <span>Public Inputs/Outputs</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color component-box" style="border-color: #3498db; background: #ebf3fd;"></div>
+                <span>Components</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color constraint-box" style="border-color: #9b59b6; background: #f4ecf7;"></div>
+                <span>Constraints</span>
+            </div>
+        </div>
+        
+        <!-- Circuit Diagram -->
+        <div class="circuit-diagram">
+            <!-- Private Inputs -->
+            <div class="component input-box" style="top: 20px; left: 20px;">
+                Policy[10]<br><small>RPN tokens</small>
+            </div>
+            <div class="component input-box" style="top: 20px; left: 170px;">
+                Requester<br>Attrs[3]
+            </div>
+            <div class="component input-box" style="top: 20px; left: 320px;">
+                Predicate<br>Types[2]
+            </div>
+            <div class="component input-box" style="top: 20px; left: 470px;">
+                Merkle<br>Proofs
+            </div>
+            <div class="component input-box" style="top: 20px; left: 620px;">
+                Credentials
+            </div>
+            <div class="component input-box" style="top: 20px; left: 770px;">
+                Range<br>Values[2]
+            </div>
+            <div class="component input-box" style="top: 20px; left: 920px;">
+                Randomizer
+            </div>
+            
+            <!-- Public Inputs -->
+            <div class="component output-box" style="top: 120px; left: 50px;">
+                Policy<br>Commitment
+            </div>
+            <div class="component output-box" style="top: 120px; left: 200px;">
+                Merkle<br>Roots[2]
+            </div>
+            <div class="component output-box" style="top: 120px; left: 350px;">
+                Cred Public<br>Keys[2]
+            </div>
+            <div class="component output-box" style="top: 120px; left: 500px;">
+                Range<br>Min/Max[2]
+            </div>
+            <div class="component output-box" style="top: 120px; left: 650px;">
+                Ontology<br>Params
+            </div>
+            <div class="component output-box" style="top: 120px; left: 800px;">
+                Num<br>Operations
+            </div>
+            
+            <!-- Main Components -->
+            <div class="component component-box" style="top: 250px; left: 50px; width: 180px;">
+                Policy Commitment<br>Verifier<br><small>Com(P;r) = h</small>
+            </div>
+            
+            <div class="component component-box" style="top: 250px; left: 280px; width: 200px;">
+                External Predicate<br>Verifier[0]<br><small>Merkle/Cred/Range</small>
+            </div>
+            
+            <div class="component component-box" style="top: 250px; left: 520px; width: 200px;">
+                External Predicate<br>Verifier[1]<br><small>Merkle/Cred/Range</small>
+            </div>
+            
+            <div class="component component-box" style="top: 400px; left: 200px; width: 250px;">
+                Postfix Policy<br>Interpreter<br><small>C(P,(a,p)) = 1</small>
+            </div>
+            
+            <div class="component component-box" style="top: 550px; left: 300px; width: 150px;">
+                AND Gate<br><small>Final Logic</small>
+            </div>
+            
+            <!-- Constraints -->
+            <div class="component constraint-box" style="top: 400px; left: 50px; width: 120px;">
+                Boolean<br>Constraints<br><small>attrs ∈ {0,1}</small>
+            </div>
+            
+            <div class="component constraint-box" style="top: 400px; left: 500px; width: 120px;">
+                Type<br>Constraints<br><small>types ∈ {0,1,2,3}</small>
+            </div>
+            
+            <!-- Output -->
+            <div class="component output-box" style="top: 680px; left: 320px; width: 120px;">
+                isAuthorized<br><small>Final Result</small>
+            </div>
+            
+            <!-- Data Flow Arrows -->
+            <div class="connection" style="top: 70px; left: 140px; width: 2px; height: 60px;"></div>
+            <div class="arrow" style="top: 128px; left: 133px;"></div>
+            
+            <div class="connection" style="top: 70px; left: 240px; width: 2px; height: 310px;"></div>
+            <div class="arrow" style="top: 378px; left: 233px;"></div>
+            
+            <div class="connection" style="top: 300px; left: 230px; width: 50px; height: 2px;"></div>
+            <div class="arrow" style="top: 292px; left: 272px; transform: rotate(90deg);"></div>
+            
+            <div class="connection" style="top: 350px; left: 325px; width: 2px; height: 50px;"></div>
+            <div class="arrow" style="top: 398px; left: 318px;"></div>
+            
+            <div class="connection" style="top: 450px; left: 325px; width: 2px; height: 100px;"></div>
+            <div class="arrow" style="top: 548px; left: 318px;"></div>
+            
+            <div class="connection" style="top: 600px; left: 375px; width: 2px; height: 80px;"></div>
+            <div class="arrow" style="top: 678px; left: 368px;"></div>
+        </div>
+        
+        <!-- Data Flow Description -->
+        <div class="flow-description">
+            <h3>🔄 Circuit Data Flow</h3>
+            
+            <div class="flow-step">
+                <span class="step-number">1</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">Private Witness Input Processing</div>
+                    <div class="step-desc">
+                        The circuit receives private inputs: policy P (RPN tokens), requester attributes a, 
+                        external predicate inputs, and commitment randomizer r. These form the complete 
+                        witness w = (P, a, p, r).
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-step">
+                <span class="step-number">2</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">Policy Commitment Verification</div>
+                    <div class="step-desc">
+                        PolicyCommitmentVerifier checks that Com(P;r) = h using Poseidon hash. 
+                        This ensures the committed policy matches the one being evaluated, 
+                        preserving policy privacy while enabling verification.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-step">
+                <span class="step-number">3</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">External Predicate Verification</div>
+                    <div class="step-desc">
+                        ExternalPredicateVerifiers (one per predicate) verify Merkle proofs, 
+                        credential signatures, range proofs, and ontology-linked terms. 
+                        Each produces a predicate value p_j ∈ {0,1}.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-step">
+                <span class="step-number">4</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">Policy Evaluation</div>
+                    <div class="step-desc">
+                        PostfixPolicyInterpreter evaluates the policy P against requester 
+                        attributes a and verified predicates p, computing C(P,(a,p)). 
+                        Uses RPN evaluation with stack-based computation.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-step">
+                <span class="step-number">5</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">Constraint Enforcement</div>
+                    <div class="step-desc">
+                        Boolean constraints ensure requester attributes are binary. 
+                        Type constraints validate predicate types are in valid range {0,1,2,3}. 
+                        These maintain circuit integrity.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-step">
+                <span class="step-number">6</span>
+                <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                    <div class="step-title">Final Authorization</div>
+                    <div class="step-desc">
+                        AND gate combines commitment validity and policy evaluation result. 
+                        Authorization requires both: valid commitment AND satisfied policy. 
+                        Output isAuthorized indicates final access decision.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical Details -->
+        <div class="parameters">
+            <h3>🔬 Technical Implementation</h3>
+            <div style="margin-top: 15px;">
+                <p><strong>Cryptographic Primitives:</strong></p>
+                <ul>
+                    <li><strong>Poseidon Hash:</strong> Used for policy commitments and Merkle trees</li>
+                    <li><strong>Groth16 Proof System:</strong> Provides succinctness and fast verification</li>
+                    <li><strong>BN254 Elliptic Curve:</strong> Underlying cryptographic foundation</li>
+                </ul>
+                
+                <p><strong>Privacy Guarantees:</strong></p>
+                <ul>
+                    <li><strong>Policy Privacy:</strong> Actual policy rules never revealed on-chain</li>
+                    <li><strong>Attribute Privacy:</strong> Individual attributes remain private</li>
+                    <li><strong>Zero-Knowledge:</strong> Only policy satisfaction is proven</li>
+                </ul>
+                
+                <p><strong>Performance Characteristics:</strong></p>
+                <ul>
+                    <li><strong>Constraints:</strong> ~500k R1CS constraints</li>
+                    <li><strong>Proof Generation:</strong> 4-5 seconds on modern hardware</li>
+                    <li><strong>Verification:</strong> ~10ms on-chain with gas cost ~180k</li>
+                    <li><strong>Trusted Setup:</strong> One-time ceremony for circuit parameters</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
