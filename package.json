@@ -35,7 +35,11 @@
     "build:circuit": "npm run build:circuit:compile && npm run build:circuit:info",
     "build:circuit:full": "npm run build:circuit:compile && npm run build:circuit:info && npm run build:circuit:setup && npm run build:circuit:export:verificationkey && npm run build:circuit:export:solidityverifier",
     "hardhat:test": "npx hardhat test",
-    "hardhat:test:verbose": "npx hardhat test --verbose"
+    "hardhat:test:verbose": "npx hardhat test --verbose",
+    "api:start": "node api/server.js",
+    "api:dev": "nodemon api/server.js",
+    "api:test": "mocha test/api/*.js --timeout 10000",
+    "demo": "node scripts/demo.js"
   },
   "author": "",
   "license": "ISC",
@@ -45,14 +49,21 @@
     "circom": "^0.5.46",
     "circom2": "^0.2.22",
     "hardhat": "^2.26.3",
-    "mocha": "^11.7.1"
+    "mocha": "^11.7.1",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
     "circom_tester": "^0.0.20",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
     "ffjavascript": "^0.3.1",
-    "snarkjs": "^0.7.5"
+    "helmet": "^6.1.5",
+    "snarkjs": "^0.7.5",
+    "uuid": "^9.0.0"
   }
 }
