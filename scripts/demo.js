@@ -16,7 +16,6 @@
 const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
 const fs = require('fs');
-const path = require('path');
 
 const execAsync = promisify(exec);
 const API_BASE_URL = 'http://localhost:3000';
@@ -47,34 +46,34 @@ class PolicyPrivacyDemo {
 
   async checkPrerequisites() {
     this.log('🔍 Checking prerequisites...');
-    
+
     // Check if node_modules exists
     if (!fs.existsSync('node_modules')) {
       this.log('📦 Installing dependencies...');
       await execAsync('npm install');
       this.log('✅ Dependencies installed');
     }
-    
+
     // Check if build directory exists
     if (!fs.existsSync('build')) {
       this.log('🏗️ Build directory not found, will build circuits...');
       return false;
     }
-    
+
     // Check if required circuit files exist
     const requiredFiles = [
       'build/circuits/policy_privacy_main_instance.r1cs',
       'build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm',
       'build/circuits/policy_privacy_main_final.zkey'
     ];
-    
+
     for (const file of requiredFiles) {
       if (!fs.existsSync(file)) {
         this.log(`🏗️ Missing circuit file: ${file}`);
         return false;
       }
     }
-    
+
     this.log('✅ All prerequisites met');
     return true;
   }
@@ -82,19 +81,19 @@ class PolicyPrivacyDemo {
   async buildCircuits() {
     this.log('🏗️ Building circuits and setting up Groth16 trusted setup...');
     this.log('⚠️  This may take several minutes on first run...');
-    
+
     try {
       // Build circuits with full Groth16 setup
       this.log('🔨 Compiling circuits...');
       await execAsync('npm run build:circuit:compile', { timeout: 300000 }); // 5 minute timeout
-      
+
       this.log('🔑 Setting up Groth16 trusted setup...');
       await execAsync('npm run build:circuit:setup', { timeout: 600000 }); // 10 minute timeout
-      
+
       this.log('📄 Exporting verification key and Solidity verifier...');
       await execAsync('npm run build:circuit:export:verificationkey', { timeout: 60000 });
       await execAsync('npm run build:circuit:export:solidityverifier', { timeout: 60000 });
-      
+
       this.log('✅ Circuits built and Groth16 setup completed successfully');
     } catch (error) {
       throw new Error(`Circuit building failed: ${error.message}`);
@@ -103,7 +102,7 @@ class PolicyPrivacyDemo {
 
   async startHardhatNode() {
     this.log('🚀 Starting Hardhat local blockchain...');
-    
+
     return new Promise((resolve, reject) => {
       this.hardhatProcess = spawn('npx', ['hardhat', 'node'], {
         cwd: process.cwd(),
@@ -111,10 +110,12 @@ class PolicyPrivacyDemo {
       });
 
       let output = '';
+      let hardhatStarted = false;
       this.hardhatProcess.stdout.on('data', (data) => {
         output += data.toString();
-        if (output.includes('Started HTTP and WebSocket JSON-RPC server')) {
+        if (!hardhatStarted && output.includes('Started HTTP and WebSocket JSON-RPC server')) {
           this.log('✅ Hardhat node started successfully');
+          hardhatStarted = true;
           resolve();
         }
       });
@@ -124,7 +125,7 @@ class PolicyPrivacyDemo {
       });
 
       this.hardhatProcess.on('error', reject);
-      
+
       // Timeout after 30 seconds
       setTimeout(() => {
         if (this.hardhatProcess && !output.includes('Started HTTP')) {
@@ -136,7 +137,7 @@ class PolicyPrivacyDemo {
 
   async deployContract() {
     this.log('📄 Deploying PolicyPrivacy contract...');
-    
+
     try {
       await execAsync('npx hardhat run scripts/deploy.js --network localhost');
       this.log('✅ Contract deployed successfully');
@@ -147,7 +148,7 @@ class PolicyPrivacyDemo {
 
   async startAPIServer() {
     this.log('🌐 Starting PolicyPrivacy API server...');
-    
+
     return new Promise((resolve, reject) => {
       this.apiProcess = spawn('node', ['api/server.js'], {
         cwd: process.cwd(),
@@ -172,7 +173,7 @@ class PolicyPrivacyDemo {
       });
 
       this.apiProcess.on('error', reject);
-      
+
       // Timeout after 15 seconds
       setTimeout(() => {
         if (this.apiProcess && !output.includes('PolicyPrivacy API server running')) {
@@ -184,9 +185,9 @@ class PolicyPrivacyDemo {
 
   async waitForAPI() {
     this.log('⏳ Waiting for API to be ready...');
-    
+
     const axios = await loadAxios();
-    
+
     for (let i = 0; i < 10; i++) {
       try {
         const response = await axios.get(`${API_BASE_URL}/health`);
@@ -198,7 +199,7 @@ class PolicyPrivacyDemo {
         await this.sleep(1000);
       }
     }
-    
+
     throw new Error('API failed to become ready');
   }
 
@@ -255,7 +256,7 @@ class PolicyPrivacyDemo {
       this.log(`Creating policy commitment for policy: ${JSON.stringify(policy)}`);
       this.log(`Policy meaning: Requester must have attribute0=1 AND attribute1=1`);
       this.log(`Using randomizer: ${randomizer}`);
-      
+
       const commitmentResponse = await axios.post(`${API_BASE_URL}/api/proof/policy-commitment`, {
         policy,
         randomizer
@@ -335,7 +336,7 @@ class PolicyPrivacyDemo {
       this.log('');
       this.log('🔍 STEP 8: Results Verification');
       this.log('-'.repeat(40));
-      
+
       // Check provider stats
       const providerStats = await axios.get(`${API_BASE_URL}/api/data-provider/stats/${provider.address}`);
       this.log(`📈 Data Provider Statistics:`);
@@ -446,12 +447,12 @@ class PolicyPrivacyDemo {
 
   async cleanup() {
     this.log('🧹 Cleaning up...');
-    
+
     if (this.apiProcess) {
       this.apiProcess.kill();
       this.log('✅ API server stopped');
     }
-    
+
     if (this.hardhatProcess) {
       this.hardhatProcess.kill();
       this.log('✅ Hardhat node stopped');
@@ -462,7 +463,7 @@ class PolicyPrivacyDemo {
     try {
       this.log('🚀 Starting PolicyPrivacy Complete End-to-End Workflow Demo');
       this.log('='.repeat(60));
-      
+
       // Step 0: Check prerequisites and build circuits if needed
       const prerequisitesMet = await this.checkPrerequisites();
       if (!prerequisitesMet) {
@@ -521,7 +522,7 @@ class PolicyPrivacyDemo {
 // Run demo if this script is executed directly
 if (require.main === module) {
   const demo = new PolicyPrivacyDemo();
-  
+
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
     console.log('\\n🛑 Received SIGINT, shutting down gracefully...');

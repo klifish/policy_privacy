@@ -25,10 +25,10 @@ class PolicyPrivacyAPI {
       contractAddress: config.contractAddress,
       ...config
     };
-    
+
     this.contract = null;
     this.provider = null;
-    
+
     this.setupMiddleware();
     this.setupRoutes();
     this.setupErrorHandling();
@@ -97,7 +97,7 @@ class PolicyPrivacyAPI {
     this.app.use('/api/data-requester', dataRequesterRoutes);
     this.app.use('/api/policy', policyRoutes);
     this.app.use('/api/proof', proofRoutes);
-    
+
     // Health check
     this.app.get('/health', (req, res) => {
       res.json({
@@ -126,7 +126,7 @@ class PolicyPrivacyAPI {
     // Global error handler
     this.app.use((err, req, res, next) => {
       console.error('API Error:', err);
-      
+
       if (err.type === 'validation') {
         return res.status(400).json({
           error: 'Validation error',
@@ -160,12 +160,13 @@ class PolicyPrivacyAPI {
     try {
       // Connect to blockchain
       this.provider = new ethers.JsonRpcProvider(this.config.nodeUrl);
-      
+
       // Load contract address from deployment
-      const deploymentPath = path.join(__dirname, '../deployment.json');
+      const deploymentPath = path.join(__dirname, '..', 'deployment.json');
+      console.log('Loading contract address from deployment file:', deploymentPath);
       if (fs.existsSync(deploymentPath)) {
         const deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
-        this.config.contractAddress = deployment.PolicyPrivacy;
+        this.config.contractAddress = deployment.contracts.PolicyPrivacy;
       }
 
       if (!this.config.contractAddress) {
@@ -175,7 +176,7 @@ class PolicyPrivacyAPI {
       // Load contract ABI
       const artifactPath = path.join(__dirname, '../artifacts/contracts/PolicyPrivacy.sol/PolicyPrivacy.json');
       const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
-      
+
       // Initialize contract
       this.contract = new ethers.Contract(
         this.config.contractAddress,
@@ -184,11 +185,11 @@ class PolicyPrivacyAPI {
       );
 
       console.log(`Connected to PolicyPrivacy contract at: ${this.config.contractAddress}`);
-      
+
       // Verify contract is accessible
       const nextPolicyId = await this.contract.nextPolicyId();
       console.log(`Contract verified. Next policy ID: ${nextPolicyId}`);
-      
+
     } catch (error) {
       console.error('Failed to initialize blockchain connection:', error);
       throw error;
@@ -361,13 +362,13 @@ class PolicyPrivacyAPI {
   async start() {
     try {
       await this.initializeBlockchain();
-      
+
       this.server = this.app.listen(this.config.port, () => {
         console.log(`PolicyPrivacy API server running on port ${this.config.port}`);
         console.log(`Health check: http://localhost:${this.config.port}/health`);
         console.log(`API docs: http://localhost:${this.config.port}/api/docs`);
       });
-      
+
       return this.server;
     } catch (error) {
       console.error('Failed to start server:', error);
@@ -390,7 +391,7 @@ module.exports = PolicyPrivacyAPI;
 if (require.main === module) {
   const api = new PolicyPrivacyAPI();
   api.start().catch(console.error);
-  
+
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('Shutting down gracefully...');
