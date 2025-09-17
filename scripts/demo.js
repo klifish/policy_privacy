@@ -54,6 +54,9 @@ class PolicyPrivacyDemo {
       this.log('✅ Dependencies installed');
     }
 
+    // Check for port conflicts before proceeding
+    await this.checkPortAvailability();
+
     // Check if build directory exists
     if (!fs.existsSync('build')) {
       this.log('🏗️ Build directory not found, will build circuits...');
@@ -76,6 +79,81 @@ class PolicyPrivacyDemo {
 
     this.log('✅ All prerequisites met');
     return true;
+  }
+
+  async checkPortAvailability() {
+    this.log('🔍 Checking port availability...');
+    
+    const net = require('net');
+    const ports = [8545, 3000]; // Hardhat and API server ports
+    
+    for (const port of ports) {
+      const isInUse = await this.isPortInUse(port);
+      if (isInUse) {
+        this.log(`⚠️  Port ${port} is in use, attempting to free it...`);
+        await this.killProcessOnPort(port);
+        
+        // Wait a moment and check again
+        await this.sleep(2000);
+        const stillInUse = await this.isPortInUse(port);
+        if (stillInUse) {
+          throw new Error(`Port ${port} is still in use after cleanup attempt. Please manually stop processes using this port.`);
+        } else {
+          this.log(`✅ Port ${port} is now available`);
+        }
+      } else {
+        this.log(`✅ Port ${port} is available`);
+      }
+    }
+  }
+
+  async isPortInUse(port) {
+    return new Promise((resolve) => {
+      const server = require('net').createServer();
+      server.listen(port, () => {
+        server.once('close', () => {
+          resolve(false);
+        });
+        server.close();
+      });
+      server.on('error', () => {
+        resolve(true);
+      });
+    });
+  }
+
+  async killProcessOnPort(port) {
+    try {
+      if (process.platform === 'win32') {
+        // Windows
+        const { stdout } = await execAsync(`netstat -ano | findstr :${port}`);
+        const lines = stdout.split('\n').filter(line => line.includes(`LISTENING`));
+        for (const line of lines) {
+          const pid = line.trim().split(/\s+/).pop();
+          if (pid && pid !== '0') {
+            await execAsync(`taskkill /PID ${pid} /F`);
+            this.log(`🔄 Killed process ${pid} on port ${port}`);
+          }
+        }
+      } else {
+        // Unix-like systems (Linux, macOS)
+        try {
+          const { stdout } = await execAsync(`lsof -ti:${port}`);
+          const pids = stdout.trim().split('\n').filter(pid => pid);
+          for (const pid of pids) {
+            await execAsync(`kill -9 ${pid}`);
+            this.log(`🔄 Killed process ${pid} on port ${port}`);
+          }
+        } catch (error) {
+          // lsof command might not find any processes, which is fine
+          if (!error.message.includes('No such file or directory')) {
+            this.log(`ℹ️  No processes found on port ${port}`);
+          }
+        }
+      }
+    } catch (error) {
+      this.log(`⚠️  Could not kill process on port ${port}: ${error.message}`);
+    }
   }
 
   async buildCircuits() {
@@ -449,14 +527,28 @@ class PolicyPrivacyDemo {
     this.log('🧹 Cleaning up...');
 
     if (this.apiProcess) {
-      this.apiProcess.kill();
+      this.apiProcess.kill('SIGTERM');
       this.log('✅ API server stopped');
     }
 
     if (this.hardhatProcess) {
-      this.hardhatProcess.kill();
+      this.hardhatProcess.kill('SIGTERM');
       this.log('✅ Hardhat node stopped');
     }
+
+    // Wait a moment for processes to fully terminate
+    await this.sleep(2000);
+
+    // Clean up any remaining processes on the ports
+    this.log('🔄 Ensuring ports are fully released...');
+    try {
+      await this.killProcessOnPort(8545); // Hardhat port
+      await this.killProcessOnPort(3000); // API server port
+    } catch (error) {
+      this.log(`⚠️  Port cleanup warning: ${error.message}`);
+    }
+
+    this.log('✅ Cleanup completed');
   }
 
   async run() {
