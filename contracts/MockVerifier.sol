@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 interface IVerifier {
-  function verifyProof(uint256[24] calldata _proof, uint256[1] calldata _pubSignals) external view returns (bool);
+  function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[15] calldata _pubSignals) external view returns (bool);
 }
 
 contract MockVerifier is IVerifier {
@@ -12,7 +12,7 @@ contract MockVerifier is IVerifier {
     result = _result;
   }
 
-  function verifyProof(uint256[24] calldata, uint256[1] calldata) external view override returns (bool) {
+  function verifyProof(uint[2] calldata, uint[2][2] calldata, uint[2] calldata, uint[15] calldata) external view override returns (bool) {
     return result;
   }
 }
