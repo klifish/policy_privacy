@@ -14,8 +14,8 @@ const { ethers } = require('hardhat');
 const authMiddleware = (req, res, next) => {
   // Skip auth for certain endpoints
   const publicEndpoints = [
-    '/api/docs',
-    '/api/proof/circuit-info',
+    '/docs',
+    '/proof/circuit-info',
     'GET:/health',
     'GET:/'
   ];
