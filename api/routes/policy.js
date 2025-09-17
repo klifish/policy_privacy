@@ -38,7 +38,9 @@ router.post('/commit', async (req, res, next) => {
     }
 
     // Submit to smart contract
-    const signer = new ethers.Wallet(process.env.PRIVATE_KEY || '0x' + '1'.repeat(64), req.provider);
+    // Use first Hardhat test account which has plenty of ETH by default
+    const defaultHardhatKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+    const signer = new ethers.Wallet(process.env.PRIVATE_KEY || defaultHardhatKey, req.provider);
     const contractWithSigner = req.contract.connect(signer);
 
     const tx = await contractWithSigner.commitPolicy(commitmentBN, metadataURI || '');
@@ -170,7 +172,9 @@ router.post('/:id/revoke', async (req, res, next) => {
     }
 
     // Revoke policy
-    const signer = new ethers.Wallet(process.env.PRIVATE_KEY || '0x' + '1'.repeat(64), req.provider);
+    // Use first Hardhat test account which has plenty of ETH by default
+    const defaultHardhatKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+    const signer = new ethers.Wallet(process.env.PRIVATE_KEY || defaultHardhatKey, req.provider);
     const contractWithSigner = req.contract.connect(signer);
 
     const tx = await contractWithSigner.revokePolicy(id);
