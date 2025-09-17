@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { generateGroth16Proof, calculatePolicyCommitment } = require('../../test/utils/proofGenerator');
+const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
 const router = express.Router();
 
 /**
@@ -37,29 +37,21 @@ router.post('/generate', async (req, res, next) => {
     // Calculate policy commitment
     const policyCommitment = await calculatePolicyCommitment(policy, BigInt(randomizer));
 
-    // Create circuit input
-    const circuitInput = {
-      // Policy commitment inputs
+    // Create circuit input using the proper function
+    const circuitInput = createCircuitInput(policyCommitment, {
       policy,
-      randomizer: randomizer.toString(),
-      
-      // Requester attributes
       requesterAttrs,
-      
-      // Merkle proofs (optional)
-      merkleRoots: merkleProofs?.roots || Array(8).fill('0'),
-      merklePathElements: merkleProofs?.pathElements || Array(8).fill(Array(10).fill('0')),
-      merklePathIndices: merkleProofs?.pathIndices || Array(8).fill(Array(10).fill(0)),
-      
-      // Credential signatures (optional)
-      credentialMessages: credentials?.messages || Array(3).fill('0'),
-      credentialSignatures: credentials?.signatures || Array(3).fill(['0', '0']),
-      credentialPubKeys: credentials?.pubKeys || Array(3).fill(['0', '0']),
-      
-      // Range proofs (optional)
-      rangeValues: rangeProofs?.values || Array(3).fill('0'),
-      rangeBounds: rangeProofs?.bounds || Array(3).fill(['0', '100'])
-    };
+      randomizer: BigInt(randomizer),
+      // Optional parameters - use defaults if not provided
+      predicateTypes: [0, 0], // M=2 elements
+      merkleRoots: merkleProofs?.roots?.slice(0, 2) || ['0', '0'], // M=2 elements
+      credPublicKeys: credentials?.pubKeys?.slice(0, 2) || ['0', '0'], // M=2 elements
+      rangeMin: rangeProofs?.bounds?.slice(0, 2)?.map(b => b[0]) || [0, 0], // M=2 elements
+      rangeMax: rangeProofs?.bounds?.slice(0, 2)?.map(b => b[1]) || [100, 100], // M=2 elements
+      ontologyPolicyIds: [0, 0], // M=2 elements
+      ontologyEpochs: [0, 0], // M=2 elements
+      numOperations: 3
+    });
 
     console.log('Generating proof with commitment:', policyCommitment.toString());
     

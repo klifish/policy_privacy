@@ -78,8 +78,8 @@ function createCircuitInput(policyCommitment, options = {}) {
     requesterAttrs = [1, 1, 0], // attr0=1, attr1=1, attr2=0 => should pass
     randomizer = BigInt('12345'),
     predicateTypes = [0, 0], // All predicates disabled for simple test
-    merkleRoots = [0, 0],
-    credPublicKeys = [0, 0],
+    merkleRoots = ['0', '0'], // Ensure M=2 array elements as strings
+    credPublicKeys = ['0', '0'], // Ensure M=2 array elements as strings  
     rangeMin = [0, 0],
     rangeMax = [100, 100],
     ontologyPolicyIds = [0, 0],
@@ -103,8 +103,8 @@ function createCircuitInput(policyCommitment, options = {}) {
     
     // Public inputs
     policyCommitment: policyCommitment,
-    merkleRoots: merkleRoots.map(x => x.toString()),
-    credPublicKeys: credPublicKeys.map(x => x.toString()),
+    merkleRoots: merkleRoots, // Already correct format
+    credPublicKeys: credPublicKeys, // Already correct format
     rangeMin: rangeMin,
     rangeMax: rangeMax,
     ontologyPolicyIds: ontologyPolicyIds,
