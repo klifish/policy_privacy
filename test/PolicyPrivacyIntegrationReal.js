@@ -10,7 +10,7 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     const [owner, dataSubject1, requester1] = await ethers.getSigners();
 
     // Deploy PolicyPrivacyMainVerifier (real Groth16 verifier)
-    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('Groth16Verifier');
+    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
     const verifier = await PolicyPrivacyMainVerifier.deploy();
 
     // Deploy main PolicyPrivacy contract

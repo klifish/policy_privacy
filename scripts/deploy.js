@@ -16,7 +16,7 @@ async function main() {
   // Check if PolicyPrivacyMainVerifier exists (real Groth16 verifier)
   try {
     console.log('📋 Checking for PolicyPrivacyMainVerifier...');
-    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('Groth16Verifier');
+    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
     const realVerifier = await PolicyPrivacyMainVerifier.deploy();
     await realVerifier.waitForDeployment();
     verifierAddress = await realVerifier.getAddress();

@@ -31,7 +31,7 @@
     "build:circuit:info": "for file in build/circuits/*.r1cs; do echo \"$file...\"; npx snarkjs r1cs info \"$file\"; done",
     "build:circuit:setup": "node scripts/groth16_trust_setup.js",
     "build:circuit:export:verificationkey": "npx snarkjs zkey export verificationkey build/circuits/policy_privacy_main_final.zkey build/circuits/policy_privacy_main_vk.json",
-    "build:circuit:export:solidityverifier": "mkdir -p contracts && npx snarkjs zkey export solidityverifier build/circuits/policy_privacy_main_final.zkey contracts/PolicyPrivacyMainVerifier.sol",
+    "build:circuit:export:solidityverifier": "mkdir -p contracts && npx snarkjs zkey export solidityverifier build/circuits/policy_privacy_main_final.zkey contracts/PolicyPrivacyMainVerifier.sol && node scripts/fix_verifier_contract_name.js",
     "build:circuit": "npm run build:circuit:compile && npm run build:circuit:info",
     "build:circuit:full": "npm run build:circuit:compile && npm run build:circuit:info && npm run build:circuit:setup && npm run build:circuit:export:verificationkey && npm run build:circuit:export:solidityverifier",
     "hardhat:test": "npx hardhat test",
