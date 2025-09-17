@@ -17,7 +17,35 @@ const { exec, spawn } = require('child_process');
 const { promisify } = require('util');
 const fs = require('fs');
 
-const execAsync = promisify(exec);
+const execAsync = async (command, options = {}) => {
+  return new Promise((resolve, reject) => {
+    const child = exec(command, options);
+
+    // 实时打印子进程的标准输出
+    child.stdout.on('data', (data) => {
+      process.stdout.write(data.toString());
+    });
+
+    // 实时打印子进程的错误输出
+    child.stderr.on('data', (data) => {
+      process.stderr.write(data.toString());
+    });
+
+    // 监听子进程的完成状态
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command "${command}" exited with code ${code}`));
+      }
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
+};
+// const execAsync = promisify(exec);
 const API_BASE_URL = 'http://localhost:3000';
 
 // Axios will be loaded dynamically after dependencies are installed
@@ -83,16 +111,16 @@ class PolicyPrivacyDemo {
 
   async checkPortAvailability() {
     this.log('🔍 Checking port availability...');
-    
+
     const net = require('net');
     const ports = [8545, 3000]; // Hardhat and API server ports
-    
+
     for (const port of ports) {
       const isInUse = await this.isPortInUse(port);
       if (isInUse) {
         this.log(`⚠️  Port ${port} is in use, attempting to free it...`);
         await this.killProcessOnPort(port);
-        
+
         // Wait a moment and check again
         await this.sleep(2000);
         const stillInUse = await this.isPortInUse(port);

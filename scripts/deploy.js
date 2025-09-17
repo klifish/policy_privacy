@@ -1,5 +1,6 @@
 const { ethers } = require('hardhat');
 const fs = require('fs');
+const e = require('cors');
 
 async function main() {
   console.log('🚀 Deploying PolicyPrivacy contracts to local blockchain...\n');
@@ -15,7 +16,7 @@ async function main() {
   // Check if PolicyPrivacyMainVerifier exists (real Groth16 verifier)
   try {
     console.log('📋 Checking for PolicyPrivacyMainVerifier...');
-    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
+    const PolicyPrivacyMainVerifier = await ethers.getContractFactory('Groth16Verifier');
     const realVerifier = await PolicyPrivacyMainVerifier.deploy();
     await realVerifier.waitForDeployment();
     verifierAddress = await realVerifier.getAddress();
@@ -23,7 +24,7 @@ async function main() {
     console.log('✅ PolicyPrivacyMainVerifier deployed to:', verifierAddress);
   } catch (error) {
     // Fall back to MockVerifier if real verifier not available
-    console.log('⚠️  PolicyPrivacyMainVerifier not available, using MockVerifier...');
+    console.log('⚠️  PolicyPrivacyMainVerifier not available, using MockVerifier...', error);
     console.log('📋 Deploying MockVerifier...');
     const MockVerifier = await ethers.getContractFactory('MockVerifier');
     const mockVerifier = await MockVerifier.deploy();
@@ -42,7 +43,7 @@ async function main() {
 
   console.log('\n🎉 Deployment completed successfully!');
   console.log(`📋 Using ${verifierType} for proof verification`);
-  
+
   if (verifierType === 'MockVerifier') {
     console.log('\n💡 Note: Using MockVerifier for testing.');
     console.log('   Run "npm run build:circuit:full" to build real Groth16 verifier.');
