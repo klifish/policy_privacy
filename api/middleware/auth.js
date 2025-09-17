@@ -16,15 +16,23 @@ const authMiddleware = (req, res, next) => {
   const publicEndpoints = [
     '/docs',
     '/proof/circuit-info',
-    'GET:/health',
-    'GET:/'
+    '/health',
+    '/'
   ];
 
   const method = req.method;
   const path = req.path;
   const endpoint = `${method}:${path}`;
 
-  if (publicEndpoints.includes(path) || publicEndpoints.includes(endpoint)) {
+  // Check if path matches any public endpoint (exact match or starts with)
+  const isPublicEndpoint = publicEndpoints.some(ep => 
+    path === ep || 
+    path.endsWith(ep) || 
+    endpoint === `GET:${ep}` ||
+    endpoint === `${method}:${ep}`
+  );
+
+  if (isPublicEndpoint) {
     return next();
   }
 
@@ -61,8 +69,8 @@ const authMiddleware = (req, res, next) => {
     return next();
   }
 
-  // For demo purposes, allow requests without auth but log them
-  console.warn(`Unauthenticated request to ${method} ${path}`);
+  // For demo purposes, allow requests without auth for public endpoints
+  // In production, this should return 401 Unauthorized
   req.auth = { type: 'none' };
   next();
 };
