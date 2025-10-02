@@ -254,7 +254,7 @@ describe('Policy Content Hiding Evaluation', function() {
       
       const advantage = calculateAdvantage(accuracy, numClasses);
       
-      expect(advantage).to.equal(0.1); // 0.6 - 0.5
+      expect(advantage).to.be.closeTo(0.1, 0.001); // 0.6 - 0.5
     });
     
     it('should evaluate binary classification', function() {
@@ -312,6 +312,17 @@ describe('Policy Content Hiding Evaluation', function() {
   describe('Integration Test (Minimal)', function() {
     it('should run minimal experiment end-to-end', async function() {
       this.timeout(60000); // 1 minute for minimal test
+      
+      // Check if circuits are built
+      const circuitWasmPath = path.join(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
+      const zkeyPath = path.join(__dirname, '../../build/circuits/policy_privacy_main_final.zkey');
+      
+      if (!fs.existsSync(circuitWasmPath) || !fs.existsSync(zkeyPath)) {
+        console.log('\n⚠️  Skipping integration test: circuits not built');
+        console.log('   Run "npm run build:circuit:full" to build circuits first');
+        this.skip();
+        return;
+      }
       
       const { runExperiment } = require('../../experiments/policy_content_hiding/run_experiment');
       
