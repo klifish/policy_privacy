@@ -10,10 +10,27 @@ Policy Content Hiding is the baseline property of Policy Privacy:
 - On-chain, only transaction metadata (gas, calldata length, proof size, events, timing) is observable
 - We verify empirically that no information about hidden policy content leaks through these channels
 
+### DUO Terms and Ontology Linking
+
+The experiment uses Data Use Ontology (DUO) terms as specified in the [EGA DUO documentation](https://ega-archive.org/access/data-access-committee/data-use-ontology/):
+
+**Ontology-Linked DUO Terms** (require external ontologies):
+- **DISEASE_SPECIFIC** (DUO:0000007) - Disease-specific research use, requires disease ontology (ICD-10)
+
+**Non-Ontology-Linked DUO Terms** (standalone):
+- **GENERAL_RESEARCH** (DUO:0000042) - General research use
+- **POPULATION_RESEARCH** (DUO:0000011) - Population research
+- **CLINICAL_CARE** (DUO:0000043) - Clinical care use
+- **COMMERCIAL_USE** (DUO:0000046) - Commercial purpose
+
+This categorization ensures that policies are generated realistically: only disease-specific research policies are paired with ICD-10 codes, while other DUO terms are used standalone.
+
 ## Experiment Structure
 
 ### 1. Data Generation (`data_generator.js`)
-- Generate policies combining DUO terms + ICD-10 chapters
+- Generate policies with DUO terms following actual ontology relationships
+- **Ontology-linked policies**: Disease-specific research paired with ICD-10 chapters
+- **Non-ontology-linked policies**: Other DUO terms used standalone
 - Execute each policy multiple times (satisfy + non-satisfy cases)
 - Collect observable features from blockchain transactions
 

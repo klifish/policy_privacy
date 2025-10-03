@@ -11,6 +11,8 @@ const path = require('path');
 const {
   DUO_TERMS,
   ICD10_CHAPTERS,
+  ONTOLOGY_LINKED_TERMS,
+  isOntologyLinked,
   generateDataset
 } = require('./data_generator');
 

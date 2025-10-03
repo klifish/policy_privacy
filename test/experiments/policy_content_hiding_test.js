@@ -9,6 +9,8 @@ const fs = require('fs');
 const {
   DUO_TERMS,
   ICD10_CHAPTERS,
+  ONTOLOGY_LINKED_TERMS,
+  isOntologyLinked,
   generatePolicy,
   generateRequesterAttrs,
   generateDataset
@@ -41,13 +43,32 @@ describe('Policy Content Hiding Evaluation', function() {
   this.timeout(300000); // 5 minutes for full experiment
   
   describe('Data Generator', function() {
-    it('should generate policy with DUO term and ICD-10 chapter', function() {
-      const policy = generatePolicy(DUO_TERMS.GENERAL_RESEARCH, ICD10_CHAPTERS.INFECTIOUS);
+    it('should generate ontology-linked policy with DUO term and ICD-10 chapter', function() {
+      // DISEASE_SPECIFIC is ontology-linked, requires ICD-10
+      const policy = generatePolicy(DUO_TERMS.DISEASE_SPECIFIC, ICD10_CHAPTERS.INFECTIOUS);
+      
+      expect(policy).to.have.property('policy');
+      expect(policy.policy).to.be.an('array').with.lengthOf(10);
+      expect(policy).to.have.property('duoTerm', DUO_TERMS.DISEASE_SPECIFIC);
+      expect(policy).to.have.property('icd10Chapter', ICD10_CHAPTERS.INFECTIOUS);
+      expect(policy).to.have.property('requiresOntology', true);
+    });
+    
+    it('should generate non-ontology-linked policy without ICD-10 chapter', function() {
+      // GENERAL_RESEARCH is not ontology-linked, no ICD-10 needed
+      const policy = generatePolicy(DUO_TERMS.GENERAL_RESEARCH);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.GENERAL_RESEARCH);
-      expect(policy).to.have.property('icd10Chapter', ICD10_CHAPTERS.INFECTIOUS);
+      expect(policy).to.have.property('icd10Chapter', null);
+      expect(policy).to.have.property('requiresOntology', false);
+    });
+    
+    it('should correctly identify ontology-linked DUO terms', function() {
+      expect(isOntologyLinked(DUO_TERMS.DISEASE_SPECIFIC)).to.equal(true);
+      expect(isOntologyLinked(DUO_TERMS.GENERAL_RESEARCH)).to.equal(false);
+      expect(isOntologyLinked(DUO_TERMS.CLINICAL_CARE)).to.equal(false);
     });
     
     it('should generate requester attributes for satisfy/non-satisfy cases', function() {
@@ -61,20 +82,35 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(nonSatisfyAttrs[0]).to.equal(0);
     });
     
-    it('should generate dataset with specified parameters', function() {
+    it('should generate dataset with ontology-aware pairing', function() {
       const dataset = generateDataset({
-        duoTerms: [0, 1],
-        icd10Chapters: [0, 1],
+        duoTerms: [DUO_TERMS.GENERAL_RESEARCH, DUO_TERMS.DISEASE_SPECIFIC],
+        icd10Chapters: [ICD10_CHAPTERS.INFECTIOUS, ICD10_CHAPTERS.NEOPLASMS],
         executionsPerPolicy: 2
       });
       
-      // 2 DUO terms * 2 ICD-10 chapters * 2 executions = 8 total
-      expect(dataset).to.be.an('array').with.lengthOf(8);
+      // GENERAL_RESEARCH: 1 * 2 executions = 2
+      // DISEASE_SPECIFIC: 2 ICD-10 chapters * 2 executions = 4
+      // Total: 2 + 4 = 6
+      expect(dataset).to.be.an('array').with.lengthOf(6);
+      
+      // Check that ontology-linked policies have ICD-10
+      const diseaseSpecificPolicies = dataset.filter(item => item.duoTerm === DUO_TERMS.DISEASE_SPECIFIC);
+      diseaseSpecificPolicies.forEach(item => {
+        expect(item).to.have.property('requiresOntology', true);
+        expect(item.icd10Chapter).to.not.equal(null);
+      });
+      
+      // Check that non-ontology-linked policies don't have ICD-10
+      const generalResearchPolicies = dataset.filter(item => item.duoTerm === DUO_TERMS.GENERAL_RESEARCH);
+      generalResearchPolicies.forEach(item => {
+        expect(item).to.have.property('requiresOntology', false);
+        expect(item.icd10Chapter).to.equal(null);
+      });
       
       dataset.forEach(item => {
         expect(item).to.have.property('policy');
         expect(item).to.have.property('duoTerm');
-        expect(item).to.have.property('icd10Chapter');
         expect(item).to.have.property('requesterAttrs');
         expect(item).to.have.property('satisfy');
       });

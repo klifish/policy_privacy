@@ -16,6 +16,21 @@ Policy Content Hiding is the baseline privacy property:
 - On-chain, only transaction metadata is observable (gas, calldata, logs, timing)
 - Must verify empirically that no information about policy content leaks
 
+### DUO Terms and Ontology Linking
+
+Following the [EGA Data Use Ontology (DUO)](https://ega-archive.org/access/data-access-committee/data-use-ontology/) specification, DUO terms are categorized as:
+
+**Ontology-Linked** (require external ontologies like ICD-10):
+- DISEASE_SPECIFIC (DUO:0000007) - Disease-specific research use
+
+**Non-Ontology-Linked** (standalone):
+- GENERAL_RESEARCH (DUO:0000042) - General research use
+- POPULATION_RESEARCH (DUO:0000011) - Population research
+- CLINICAL_CARE (DUO:0000043) - Clinical care use
+- COMMERCIAL_USE (DUO:0000046) - Commercial purpose
+
+This categorization ensures realistic policy generation: only disease-specific research policies are paired with ICD-10 codes.
+
 ## Implementation
 
 ### Architecture
@@ -23,10 +38,13 @@ Policy Content Hiding is the baseline privacy property:
 The experiment consists of 5 modular components:
 
 #### 1. Data Generator (`data_generator.js`)
-- Generates policies with DUO terms (5 types) + ICD-10 chapters (10 types)
+- Generates policies following actual DUO ontology relationships
+- **Ontology-linked policies**: Disease-specific research (DUO:0000007) paired with ICD-10 chapters
+- **Non-ontology-linked policies**: Other DUO terms used standalone
 - Executes policies multiple times (satisfy/non-satisfy cases)
 - Collects observable features from blockchain transactions
 - **Key Features:**
+  - Ontology-aware policy generation
   - Configurable dataset size
   - Real blockchain execution with ZK proofs
   - Comprehensive feature collection
@@ -106,12 +124,14 @@ For each DUO term (GENERAL_RESEARCH, DISEASE_SPECIFIC, etc.):
 
 ### Unit Tests (`test/experiments/policy_content_hiding_test.js`)
 
-17 tests covering all components:
+19 tests covering all components:
 
-**Data Generator (3 tests):**
-- ✓ Generate policy with DUO term and ICD-10 chapter
+**Data Generator (5 tests):**
+- ✓ Generate ontology-linked policy with DUO term and ICD-10 chapter
+- ✓ Generate non-ontology-linked policy without ICD-10 chapter
+- ✓ Correctly identify ontology-linked DUO terms
 - ✓ Generate requester attributes for satisfy/non-satisfy cases
-- ✓ Generate dataset with specified parameters
+- ✓ Generate dataset with ontology-aware pairing
 
 **Feature Extractor (4 tests):**
 - ✓ Extract features from execution results
