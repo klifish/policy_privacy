@@ -136,13 +136,13 @@ function evaluateMultiClassification(yTrue, yPred, taskName) {
   
   // Calculate macro-averaged F1
   const f1Scores = Object.values(perClassMetrics).map(m => m.f1);
-  const macroF1 = f1Scores.reduce((a, b) => a + b, 0) / f1Scores.length;
+  const macroF1 = f1Scores.length > 0 ? f1Scores.reduce((a, b) => a + b, 0) / f1Scores.length : 0;
   
   return {
     task: taskName,
     type: 'multi-class',
     accuracy,
-    macroF1,
+    macroF1: isNaN(macroF1) ? 0 : macroF1,
     perClassMetrics,
     advantage,
     randomBaseline: 1 / numClasses,

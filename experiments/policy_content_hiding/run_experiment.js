@@ -228,11 +228,11 @@ async function runExperiment(config = {}) {
     console.log(`  Random Baseline: ${(result.randomBaseline * 100).toFixed(2)}%`);
     console.log(`  Advantage: ${(result.advantage * 100).toFixed(2)}%`);
 
-    if (result.auc !== null) {
+    if (result.auc !== null && result.auc !== undefined) {
       console.log(`  AUC: ${result.auc.toFixed(4)}`);
     }
 
-    if (result.type === 'multi-class') {
+    if (result.type === 'multi-class' && result.macroF1 !== undefined) {
       console.log(`  Macro F1: ${(result.macroF1 * 100).toFixed(2)}%`);
     }
   }
