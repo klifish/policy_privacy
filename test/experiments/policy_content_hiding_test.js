@@ -56,6 +56,7 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(policy).to.have.property('ontologyNamespace', 'ICD10');
       expect(policy).to.have.property('ontologyValue', ICD10_CHAPTERS.INFECTIOUS);
       expect(policy).to.have.property('requiresOntology', true);
+      expect(policy).to.have.property('numOperations', 3);  // attr AND predicate requires 3 tokens
     });
     
     it('should generate ontology-linked policy for research-specific with OBI', function() {
@@ -68,6 +69,7 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(policy).to.have.property('ontologyNamespace', 'OBI');
       expect(policy).to.have.property('ontologyValue', OBI_RESEARCH_TYPES.RCT);
       expect(policy).to.have.property('requiresOntology', true);
+      expect(policy).to.have.property('numOperations', 3);  // attr AND predicate requires 3 tokens
     });
     
     it('should generate non-ontology-linked policy without external ontology', function() {
@@ -80,6 +82,7 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(policy).to.have.property('ontologyNamespace', null);
       expect(policy).to.have.property('ontologyValue', null);
       expect(policy).to.have.property('requiresOntology', false);
+      expect(policy).to.have.property('numOperations', 1);  // single attr requires 1 token
     });
     
     it('should correctly identify ontology-linked DUO terms', function() {

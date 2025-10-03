@@ -139,7 +139,7 @@ function generatePolicy(duoTerm, ontologyValue = null) {
     // Ontology-linked policy: DUO term AND external ontology verification
     // RPN encoding: [0, 2, 5, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 AND external_predicate_0
-    // where: 0=attr0 (DUO term), 2=external_pred_0 (ontology), 5=AND
+    // where: 0=attr0 (DUO term), 2=external_pred_0 (ontology), 5=AND (N+M+0 where N=3, M=2)
     const policy = [0, 2, 5, 0, 0, 0, 0, 0, 0, 0];
 
     return {
@@ -148,6 +148,7 @@ function generatePolicy(duoTerm, ontologyValue = null) {
       ontologyNamespace: namespace,
       ontologyValue,
       requiresOntology: true,
+      numOperations: 3,  // 3 tokens: attr0, predicate_0, AND
       description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}, ${namespace}:${ontologyValue}`
     };
   } else {
@@ -162,6 +163,7 @@ function generatePolicy(duoTerm, ontologyValue = null) {
       ontologyNamespace: null,
       ontologyValue: null,
       requiresOntology: false,
+      numOperations: 1,  // 1 token: attr0 only
       description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}`
     };
   }
@@ -244,7 +246,7 @@ function generateDataset(config = {}) {
  */
 async function executePolicy(policyData, contract) {
   console.log(`Executing Policy ID ${policyData.policyId} (Exec ${policyData.executionId}): ${policyData.description}, Satisfy: ${policyData.satisfy}`);
-  const { policy, requesterAttrs, satisfy, requiresOntology } = policyData;
+  const { policy, requesterAttrs, satisfy, requiresOntology, numOperations } = policyData;
 
   const randomizer = BigInt(Math.floor(Math.random() * 1000000));
   const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
@@ -264,7 +266,7 @@ async function executePolicy(policyData, contract) {
     rangeMax: [100, 100],
     ontologyPolicyIds: [0, 0],
     ontologyEpochs: [0, 0],
-    numOperations: 3
+    numOperations: numOperations || 3  // Use numOperations from policy data, default to 3
   });
 
   // Measure proof generation time
