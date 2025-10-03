@@ -38,8 +38,6 @@ async function generateGroth16Proof(input) {
     zkeyPath
   );
 
-  console.log('Public signals:', publicSignals);
-
   // Format proof for Solidity
   const pA = [proof.pi_a[0], proof.pi_a[1]];
   const pB = [[proof.pi_b[0][1], proof.pi_b[0][0]], [proof.pi_b[1][1], proof.pi_b[1][0]]];

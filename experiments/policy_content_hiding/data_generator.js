@@ -245,7 +245,6 @@ function generateDataset(config = {}) {
  * Execute a policy and collect observable features
  */
 async function executePolicy(policyData, contract) {
-  console.log(`Executing Policy ID ${policyData.policyId} (Exec ${policyData.executionId}): ${policyData.description}, Satisfy: ${policyData.satisfy}`);
   const { policy, requesterAttrs, satisfy, requiresOntology, numOperations } = policyData;
 
   const randomizer = BigInt(Math.floor(Math.random() * 1000000));
@@ -271,9 +270,7 @@ async function executePolicy(policyData, contract) {
 
   // Measure proof generation time
   const proofStartTime = Date.now();
-  console.log('Generating zero-knowledge proof...');
   const proof = await generateGroth16Proof(circuitInput);
-  console.log('Zero-knowledge proof generated successfully.');
   const proofGenerationTime = Date.now() - proofStartTime;
 
   // Commit policy to blockchain
@@ -349,9 +346,9 @@ async function executeDataset(dataset, contract, outputPath) {
   console.log(`Executing ${dataset.length} policy instances...`);
 
   for (let i = 0; i < dataset.length; i++) {
-    if (i % 10 === 0) {
-      console.log(`Progress: ${i}/${dataset.length}`);
-    }
+
+    console.log(`Progress: ${i}/${dataset.length}`);
+
 
     try {
       const result = await executePolicy(dataset[i], contract);
