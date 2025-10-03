@@ -1,6 +1,6 @@
 /**
  * Policy Content Hiding Evaluation Experiment
- * 
+ *
  * Main experiment runner that executes all phases:
  * 1. Data generation and execution
  * 2. Feature extraction
@@ -52,8 +52,15 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.startPhase = parseInt(argv[++i], 10);
     } else if (arg === '--dataset') {
       config.datasetPath = path.resolve(argv[++i]);
-    } else if (arg === '--executions') {
+    } else if (arg === '--execution-results') {
       config.executionResultsPath = path.resolve(argv[++i]);
+    } else if (arg === '--executions') {
+      const value = argv[++i];
+      if (/^\d+$/.test(value)) {
+        config.executionsPerPolicy = parseInt(value, 10);
+      } else {
+        config.executionResultsPath = path.resolve(value);
+      }
     } else if (arg === '--features' || arg === '--results') {
       config.featuresPath = path.resolve(argv[++i]);
     } else if (arg === '--output') {
@@ -85,7 +92,8 @@ function printUsage() {
   console.log('  --phase <n>                 Start the pipeline from the given phase (1-3 supported)');
   console.log('  --features <path>           Path to saved features from phase 2 (for resuming at phase 3)');
   console.log('  --results <path>            Alias for --features');
-  console.log('  --executions <path>         Path to execution results from phase 1 (for resuming at phase 2)');
+  console.log('  --execution-results <path>  Path to execution results from phase 1 (for resuming at phase 2)');
+  console.log('  --executions <value>        Executions per policy (number) or execution results path (legacy)');
   console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
   console.log('  --output <dir>              Output directory for generated artifacts');
   console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
@@ -95,56 +103,14 @@ function printUsage() {
   console.log('  --advantage-threshold <float> Advantage threshold for privacy checks');
 }
 
-/**
- * Parse command line arguments
- */
-function parseArgs() {
-  const args = process.argv.slice(2);
-  const config = {};
-  
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    
-    if (arg === '--phase' && i + 1 < args.length) {
-      config.phase = parseInt(args[++i]);
-    } else if (arg === '--dataset' && i + 1 < args.length) {
-      config.datasetPath = args[++i];
-    } else if (arg === '--features' && i + 1 < args.length) {
-      config.featuresPath = args[++i];
-    } else if (arg === '--results' && i + 1 < args.length) {
-      config.resultsPath = args[++i];
-    } else if (arg === '--output' && i + 1 < args.length) {
-      config.outputDir = args[++i];
-    } else if (arg === '--num-duo-terms' && i + 1 < args.length) {
-      config.numDuoTerms = parseInt(args[++i]);
-    } else if (arg === '--executions' && i + 1 < args.length) {
-      config.executionsPerPolicy = parseInt(args[++i]);
-    }
-  }
-  
-  return config;
-}
-
-/**
- * Run the complete experiment
- */
 async function runExperiment(config = {}) {
   const {
-    // Data generation config
-    numDuoTerms = 3,           // Use subset for faster testing
-    executionsPerPolicy = 5,   // Reduced for faster testing
-
-    // Output paths
+    numDuoTerms = 3,
+    executionsPerPolicy = 5,
     outputDir = path.join(__dirname, 'results'),
-
-    // ML config
     testRatio = 0.3,
-
-    // Privacy thresholds
     aucThreshold = 0.55,
     advantageThreshold = 0.05,
-
-    // Phase control
     startPhase = 1,
     datasetPath = null,
     executionResultsPath = null,
@@ -152,15 +118,17 @@ async function runExperiment(config = {}) {
     phase: phaseAlias = undefined
   } = config;
 
-  const startAtPhase = Number.isInteger(phaseAlias)
-    ? phaseAlias
-    : startPhase;
+  const startAtPhase = Number.isInteger(phaseAlias) ? phaseAlias : startPhase;
 
-  if (startAtPhase < 1 || startAtPhase > 5) {
-    throw new Error('startPhase/phase must be between 1 and 5');
+  if (startAtPhase < 1 || startAtPhase > 3) {
+    throw new Error('startPhase/phase must be between 1 and 3 when resuming the experiment.');
   }
 
   const resolvedOutputDir = path.resolve(outputDir);
+  if (!fs.existsSync(resolvedOutputDir)) {
+    fs.mkdirSync(resolvedOutputDir, { recursive: true });
+  }
+
   const timestamp = Date.now();
   const datasetOutputPath = datasetPath
     ? path.resolve(datasetPath)
@@ -172,45 +140,23 @@ async function runExperiment(config = {}) {
     ? path.resolve(featuresPath)
     : path.join(resolvedOutputDir, 'features.json');
 
-  const runPhase1 = startAtPhase <= 1;
-  const runPhase2 = startAtPhase <= 2;
-  const runPhase3 = startAtPhase <= 3;
-  const runPhase4 = startAtPhase <= 4;
-  const runPhase5 = startAtPhase <= 5;
-
-  if (!runPhase3) {
-    throw new Error('Starting from phase 4 or later is not supported because attack modeling artifacts are required.');
-  }
-
   console.log('='.repeat(60));
   console.log('Policy Content Hiding Evaluation Experiment');
   console.log('='.repeat(60));
   console.log();
 
-  if (phase !== null) {
-    console.log(`⚡ Running Phase ${phase} only`);
-    console.log();
-  }
+  const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
 
-  // Create output directory
-  if (!fs.existsSync(resolvedOutputDir)) {
-    fs.mkdirSync(resolvedOutputDir, { recursive: true });
-  }
   let dataset;
   let executionResults;
   let features;
   let normalizedFeatures;
   let featureStats;
-  let classificationResults;
-  let observedDuoTermIds;
-  let evaluation;
-  let privacyCheck;
 
-  if (runPhase1) {
+  // Phase 1: Data Generation and Execution
+  if (startAtPhase <= 1) {
     console.log('Phase 1: Data Generation and Execution');
     console.log('-'.repeat(60));
-
-    const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
 
     console.log('Generating dataset with:');
     console.log(`  - DUO terms: ${numDuoTerms}`);
@@ -224,8 +170,6 @@ async function runExperiment(config = {}) {
 
     fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
     console.log(`Dataset saved to: ${datasetOutputPath}`);
-    console.log();
-
     console.log(`Generated ${dataset.length} policy instances`);
     console.log();
 
@@ -246,7 +190,6 @@ async function runExperiment(config = {}) {
 
     console.log('Executing policies and collecting features...');
     executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
-
     console.log(`Completed ${executionResults.length} executions`);
     console.log(`Execution results saved to: ${executionResultsOutputPath}`);
     console.log();
@@ -255,14 +198,16 @@ async function runExperiment(config = {}) {
     console.log();
   }
 
-  if (runPhase2) {
+  // Phase 2: Feature Extraction
+  if (startAtPhase <= 2) {
     console.log('Phase 2: Feature Extraction');
     console.log('-'.repeat(60));
 
     if (!executionResults) {
       if (!fs.existsSync(executionResultsOutputPath)) {
-        throw new Error('Execution results not found. Provide --executions <path> or run phase 1 first.');
+        throw new Error('Execution results not found. Provide --execution-results <path> or run phase 1 first.');
       }
+
       console.log(`Loading execution results from: ${executionResultsOutputPath}`);
       executionResults = JSON.parse(fs.readFileSync(executionResultsOutputPath, 'utf8'));
       console.log(`Loaded ${executionResults.length} execution results`);
@@ -319,19 +264,18 @@ async function runExperiment(config = {}) {
   }
 
   // Phase 3: Attack Modeling
-  if (runPhase3) {
-    console.log('Phase 3: Attack Modeling');
-    console.log('-'.repeat(60));
+  console.log('Phase 3: Attack Modeling');
+  console.log('-'.repeat(60));
 
   const { train: trainData, test: testData } = splitTrainTest(normalizedFeatures, testRatio);
   console.log(`Split data: ${trainData.length} train, ${testData.length} test`);
   console.log();
 
-  classificationResults = [];
+  const classificationResults = [];
+  const observedDuoTermIds = Array.from(new Set(normalizedFeatures.map(f => f.duoTerm))).sort((a, b) => a - b);
 
-  observedDuoTermIds = Array.from(new Set(normalizedFeatures.map(f => f.duoTerm))).sort((a, b) => a - b);
-  const duoTermTrain = prepareClassificationData(trainData, 'duoTerm');
-  const duoTermTest = prepareClassificationData(testData, 'duoTerm');
+  const duoTrain = prepareClassificationData(trainData, 'duoTerm');
+  const duoTest = prepareClassificationData(testData, 'duoTerm');
 
   console.log('Task 1: DUO Term Presence Prediction (Binary)');
   for (const duoTermId of observedDuoTermIds) {
@@ -341,10 +285,10 @@ async function runExperiment(config = {}) {
     const testY = testData.map(f => (f.duoTerm === duoTermId ? 1 : 0));
 
     const lr = new LogisticRegression(0.1, 500);
-    lr.train(duoTermTrain.X, trainY);
+    lr.train(duoTrain.X, trainY);
 
-    const predictions = lr.predict(duoTermTest.X);
-    const probas = lr.predictProba(duoTermTest.X);
+    const predictions = lr.predict(duoTest.X);
+    const probabilities = lr.predictProba(duoTest.X);
 
     classificationResults.push({
       type: 'binary',
@@ -352,7 +296,7 @@ async function runExperiment(config = {}) {
       classifier: 'LogisticRegression',
       yTrue: testY,
       yPred: predictions,
-      yProba: probas
+      yProba: probabilities
     });
   }
   console.log();
@@ -363,110 +307,59 @@ async function runExperiment(config = {}) {
   const icdTrain = prepareClassificationData(trainData, 'icd10Chapter');
   const icdTest = prepareClassificationData(testData, 'icd10Chapter');
 
-  const dt = new SimpleDecisionTree(5);
-  dt.train(icdTrain.X, icdTrain.y);
-  const dtPredictions = dt.predict(icdTest.X);
+  const decisionTree = new SimpleDecisionTree(5);
+  decisionTree.train(icdTrain.X, icdTrain.y);
+  const decisionTreePredictions = decisionTree.predict(icdTest.X);
 
   classificationResults.push({
     type: 'multi-class',
     taskName: 'ICD-10 Chapter Prediction (DecisionTree)',
     classifier: 'DecisionTree',
     yTrue: icdTest.y,
-    yPred: dtPredictions
+    yPred: decisionTreePredictions
   });
 
   console.log('  Training Random Forest classifier...');
-  const rf = new RandomForest(10, 5);
-  rf.train(icdTrain.X, icdTrain.y);
-  const rfPredictions = rf.predict(icdTest.X);
+  const randomForest = new RandomForest(10, 5);
+  randomForest.train(icdTrain.X, icdTrain.y);
+  const randomForestPredictions = randomForest.predict(icdTest.X);
 
   classificationResults.push({
     type: 'multi-class',
     taskName: 'ICD-10 Chapter Prediction (RandomForest)',
     classifier: 'RandomForest',
     yTrue: icdTest.y,
-    yPred: rfPredictions
+    yPred: randomForestPredictions
   });
   console.log();
 
   // Phase 4: Evaluation
-  if (runPhase4) {
-    console.log('Phase 4: Evaluation');
-    console.log('-'.repeat(60));
+  console.log('Phase 4: Evaluation');
+  console.log('-'.repeat(60));
 
-  evaluation = evaluateClassificationTasks(classificationResults);
+  const evaluation = evaluateClassificationTasks(classificationResults);
 
-    console.log('Classification Results:');
-    for (const result of evaluationResults.results) {
-      console.log();
-      console.log(`Task: ${result.task}`);
-      console.log(`  Type: ${result.type}`);
-      console.log(`  Accuracy: ${(result.accuracy * 100).toFixed(2)}%`);
-      console.log(`  Random Baseline: ${(result.randomBaseline * 100).toFixed(2)}%`);
-      console.log(`  Advantage: ${(result.advantage * 100).toFixed(2)}%`);
+  console.log('Classification Results:');
+  for (const result of evaluation.results) {
+    console.log();
+    console.log(`Task: ${result.task}`);
+    console.log(`  Type: ${result.type}`);
+    console.log(`  Accuracy: ${(result.accuracy * 100).toFixed(2)}%`);
+    console.log(`  Random Baseline: ${(result.randomBaseline * 100).toFixed(2)}%`);
+    console.log(`  Advantage: ${(result.advantage * 100).toFixed(2)}%`);
 
-      if (result.auc !== null && result.auc !== undefined) {
-        console.log(`  AUC: ${result.auc.toFixed(4)}`);
-      }
-
-      if (result.type === 'multi-class' && result.macroF1 !== undefined) {
-        console.log(`  Macro F1: ${(result.macroF1 * 100).toFixed(2)}%`);
-      }
+    if (result.auc !== null && result.auc !== undefined) {
+      console.log(`  AUC: ${result.auc.toFixed(4)}`);
     }
-    console.log();
 
-    // Check privacy thresholds
-    const privacyCheck = checkPrivacyThresholds(evaluationResults, {
-      aucMax: aucThreshold,
-      advantageMax: advantageThreshold
-    });
-
-    console.log('Privacy Threshold Check:');
-    console.log(`  AUC Threshold: ≤ ${aucThreshold}`);
-    console.log(`  Advantage Threshold: ≤ ${advantageThreshold}`);
-    console.log();
-
-    for (const result of privacyCheck.results) {
-      console.log(`  ${result.task}: ${result.passed ? '✓ PASS' : '✗ FAIL'}`);
-      for (const check of result.checks) {
-        const status = check.passed ? '✓' : '✗';
-        console.log(`    ${status} ${check.metric}: ${check.value.toFixed(4)} (threshold: ${check.threshold})`);
-      }
+    if (result.type === 'multi-class' && result.macroF1 !== undefined && result.macroF1 !== null) {
+      console.log(`  Macro F1: ${(result.macroF1 * 100).toFixed(2)}%`);
     }
-    console.log();
-    console.log(`Overall: ${privacyCheck.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
-    console.log();
-
-    // Save evaluation results
-    const evaluationOutputPath = path.join(outputDir, `evaluation_${Date.now()}.json`);
-    fs.writeFileSync(
-      evaluationOutputPath,
-      JSON.stringify({ evaluation: evaluationResults, privacyCheck }, null, 2)
-    );
-    console.log(`Evaluation results saved to: ${evaluationOutputPath}`);
-    console.log();
-
-    if (phase === 4) {
-      console.log('✓ Phase 4 complete!');
-      console.log(`  → To run phase 5: --phase 5 --results ${evaluationOutputPath}`);
-      return;
-    }
-  } else if (phase === 5) {
-    // Load existing evaluation results
-    if (!resultsPath) {
-      throw new Error('--results path required when running phase 5');
-    }
-    console.log(`Loading evaluation results from: ${resultsPath}`);
-    const loadedData = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
-    evaluationResults = loadedData.evaluation;
-    const privacyCheck = loadedData.privacyCheck;
-    console.log(`Loaded evaluation results`);
-    console.log();
   }
   console.log();
 
   // Check privacy thresholds
-  privacyCheck = checkPrivacyThresholds(evaluation, {
+  const privacyCheck = checkPrivacyThresholds(evaluation, {
     aucMax: aucThreshold,
     advantageMax: advantageThreshold
   });
@@ -488,9 +381,8 @@ async function runExperiment(config = {}) {
   console.log();
 
   // Phase 5: Reporting
-  if (runPhase5) {
-    console.log('Phase 5: Reporting');
-    console.log('-'.repeat(60));
+  console.log('Phase 5: Reporting');
+  console.log('-'.repeat(60));
 
   const icdChapterCount = new Set(normalizedFeatures.map(f => f.icd10Chapter)).size;
   const totalExecutions = executionResults
@@ -522,31 +414,19 @@ async function runExperiment(config = {}) {
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
   console.log(`Saved evaluation report to: ${reportPath}`);
 
-  // Generate human-readable report
   const readableReportPath = path.join(resolvedOutputDir, 'evaluation_report.md');
   const readableReport = generateReadableReport(report);
   fs.writeFileSync(readableReportPath, readableReport);
   console.log(`Saved readable report to: ${readableReportPath}`);
   console.log();
 
-    // Generate human-readable report
-    const readableReportPath = path.join(outputDir, 'evaluation_report.md');
-    const readableReport = generateReadableReport(report);
-    fs.writeFileSync(readableReportPath, readableReport);
-    console.log(`Saved readable report to: ${readableReportPath}`);
-    console.log();
+  console.log('='.repeat(60));
+  console.log('Experiment Complete');
+  console.log('='.repeat(60));
 
-    console.log('='.repeat(60));
-    console.log('Experiment Complete');
-    console.log('='.repeat(60));
-
-    return report;
-  }
+  return report;
 }
 
-/**
- * Generate human-readable markdown report
- */
 function generateReadableReport(report) {
   const lines = [];
 
@@ -632,7 +512,6 @@ function generateReadableReport(report) {
   return lines.join('\n');
 }
 
-// Allow running as standalone script
 if (require.main === module) {
   const cliConfig = parseArgs();
 
