@@ -300,7 +300,10 @@ async function executePolicy(policyData, contract) {
   // Request access with proof
   const accessTx = await contract.connect(signer).requestAccess(
     blockchainPolicyId,
-    [proof.pA, proof.pB, proof.pC, proof.pubSignals]
+    proof.pA,
+    proof.pB,
+    proof.pC,
+    proof.pubSignals
   );
   const accessReceipt = await accessTx.wait();
 
