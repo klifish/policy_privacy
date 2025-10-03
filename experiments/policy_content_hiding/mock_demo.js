@@ -10,7 +10,6 @@ const path = require('path');
 
 const {
   DUO_TERMS,
-  ICD10_CHAPTERS,
   ONTOLOGY_LINKED_TERMS,
   isOntologyLinked,
   generateDataset
@@ -98,15 +97,12 @@ async function runMockDemo() {
   // Configuration
   const config = {
     numDuoTerms: 3,
-    numIcd10Chapters: 5,
     executionsPerPolicy: 10
   };
   
   console.log('Configuration:');
   console.log(`  - DUO terms: ${config.numDuoTerms}`);
-  console.log(`  - ICD-10 chapters: ${config.numIcd10Chapters}`);
   console.log(`  - Executions per policy: ${config.executionsPerPolicy}`);
-  console.log(`  - Total: ${config.numDuoTerms * config.numIcd10Chapters * config.executionsPerPolicy} executions`);
   console.log();
   
   // Phase 1: Generate Dataset
@@ -114,11 +110,9 @@ async function runMockDemo() {
   console.log('-'.repeat(60));
   
   const duoTerms = Object.values(DUO_TERMS).slice(0, config.numDuoTerms);
-  const icd10Chapters = Object.values(ICD10_CHAPTERS).slice(0, config.numIcd10Chapters);
   
   const dataset = generateDataset({
     duoTerms,
-    icd10Chapters,
     executionsPerPolicy: config.executionsPerPolicy
   });
   

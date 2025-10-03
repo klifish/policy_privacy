@@ -12,19 +12,36 @@ const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = 
 // DUO Terms (Data Use Ontology) - based on actual DUO ontology
 // See: https://ega-archive.org/access/data-access-committee/data-use-ontology/
 const DUO_TERMS = {
-  GENERAL_RESEARCH: 0,      // DUO:0000042 - General research use
-  DISEASE_SPECIFIC: 1,      // DUO:0000007 - Disease-specific research (ontology-linked)
-  POPULATION_RESEARCH: 2,   // DUO:0000011 - Population research
-  CLINICAL_CARE: 3,         // DUO:0000043 - Clinical care use
-  COMMERCIAL_USE: 4         // DUO:0000046 - Commercial purpose
+  GENERAL_RESEARCH: 0,         // DUO:0000042 - General research use (non-ontology-linked)
+  DISEASE_SPECIFIC: 1,         // DUO:0000007 - Disease-specific research (ontology-linked → ICD-10)
+  RESEARCH_SPECIFIC: 2,        // DUO:0000012 - Research specific restrictions (ontology-linked → OBI)
+  POPULATION_ANCESTRY: 3,      // DUO:0000011 - Population origins/ancestry (ontology-linked → HANCESTRO)
+  GEOGRAPHICAL_RESTRICTION: 4, // DUO:0000022 - Geographical restriction (ontology-linked → ISO 3166)
+  CLINICAL_CARE: 5,            // DUO:0000043 - Clinical care use (ontology-linked → SNOMED CT)
+  COMMERCIAL_USE: 6            // DUO:0000046 - Commercial purpose (non-ontology-linked)
 };
 
-// Ontology-linked DUO terms that require external ontologies (like ICD-10)
-const ONTOLOGY_LINKED_TERMS = new Set([
-  DUO_TERMS.DISEASE_SPECIFIC  // Requires disease ontology (ICD-10)
+// Ontology-linked DUO terms with their corresponding external ontology namespaces
+// Each ontology-linked term requires verification against a specific external ontology
+const ONTOLOGY_LINKED_TERMS = new Map([
+  [DUO_TERMS.DISEASE_SPECIFIC, 'ICD10'],        // Disease ontology (ICD-10)
+  [DUO_TERMS.RESEARCH_SPECIFIC, 'OBI'],         // Ontology for Biomedical Investigations
+  [DUO_TERMS.POPULATION_ANCESTRY, 'HANCESTRO'], // Human Ancestry Ontology
+  [DUO_TERMS.GEOGRAPHICAL_RESTRICTION, 'ISO3166'], // Country codes
+  [DUO_TERMS.CLINICAL_CARE, 'SNOMED']           // SNOMED CT clinical terminology
 ]);
 
-// ICD-10 Chapters (simplified)
+// External Ontology Namespaces
+// Each namespace represents a different external ontology that can be linked to DUO terms
+const ONTOLOGY_NAMESPACES = {
+  ICD10: 0,      // ICD-10 disease classification
+  OBI: 1,        // Ontology for Biomedical Investigations (research design types)
+  HANCESTRO: 2,  // Human Ancestry Ontology
+  ISO3166: 3,    // ISO 3166 country and region codes
+  SNOMED: 4      // SNOMED CT clinical terminology
+};
+
+// ICD-10 Chapters (for Disease Specific Research - DUO:0000007)
 const ICD10_CHAPTERS = {
   INFECTIOUS: 0,      // A00-B99
   NEOPLASMS: 1,       // C00-D49
@@ -38,35 +55,100 @@ const ICD10_CHAPTERS = {
   MUSCULOSKELETAL: 9  // M00-M99
 };
 
+// OBI Research Design Types (for Research Specific - DUO:0000012)
+const OBI_RESEARCH_TYPES = {
+  RCT: 0,                    // OBI:0000175 - Randomized Controlled Trial
+  COHORT_STUDY: 1,           // OBI:0001185 - Cohort Study
+  CASE_CONTROL: 2,           // OBI:0001556 - Case-Control Study
+  CROSS_SECTIONAL: 3,        // OBI:0001548 - Cross-Sectional Study
+  LONGITUDINAL: 4            // OBI:0001546 - Longitudinal Study
+};
+
+// HANCESTRO Ancestry Groups (for Population Origins - DUO:0000011)
+const HANCESTRO_GROUPS = {
+  EUROPEAN: 0,               // HANCESTRO:0005 - European
+  AFRICAN: 1,                // HANCESTRO:0008 - African
+  ASIAN: 2,                  // HANCESTRO:0010 - Asian
+  HISPANIC_LATIN: 3,         // HANCESTRO:0014 - Hispanic or Latin American
+  NATIVE_AMERICAN: 4         // HANCESTRO:0013 - Native American
+};
+
+// ISO 3166 Geographic Regions (for Geographical Restriction - DUO:0000022)
+const ISO3166_REGIONS = {
+  NORTH_AMERICA: 0,          // USA, Canada, Mexico
+  EUROPE: 1,                 // European countries
+  ASIA: 2,                   // Asian countries
+  OCEANIA: 3,                // Australia, New Zealand
+  AFRICA: 4                  // African countries
+};
+
+// SNOMED CT Clinical Terms (for Clinical Care - DUO:0000043)
+const SNOMED_TERMS = {
+  DIAGNOSTIC: 0,             // Diagnostic procedures
+  THERAPEUTIC: 1,            // Therapeutic procedures
+  PREVENTIVE: 2,             // Preventive care
+  PALLIATIVE: 3,             // Palliative care
+  EMERGENCY: 4               // Emergency care
+};
+
 /**
- * Check if a DUO term is ontology-linked (requires ICD-10)
+ * Check if a DUO term is ontology-linked (requires external ontology)
  */
 function isOntologyLinked(duoTerm) {
   return ONTOLOGY_LINKED_TERMS.has(duoTerm);
 }
 
 /**
+ * Get the ontology namespace for an ontology-linked DUO term
+ */
+function getOntologyNamespace(duoTerm) {
+  return ONTOLOGY_LINKED_TERMS.get(duoTerm);
+}
+
+/**
+ * Get the ontology values for a given namespace
+ */
+function getOntologyValues(namespace) {
+  switch (namespace) {
+    case 'ICD10':
+      return Object.values(ICD10_CHAPTERS);
+    case 'OBI':
+      return Object.values(OBI_RESEARCH_TYPES);
+    case 'HANCESTRO':
+      return Object.values(HANCESTRO_GROUPS);
+    case 'ISO3166':
+      return Object.values(ISO3166_REGIONS);
+    case 'SNOMED':
+      return Object.values(SNOMED_TERMS);
+    default:
+      return [];
+  }
+}
+
+/**
  * Generate a policy configuration
  * Policy format: [attr0, attr1, attr2, op1, op2, ...padding]
- * We encode DUO terms as attributes and ICD-10 as external predicates
+ * We encode DUO terms as attributes and ontology terms as external predicates
  */
-function generatePolicy(duoTerm, icd10Chapter = null) {
+function generatePolicy(duoTerm, ontologyValue = null) {
   // Check if this DUO term requires ontology linking
   const requiresOntology = isOntologyLinked(duoTerm);
+  const namespace = requiresOntology ? getOntologyNamespace(duoTerm) : null;
   
-  if (requiresOntology && icd10Chapter !== null) {
-    // Ontology-linked policy: DUO term AND ICD-10 chapter
+  if (requiresOntology && ontologyValue !== null) {
+    // Ontology-linked policy: DUO term AND external ontology verification
     // RPN encoding: [0, 2, 5, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 AND external_predicate_0
-    // where: 0=attr0 (DUO term), 2=external_pred_0 (ICD-10), 5=AND
+    // where: 0=attr0 (DUO term), 2=external_pred_0 (ontology), 5=AND
     const policy = [0, 2, 5, 0, 0, 0, 0, 0, 0, 0];
     
     return {
       policy,
       duoTerm,
-      icd10Chapter,
+      ontologyNamespace: namespace,
+      ontologyValue,
       requiresOntology: true,
-      description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}, ICD10:${Object.keys(ICD10_CHAPTERS)[icd10Chapter]}`
+      description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}, ${namespace}:${ontologyValue}`
     };
   } else {
     // Non-ontology-linked policy: only DUO term
@@ -77,7 +159,8 @@ function generatePolicy(duoTerm, icd10Chapter = null) {
     return {
       policy,
       duoTerm,
-      icd10Chapter: null,
+      ontologyNamespace: null,
+      ontologyValue: null,
       requiresOntology: false,
       description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}`
     };
@@ -103,7 +186,6 @@ function generateRequesterAttrs(duoTerm, satisfy) {
 function generateDataset(config = {}) {
   const {
     duoTerms = Object.values(DUO_TERMS),
-    icd10Chapters = Object.values(ICD10_CHAPTERS),
     executionsPerPolicy = 10,
     satisfyRatio = 0.5  // 50% satisfy, 50% don't satisfy
   } = config;
@@ -113,9 +195,12 @@ function generateDataset(config = {}) {
   // Generate policies based on DUO term type
   for (const duoTerm of duoTerms) {
     if (isOntologyLinked(duoTerm)) {
-      // Ontology-linked DUO terms: pair with each ICD-10 chapter
-      for (const icd10Chapter of icd10Chapters) {
-        const policyConfig = generatePolicy(duoTerm, icd10Chapter);
+      // Ontology-linked DUO terms: pair with each value from their ontology
+      const namespace = getOntologyNamespace(duoTerm);
+      const ontologyValues = getOntologyValues(namespace);
+      
+      for (const ontologyValue of ontologyValues) {
+        const policyConfig = generatePolicy(duoTerm, ontologyValue);
         
         // Generate multiple executions
         for (let i = 0; i < executionsPerPolicy; i++) {
@@ -132,7 +217,7 @@ function generateDataset(config = {}) {
         }
       }
     } else {
-      // Non-ontology-linked DUO terms: no ICD-10 pairing needed
+      // Non-ontology-linked DUO terms: no ontology pairing needed
       const policyConfig = generatePolicy(duoTerm);
       
       // Generate multiple executions
@@ -278,9 +363,16 @@ async function executeDataset(dataset, contract, outputPath) {
 
 module.exports = {
   DUO_TERMS,
-  ICD10_CHAPTERS,
   ONTOLOGY_LINKED_TERMS,
+  ONTOLOGY_NAMESPACES,
+  ICD10_CHAPTERS,
+  OBI_RESEARCH_TYPES,
+  HANCESTRO_GROUPS,
+  ISO3166_REGIONS,
+  SNOMED_TERMS,
   isOntologyLinked,
+  getOntologyNamespace,
+  getOntologyValues,
   generatePolicy,
   generateRequesterAttrs,
   generateDataset,

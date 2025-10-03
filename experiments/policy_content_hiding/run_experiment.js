@@ -15,7 +15,6 @@ const { ethers } = require('hardhat');
 
 const {
   DUO_TERMS,
-  ICD10_CHAPTERS,
   generateDataset,
   executeDataset
 } = require('./data_generator');
@@ -46,7 +45,6 @@ async function runExperiment(config = {}) {
   const {
     // Data generation config
     numDuoTerms = 3,           // Use subset for faster testing
-    numIcd10Chapters = 5,      // Use subset for faster testing
     executionsPerPolicy = 5,   // Reduced for faster testing
 
     // Output paths
@@ -75,18 +73,14 @@ async function runExperiment(config = {}) {
   console.log('-'.repeat(60));
 
   const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
-  const icd10Chapters = Object.values(ICD10_CHAPTERS).slice(0, numIcd10Chapters);
 
   console.log(`Generating dataset with:`);
   console.log(`  - DUO terms: ${numDuoTerms}`);
-  console.log(`  - ICD-10 chapters: ${numIcd10Chapters}`);
   console.log(`  - Executions per policy: ${executionsPerPolicy}`);
-  console.log(`  - Total executions: ${numDuoTerms * numIcd10Chapters * executionsPerPolicy}`);
   console.log();
 
   const dataset = generateDataset({
     duoTerms,
-    icd10Chapters,
     executionsPerPolicy
   });
 
@@ -273,7 +267,6 @@ async function runExperiment(config = {}) {
     timestamp: new Date().toISOString(),
     config: {
       numDuoTerms,
-      numIcd10Chapters,
       executionsPerPolicy,
       totalExecutions: executionResults.length,
       testRatio

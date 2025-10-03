@@ -34,7 +34,8 @@ function extractFeatures(executionResults) {
       
       // Labels for classification
       duoTerm: result.duoTerm,
-      icd10Chapter: result.icd10Chapter,
+      ontologyNamespace: result.ontologyNamespace,
+      ontologyValue: result.ontologyValue,
       satisfy: result.satisfy ? 1 : 0
     };
   });
@@ -45,7 +46,7 @@ function extractFeatures(executionResults) {
  */
 function normalizeFeatures(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'icd10Chapter', 'satisfy'].includes(key)
+    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
   );
   
   const normalized = features.map(f => ({ ...f }));
@@ -86,7 +87,8 @@ function prepareClassificationData(features, labelKey) {
   const X = features.map(f => {
     const x = { ...f };
     delete x.duoTerm;
-    delete x.icd10Chapter;
+    delete x.ontologyNamespace;
+    delete x.ontologyValue;
     delete x.satisfy;
     return Object.values(x);
   });
@@ -101,7 +103,7 @@ function prepareClassificationData(features, labelKey) {
  */
 function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'icd10Chapter', 'satisfy'].includes(key)
+    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
   );
   
   const stats = {};

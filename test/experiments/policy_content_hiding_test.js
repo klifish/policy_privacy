@@ -9,8 +9,11 @@ const fs = require('fs');
 const {
   DUO_TERMS,
   ICD10_CHAPTERS,
+  OBI_RESEARCH_TYPES,
+  HANCESTRO_GROUPS,
   ONTOLOGY_LINKED_TERMS,
   isOntologyLinked,
+  getOntologyNamespace,
   generatePolicy,
   generateRequesterAttrs,
   generateDataset
@@ -43,32 +46,61 @@ describe('Policy Content Hiding Evaluation', function() {
   this.timeout(300000); // 5 minutes for full experiment
   
   describe('Data Generator', function() {
-    it('should generate ontology-linked policy with DUO term and ICD-10 chapter', function() {
+    it('should generate ontology-linked policy with DUO term and external ontology', function() {
       // DISEASE_SPECIFIC is ontology-linked, requires ICD-10
       const policy = generatePolicy(DUO_TERMS.DISEASE_SPECIFIC, ICD10_CHAPTERS.INFECTIOUS);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.DISEASE_SPECIFIC);
-      expect(policy).to.have.property('icd10Chapter', ICD10_CHAPTERS.INFECTIOUS);
+      expect(policy).to.have.property('ontologyNamespace', 'ICD10');
+      expect(policy).to.have.property('ontologyValue', ICD10_CHAPTERS.INFECTIOUS);
       expect(policy).to.have.property('requiresOntology', true);
     });
     
-    it('should generate non-ontology-linked policy without ICD-10 chapter', function() {
-      // GENERAL_RESEARCH is not ontology-linked, no ICD-10 needed
+    it('should generate ontology-linked policy for research-specific with OBI', function() {
+      // RESEARCH_SPECIFIC is ontology-linked, requires OBI
+      const policy = generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.RCT);
+      
+      expect(policy).to.have.property('policy');
+      expect(policy.policy).to.be.an('array').with.lengthOf(10);
+      expect(policy).to.have.property('duoTerm', DUO_TERMS.RESEARCH_SPECIFIC);
+      expect(policy).to.have.property('ontologyNamespace', 'OBI');
+      expect(policy).to.have.property('ontologyValue', OBI_RESEARCH_TYPES.RCT);
+      expect(policy).to.have.property('requiresOntology', true);
+    });
+    
+    it('should generate non-ontology-linked policy without external ontology', function() {
+      // GENERAL_RESEARCH is not ontology-linked
       const policy = generatePolicy(DUO_TERMS.GENERAL_RESEARCH);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.GENERAL_RESEARCH);
-      expect(policy).to.have.property('icd10Chapter', null);
+      expect(policy).to.have.property('ontologyNamespace', null);
+      expect(policy).to.have.property('ontologyValue', null);
       expect(policy).to.have.property('requiresOntology', false);
     });
     
     it('should correctly identify ontology-linked DUO terms', function() {
+      // Ontology-linked terms
       expect(isOntologyLinked(DUO_TERMS.DISEASE_SPECIFIC)).to.equal(true);
+      expect(isOntologyLinked(DUO_TERMS.RESEARCH_SPECIFIC)).to.equal(true);
+      expect(isOntologyLinked(DUO_TERMS.POPULATION_ANCESTRY)).to.equal(true);
+      expect(isOntologyLinked(DUO_TERMS.GEOGRAPHICAL_RESTRICTION)).to.equal(true);
+      expect(isOntologyLinked(DUO_TERMS.CLINICAL_CARE)).to.equal(true);
+      
+      // Non-ontology-linked terms
       expect(isOntologyLinked(DUO_TERMS.GENERAL_RESEARCH)).to.equal(false);
-      expect(isOntologyLinked(DUO_TERMS.CLINICAL_CARE)).to.equal(false);
+      expect(isOntologyLinked(DUO_TERMS.COMMERCIAL_USE)).to.equal(false);
+    });
+    
+    it('should return correct ontology namespace for ontology-linked terms', function() {
+      expect(getOntologyNamespace(DUO_TERMS.DISEASE_SPECIFIC)).to.equal('ICD10');
+      expect(getOntologyNamespace(DUO_TERMS.RESEARCH_SPECIFIC)).to.equal('OBI');
+      expect(getOntologyNamespace(DUO_TERMS.POPULATION_ANCESTRY)).to.equal('HANCESTRO');
+      expect(getOntologyNamespace(DUO_TERMS.GEOGRAPHICAL_RESTRICTION)).to.equal('ISO3166');
+      expect(getOntologyNamespace(DUO_TERMS.CLINICAL_CARE)).to.equal('SNOMED');
     });
     
     it('should generate requester attributes for satisfy/non-satisfy cases', function() {
@@ -82,30 +114,47 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(nonSatisfyAttrs[0]).to.equal(0);
     });
     
-    it('should generate dataset with ontology-aware pairing', function() {
+    it('should generate dataset with multi-ontology awareness', function() {
       const dataset = generateDataset({
-        duoTerms: [DUO_TERMS.GENERAL_RESEARCH, DUO_TERMS.DISEASE_SPECIFIC],
-        icd10Chapters: [ICD10_CHAPTERS.INFECTIOUS, ICD10_CHAPTERS.NEOPLASMS],
+        duoTerms: [
+          DUO_TERMS.GENERAL_RESEARCH,
+          DUO_TERMS.DISEASE_SPECIFIC,
+          DUO_TERMS.RESEARCH_SPECIFIC
+        ],
         executionsPerPolicy: 2
       });
       
       // GENERAL_RESEARCH: 1 * 2 executions = 2
-      // DISEASE_SPECIFIC: 2 ICD-10 chapters * 2 executions = 4
-      // Total: 2 + 4 = 6
-      expect(dataset).to.be.an('array').with.lengthOf(6);
+      // DISEASE_SPECIFIC: 10 ICD-10 chapters * 2 executions = 20
+      // RESEARCH_SPECIFIC: 5 OBI types * 2 executions = 10
+      // Total: 2 + 20 + 10 = 32
+      expect(dataset).to.be.an('array').with.lengthOf(32);
       
-      // Check that ontology-linked policies have ICD-10
+      // Check disease-specific policies have ICD10
       const diseaseSpecificPolicies = dataset.filter(item => item.duoTerm === DUO_TERMS.DISEASE_SPECIFIC);
+      expect(diseaseSpecificPolicies).to.have.lengthOf(20);
       diseaseSpecificPolicies.forEach(item => {
         expect(item).to.have.property('requiresOntology', true);
-        expect(item.icd10Chapter).to.not.equal(null);
+        expect(item).to.have.property('ontologyNamespace', 'ICD10');
+        expect(item.ontologyValue).to.not.equal(null);
       });
       
-      // Check that non-ontology-linked policies don't have ICD-10
+      // Check research-specific policies have OBI
+      const researchSpecificPolicies = dataset.filter(item => item.duoTerm === DUO_TERMS.RESEARCH_SPECIFIC);
+      expect(researchSpecificPolicies).to.have.lengthOf(10);
+      researchSpecificPolicies.forEach(item => {
+        expect(item).to.have.property('requiresOntology', true);
+        expect(item).to.have.property('ontologyNamespace', 'OBI');
+        expect(item.ontologyValue).to.not.equal(null);
+      });
+      
+      // Check non-ontology-linked policies
       const generalResearchPolicies = dataset.filter(item => item.duoTerm === DUO_TERMS.GENERAL_RESEARCH);
+      expect(generalResearchPolicies).to.have.lengthOf(2);
       generalResearchPolicies.forEach(item => {
         expect(item).to.have.property('requiresOntology', false);
-        expect(item.icd10Chapter).to.equal(null);
+        expect(item).to.have.property('ontologyNamespace', null);
+        expect(item.ontologyValue).to.equal(null);
       });
       
       dataset.forEach(item => {
@@ -122,7 +171,8 @@ describe('Policy Content Hiding Evaluation', function() {
       const mockResults = [
         {
           duoTerm: 0,
-          icd10Chapter: 0,
+          ontologyNamespace: 'ICD10',
+          ontologyValue: 0,
           satisfy: true,
           features: {
             commitGasUsed: '50000',
@@ -145,13 +195,14 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(features).to.be.an('array').with.lengthOf(1);
       expect(features[0]).to.have.property('commitGasUsed', 50000);
       expect(features[0]).to.have.property('duoTerm', 0);
-      expect(features[0]).to.have.property('icd10Chapter', 0);
+      expect(features[0]).to.have.property('ontologyNamespace', 'ICD10');
+      expect(features[0]).to.have.property('ontologyValue', 0);
     });
     
     it('should normalize features', function() {
       const features = [
-        { value: 0, duoTerm: 0, icd10Chapter: 0, satisfy: 1 },
-        { value: 100, duoTerm: 1, icd10Chapter: 1, satisfy: 0 }
+        { value: 0, duoTerm: 0, ontologyNamespace: 'ICD10', ontologyValue: 0, satisfy: 1 },
+        { value: 100, duoTerm: 1, ontologyNamespace: 'OBI', ontologyValue: 1, satisfy: 0 }
       ];
       
       const normalized = normalizeFeatures(features);
@@ -171,9 +222,9 @@ describe('Policy Content Hiding Evaluation', function() {
     
     it('should calculate feature statistics', function() {
       const features = [
-        { value: 10, duoTerm: 0, icd10Chapter: 0, satisfy: 1 },
-        { value: 20, duoTerm: 1, icd10Chapter: 1, satisfy: 0 },
-        { value: 30, duoTerm: 0, icd10Chapter: 1, satisfy: 1 }
+        { value: 10, duoTerm: 0, ontologyNamespace: 'ICD10', ontologyValue: 0, satisfy: 1 },
+        { value: 20, duoTerm: 1, ontologyNamespace: 'OBI', ontologyValue: 1, satisfy: 0 },
+        { value: 30, duoTerm: 0, ontologyNamespace: 'ICD10', ontologyValue: 1, satisfy: 1 }
       ];
       
       const stats = calculateFeatureStats(features);
