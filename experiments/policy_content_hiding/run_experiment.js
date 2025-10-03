@@ -99,9 +99,11 @@ async function runExperiment(config = {}) {
 
   const verifier = await Verifier.deploy();
   await verifier.waitForDeployment();
+  console.log('Verifier deployed at:', await verifier.getAddress());
 
   const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
   await policyPrivacy.waitForDeployment();
+  console.log('PolicyPrivacy deployed at:', await policyPrivacy.getAddress());
 
   console.log('Contract deployed');
   console.log();

@@ -21,29 +21,31 @@ async function initPoseidon() {
 async function generateGroth16Proof(input) {
   const circuitWasmPath = path.join(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
   const zkeyPath = path.join(__dirname, '../../build/circuits/policy_privacy_main_final.zkey');
-  
+
   // Check if required files exist
   if (!fs.existsSync(circuitWasmPath)) {
     throw new Error(`Circuit WASM file not found: ${circuitWasmPath}`);
   }
-  
+
   if (!fs.existsSync(zkeyPath)) {
     throw new Error(`ZKey file not found: ${zkeyPath}`);
   }
-  
+
   // Generate proof
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
     circuitWasmPath,
     zkeyPath
   );
-  
+
+  console.log('Public signals:', publicSignals);
+
   // Format proof for Solidity
   const pA = [proof.pi_a[0], proof.pi_a[1]];
   const pB = [[proof.pi_b[0][1], proof.pi_b[0][0]], [proof.pi_b[1][1], proof.pi_b[1][0]]];
   const pC = [proof.pi_c[0], proof.pi_c[1]];
   const pubSignals = publicSignals.map(x => x.toString());
-  
+
   return { pA, pB, pC, pubSignals };
 }
 
@@ -86,7 +88,7 @@ function createCircuitInput(policyCommitment, options = {}) {
     ontologyEpochs = [0, 0],
     numOperations = 3
   } = options;
-  
+
   return {
     // Private inputs
     policy: policy,
@@ -100,7 +102,7 @@ function createCircuitInput(policyCommitment, options = {}) {
     rangeValues: [0, 0],
     ontologyCodes: [0, 0],
     randomizer: randomizer.toString(),
-    
+
     // Public inputs
     policyCommitment: policyCommitment,
     merkleRoots: merkleRoots, // Already correct format

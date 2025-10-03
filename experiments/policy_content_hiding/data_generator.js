@@ -134,14 +134,14 @@ function generatePolicy(duoTerm, ontologyValue = null) {
   // Check if this DUO term requires ontology linking
   const requiresOntology = isOntologyLinked(duoTerm);
   const namespace = requiresOntology ? getOntologyNamespace(duoTerm) : null;
-  
+
   if (requiresOntology && ontologyValue !== null) {
     // Ontology-linked policy: DUO term AND external ontology verification
     // RPN encoding: [0, 2, 5, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 AND external_predicate_0
     // where: 0=attr0 (DUO term), 2=external_pred_0 (ontology), 5=AND
     const policy = [0, 2, 5, 0, 0, 0, 0, 0, 0, 0];
-    
+
     return {
       policy,
       duoTerm,
@@ -155,7 +155,7 @@ function generatePolicy(duoTerm, ontologyValue = null) {
     // RPN encoding: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 (just the DUO term attribute)
     const policy = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    
+
     return {
       policy,
       duoTerm,
@@ -189,24 +189,24 @@ function generateDataset(config = {}) {
     executionsPerPolicy = 10,
     satisfyRatio = 0.5  // 50% satisfy, 50% don't satisfy
   } = config;
-  
+
   const dataset = [];
-  
+
   // Generate policies based on DUO term type
   for (const duoTerm of duoTerms) {
     if (isOntologyLinked(duoTerm)) {
       // Ontology-linked DUO terms: pair with each value from their ontology
       const namespace = getOntologyNamespace(duoTerm);
       const ontologyValues = getOntologyValues(namespace);
-      
+
       for (const ontologyValue of ontologyValues) {
         const policyConfig = generatePolicy(duoTerm, ontologyValue);
-        
+
         // Generate multiple executions
         for (let i = 0; i < executionsPerPolicy; i++) {
           const satisfy = Math.random() < satisfyRatio;
           const requesterAttrs = generateRequesterAttrs(duoTerm, satisfy);
-          
+
           dataset.push({
             policyId: dataset.length,
             ...policyConfig,
@@ -219,12 +219,12 @@ function generateDataset(config = {}) {
     } else {
       // Non-ontology-linked DUO terms: no ontology pairing needed
       const policyConfig = generatePolicy(duoTerm);
-      
+
       // Generate multiple executions
       for (let i = 0; i < executionsPerPolicy; i++) {
         const satisfy = Math.random() < satisfyRatio;
         const requesterAttrs = generateRequesterAttrs(duoTerm, satisfy);
-        
+
         dataset.push({
           policyId: dataset.length,
           ...policyConfig,
@@ -235,7 +235,7 @@ function generateDataset(config = {}) {
       }
     }
   }
-  
+
   return dataset;
 }
 
@@ -243,11 +243,12 @@ function generateDataset(config = {}) {
  * Execute a policy and collect observable features
  */
 async function executePolicy(policyData, contract) {
+  console.log(`Executing Policy ID ${policyData.policyId} (Exec ${policyData.executionId}): ${policyData.description}, Satisfy: ${policyData.satisfy}`);
   const { policy, requesterAttrs, satisfy, requiresOntology } = policyData;
-  
+
   const randomizer = BigInt(Math.floor(Math.random() * 1000000));
   const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
-  
+
   // Prepare circuit input
   // Set predicate type based on whether ontology is required
   const predicateTypes = requiresOntology ? [3, 0] : [0, 0]; // Type 3 = ontology, 0 = disabled
@@ -265,12 +266,14 @@ async function executePolicy(policyData, contract) {
     ontologyEpochs: [0, 0],
     numOperations: 3
   });
-  
+
   // Measure proof generation time
   const proofStartTime = Date.now();
+  console.log('Generating zero-knowledge proof...');
   const proof = await generateGroth16Proof(circuitInput);
+  console.log('Zero-knowledge proof generated successfully.');
   const proofGenerationTime = Date.now() - proofStartTime;
-  
+
   // Commit policy to blockchain
   const [signer] = await ethers.getSigners();
   const commitTx = await contract.connect(signer).commitPolicy(
@@ -278,7 +281,7 @@ async function executePolicy(policyData, contract) {
     'ipfs://policy-metadata'
   );
   const commitReceipt = await commitTx.wait();
-  
+
   // Extract policy ID from events
   const policyCommittedEvent = commitReceipt.logs.find(log => {
     try {
@@ -288,17 +291,17 @@ async function executePolicy(policyData, contract) {
       return false;
     }
   });
-  
+
   const parsedEvent = contract.interface.parseLog(policyCommittedEvent);
   const blockchainPolicyId = parsedEvent.args.policyId;
-  
+
   // Request access with proof
   const accessTx = await contract.connect(signer).requestAccess(
     blockchainPolicyId,
     [proof.pA, proof.pB, proof.pC, proof.pubSignals]
   );
   const accessReceipt = await accessTx.wait();
-  
+
   // Extract observable features
   const features = {
     // Transaction features
@@ -306,23 +309,23 @@ async function executePolicy(policyData, contract) {
     commitCalldataLength: commitTx.data.length,
     accessGasUsed: accessReceipt.gasUsed.toString(),
     accessCalldataLength: accessTx.data.length,
-    
+
     // Proof features
     proofSize: JSON.stringify(proof).length,
     proofGenerationTime,
-    
+
     // Event features
     commitLogsCount: commitReceipt.logs.length,
     commitLogsSize: JSON.stringify(commitReceipt.logs).length,
     accessLogsCount: accessReceipt.logs.length,
     accessLogsSize: JSON.stringify(accessReceipt.logs).length,
-    
+
     // Timing (block numbers can reveal information)
     commitBlockNumber: commitReceipt.blockNumber,
     accessBlockNumber: accessReceipt.blockNumber,
     blockDifference: accessReceipt.blockNumber - commitReceipt.blockNumber,
   };
-  
+
   return {
     ...policyData,
     features,
@@ -337,14 +340,14 @@ async function executePolicy(policyData, contract) {
 async function executeDataset(dataset, contract, outputPath) {
   const fs = require('fs');
   const results = [];
-  
+
   console.log(`Executing ${dataset.length} policy instances...`);
-  
+
   for (let i = 0; i < dataset.length; i++) {
     if (i % 10 === 0) {
       console.log(`Progress: ${i}/${dataset.length}`);
     }
-    
+
     try {
       const result = await executePolicy(dataset[i], contract);
       results.push(result);
@@ -353,11 +356,11 @@ async function executeDataset(dataset, contract, outputPath) {
       // Continue with next policy
     }
   }
-  
+
   // Save results
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
   console.log(`Saved ${results.length} results to ${outputPath}`);
-  
+
   return results;
 }
 
