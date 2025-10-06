@@ -199,10 +199,13 @@ function generateDataset(config = {}) {
     if (isOntologyLinked(duoTerm)) {
       // Ontology-linked DUO terms: pair with each value from their ontology
       const namespace = getOntologyNamespace(duoTerm);
+      console.log(`Generating policies for DUO term ${duoTerm} with ontology ${namespace}...`);
       const ontologyValues = getOntologyValues(namespace);
+      console.log(`  Ontology values: ${ontologyValues}`);
 
       for (const ontologyValue of ontologyValues) {
         const policyConfig = generatePolicy(duoTerm, ontologyValue);
+        console.log(`  Policy: ${policyConfig.description}`);
 
         // Generate multiple executions
         for (let i = 0; i < executionsPerPolicy; i++) {
@@ -221,6 +224,7 @@ function generateDataset(config = {}) {
     } else {
       // Non-ontology-linked DUO terms: no ontology pairing needed
       const policyConfig = generatePolicy(duoTerm);
+      console.log(`  Policy: ${policyConfig.description}`);
 
       // Generate multiple executions
       for (let i = 0; i < executionsPerPolicy; i++) {

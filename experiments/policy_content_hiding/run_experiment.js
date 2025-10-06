@@ -146,6 +146,8 @@ async function runExperiment(config = {}) {
   console.log();
 
   const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
+  console.log(`Using DUO terms: ${duoTerms.join(', ')}`);
+  console.log();
 
   let dataset;
   let executionResults;
