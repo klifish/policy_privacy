@@ -165,7 +165,7 @@ async function runExperiment(config = {}) {
     console.log(`  - Executions per policy: ${executionsPerPolicy}`);
     console.log();
 
-    dataset = generateDataset({
+    dataset = await generateDataset({
       duoTerms,
       executionsPerPolicy
     });

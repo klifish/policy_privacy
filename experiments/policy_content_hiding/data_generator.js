@@ -7,6 +7,7 @@
  */
 
 const { ethers } = require('hardhat');
+const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
 
 // DUO Terms (Data Use Ontology) - based on actual DUO ontology
@@ -19,6 +20,39 @@ const DUO_TERMS = {
   GEOGRAPHICAL_RESTRICTION: 4, // DUO:0000022 - Geographical restriction (ontology-linked → ISO 3166)
   CLINICAL_CARE: 5,            // DUO:0000043 - Clinical care use (ontology-linked → SNOMED CT)
   COMMERCIAL_USE: 6            // DUO:0000046 - Commercial purpose (non-ontology-linked)
+};
+
+// Attribute configuration for policy generation within the experiment.
+// The main circuit instance currently supports N=3 attributes and M=2 predicates,
+// so we focus on the subset {GR, DS, RS}.
+const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS'];
+
+const POLICY_PREDICATE_SLOTS = [
+  {
+    slot: 0,
+    duo: 'DS',
+    namespace: 'ICD10',
+    root: '0x0',
+    description: 'ICD-10 whitelist for disease-specific research policies'
+  },
+  {
+    slot: 1,
+    duo: 'RS',
+    namespace: 'OBI',
+    root: '0x0',
+    description: 'OBI whitelist for research-specific restriction policies'
+  }
+];
+
+const DUO_TO_ATTRIBUTE_CODE = {
+  [DUO_TERMS.GENERAL_RESEARCH]: 'GR',
+  [DUO_TERMS.DISEASE_SPECIFIC]: 'DS',
+  [DUO_TERMS.RESEARCH_SPECIFIC]: 'RS'
+};
+
+const ATTRIBUTE_PREDICATE_SLOT = {
+  DS: 0,
+  RS: 1
 };
 
 // Ontology-linked DUO terms with their corresponding external ontology namespaces
@@ -130,62 +164,68 @@ function getOntologyValues(namespace) {
  * Policy format: [attr0, attr1, attr2, op1, op2, ...padding]
  * We encode DUO terms as attributes and ontology terms as external predicates
  */
-function generatePolicy(duoTerm, ontologyValue = null) {
-  // Check if this DUO term requires ontology linking
-  const requiresOntology = isOntologyLinked(duoTerm);
+async function generatePolicy(duoTerm, ontologyValue = null) {
+  const attributeCode = DUO_TO_ATTRIBUTE_CODE[duoTerm];
+  if (!attributeCode) {
+    throw new Error(`DUO term ${duoTerm} is not supported by the experiment configuration`);
+  }
+
+  const attributeMap = {};
+  POLICY_ATTRIBUTE_ORDER.forEach((code) => {
+    attributeMap[code] = code === attributeCode;
+  });
+
+  const requiresOntology = Boolean(ATTRIBUTE_PREDICATE_SLOT[attributeCode] !== undefined);
   const namespace = requiresOntology ? getOntologyNamespace(duoTerm) : null;
 
-  if (requiresOntology && ontologyValue !== null) {
-    // Ontology-linked policy: DUO term AND external ontology verification
-    // RPN encoding: [0, 2, 5, 0, 0, 0, 0, 0, 0, 0]
-    // Translation: attr0 AND external_predicate_0
-    // where: 0=attr0 (DUO term), 2=external_pred_0 (ontology), 5=AND (N+M+0 where N=3, M=2)
-    const policy = [0, 2, 5, 0, 0, 0, 0, 0, 0, 0];
+  const artifacts = await generatePolicyArtifacts(
+    {
+      policy_id: `duo-${attributeCode.toLowerCase()}`,
+      attributes: attributeMap,
+      predicates: POLICY_PREDICATE_SLOTS,
+      logic: attributeCode
+    },
+    {
+      depth: 10,
+      attributeOrder: POLICY_ATTRIBUTE_ORDER
+    }
+  );
 
-    return {
-      policy,
-      duoTerm,
-      ontologyNamespace: namespace,
-      ontologyValue,
-      requiresOntology: true,
-      numOperations: 3,  // 3 tokens: attr0, predicate_0, AND
-      description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}, ${namespace}:${ontologyValue}`
-    };
-  } else {
-    // Non-ontology-linked policy: only DUO term
-    // RPN encoding: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    // Translation: attr0 (just the DUO term attribute)
-    const policy = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const predicateSlot = requiresOntology ? ATTRIBUTE_PREDICATE_SLOT[attributeCode] : null;
 
-    return {
-      policy,
-      duoTerm,
-      ontologyNamespace: null,
-      ontologyValue: null,
-      requiresOntology: false,
-      numOperations: 1,  // 1 token: attr0 only
-      description: `DUO:${Object.keys(DUO_TERMS)[duoTerm]}`
-    };
-  }
+  return {
+    policy: artifacts.policy,
+    tokens: artifacts.tokens,
+    duoTerm,
+    attributeCode,
+    ontologyNamespace: requiresOntology ? namespace : null,
+    ontologyValue: requiresOntology ? ontologyValue : null,
+    requiresOntology,
+    predicateSlots: requiresOntology && predicateSlot !== null ? [predicateSlot] : [],
+    numOperations: artifacts.numOperations,
+    description: requiresOntology
+      ? `DUO:${attributeCode} & ${namespace}${ontologyValue !== null ? `:${ontologyValue}` : ''}`
+      : `DUO:${attributeCode}`
+  };
 }
 
 /**
  * Generate requester attributes that satisfy or don't satisfy the policy
  */
 function generateRequesterAttrs(duoTerm, satisfy) {
-  // attr0 = DUO term presence
-  // attr1, attr2 = other attributes (not used in this policy)
-  return [
-    satisfy ? 1 : 0,  // attr0: whether requester has DUO term
-    0,                 // attr1: unused
-    0                  // attr2: unused
-  ];
+  const attributeCode = DUO_TO_ATTRIBUTE_CODE[duoTerm];
+  return POLICY_ATTRIBUTE_ORDER.map((code) => {
+    if (code === attributeCode) {
+      return satisfy ? 1 : 0;
+    }
+    return 0;
+  });
 }
 
 /**
  * Generate a dataset of policy configurations
  */
-function generateDataset(config = {}) {
+async function generateDataset(config = {}) {
   const {
     duoTerms = Object.values(DUO_TERMS),
     executionsPerPolicy = 10,
@@ -194,8 +234,16 @@ function generateDataset(config = {}) {
 
   const dataset = [];
 
+  const filteredTerms = duoTerms.filter((term) => {
+    const supported = Object.prototype.hasOwnProperty.call(DUO_TO_ATTRIBUTE_CODE, term);
+    if (!supported) {
+      console.warn(`Skipping unsupported DUO term ${term} (no attribute mapping for current circuit configuration)`);
+    }
+    return supported;
+  });
+
   // Generate policies based on DUO term type
-  for (const duoTerm of duoTerms) {
+  for (const duoTerm of filteredTerms) {
     if (isOntologyLinked(duoTerm)) {
       // Ontology-linked DUO terms: pair with each value from their ontology
       const namespace = getOntologyNamespace(duoTerm);
@@ -204,7 +252,7 @@ function generateDataset(config = {}) {
       console.log(`  Ontology values: ${ontologyValues}`);
 
       for (const ontologyValue of ontologyValues) {
-        const policyConfig = generatePolicy(duoTerm, ontologyValue);
+        const policyConfig = await generatePolicy(duoTerm, ontologyValue);
         console.log(`  Policy: ${policyConfig.description}`);
 
         // Generate multiple executions
@@ -223,7 +271,7 @@ function generateDataset(config = {}) {
       }
     } else {
       // Non-ontology-linked DUO terms: no ontology pairing needed
-      const policyConfig = generatePolicy(duoTerm);
+      const policyConfig = await generatePolicy(duoTerm);
       console.log(`  Policy: ${policyConfig.description}`);
 
       // Generate multiple executions
@@ -249,26 +297,69 @@ function generateDataset(config = {}) {
  * Execute a policy and collect observable features
  */
 async function executePolicy(policyData, contract) {
-  const { policy, requesterAttrs, satisfy, requiresOntology, numOperations } = policyData;
+  const {
+    policy,
+    requesterAttrs,
+    satisfy,
+    numOperations,
+    predicateSlots = [],
+    ontologyValue
+  } = policyData;
 
   const randomizer = BigInt(Math.floor(Math.random() * 1000000));
   const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
 
   // Prepare circuit input
-  // Set predicate type based on whether ontology is required
-  const predicateTypes = requiresOntology ? [3, 0] : [0, 0]; // Type 3 = ontology, 0 = disabled
+  const predicateCount = POLICY_PREDICATE_SLOTS.length;
+  const predicateTypes = Array.from({ length: predicateCount }, () => 0); // Type 3 = ontology, 0 = disabled
+  predicateSlots.forEach((slot) => {
+    if (slot >= 0 && slot < predicateCount) {
+      predicateTypes[slot] = 3;
+    }
+  });
+
+  const zeroStringArray = (length) => Array.from({ length }, () => '0');
+  const zeroNumberArray = (length, value = 0) => Array.from({ length }, () => value);
+
+  const merkleRoots = zeroStringArray(predicateCount);
+  const merkleLeaves = zeroStringArray(predicateCount);
+  const credPublicKeys = zeroStringArray(predicateCount);
+  const rangeMin = zeroNumberArray(predicateCount, 0);
+  const rangeMax = zeroNumberArray(predicateCount, 100);
+  const rangeValues = zeroNumberArray(predicateCount, 0);
+  const ontologyPolicyIds = zeroNumberArray(predicateCount, 0);
+  const ontologyEpochs = zeroNumberArray(predicateCount, 0);
+  const ontologyCodes = zeroNumberArray(predicateCount, 0);
+
+  if (ontologyValue !== undefined && ontologyValue !== null) {
+    predicateSlots.forEach((slot) => {
+      if (slot >= 0 && slot < predicateCount) {
+        ontologyCodes[slot] = ontologyValue;
+      }
+    });
+  }
+
+  const MERKLE_LEVELS = 8;
+  const merklePathElements = Array.from({ length: predicateCount }, () => zeroStringArray(MERKLE_LEVELS));
+  const merklePathIndices = Array.from({ length: predicateCount }, () => zeroNumberArray(MERKLE_LEVELS, 0));
+
   const circuitInput = createCircuitInput(policyCommitment, {
     policy,
     requesterAttrs,
     randomizer,
     predicateTypes,
     // Simplified external predicate setup
-    merkleRoots: ['0', '0'],
-    credPublicKeys: ['0', '0'],
-    rangeMin: [0, 0],
-    rangeMax: [100, 100],
-    ontologyPolicyIds: [0, 0],
-    ontologyEpochs: [0, 0],
+    merkleRoots,
+    merkleLeaves,
+    credPublicKeys,
+    merklePathElements,
+    merklePathIndices,
+    rangeValues,
+    rangeMin,
+    rangeMax,
+    ontologyCodes,
+    ontologyPolicyIds,
+    ontologyEpochs,
     numOperations: numOperations || 3  // Use numOperations from policy data, default to 3
   });
 

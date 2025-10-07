@@ -46,9 +46,9 @@ describe('Policy Content Hiding Evaluation', function() {
   this.timeout(300000); // 5 minutes for full experiment
   
   describe('Data Generator', function() {
-    it('should generate ontology-linked policy with DUO term and external ontology', function() {
+    it('should generate ontology-linked policy with DUO term and external ontology', async function() {
       // DISEASE_SPECIFIC is ontology-linked, requires ICD-10
-      const policy = generatePolicy(DUO_TERMS.DISEASE_SPECIFIC, ICD10_CHAPTERS.INFECTIOUS);
+      const policy = await generatePolicy(DUO_TERMS.DISEASE_SPECIFIC, ICD10_CHAPTERS.INFECTIOUS);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
@@ -59,9 +59,9 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(policy).to.have.property('numOperations', 3);  // attr AND predicate requires 3 tokens
     });
     
-    it('should generate ontology-linked policy for research-specific with OBI', function() {
+    it('should generate ontology-linked policy for research-specific with OBI', async function() {
       // RESEARCH_SPECIFIC is ontology-linked, requires OBI
-      const policy = generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.RCT);
+      const policy = await generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.RCT);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
@@ -72,9 +72,9 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(policy).to.have.property('numOperations', 3);  // attr AND predicate requires 3 tokens
     });
     
-    it('should generate non-ontology-linked policy without external ontology', function() {
+    it('should generate non-ontology-linked policy without external ontology', async function() {
       // GENERAL_RESEARCH is not ontology-linked
-      const policy = generatePolicy(DUO_TERMS.GENERAL_RESEARCH);
+      const policy = await generatePolicy(DUO_TERMS.GENERAL_RESEARCH);
       
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(10);
@@ -117,8 +117,8 @@ describe('Policy Content Hiding Evaluation', function() {
       expect(nonSatisfyAttrs[0]).to.equal(0);
     });
     
-    it('should generate dataset with multi-ontology awareness', function() {
-      const dataset = generateDataset({
+    it('should generate dataset with multi-ontology awareness', async function() {
+      const dataset = await generateDataset({
         duoTerms: [
           DUO_TERMS.GENERAL_RESEARCH,
           DUO_TERMS.DISEASE_SPECIFIC,
