@@ -154,7 +154,9 @@ const SNOMED_TERMS = {
 const DEFAULT_POLICY_COUNT = 200;
 const DEFAULT_EXECUTIONS_PER_POLICY = 20;
 const DEFAULT_SATISFY_RATIO = 0.5;
-const DEFAULT_POLICY_DEPTH = 16;
+// Circom instance is compiled with DEPTH=10 (see circuits/policy_privacy_main_instance.circom)
+// so dataset generator must not emit policies longer than 10 tokens.
+const DEFAULT_POLICY_DEPTH = 10;
 
 const DEFAULT_WHITELIST_BUCKETS = Object.freeze([4, 8, 16, 24, 32]);
 const DEFAULT_MERKLE_DEPTH_OPTIONS = Object.freeze([3, 4, 5, 6, 7]);
@@ -1238,7 +1240,6 @@ async function executeDataset(dataset, contract, outputPath) {
   for (let i = 0; i < dataset.length; i++) {
 
     console.log(`Progress: ${i}/${dataset.length}`);
-
 
     try {
       const result = await executePolicy(dataset[i], contract);
