@@ -11,6 +11,7 @@ const { ethers } = require('hardhat');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
 const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
+const { json } = require('stream/consumers');
 
 // DUO Terms (Data Use Ontology) - based on actual DUO ontology
 // See: https://ega-archive.org/access/data-access-committee/data-use-ontology/
@@ -309,31 +310,101 @@ const OBI_SCOPE_LIBRARY = Object.freeze([
     id: 'RCT',
     value: OBI_RESEARCH_TYPES.RCT,
     label: 'Randomized controlled trial',
-    termId: 'OBI:0000175'
+    termId: 'OBI:0000175',
+    whitelistTerms: [
+      'OBI:0000175',
+      'OBI:0000295',
+      'OBI:0000470',
+      'OBI:0000516',
+      'OBI:0001334',
+      'OBI:0002439',
+      'OBI:0002440',
+      'OBI:0002441',
+      'OBI:0002503',
+      'OBI:0002504',
+      'OBI:0003021',
+      'OBI:0003022'
+    ]
   },
   {
     id: 'COHORT_STUDY',
     value: OBI_RESEARCH_TYPES.COHORT_STUDY,
     label: 'Cohort study',
-    termId: 'OBI:0001185'
+    termId: 'OBI:0001185',
+    whitelistTerms: [
+      'OBI:0001185',
+      'OBI:0000443',
+      'OBI:0000446',
+      'OBI:0000628',
+      'OBI:0000651',
+      'OBI:0000844',
+      'OBI:0000930',
+      'OBI:0000963',
+      'OBI:0001088',
+      'OBI:0001385',
+      'OBI:0001987',
+      'OBI:0002630'
+    ]
   },
   {
     id: 'CASE_CONTROL',
     value: OBI_RESEARCH_TYPES.CASE_CONTROL,
     label: 'Case-control study',
-    termId: 'OBI:0001556'
+    termId: 'OBI:0001556',
+    whitelistTerms: [
+      'OBI:0001556',
+      'OBI:0000412',
+      'OBI:0000447',
+      'OBI:0000600',
+      'OBI:0000721',
+      'OBI:0000845',
+      'OBI:0000895',
+      'OBI:0001265',
+      'OBI:0001496',
+      'OBI:0001726',
+      'OBI:0001988',
+      'OBI:0002631'
+    ]
   },
   {
     id: 'CROSS_SECTIONAL',
     value: OBI_RESEARCH_TYPES.CROSS_SECTIONAL,
     label: 'Cross-sectional study',
-    termId: 'OBI:0001548'
+    termId: 'OBI:0001548',
+    whitelistTerms: [
+      'OBI:0001548',
+      'OBI:0000299',
+      'OBI:0000423',
+      'OBI:0000604',
+      'OBI:0000719',
+      'OBI:0000872',
+      'OBI:0000943',
+      'OBI:0001266',
+      'OBI:0001497',
+      'OBI:0001623',
+      'OBI:0001989',
+      'OBI:0002632'
+    ]
   },
   {
     id: 'LONGITUDINAL',
     value: OBI_RESEARCH_TYPES.LONGITUDINAL,
     label: 'Longitudinal study',
-    termId: 'OBI:0001546'
+    termId: 'OBI:0001546',
+    whitelistTerms: [
+      'OBI:0001546',
+      'OBI:0000300',
+      'OBI:0000424',
+      'OBI:0000605',
+      'OBI:0000720',
+      'OBI:0000873',
+      'OBI:0000944',
+      'OBI:0001267',
+      'OBI:0001498',
+      'OBI:0001727',
+      'OBI:0001990',
+      'OBI:0002633'
+    ]
   }
 ]);
 
@@ -456,6 +527,7 @@ function canonicalizeDuoCombination(combo) {
   if (result.length === 0) {
     throw new Error('DUO combination must include at least one attribute');
   }
+
   return result;
 }
 
@@ -612,14 +684,15 @@ async function createPolicyBlueprint(params) {
 
   const predicateSlots = [];
   const predicateValuesBySlot = {};
-
+  console.log('Generating policy', layerName, index, 'with combination', combination, 'and logic', logic);
   if (combination.includes('DS')) {
+    console.log('Building DS predicate for policy', layerName, index);
     const icdScopes = config.icd10Scopes || ICD10_SCOPE_LIBRARY;
     const chosenScope = randomChoice(rng, icdScopes);
     const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
     const adjustedDepth = ensureDepthForSize(config.merkleDepthOptions || DEFAULT_MERKLE_DEPTH_OPTIONS, whitelistSize);
-    structure.whitelistSize = whitelistSize;
-    structure.merkleDepth = adjustedDepth;
+    structure.whitelistSize = Math.max(structure.whitelistSize, whitelistSize);
+    structure.merkleDepth = Math.max(structure.merkleDepth, adjustedDepth);
 
     const whitelist = await buildOntologyWhitelistForScope({
       rng,
@@ -651,18 +724,43 @@ async function createPolicyBlueprint(params) {
   }
 
   if (combination.includes('RS')) {
+    console.log('Building RS predicate for policy', layerName, index);
     const obiScopes = config.obiScopes || OBI_SCOPE_LIBRARY;
     const chosenObi = randomChoice(rng, obiScopes);
+    const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
+    const adjustedDepth = ensureDepthForSize(config.merkleDepthOptions || DEFAULT_MERKLE_DEPTH_OPTIONS, whitelistSize);
+    structure.whitelistSize = Math.max(structure.whitelistSize, whitelistSize);
+    structure.merkleDepth = Math.max(structure.merkleDepth, adjustedDepth);
+
+    const whitelist = await buildOntologyWhitelistForScope({
+      rng,
+      namespace: 'OBI',
+      availableTerms: chosenObi.whitelistTerms || [chosenObi.termId],
+      whitelistSize,
+      merkleDepth: adjustedDepth
+    });
+
+    structure.predicateRoots[ATTRIBUTE_PREDICATE_SLOT.RS] = whitelist.rootHex;
+    structure.whitelists[ATTRIBUTE_PREDICATE_SLOT.RS] = {
+      namespace: 'OBI',
+      scopeId: chosenObi.id,
+      scopeLabel: chosenObi.label,
+      termId: chosenObi.termId,
+      configHash: whitelist.configHash,
+      leafCount: whitelist.leafCount,
+      selectedTerms: whitelist.terms
+    };
+
     predicateSlots.push(ATTRIBUTE_PREDICATE_SLOT.RS);
-    console.log(predicateSlots);
     predicateValuesBySlot[ATTRIBUTE_PREDICATE_SLOT.RS] = chosenObi.value;
     semantics.obiScope = {
       id: chosenObi.id,
-      label: chosenObi.label
+      label: chosenObi.label,
+      termId: chosenObi.termId
     };
   }
 
-  if (!combination.includes('DS')) {
+  if (predicateSlots.length === 0) {
     structure.whitelistSize = 0;
   }
 
@@ -952,12 +1050,15 @@ async function generateDataset(config = {}) {
     policyDepth = DEFAULT_POLICY_DEPTH
   } = config;
 
+  // console.log(JSON.stringify({ semanticLayers }, null, 2));
+
   const rng = createDeterministicRng(seed); // random number generator  
 
   const allowedCodes = Array.isArray(duoTerms) && duoTerms.length > 0
     ? new Set(duoTerms.map((term) => canonicalizeAttributeCode(term)))
     : null;
 
+  console.log('Allowed codes:', allowedCodes);
   const normalizedLayers = (semanticLayers || DEFAULT_SEMANTIC_LAYERS)
     .map((layer) => {
       const combos = (layer.combos || [])
@@ -972,6 +1073,7 @@ async function generateDataset(config = {}) {
       };
     })
     .filter((layer) => layer.combos.length > 0);
+
 
   const blueprintConfig = {
     seed,

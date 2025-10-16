@@ -20,6 +20,12 @@ const {
 } = require('../../experiments/policy_content_hiding/data_generator');
 
 const {
+  loadDataset,
+  evaluateDatasetQuality,
+  formatQualityReport
+} = require('../../experiments/policy_content_hiding/dataset_quality');
+
+const {
   extractFeatures,
   normalizeFeatures,
   splitTrainTest,
@@ -126,18 +132,22 @@ describe('Policy Content Hiding Evaluation', function () {
         satisfyRatio: 0.5,
         duoTerms: [
           DUO_TERMS.GENERAL_RESEARCH,
-          DUO_TERMS.DISEASE_SPECIFIC
+          DUO_TERMS.DISEASE_SPECIFIC,
+          DUO_TERMS.RESEARCH_SPECIFIC,
         ],
         semanticLayers: [
           {
             name: 'single',
-            combos: [['GR'], ['DS']],
-            minPolicies: 2
+            combos: [['GR'], ['DS'], ['RS']],
+            minPolicies: 4
           },
           {
             name: 'pair',
-            combos: [['GR', 'DS']],
-            minPolicies: 2
+            combos: [
+              ['GR', 'DS'],
+              ['DS', 'RS']
+            ],
+            minPolicies: 4
           }
         ],
         whitelistBuckets: [4],
@@ -153,8 +163,16 @@ describe('Policy Content Hiding Evaluation', function () {
         policyDepth: 12
       });
 
+      const quality = evaluateDatasetQuality(dataset);
+      // fs.writeFileSync(datasetQualityOutputPath, JSON.stringify(quality, null, 2));
+      console.log('Dataset Quality Summary');
+      console.log('-'.repeat(60));
+      console.log(formatQualityReport(quality));
+      console.log();
+      // console.log(`Dataset quality report saved to: ${datasetQualityOutputPath}`);
 
-      expect(dataset).to.be.an('array').with.lengthOf(8);
+
+      expect(dataset).to.be.an('array').with.lengthOf(8); // 4 policies * 2 executions
       expect(dataset.__meta).to.include({
         seed: 'unit-test-dataset',
         policyCount: 4,
@@ -173,11 +191,19 @@ describe('Policy Content Hiding Evaluation', function () {
 
         const { semantics, structure } = item;
         expect(semantics.duoTerms).to.be.an('array').that.is.not.empty;
-        if (semantics.duoTerms.includes('DS')) {
+        const hasDs = semantics.duoTerms.includes('DS');
+        const hasRs = semantics.duoTerms.includes('RS');
+
+        if (hasDs || hasRs) {
           expect(item.requiresOntology).to.equal(true);
-          expect(item.ontologyNamespace).to.equal('ICD10');
+          expect(item.ontologyNamespace).to.be.oneOf(['ICD10', 'OBI']);
           expect(item.ontologyValue).to.be.a('number');
-          expect(semantics.icd10Scope).to.be.an('object');
+          if (hasDs) {
+            expect(semantics.icd10Scope).to.be.an('object');
+          }
+          if (hasRs) {
+            expect(semantics.obiScope).to.be.an('object');
+          }
           expect(structure.whitelistSize).to.be.greaterThan(0);
           expect(2 ** structure.merkleDepth).to.be.at.least(structure.whitelistSize);
         } else {
