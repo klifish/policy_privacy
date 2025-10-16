@@ -20,6 +20,12 @@ const {
 } = require('./data_generator');
 
 const {
+  loadDataset,
+  evaluateDatasetQuality,
+  formatQualityReport
+} = require('./dataset_quality');
+
+const {
   extractFeatures,
   normalizeFeatures,
   splitTrainTest,
@@ -75,6 +81,10 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.aucThreshold = parseFloat(argv[++i]);
     } else if (arg === '--advantage-threshold') {
       config.advantageThreshold = parseFloat(argv[++i]);
+    } else if (arg === '--evaluate-dataset' || arg === '--dataset-quality') {
+      config.evaluateDataset = true;
+    } else if (arg === '--dataset-quality-output') {
+      config.datasetQualityOutput = path.resolve(argv[++i]);
     } else if (arg === '--help' || arg === '-h') {
       config.help = true;
     } else {
@@ -101,6 +111,8 @@ function printUsage() {
   console.log('  --test-ratio <float>        Train/test split ratio (default: 0.3)');
   console.log('  --auc-threshold <float>     AUC threshold for privacy checks');
   console.log('  --advantage-threshold <float> Advantage threshold for privacy checks');
+  console.log('  --evaluate-dataset          Evaluate dataset quality after generation or load');
+  console.log('  --dataset-quality-output <path> Override path for dataset quality JSON output');
 }
 
 async function runExperiment(config = {}) {
@@ -115,6 +127,8 @@ async function runExperiment(config = {}) {
     datasetPath = null,
     executionResultsPath = null,
     featuresPath = null,
+    evaluateDataset = false,
+    datasetQualityOutput = null,
     phase: phaseAlias = undefined
   } = config;
 
@@ -139,6 +153,37 @@ async function runExperiment(config = {}) {
   const featuresOutputPath = featuresPath
     ? path.resolve(featuresPath)
     : path.join(resolvedOutputDir, 'features.json');
+  const datasetQualityOutputPath = datasetQualityOutput
+    ? path.resolve(datasetQualityOutput)
+    : path.join(resolvedOutputDir, 'dataset_quality.json');
+
+  let datasetQualityHandled = false;
+
+  function maybeEvaluateDataset(currentDataset, sourcePath) {
+    if (!evaluateDataset || datasetQualityHandled) {
+      return;
+    }
+    if (!Array.isArray(currentDataset)) {
+      console.warn('Dataset quality requested but dataset is unavailable or invalid.');
+      return;
+    }
+    try {
+      const quality = evaluateDatasetQuality(currentDataset);
+      fs.writeFileSync(datasetQualityOutputPath, JSON.stringify(quality, null, 2));
+      console.log('Dataset Quality Summary');
+      console.log('-'.repeat(60));
+      console.log(formatQualityReport(quality));
+      console.log();
+      console.log(`Dataset quality report saved to: ${datasetQualityOutputPath}`);
+      if (sourcePath) {
+        console.log(`Evaluated dataset source: ${sourcePath}`);
+      }
+      console.log();
+      datasetQualityHandled = true;
+    } catch (error) {
+      console.error('Dataset quality evaluation failed:', error.message);
+    }
+  }
 
   console.log('='.repeat(60));
   console.log('Policy Content Hiding Evaluation Experiment');
@@ -175,6 +220,8 @@ async function runExperiment(config = {}) {
     console.log(`Generated ${dataset.length} policy instances`);
     console.log();
 
+    maybeEvaluateDataset(dataset, datasetOutputPath);
+
     console.log('Deploying PolicyPrivacy contract...');
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
     const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
@@ -198,6 +245,22 @@ async function runExperiment(config = {}) {
   } else {
     console.log('Skipping Phase 1: Data Generation and Execution');
     console.log();
+
+    if (evaluateDataset && !datasetQualityHandled) {
+      const candidatePath = datasetPath
+        ? path.resolve(datasetPath)
+        : datasetOutputPath;
+      if (fs.existsSync(candidatePath)) {
+        try {
+          dataset = loadDataset(candidatePath);
+          maybeEvaluateDataset(dataset, candidatePath);
+        } catch (error) {
+          console.error('Failed to evaluate dataset quality:', error.message);
+        }
+      } else {
+        console.warn('Dataset quality requested but dataset file not found. Provide --dataset <path>.');
+      }
+    }
   }
 
   // Phase 2: Feature Extraction
