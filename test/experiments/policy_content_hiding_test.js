@@ -172,14 +172,16 @@ describe('Policy Content Hiding Evaluation', function () {
       // console.log(`Dataset quality report saved to: ${datasetQualityOutputPath}`);
 
 
-      expect(dataset).to.be.an('array').with.lengthOf(8); // 4 policies * 2 executions
+      expect(dataset).to.be.an('array').with.lengthOf(16); // 8 policies * 2 executions
       expect(dataset.__meta).to.include({
         seed: 'unit-test-dataset',
-        policyCount: 4,
+        policyCount: 8,
         executionsPerPolicy: 2
       });
-      expect(dataset.__meta.coverage.layers).to.have.property('single', 2);
-      expect(dataset.__meta.coverage.layers).to.have.property('pair', 2);
+      expect(dataset.__meta.coverage.layers).to.include({
+        single: 4,
+        pair: 4
+      });
 
       dataset.forEach((item) => {
         expect(item).to.have.property('semantics');
