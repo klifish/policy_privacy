@@ -36,6 +36,14 @@ cd experiments/policy_indistinguishability
 node run_experiment.js --output ./results/pi_run
 ```
 
+Phased execution (resume between steps) mirrors the PCH pipeline:
+
+```bash
+npm run experiment:policy:pi:phase1          # generate dataset + on-chain executions
+npm run experiment:policy:pi:phase2          # rebuild pairs from cached executions
+npm run experiment:policy:pi:phase3          # run attacks + regenerate reports
+```
+
 Common flags:
 
 | Flag | Description |
@@ -49,7 +57,10 @@ Common flags:
 
 Outputs are written to the specified `--output` folder:
 
-- `pi_execution_results_*.json`: raw execution traces per policy instance.  
+- `pi_dataset.json`: cached dataset blueprint (includes `__meta` coverage stats).  
+- `pi_execution_results.json`: raw execution traces per policy instance.  
+- `pi_pairs.json`: paired policy aggregates used for attacks.  
+- `pi_analysis.json`: cached attack outcomes and threshold checks.  
 - `pi_report.json`: machine-readable experiment result bundle.  
 - `pi_report.md`: human-readable summary (status, metrics, diagnostics).
 

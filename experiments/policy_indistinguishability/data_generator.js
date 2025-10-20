@@ -274,6 +274,15 @@ function buildPairs(policies, targets = DEFAULT_PAIR_TARGETS) {
   return pairs;
 }
 
+function buildPairsFromExecutionResults(executionResults, targets = DEFAULT_PAIR_TARGETS) {
+  if (!Array.isArray(executionResults)) {
+    throw new Error('Execution results must be an array.');
+  }
+  const policies = aggregatePolicies(executionResults);
+  const pairs = buildPairs(policies, targets);
+  return { policies, pairs };
+}
+
 /**
  * Generate policies, execute them, and create pair dataset.
  */
@@ -326,9 +335,13 @@ async function generatePolicyPairsDataset({
 module.exports = {
   DUO_TERMS,
   FEATURE_KEYS,
+  DEFAULT_PAIR_TARGETS,
+  generateDataset,
+  executeDataset,
   aggregatePolicies,
   computeSemanticSimilarity,
   buildPairs,
+  buildPairsFromExecutionResults,
   mapFeaturesToRecord,
   generatePolicyPairsDataset
 };

@@ -35,7 +35,7 @@ function ensureDatasetReady(samples) {
   return Array.isArray(samples) && samples.length >= 10;
 }
 
-function runLogistic(name, trainMatrix, testMatrix) {
+function runLogistic(name, trainMatrix, testMatrix, permutationIterations) {
   const model = new LogisticRegression(0.1, 400);
   model.train(trainMatrix.X, trainMatrix.y);
 
@@ -50,7 +50,11 @@ function runLogistic(name, trainMatrix, testMatrix) {
   );
 
   const entropy = computeBinaryEntropy(probabilities);
-  const { pValue } = permutationTestAUC(testMatrix.y, probabilities);
+  const { pValue } = permutationTestAUC(
+    testMatrix.y,
+    probabilities,
+    typeof permutationIterations === 'number' ? permutationIterations : undefined
+  );
 
   return {
     evaluation,
@@ -88,6 +92,7 @@ function runSingleSampleAttacks(pairs, options = {}) {
   const groups = groupPairsByType(pairs);
   const results = [];
   const testRatio = options.testRatio || 0.3;
+  const permutationIterations = options.permutationIterations;
 
   const overallPairs = pairs.length > 0 ? [{ pairType: 'overall', subset: pairs }] : [];
   const scopedGroups = overallPairs.concat(
@@ -126,7 +131,8 @@ function runSingleSampleAttacks(pairs, options = {}) {
     const logisticOutcome = runLogistic(
       `Single-sample PI (${pairType})`,
       trainMatrix,
-      testMatrix
+      testMatrix,
+      permutationIterations
     );
 
     const forestOutcome = runRandomForest(
@@ -189,7 +195,12 @@ function runPairwiseAttacks(pairs, options = {}) {
   const trainMatrix = toMatrix(train);
   const testMatrix = toMatrix(test);
 
-  const logisticOutcome = runLogistic('Pairwise PI (difference vectors)', trainMatrix, testMatrix);
+  const logisticOutcome = runLogistic(
+    'Pairwise PI (difference vectors)',
+    trainMatrix,
+    testMatrix,
+    options.permutationIterations
+  );
   const forestOutcome = runRandomForest('Pairwise PI RF', trainMatrix, testMatrix);
 
   return [

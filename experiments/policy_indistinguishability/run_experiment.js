@@ -1,13 +1,21 @@
 /**
  * Policy Indistinguishability Experiment Runner
+ *
+ * Supports phased execution similar to the Policy Content Hiding pipeline:
+ *   Phase 1 – Dataset generation & on-chain execution
+ *   Phase 2 – Policy pairing & aggregation
+ *   Phase 3 – Attack modelling, evaluation, and reporting
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const {
-  generatePolicyPairsDataset,
-  FEATURE_KEYS
+  DEFAULT_PAIR_TARGETS,
+  FEATURE_KEYS,
+  generateDataset,
+  executeDataset,
+  buildPairsFromExecutionResults
 } = require('./data_generator');
 const {
   runSingleSampleAttacks,
@@ -23,6 +31,15 @@ const DEFAULT_THRESHOLDS = Object.freeze({
   ksPValueMin: 0.05
 });
 
+const DEFAULT_OUTPUT_FILENAMES = Object.freeze({
+  dataset: 'pi_dataset.json',
+  executionResults: 'pi_execution_results.json',
+  pairs: 'pi_pairs.json',
+  analysis: 'pi_analysis.json',
+  reportJson: 'pi_report.json',
+  reportMarkdown: 'pi_report.md'
+});
+
 function parsePairTargets(value) {
   try {
     const parsed = JSON.parse(value);
@@ -30,7 +47,7 @@ function parsePairTargets(value) {
       return parsed;
     }
   } catch {
-    // fall through
+    // ignore parse error
   }
   return null;
 }
@@ -58,6 +75,22 @@ function parseArgs(argv = process.argv.slice(2)) {
         break;
       case '--pair-targets':
         config.pairTargets = parsePairTargets(argv[++i]);
+        break;
+      case '--phase':
+      case '--start-phase':
+        config.startPhase = parseInt(argv[++i], 10);
+        break;
+      case '--dataset':
+        config.datasetPath = path.resolve(argv[++i]);
+        break;
+      case '--execution-results':
+        config.executionResultsPath = path.resolve(argv[++i]);
+        break;
+      case '--pairs':
+        config.pairsPath = path.resolve(argv[++i]);
+        break;
+      case '--analysis':
+        config.analysisPath = path.resolve(argv[++i]);
         break;
       case '--auc-threshold':
         config.aucThreshold = parseFloat(argv[++i]);
@@ -102,13 +135,30 @@ function printUsage() {
   console.log('  --satisfy-ratio <float>        Ratio of satisfying executions (default 0.5)');
   console.log('  --test-ratio <float>           Train/test split ratio (default 0.3)');
   console.log('  --pair-targets <json>          Target counts per pair type (JSON)');
+  console.log('  --phase <1|2|3>                Resume pipeline from given phase');
+  console.log('  --dataset <path>               Path to cached dataset JSON');
+  console.log('  --execution-results <path>     Path to cached execution results JSON');
+  console.log('  --pairs <path>                 Path to cached policy pair JSON');
+  console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
-  console.log('  --advantage-threshold <float>  Max acceptable advantage over random (default 0.05)');
+  console.log('  --advantage-threshold <float>  Max acceptable advantage (default 0.05)');
   console.log('  --permutation-min <float>      Min acceptable permutation p-value (default 0.05)');
   console.log('  --mmd-threshold <float>        Max acceptable MMD distance (default 0.05)');
   console.log('  --ks-min <float>               Min acceptable average KS p-value (default 0.05)');
   console.log('  --permutation-iterations <n>   Permutation iterations for AUC significance (default 500)');
   console.log('  --seed <value>                 Deterministic dataset seed');
+}
+
+function normalizePairTargets(targets) {
+  if (!targets || typeof targets !== 'object') {
+    return { ...DEFAULT_PAIR_TARGETS };
+  }
+  return Object.keys(DEFAULT_PAIR_TARGETS).reduce((acc, key) => {
+    acc[key] = typeof targets[key] === 'number'
+      ? targets[key]
+      : DEFAULT_PAIR_TARGETS[key];
+    return acc;
+  }, {});
 }
 
 function featureImportance(weights) {
@@ -245,6 +295,13 @@ function buildPrivacySummary(singleSampleResults, pairwiseResults, statsResults,
 }
 
 function renderMarkdownReport(report) {
+  const policyCountStr = report.config.policyCount ?? 'N/A';
+  const executionsPerPolicyStr = report.config.executionsPerPolicy ?? 'N/A';
+  const satisfyRatioStr = report.config.satisfyRatio != null
+    ? report.config.satisfyRatio.toFixed(2)
+    : 'N/A';
+  const testRatioPercent = ((report.config.testRatio ?? 0) * 100).toFixed(0);
+
   const lines = [];
   lines.push('# Policy Indistinguishability Evaluation Report');
   lines.push('');
@@ -256,10 +313,10 @@ function renderMarkdownReport(report) {
   lines.push('');
   lines.push('## Configuration');
   lines.push('');
-  lines.push(`- **Policies generated:** ${report.config.policyCount}`);
-  lines.push(`- **Executions per policy:** ${report.config.executionsPerPolicy}`);
-  lines.push(`- **Satisfy ratio:** ${report.config.satisfyRatio}`);
-  lines.push(`- **Test ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
+  lines.push(`- **Policies generated:** ${policyCountStr}`);
+  lines.push(`- **Executions per policy:** ${executionsPerPolicyStr}`);
+  lines.push(`- **Satisfy ratio:** ${satisfyRatioStr}`);
+  lines.push(`- **Test ratio:** ${testRatioPercent}%`);
   lines.push('');
   lines.push('## Pair Composition');
   lines.push('');
@@ -315,11 +372,60 @@ function renderMarkdownReport(report) {
   return lines.join('\n');
 }
 
+function inferMetaFromExecutionResults(executionResults) {
+  if (!Array.isArray(executionResults) || executionResults.length === 0) {
+    return null;
+  }
+  const policyIds = new Set();
+  let satisfyCount = 0;
+  executionResults.forEach((entry) => {
+    policyIds.add(entry.policyId);
+    if (entry.satisfy) satisfyCount += 1;
+  });
+  const totalExecutions = executionResults.length;
+  const policyCount = policyIds.size || null;
+  const executionsPerPolicy = policyCount ? Math.round(totalExecutions / policyCount) : null;
+  const satisfyRatio = totalExecutions ? satisfyCount / totalExecutions : null;
+  return {
+    policyCount,
+    executionsPerPolicy,
+    satisfyRatio
+  };
+}
+
 async function runExperiment(config = {}) {
+  const startPhase = Number.isInteger(config.startPhase) ? config.startPhase : 1;
+  if (startPhase < 1 || startPhase > 3) {
+    throw new Error('startPhase/phase must be between 1 and 3.');
+  }
+
   const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
+
+  const datasetOutputPath = config.datasetPath
+    ? path.resolve(config.datasetPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.dataset);
+  const executionResultsOutputPath = config.executionResultsPath
+    ? path.resolve(config.executionResultsPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.executionResults);
+  const pairsOutputPath = config.pairsPath
+    ? path.resolve(config.pairsPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.pairs);
+  const analysisOutputPath = config.analysisPath
+    ? path.resolve(config.analysisPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.analysis);
+  const reportJsonPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportJson);
+  const reportMarkdownPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportMarkdown);
+
+  let datasetMeta = null;
+  let executionResults = null;
+  let pairsPayload = null;
+  let pairs = null;
+  let policies = null;
+
+  let pairTargets = normalizePairTargets(config.pairTargets);
 
   const thresholds = {
     aucMax: config.aucThreshold ?? DEFAULT_THRESHOLDS.aucMax,
@@ -329,26 +435,114 @@ async function runExperiment(config = {}) {
     ksPValueMin: config.ksPValueMin ?? DEFAULT_THRESHOLDS.ksPValueMin
   };
 
-  const generation = await generatePolicyPairsDataset({
-    policyCount: config.policyCount,
-    executionsPerPolicy: config.executionsPerPolicy,
-    satisfyRatio: config.satisfyRatio,
-    pairTargets: config.pairTargets,
-    seed: config.seed,
-    outputDir
-  });
+  console.log('='.repeat(60));
+  console.log('Policy Indistinguishability Experiment');
+  console.log('='.repeat(60));
+  console.log(`Starting from phase ${startPhase}`);
+  console.log('');
 
-  const singleSampleResults = runSingleSampleAttacks(generation.pairs, {
+  // Phase 1 – dataset generation & execution
+  if (startPhase <= 1) {
+    console.log('Phase 1: Dataset Generation & Execution');
+    console.log('-'.repeat(60));
+    const datasetConfig = {
+      policyCount: config.policyCount,
+      executionsPerPolicy: config.executionsPerPolicy,
+      satisfyRatio: config.satisfyRatio,
+      seed: config.seed
+    };
+
+    const dataset = await generateDataset(datasetConfig);
+    datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
+    fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
+    console.log(`Dataset saved to: ${datasetOutputPath}`);
+
+    const { ethers } = require('hardhat');
+    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
+    const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
+
+    const verifier = await Verifier.deploy();
+    await verifier.waitForDeployment();
+
+    const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
+    await policyPrivacy.waitForDeployment();
+
+    executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
+    console.log(`Execution results saved to: ${executionResultsOutputPath}`);
+    console.log('');
+  } else {
+    console.log('Skipping Phase 1: Dataset Generation & Execution');
+    console.log('');
+    if (fs.existsSync(datasetOutputPath)) {
+      try {
+        const storedDataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
+        datasetMeta = storedDataset.__meta || datasetMeta;
+      } catch (err) {
+        console.warn(`Failed to load dataset at ${datasetOutputPath}: ${err.message}`);
+      }
+    }
+  }
+
+  if (!executionResults) {
+    if (!fs.existsSync(executionResultsOutputPath)) {
+      throw new Error(`Execution results not found at ${executionResultsOutputPath}. Provide --execution-results or run phase 1.`);
+    }
+    executionResults = JSON.parse(fs.readFileSync(executionResultsOutputPath, 'utf8'));
+  }
+
+  // Phase 2 – policy pairing
+  if (startPhase <= 2) {
+    console.log('Phase 2: Policy Pair Construction');
+    console.log('-'.repeat(60));
+
+    const pairData = buildPairsFromExecutionResults(executionResults, pairTargets);
+    pairs = pairData.pairs;
+    policies = pairData.policies;
+
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      pairTargets,
+      datasetMeta: datasetMeta || inferMetaFromExecutionResults(executionResults),
+      policies,
+      pairs
+    };
+    fs.writeFileSync(pairsOutputPath, JSON.stringify(payload, null, 2));
+    console.log(`Policy pairs saved to: ${pairsOutputPath}`);
+    console.log('');
+  } else {
+    console.log('Skipping Phase 2: Policy Pair Construction');
+    console.log('');
+    if (!fs.existsSync(pairsOutputPath)) {
+      throw new Error(`Pairs file not found at ${pairsOutputPath}. Provide --pairs or run phase 2.`);
+    }
+    pairsPayload = JSON.parse(fs.readFileSync(pairsOutputPath, 'utf8'));
+    pairs = pairsPayload.pairs;
+    policies = pairsPayload.policies;
+    if (pairsPayload.pairTargets) {
+      pairTargets = normalizePairTargets(pairsPayload.pairTargets);
+    }
+    datasetMeta = datasetMeta || pairsPayload.datasetMeta || inferMetaFromExecutionResults(executionResults);
+  }
+
+  if (!Array.isArray(pairs) || pairs.length === 0) {
+    throw new Error('No policy pairs available for attack modelling. Ensure phase 2 completed successfully.');
+  }
+
+  // Phase 3 – attack modelling & reporting
+  console.log('Phase 3: Attack Modelling & Reporting');
+  console.log('-'.repeat(60));
+
+  const singleSampleResults = runSingleSampleAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
 
-  const pairwiseResults = runPairwiseAttacks(generation.pairs, {
+  const pairwiseResults = runPairwiseAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
 
-  const statisticsResults = runTwoSampleTests(generation.pairs);
+  const statisticsResults = runTwoSampleTests(pairs);
 
   const privacySummary = buildPrivacySummary(
     singleSampleResults,
@@ -357,25 +551,41 @@ async function runExperiment(config = {}) {
     thresholds
   );
 
-  const pairCounts = generation.pairs.reduce((acc, pair) => {
+  const pairCounts = pairs.reduce((acc, pair) => {
     acc[pair.pairType] = (acc[pair.pairType] || 0) + 1;
     return acc;
   }, {});
+
+  const derivedMeta = datasetMeta || inferMetaFromExecutionResults(executionResults) || {};
+
+  const analysis = {
+    thresholds,
+    pairTargets,
+    singleSample: singleSampleResults,
+    pairwise: pairwiseResults,
+    statistics: statisticsResults,
+    privacySummary
+  };
+  fs.writeFileSync(analysisOutputPath, JSON.stringify(analysis, null, 2));
 
   const report = {
     experiment: 'Policy Indistinguishability',
     timestamp: new Date().toISOString(),
     config: {
-      policyCount: generation.datasetMeta.policyCount,
-      executionsPerPolicy: config.executionsPerPolicy ?? generation.datasetMeta.executionsPerPolicy ?? 0,
-      satisfyRatio: config.satisfyRatio ?? generation.datasetMeta.satisfyRatio ?? 0.5,
+      policyCount: config.policyCount ?? derivedMeta.policyCount ?? (policies ? policies.length : null),
+      executionsPerPolicy: config.executionsPerPolicy ?? derivedMeta.executionsPerPolicy ?? null,
+      satisfyRatio: config.satisfyRatio ?? derivedMeta.satisfyRatio ?? null,
       testRatio: config.testRatio ?? 0.3,
       thresholds
     },
     dataset: {
-      meta: generation.datasetMeta,
-      executionResultsPath: generation.executionResultsPath
+      meta: derivedMeta,
+      datasetPath: datasetOutputPath,
+      executionResultsPath: executionResultsOutputPath,
+      pairsPath: pairsOutputPath,
+      analysisPath: analysisOutputPath
     },
+    pairTargets,
     pairCounts,
     singleSample: singleSampleResults,
     pairwise: pairwiseResults,
@@ -386,11 +596,14 @@ async function runExperiment(config = {}) {
       : 'Potential leakage detected. Further hardening is required.'
   };
 
-  const jsonPath = path.join(outputDir, 'pi_report.json');
-  fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+  fs.writeFileSync(reportJsonPath, JSON.stringify(report, null, 2));
+  fs.writeFileSync(reportMarkdownPath, renderMarkdownReport(report));
 
-  const markdownPath = path.join(outputDir, 'pi_report.md');
-  fs.writeFileSync(markdownPath, renderMarkdownReport(report));
+  console.log(`Saved JSON report to: ${reportJsonPath}`);
+  console.log(`Saved Markdown report to: ${reportMarkdownPath}`);
+  console.log('');
+  console.log(`Overall status: ${privacySummary.overallPassed ? 'PASS' : 'FAIL'}`);
+  console.log('='.repeat(60));
 
   return report;
 }
@@ -404,7 +617,6 @@ if (require.main === module) {
 
   runExperiment(config)
     .then((report) => {
-      console.log(`Report saved. Overall status: ${report.privacySummary.overallPassed ? 'PASS' : 'FAIL'}`);
       process.exit(report.privacySummary.overallPassed ? 0 : 1);
     })
     .catch((error) => {
