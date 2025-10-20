@@ -45,7 +45,8 @@
     "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
     "experiment:policy:phase1": "node experiments/policy_content_hiding/run_experiment.js --phase 1",
     "experiment:policy:phase2": "node experiments/policy_content_hiding/run_experiment.js --phase 2 --execution-results experiments/policy_content_hiding/results/execution_results.json",
-    "experiment:policy:phase3": "node experiments/policy_content_hiding/run_experiment.js --phase 3 --features experiments/policy_content_hiding/results/features.json"
+    "experiment:policy:phase3": "node experiments/policy_content_hiding/run_experiment.js --phase 3 --features experiments/policy_content_hiding/results/features.json",
+    "experiment:policy:pi": "node experiments/policy_indistinguishability/run_experiment.js"
   },
   "author": "",
   "license": "ISC",
