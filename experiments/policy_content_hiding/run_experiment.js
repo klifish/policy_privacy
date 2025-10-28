@@ -44,6 +44,76 @@ const {
   checkPrivacyThresholds
 } = require('./evaluator');
 
+const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
+  1: 'ETH',
+  5: 'ETH',
+  11155111: 'ETH',
+  137: 'MATIC',
+  80001: 'MATIC',
+  80002: 'MATIC'
+});
+
+const GAS_ESTIMATES = Object.freeze({
+  deployment: 4_500_000n,
+  commit: 250_000n,
+  access: 650_000n,
+  bufferPercent: 25n
+});
+
+function getNativeTokenSymbol(chainId) {
+  return NATIVE_TOKEN_SYMBOL_BY_CHAIN[Number(chainId)] || 'ETH';
+}
+
+function estimateTotalGas(executionCount) {
+  const count = BigInt(executionCount);
+  if (count === 0n) {
+    return 0n;
+  }
+
+  const base = GAS_ESTIMATES.deployment + count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.access);
+  return base + (base * GAS_ESTIMATES.bufferPercent) / 100n;
+}
+
+async function ensureSufficientBalance({ provider, signer, executionCount }) {
+  if (executionCount <= 0) {
+    return;
+  }
+
+  const network = await provider.getNetwork();
+  const address = await signer.getAddress();
+  const feeData = await provider.getFeeData();
+  const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice;
+
+  if (!gasPrice) {
+    throw new Error('Unable to determine gas price for balance preflight check.');
+  }
+
+  const estimatedGasUnits = estimateTotalGas(executionCount);
+  const estimatedCostWei = estimatedGasUnits * gasPrice;
+  const balance = await provider.getBalance(address);
+  const nativeSymbol = getNativeTokenSymbol(network.chainId);
+
+  console.log('Balance Preflight Check');
+  console.log('-'.repeat(60));
+  console.log(`  Network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
+  console.log(`  Signer: ${address}`);
+  console.log(`  Current balance: ${ethers.formatEther(balance)} ${nativeSymbol}`);
+  console.log(`  Gas price used for estimate: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
+  console.log(`  Estimated gas required: ${estimatedGasUnits.toString()} units`);
+  console.log(`  Estimated cost: ${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}`);
+
+  if (balance < estimatedCostWei) {
+    const shortfall = estimatedCostWei - balance;
+    throw new Error(
+      `Insufficient balance to run experiment on ${network.name || 'network'}.\n` +
+      `Required ~${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}, short by ${ethers.formatEther(shortfall)} ${nativeSymbol}.`
+    );
+  }
+
+  console.log('  ✓ Balance check passed');
+  console.log();
+}
+
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {};
 
@@ -118,7 +188,7 @@ function printUsage() {
 async function runExperiment(config = {}) {
   const {
     numDuoTerms = 3,
-    executionsPerPolicy = 5,
+    executionsPerPolicy = 1,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
     aucThreshold = 0.55,
@@ -190,6 +260,22 @@ async function runExperiment(config = {}) {
   console.log('='.repeat(60));
   console.log();
 
+  const provider = ethers.provider;
+  const signers = await ethers.getSigners();
+
+  if (!signers || signers.length === 0) {
+    throw new Error(
+      'No signer available. Configure an account (e.g., AMOY_PRIVATE_KEY) for the selected network before running the experiment.'
+    );
+  }
+
+  const primarySigner = signers[0];
+  const network = await provider.getNetwork();
+
+  console.log(`Connected network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
+  console.log(`Primary signer: ${await primarySigner.getAddress()}`);
+  console.log();
+
   const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
   console.log(`Using DUO terms: ${duoTerms.join(', ')}`);
   console.log();
@@ -221,6 +307,12 @@ async function runExperiment(config = {}) {
     console.log();
 
     maybeEvaluateDataset(dataset, datasetOutputPath);
+
+    await ensureSufficientBalance({
+      provider,
+      signer: primarySigner,
+      executionCount: dataset.length
+    });
 
     console.log('Deploying PolicyPrivacy contract...');
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
