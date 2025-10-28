@@ -19,9 +19,8 @@ function extractFeatures(executionResults) {
       accessGasUsed: parseInt(features.accessGasUsed),
       accessCalldataLength: features.accessCalldataLength,
       
-      // Proof features
+      // Proof features (exclude internal-only timings)
       proofSize: features.proofSize,
-      proofGenerationTime: features.proofGenerationTime,
       
       // Event features
       commitLogsCount: features.commitLogsCount,
@@ -46,10 +45,11 @@ function extractFeatures(executionResults) {
  */
 function normalizeFeatures(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
+    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
   );
   
   const normalized = features.map(f => ({ ...f }));
+  const zeroVarianceFeatures = [];
   
   for (const name of featureNames) {
     const values = features.map(f => f[name]);
@@ -60,6 +60,17 @@ function normalizeFeatures(features) {
     if (range > 0) {
       for (let i = 0; i < normalized.length; i++) {
         normalized[i][name] = (normalized[i][name] - min) / range;
+      }
+    } else {
+      zeroVarianceFeatures.push(name);
+    }
+  }
+
+  if (zeroVarianceFeatures.length > 0) {
+    console.warn('Dropping zero-variance features:', zeroVarianceFeatures.join(', '));
+    for (const row of normalized) {
+      for (const name of zeroVarianceFeatures) {
+        delete row[name];
       }
     }
   }
@@ -111,15 +122,20 @@ function calculateFeatureStats(features) {
   for (const name of featureNames) {
     const values = features.map(f => f[name]);
     const sorted = [...values].sort((a, b) => a - b);
-    
+
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    let variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+
+    if (!Number.isFinite(variance)) {
+      variance = 0;
+    }
+
     stats[name] = {
       min: Math.min(...values),
       max: Math.max(...values),
-      mean: values.reduce((a, b) => a + b, 0) / values.length,
+      mean,
       median: sorted[Math.floor(sorted.length / 2)],
-      std: Math.sqrt(
-        values.reduce((sum, v) => sum + Math.pow(v - stats[name]?.mean || 0, 2), 0) / values.length
-      )
+      std: Math.sqrt(variance)
     };
   }
   
