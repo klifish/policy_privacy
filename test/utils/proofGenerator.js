@@ -71,19 +71,19 @@ async function calculatePolicyCommitment(policy, randomizer) {
 function createCircuitInput(policyCommitment, options = {}) {
   const {
     // Default policy: attr0 AND attr1
-    // RPN encoding: [0, 1, 5, 0, 0, 0, 0, 0, 0, 0]
+    // RPN encoding: [0, 1, 11, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 attr1 AND
-    // where: 0=attr0, 1=attr1, 5=AND(N+M+0) = AND(3+2+0) = 5
-    policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0],
-    requesterAttrs = [1, 1, 0], // attr0=1, attr1=1, attr2=0 => should pass
+    // where: 0=attr0, 1=attr1, 11=AND(N+M+0) = AND(6+5+0) = 11
+    policy = [0, 1, 11, 0, 0, 0, 0, 0, 0, 0],
+    requesterAttrs = [1, 1, 0, 0, 0, 0], // attr0=1, attr1=1, others 0 => should pass
     randomizer = BigInt('12345'),
-    predicateTypes = [0, 0], // All predicates disabled for simple test
-    merkleRoots = ['0', '0'], // Ensure M=2 array elements as strings
-    credPublicKeys = ['0', '0'], // Ensure M=2 array elements as strings  
-    rangeMin = [0, 0],
-    rangeMax = [100, 100],
-    ontologyPolicyIds = [0, 0],
-    ontologyEpochs = [0, 0],
+    predicateTypes = [0, 0, 0, 0, 0], // All predicates disabled for simple test
+    merkleRoots = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
+    credPublicKeys = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings  
+    rangeMin = [0, 0, 0, 0, 0],
+    rangeMax = [100, 100, 100, 100, 100],
+    ontologyPolicyIds = [0, 0, 0, 0, 0],
+    ontologyEpochs = [0, 0, 0, 0, 0],
     numOperations = 3
   } = options;
 
@@ -92,19 +92,19 @@ function createCircuitInput(policyCommitment, options = {}) {
     policy: policy,
     requesterAttrs: requesterAttrs,
     predicateTypes: predicateTypes,
-    merkleLeaves: ['0', '0'],
-    merklePathElements: [['0', '0', '0', '0', '0', '0', '0', '0'], ['0', '0', '0', '0', '0', '0', '0', '0']],
-    merklePathIndices: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]],
-    credMessages: ['0', '0'],
-    credSignatures: ['0', '0'],
-    rangeValues: [0, 0],
-    ontologyCodes: [0, 0],
+    merkleLeaves: ['0', '0', '0', '0', '0'],
+    merklePathElements: Array.from({ length: 5 }, () => Array(8).fill('0')),
+    merklePathIndices: Array.from({ length: 5 }, () => Array(8).fill(0)),
+    credMessages: ['0', '0', '0', '0', '0'],
+    credSignatures: ['0', '0', '0', '0', '0'],
+    rangeValues: [0, 0, 0, 0, 0],
+    ontologyCodes: [0, 0, 0, 0, 0],
     randomizer: randomizer.toString(),
 
     // Public inputs
     policyCommitment: policyCommitment,
-    merkleRoots: merkleRoots, // Already correct format
-    credPublicKeys: credPublicKeys, // Already correct format
+    merkleRoots: merkleRoots,
+    credPublicKeys: credPublicKeys,
     rangeMin: rangeMin,
     rangeMax: rangeMax,
     ontologyPolicyIds: ontologyPolicyIds,

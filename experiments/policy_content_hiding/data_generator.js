@@ -28,7 +28,7 @@ const DUO_TERMS = {
 // Attribute configuration for policy generation within the experiment.
 // The main circuit instance currently supports N=3 attributes and M=2 predicates,
 // so we focus on the subset {GR, DS, RS}.
-const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS'];
+const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC'];
 
 const POLICY_PREDICATE_SLOTS = [
   {
@@ -44,13 +44,37 @@ const POLICY_PREDICATE_SLOTS = [
     namespace: 'OBI',
     root: '0x0',
     description: 'OBI whitelist for research-specific restriction policies'
+  },
+  {
+    slot: 2,
+    duo: 'POA',
+    namespace: 'HANCESTRO',
+    root: '0x0',
+    description: 'HANCESTRO whitelist placeholder for population ancestry policies'
+  },
+  {
+    slot: 3,
+    duo: 'GS',
+    namespace: 'ISO3166',
+    root: '0x0',
+    description: 'ISO 3166 whitelist placeholder for geographical restriction policies'
+  },
+  {
+    slot: 4,
+    duo: 'CC',
+    namespace: 'SNOMED',
+    root: '0x0',
+    description: 'SNOMED whitelist placeholder for clinical care policies'
   }
 ];
 
 const DUO_TO_ATTRIBUTE_CODE = {
   [DUO_TERMS.GENERAL_RESEARCH]: 'GR',
   [DUO_TERMS.DISEASE_SPECIFIC]: 'DS',
-  [DUO_TERMS.RESEARCH_SPECIFIC]: 'RS'
+  [DUO_TERMS.RESEARCH_SPECIFIC]: 'RS',
+  [DUO_TERMS.POPULATION_ANCESTRY]: 'POA',
+  [DUO_TERMS.GEOGRAPHICAL_RESTRICTION]: 'GS',
+  [DUO_TERMS.CLINICAL_CARE]: 'CC'
 };
 
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
@@ -70,12 +94,33 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   RESEARCH_SPECIFIC: 'RS',
   RESEARCH_SPECIFIC_RESTRICTIONS: 'RS',
   RESEARCHSPECIFIC: 'RS',
-  DUO0000012: 'RS'
+  DUO0000012: 'RS',
+
+  PA: 'POA',
+  POA: 'POA',
+  POPULATION_ANCESTRY: 'POA',
+  POPULATIONANCESRTY: 'POA',
+  POPULATION_ORIGINS_ANCESTRY: 'POA',
+  DUO0000011: 'POA',
+
+  GE: 'GS',
+  GS: 'GS',
+  GEOGRAPHICAL_RESTRICTION: 'GS',
+  GEOGRAPHIC_RESTRICTION: 'GS',
+  DUO0000022: 'GS',
+
+  CC: 'CC',
+  CLINICAL_CARE: 'CC',
+  CLINICALCARE: 'CC',
+  DUO0000043: 'CC'
 });
 
 const ATTRIBUTE_PREDICATE_SLOT = {
   DS: 0,
-  RS: 1
+  RS: 1,
+  POA: 2,
+  GS: 3,
+  CC: 4
 };
 
 // Ontology-linked DUO terms with their corresponding external ontology namespaces
@@ -152,7 +197,7 @@ const SNOMED_TERMS = {
 // Layered sampling configuration
 // ---------------------------------------------------------------------
 
-const DEFAULT_POLICY_COUNT = 20;
+const DEFAULT_POLICY_COUNT = 200;
 const DEFAULT_EXECUTIONS_PER_POLICY = 20;
 const DEFAULT_SATISFY_RATIO = 0.5;
 // Circom instance is compiled with DEPTH=10 (see circuits/policy_privacy_main_instance.circom)
@@ -189,7 +234,7 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
       ['DS'],
       ['RS']
     ],
-    minPolicies: 0
+    minPolicies: 60
   },
   {
     name: 'pair',
@@ -198,7 +243,7 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
       ['GR', 'RS'],
       ['DS', 'RS']
     ],
-    minPolicies: 0
+    minPolicies: 40
   }
 ]);
 
