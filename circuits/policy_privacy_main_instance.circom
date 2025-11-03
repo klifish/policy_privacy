@@ -6,7 +6,7 @@ include "policy_privacy_main.circom";
     Main instantiation of PolicyPrivacyMain circuit for Groth16 proof system
     
     This creates the main circuit instance with parameters suitable for production:
-    - N=6: 6 requester attributes (GR, DS, RS, POA, GS, CC)  
+    - N=6: 6 requester attributes (GR, DS, RS, POA, GS, CC)
     - M=5: up to 5 external predicates (ICD-10, OBI, HANCESTRO, ISO, SNOMED)
     - DEPTH=10: Support policies up to 10 RPN tokens
     - K=4: ceil(log2(N+M)) = ceil(log2(11)) = 4 bits for operand indexing
@@ -15,5 +15,5 @@ include "policy_privacy_main.circom";
 */
 
 component main { 
-    public [policyCommitment, merkleRoots, credPublicKeys, rangeMin, rangeMax, ontologyPolicyIds, ontologyEpochs, numOperations]
+    public [policyCommitment, merkleRoots, credPublicKeys, rangeMin, rangeMax, ontologyPolicyIds, ontologyEpochs]
 } = PolicyPrivacyMain(6, 5, 10, 4, 8, 32);

@@ -58,6 +58,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     
     // Commitment randomizer r
     signal input randomizer;
+
+    // Actual policy length
+    signal input numOperations;
     
     // ═══════════════════════════════════════════════════════════════════════
     // PUBLIC INPUTS
@@ -73,9 +76,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input rangeMax[M];                           // Range maximum values
     signal input ontologyPolicyIds[M];                  // Policy IDs for ontology-linked terms
     signal input ontologyEpochs[M];                     // Policy epochs for ontology-linked terms
-    
-    // Policy evaluation inputs (made public for verification)
-    signal input numOperations;                         // Actual policy length
     
     // ═══════════════════════════════════════════════════════════════════════
     // OUTPUT

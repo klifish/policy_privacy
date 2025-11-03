@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 interface IVerifier {
-  function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[33] calldata _pubSignals) external view returns (bool);
+  function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[32] calldata _pubSignals) external view returns (bool);
 }
 
 /**
@@ -140,7 +140,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[32] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
@@ -186,7 +186,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA, 
         uint[2][2] calldata _pB, 
         uint[2] calldata _pC, 
-        uint[33] calldata _pubSignals
+        uint[32] calldata _pubSignals
     ) external notPaused returns (uint256) {
         return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
     }
@@ -199,7 +199,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals,
+        uint[32] calldata _pubSignals,
         uint256 padIterations
     ) external notPaused returns (uint256) {
         _burnGas(padIterations);
@@ -282,7 +282,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA, 
         uint[2][2] calldata _pB, 
         uint[2] calldata _pC, 
-        uint[33] calldata _pubSignals
+        uint[32] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }

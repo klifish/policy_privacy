@@ -226,6 +226,8 @@ const GAS_PAD_ITERATIONS = Object.freeze({
   access: 60000n
 });
 
+const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
+
 const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
   {
     name: 'singleton',
@@ -523,6 +525,40 @@ function sampleWithoutReplacement(rng, source, count) {
   const indices = Array.from({ length: source.length }, (_, idx) => idx);
   shuffleInPlace(rng, indices);
   return indices.slice(0, count).map((idx) => source[idx]);
+}
+
+function applyProofPadding(originalProof, targetLength = DEFAULT_PROOF_PAD_TARGET_BYTES, baseLengthHint) {
+  const baseLength = typeof baseLengthHint === 'number'
+    ? baseLengthHint
+    : JSON.stringify(originalProof).length;
+  if (baseLength >= targetLength) {
+    return {
+      paddedProof: originalProof,
+      finalLength: baseLength,
+      padApplied: false,
+      padBytes: 0
+    };
+  }
+
+  const baseWithPadOverhead = JSON.stringify({ ...originalProof, pad: '' }).length;
+  const overhead = baseWithPadOverhead - baseLength;
+  const requiredPad = Math.max(0, targetLength - baseLength - overhead);
+  const padPayload = requiredPad > 0 ? '0'.repeat(requiredPad) : '';
+  const paddedProof = { ...originalProof, pad: padPayload };
+  let finalLength = JSON.stringify(paddedProof).length;
+
+  if (finalLength < targetLength) {
+    const extra = targetLength - finalLength;
+    paddedProof.pad += '0'.repeat(extra);
+    finalLength = JSON.stringify(paddedProof).length;
+  }
+
+  return {
+    paddedProof,
+    finalLength,
+    padApplied: true,
+    padBytes: finalLength - baseLength
+  };
 }
 
 function incrementCounter(map, key, amount = 1) {
@@ -1317,6 +1353,19 @@ async function executePolicy(policyData, contract) {
   const proof = await generateGroth16Proof(circuitInput);
   const proofGenerationTime = Date.now() - proofStartTime;
 
+  const baseProofLength = JSON.stringify(proof).length;
+  const proofPadEnabled = policyData.execution?.proof_pad === true;
+  const configuredPadTarget = policyData.execution?.proof_pad_target ?? DEFAULT_PROOF_PAD_TARGET_BYTES;
+  const proofPadTarget = proofPadEnabled ? Math.max(configuredPadTarget, baseProofLength) : baseProofLength;
+  const proofPadResult = proofPadEnabled
+    ? applyProofPadding(proof, proofPadTarget, baseProofLength)
+    : {
+      paddedProof: proof,
+      finalLength: baseProofLength,
+      padApplied: false,
+      padBytes: 0
+    };
+
   // Commit policy to blockchain
   const [signer] = await ethers.getSigners();
   // const gasPadEnabled = policyData.execution?.gas_pad === true;
@@ -1387,7 +1436,7 @@ async function executePolicy(policyData, contract) {
     accessCalldataLength: accessTx.data.length,
 
     // Proof features
-    proofSize: JSON.stringify(proof).length,
+    proofSize: proofPadResult.finalLength,
     proofGenerationTime,
 
     // Event features

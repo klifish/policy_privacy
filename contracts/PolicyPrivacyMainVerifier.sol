@@ -37,10 +37,10 @@ contract PolicyPrivacyMainVerifier {
     uint256 constant gammax2 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
     uint256 constant gammay1 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
     uint256 constant gammay2 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
-    uint256 constant deltax1 = 6500284450836141325937840524172677214209210045386968948821526542577117727283;
-    uint256 constant deltax2 = 18292762962917197324509295376302908974982596802057223067383266452400852301078;
-    uint256 constant deltay1 = 7755335921177808716917604128812149783199134375330583058390463623108061521861;
-    uint256 constant deltay2 = 17757402335077580432115124479820290348179856978115167311471468993555651022972;
+    uint256 constant deltax1 = 19565282650721320286452892299621389350732968243522351862541558246646828638223;
+    uint256 constant deltax2 = 17207972666956978751752177228373482550262526301189086272897926264022709222366;
+    uint256 constant deltay1 = 4520287964745294254652410910593811316396891490080065406063987905056258816031;
+    uint256 constant deltay2 = 14896763442357030581863236551583714298054018527205096246417519293659020855070;
 
     
     uint256 constant IC0x = 9317298347290011047290723977282223491523592320419280592295006440871079960975;
@@ -142,9 +142,6 @@ contract PolicyPrivacyMainVerifier {
     uint256 constant IC32x = 15795752327337586499540951089947125243815534957025575012399910559376113870025;
     uint256 constant IC32y = 14198556909492368766472879638054541504511968210528784990721634691271580408651;
     
-    uint256 constant IC33x = 17874816841275784993754357454056163728891194401921982015968281275008374545679;
-    uint256 constant IC33y = 8832670861232590547064567745198544483884131975352809051849602613764387057244;
-    
  
     // Memory data
     uint16 constant pVk = 0;
@@ -152,7 +149,7 @@ contract PolicyPrivacyMainVerifier {
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[33] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[32] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, r)) {
@@ -259,8 +256,6 @@ contract PolicyPrivacyMainVerifier {
                 g1_mulAccC(_pVk, IC31x, IC31y, calldataload(add(pubSignals, 960)))
                 
                 g1_mulAccC(_pVk, IC32x, IC32y, calldataload(add(pubSignals, 992)))
-                
-                g1_mulAccC(_pVk, IC33x, IC33y, calldataload(add(pubSignals, 1024)))
                 
 
                 // -A
@@ -378,8 +373,6 @@ contract PolicyPrivacyMainVerifier {
             checkField(calldataload(add(_pubSignals, 960)))
             
             checkField(calldataload(add(_pubSignals, 992)))
-            
-            checkField(calldataload(add(_pubSignals, 1024)))
             
 
             // Validate all evaluations
