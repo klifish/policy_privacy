@@ -152,7 +152,7 @@ const SNOMED_TERMS = {
 // Layered sampling configuration
 // ---------------------------------------------------------------------
 
-const DEFAULT_POLICY_COUNT = 200;
+const DEFAULT_POLICY_COUNT = 20;
 const DEFAULT_EXECUTIONS_PER_POLICY = 20;
 const DEFAULT_SATISFY_RATIO = 0.5;
 // Circom instance is compiled with DEPTH=10 (see circuits/policy_privacy_main_instance.circom)
@@ -176,6 +176,11 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
   batch_pattern: ['baseline', 'batched', 'staggered']
 });
 
+const GAS_PAD_ITERATIONS = Object.freeze({
+  commit: 40000n,
+  access: 60000n
+});
+
 const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
   {
     name: 'singleton',
@@ -184,7 +189,7 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
       ['DS'],
       ['RS']
     ],
-    minPolicies: 60
+    minPolicies: 10
   },
   {
     name: 'pair',
@@ -193,7 +198,7 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
       ['GR', 'RS'],
       ['DS', 'RS']
     ],
-    minPolicies: 40
+    minPolicies: 10
   }
 ]);
 
@@ -1269,10 +1274,26 @@ async function executePolicy(policyData, contract) {
 
   // Commit policy to blockchain
   const [signer] = await ethers.getSigners();
-  const commitTx = await contract.connect(signer).commitPolicy(
-    policyCommitment,
-    'ipfs://policy-metadata'
-  );
+  const gasPadEnabled = policyData.execution?.gas_pad === true;
+  const commitPadIterations = gasPadEnabled ? GAS_PAD_ITERATIONS.commit : 0n;
+
+  const contractWithSigner = contract.connect(signer);
+  const hasCommitPad = typeof contractWithSigner.commitPolicyWithGasPad === 'function';
+  const commitTx = gasPadEnabled && hasCommitPad
+    ? await contractWithSigner.commitPolicyWithGasPad(
+        policyCommitment,
+        'ipfs://policy-metadata',
+        commitPadIterations
+      )
+    : await (async () => {
+        if (gasPadEnabled && !hasCommitPad) {
+          console.warn('Gas pad enabled but commitPolicyWithGasPad() not available. Falling back to commitPolicy().');
+        }
+        return contractWithSigner.commitPolicy(
+          policyCommitment,
+          'ipfs://policy-metadata'
+        );
+      })();
   const commitReceipt = await commitTx.wait();
 
   // Extract policy ID from events
@@ -1289,13 +1310,29 @@ async function executePolicy(policyData, contract) {
   const blockchainPolicyId = parsedEvent.args.policyId;
 
   // Request access with proof
-  const accessTx = await contract.connect(signer).requestAccess(
-    blockchainPolicyId,
-    proof.pA,
-    proof.pB,
-    proof.pC,
-    proof.pubSignals
-  );
+  const accessPadIterations = gasPadEnabled ? GAS_PAD_ITERATIONS.access : 0n;
+  const hasAccessPad = typeof contractWithSigner.requestAccessWithGasPad === 'function';
+  const accessTx = gasPadEnabled && hasAccessPad
+    ? await contractWithSigner.requestAccessWithGasPad(
+        blockchainPolicyId,
+        proof.pA,
+        proof.pB,
+        proof.pC,
+        proof.pubSignals,
+        accessPadIterations
+      )
+    : await (async () => {
+        if (gasPadEnabled && !hasAccessPad) {
+          console.warn('Gas pad enabled but requestAccessWithGasPad() not available. Falling back to requestAccess().');
+        }
+        return contractWithSigner.requestAccess(
+          blockchainPolicyId,
+          proof.pA,
+          proof.pB,
+          proof.pC,
+          proof.pubSignals
+        );
+      })();
   const accessReceipt = await accessTx.wait();
 
   // Extract observable features

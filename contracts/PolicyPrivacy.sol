@@ -55,6 +55,9 @@ contract PolicyPrivacy {
     address public immutable owner;
     bool public emergencyPaused;
 
+    uint256 private constant MAX_GAS_PAD_ITERATIONS = 120000;
+    uint256 private gasPadAccumulator;
+
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
         _;
@@ -77,14 +80,25 @@ contract PolicyPrivacy {
         nextRequestId = 1;
     }
 
-    /**
-     * @dev Commit a new policy without revealing its contents
-     * @param _commitment Poseidon hash of (policy || randomness)
-     * @param _metadataURI Optional metadata URI (e.g., IPFS hash)
-     */
-    function commitPolicy(uint256 _commitment, string calldata _metadataURI) external notPaused returns (uint256) {
+    function _burnGas(uint256 iterations) internal {
+        if (iterations == 0) {
+            return;
+        }
+        require(iterations <= MAX_GAS_PAD_ITERATIONS, "Gas pad too large");
+
+        uint256 acc = gasPadAccumulator;
+        unchecked {
+            for (uint256 i = 0; i < iterations; ++i) {
+                // Simple integer mixing to prevent loop removal by optimizer
+                acc = (acc ^ (i + 0x9e3779b97f4a7c15)) * 0x1000003d;
+            }
+        }
+        gasPadAccumulator = acc;
+    }
+
+    function _commitPolicy(uint256 _commitment, string calldata _metadataURI) internal returns (uint256) {
         uint256 policyId = nextPolicyId++;
-        
+
         policies[policyId] = PolicyCommitment({
             dataSubject: msg.sender,
             commitment: _commitment,
@@ -94,10 +108,69 @@ contract PolicyPrivacy {
         });
 
         subjectPolicies[msg.sender].push(policyId);
-        
+
         emit PolicyCommitted(msg.sender, policyId, _commitment);
-        
+
         return policyId;
+    }
+
+    /**
+     * @dev Commit a new policy without revealing its contents
+     * @param _commitment Poseidon hash of (policy || randomness)
+     * @param _metadataURI Optional metadata URI (e.g., IPFS hash)
+     */
+    function commitPolicy(uint256 _commitment, string calldata _metadataURI) external notPaused returns (uint256) {
+        return _commitPolicy(_commitment, _metadataURI);
+    }
+
+    /**
+     * @dev Commit policy with additional gas padding to equalize observable gas usage
+     */
+    function commitPolicyWithGasPad(
+        uint256 _commitment,
+        string calldata _metadataURI,
+        uint256 padIterations
+    ) external notPaused returns (uint256) {
+        _burnGas(padIterations);
+        return _commitPolicy(_commitment, _metadataURI);
+    }
+
+    function _requestAccess(
+        uint256 _policyId,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[15] calldata _pubSignals
+    ) internal returns (uint256) {
+        require(policies[_policyId].isActive, "Policy not active");
+
+        require(_pubSignals[1] == policies[_policyId].commitment, "Policy commitment mismatch");
+
+        uint256 requestId = nextRequestId++;
+
+        bool isValidProof = verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
+
+        bool isAuthorized = isValidProof && (_pubSignals[0] == 1);
+
+        accessRequests[requestId] = AccessRequest({
+            requester: msg.sender,
+            policyId: _policyId,
+            timestamp: block.timestamp,
+            isProcessed: true,
+            isGranted: isAuthorized
+        });
+
+        requesterRequests[msg.sender].push(requestId);
+
+        emit AccessRequested(msg.sender, _policyId, requestId);
+
+        if (isAuthorized) {
+            emit AccessGranted(msg.sender, _policyId, requestId);
+        } else {
+            emit AccessDenied(msg.sender, _policyId, requestId);
+        }
+
+        return requestId;
     }
 
     /**
@@ -115,39 +188,22 @@ contract PolicyPrivacy {
         uint[2] calldata _pC, 
         uint[15] calldata _pubSignals
     ) external notPaused returns (uint256) {
-        require(policies[_policyId].isActive, "Policy not active");
-        
-        // Ensure the policy commitment public signal matches the committed policy
-        // Note: pubSignals[0] is isAuthorized output, pubSignals[1] is policyCommitment
-        require(_pubSignals[1] == policies[_policyId].commitment, "Policy commitment mismatch");
-        
-        uint256 requestId = nextRequestId++;
-        
-        // Verify the zero-knowledge proof
-        bool isValidProof = verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
-        
-        // Check if the circuit output indicates authorization (pubSignals[0] is isAuthorized)
-        bool isAuthorized = isValidProof && (_pubSignals[0] == 1);
-        
-        accessRequests[requestId] = AccessRequest({
-            requester: msg.sender,
-            policyId: _policyId,
-            timestamp: block.timestamp,
-            isProcessed: true,
-            isGranted: isAuthorized
-        });
+        return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
+    }
 
-        requesterRequests[msg.sender].push(requestId);
-        
-        emit AccessRequested(msg.sender, _policyId, requestId);
-        
-        if (isAuthorized) {
-            emit AccessGranted(msg.sender, _policyId, requestId);
-        } else {
-            emit AccessDenied(msg.sender, _policyId, requestId);
-        }
-        
-        return requestId;
+    /**
+     * @dev Request access with gas padding to equalize observable gas usage
+     */
+    function requestAccessWithGasPad(
+        uint256 _policyId,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[15] calldata _pubSignals,
+        uint256 padIterations
+    ) external notPaused returns (uint256) {
+        _burnGas(padIterations);
+        return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
     }
 
     /**

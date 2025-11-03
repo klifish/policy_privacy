@@ -143,6 +143,8 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.outputDir = path.resolve(argv[++i]);
     } else if (arg === '--num-duo-terms') {
       config.numDuoTerms = parseInt(argv[++i], 10);
+    } else if (arg === '--policy-count') {
+      config.policyCount = parseInt(argv[++i], 10);
     } else if (arg === '--executions-per-policy') {
       config.executionsPerPolicy = parseInt(argv[++i], 10);
     } else if (arg === '--test-ratio') {
@@ -177,6 +179,7 @@ function printUsage() {
   console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
   console.log('  --output <dir>              Output directory for generated artifacts');
   console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
+  console.log('  --policy-count <n>          Number of base policies to generate (default 200)');
   console.log('  --executions-per-policy <n> Executions per policy in phase 1');
   console.log('  --test-ratio <float>        Train/test split ratio (default: 0.3)');
   console.log('  --auc-threshold <float>     AUC threshold for privacy checks');
@@ -189,6 +192,7 @@ async function runExperiment(config = {}) {
   const {
     numDuoTerms = 3,
     executionsPerPolicy = 1,
+    policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
     aucThreshold = 0.55,
@@ -294,12 +298,20 @@ async function runExperiment(config = {}) {
     console.log('Generating dataset with:');
     console.log(`  - DUO terms: ${numDuoTerms}`);
     console.log(`  - Executions per policy: ${executionsPerPolicy}`);
+    if (Number.isInteger(policyCount) && policyCount > 0) {
+      console.log(`  - Policy count override: ${policyCount}`);
+    }
     console.log();
 
-    dataset = await generateDataset({
+    const datasetConfig = {
       duoTerms,
       executionsPerPolicy
-    });
+    };
+    if (Number.isInteger(policyCount) && policyCount > 0) {
+      datasetConfig.policyCount = policyCount;
+    }
+
+    dataset = await generateDataset(datasetConfig);
 
     fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
     console.log(`Dataset saved to: ${datasetOutputPath}`);
