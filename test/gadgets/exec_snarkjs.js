@@ -11,27 +11,27 @@ function downloadFile(url, filePath) {
     return new Promise((resolve, reject) => {
         console.log(`  - Downloading: ${url}`);
         const file = fs.createWriteStream(filePath);
-        
+
         https.get(url, (response) => {
             const totalSize = parseInt(response.headers['content-length'], 10);
             let downloadedSize = 0;
-            
+
             response.pipe(file);
-            
+
             response.on('data', (chunk) => {
                 downloadedSize += chunk.length;
                 const progress = ((downloadedSize / totalSize) * 100).toFixed(1);
                 process.stdout.write(`\r    Progress: ${progress}% (${(downloadedSize / 1024 / 1024).toFixed(1)}MB/${(totalSize / 1024 / 1024).toFixed(1)}MB)`);
             });
-            
+
             file.on('finish', () => {
                 file.close();
                 console.log('\n  ✅ Download completed');
                 resolve();
             });
-            
+
             file.on('error', (err) => {
-                fs.unlink(filePath, () => {}); // Delete the file on error
+                fs.unlink(filePath, () => { }); // Delete the file on error
                 reject(err);
             });
         }).on('error', (err) => {
@@ -106,10 +106,10 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         // Step 1: Download Powers of Tau if not exists
         if (!fs.existsSync(potFinalPath)) {
             console.log('📋 Step 1: Downloading Powers of Tau trusted setup...');
-            
-            const powersOfTauUrl = 'https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_16.ptau';
+
+            const powersOfTauUrl = 'https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau';
             await downloadFile(powersOfTauUrl, potFinalPath);
-            
+
             console.log('  ✅ Powers of Tau trusted setup downloaded');
         } else {
             console.log('📋 Step 1: Powers of Tau file already exists, skipping download...');

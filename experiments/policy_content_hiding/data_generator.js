@@ -10,7 +10,7 @@ const crypto = require('crypto');
 const { ethers } = require('hardhat');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
-const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
+const { generateGroth16Proof, calculatePolicyCommitment, calculateParamsCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
 const { json } = require('stream/consumers');
 
 // DUO Terms (Data Use Ontology) - based on actual DUO ontology
@@ -227,6 +227,8 @@ const GAS_PAD_ITERATIONS = Object.freeze({
 });
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
+const DISABLED_PREDICATE_TYPE = 4;
+const DEFAULT_DISABLED_NUMBER = 0;
 
 const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
   {
@@ -1286,7 +1288,7 @@ async function executePolicy(policyData, contract) {
 
   // Prepare circuit input
   const predicateCount = POLICY_PREDICATE_SLOTS.length;
-  const predicateTypes = Array.from({ length: predicateCount }, () => 0); // Type 3 = ontology, 0 = disabled
+  const predicateTypes = Array.from({ length: predicateCount }, () => DISABLED_PREDICATE_TYPE); // Type 3 = ontology, 4 = disabled
   const activePredicateSlots = predicateSlots.length > 0
     ? predicateSlots
     : Object.keys(predicateValuesBySlot).map((slot) => parseInt(slot, 10)).filter(Number.isInteger);
@@ -1302,12 +1304,12 @@ async function executePolicy(policyData, contract) {
   const merkleRoots = zeroStringArray(predicateCount);
   const merkleLeaves = zeroStringArray(predicateCount);
   const credPublicKeys = zeroStringArray(predicateCount);
-  const rangeMin = zeroNumberArray(predicateCount, 0);
-  const rangeMax = zeroNumberArray(predicateCount, 100);
-  const rangeValues = zeroNumberArray(predicateCount, 0);
-  const ontologyPolicyIds = zeroNumberArray(predicateCount, 0);
-  const ontologyEpochs = zeroNumberArray(predicateCount, 0);
-  const ontologyCodes = zeroNumberArray(predicateCount, 0);
+  const rangeMin = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const rangeMax = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const rangeValues = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const ontologyPolicyIds = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const ontologyEpochs = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const ontologyCodes = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
 
   const predicateRoots = structure.predicateRoots || {};
   Object.entries(predicateRoots).forEach(([slotKey, root]) => {
@@ -1348,6 +1350,19 @@ async function executePolicy(policyData, contract) {
     numOperations: numOperations || 3  // Use numOperations from policy data, default to 3
   });
 
+  const paramsCommitment = await calculateParamsCommitment({
+    merkleRoots: circuitInput.merkleRoots,
+    credPublicKeys: circuitInput.credPublicKeys,
+    rangeMin: circuitInput.rangeMin,
+    rangeMax: circuitInput.rangeMax,
+    ontologyPolicyIds: circuitInput.ontologyPolicyIds,
+    ontologyEpochs: circuitInput.ontologyEpochs
+  });
+  circuitInput.paramsCommitment = paramsCommitment;
+  if (policyData.structure) {
+    policyData.structure.paramsCommitment = paramsCommitment;
+  }
+
   // Measure proof generation time
   const proofStartTime = Date.now();
   const proof = await generateGroth16Proof(circuitInput);
@@ -1381,11 +1396,13 @@ async function executePolicy(policyData, contract) {
   const commitTx = gasPadEnabled
     ? await contractWithSigner.commitPolicyWithGasPad(
       policyCommitment,
+      paramsCommitment,
       'ipfs://policy-metadata',
       commitPadIterations
     )
     : await contractWithSigner.commitPolicy(
       policyCommitment,
+      paramsCommitment,
       'ipfs://policy-metadata'
     );
   const commitReceipt = await commitTx.wait();
@@ -1455,6 +1472,7 @@ async function executePolicy(policyData, contract) {
     ...policyData,
     features,
     policyCommitment,
+    paramsCommitment,
     blockchainPolicyId: blockchainPolicyId.toString()
   };
 }

@@ -31,6 +31,19 @@ async function generateGroth16Proof(input) {
     throw new Error(`ZKey file not found: ${zkeyPath}`);
   }
 
+  normalizePredicateTypesInPlace(input);
+
+  if (!input.paramsCommitment || input.paramsCommitment === '0') {
+    input.paramsCommitment = await calculateParamsCommitment({
+      merkleRoots: input.merkleRoots || [],
+      credPublicKeys: input.credPublicKeys || [],
+      rangeMin: input.rangeMin || [],
+      rangeMax: input.rangeMax || [],
+      ontologyPolicyIds: input.ontologyPolicyIds || [],
+      ontologyEpochs: input.ontologyEpochs || []
+    });
+  }
+
   // Generate proof
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
@@ -62,6 +75,132 @@ async function calculatePolicyCommitment(policy, randomizer) {
   return poseidon.F.toObject(commitment).toString();
 }
 
+function normalizeFieldElement(value, F) {
+  if (typeof value === 'bigint') {
+    return F.toObject(F.e(value));
+  }
+  if (typeof value === 'number') {
+    return F.toObject(F.e(BigInt(value)));
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('0x') || trimmed.startsWith('0X')) {
+      return F.toObject(F.e(BigInt(trimmed)));
+    }
+    if (trimmed.length === 0) {
+      return 0n;
+    }
+    return F.toObject(F.e(BigInt(trimmed)));
+  }
+  throw new Error(`Unsupported field element type: ${typeof value}`);
+}
+
+function hasNonZeroValue(value) {
+  if (Array.isArray(value)) {
+    return value.some(hasNonZeroValue);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    return !(trimmed === '0' || trimmed === '0x0' || trimmed === '');
+  }
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+  if (typeof value === 'bigint') {
+    return value !== 0n;
+  }
+  if (value === null || value === undefined) {
+    return false;
+  }
+  return Boolean(value);
+}
+
+function normalizePredicateTypesInPlace(input) {
+  if (!input || !Array.isArray(input.predicateTypes)) {
+    return;
+  }
+
+  const types = input.predicateTypes;
+  const merkleRoots = input.merkleRoots || [];
+  const merkleLeaves = input.merkleLeaves || [];
+  const merklePathElements = input.merklePathElements || [];
+  const merklePathIndices = input.merklePathIndices || [];
+  const credMessages = input.credMessages || [];
+  const credSignatures = input.credSignatures || [];
+  const credPublicKeys = input.credPublicKeys || [];
+  const rangeValues = input.rangeValues || [];
+  const rangeMin = input.rangeMin || [];
+  const rangeMax = input.rangeMax || [];
+  const ontologyCodes = input.ontologyCodes || [];
+  const ontologyPolicyIds = input.ontologyPolicyIds || [];
+  const ontologyEpochs = input.ontologyEpochs || [];
+
+  for (let i = 0; i < types.length; i += 1) {
+    const currentType = types[i];
+    if (currentType !== 0 && currentType !== undefined && currentType !== null) {
+      continue;
+    }
+
+    const hasMerkle = hasNonZeroValue(merkleRoots[i]) || hasNonZeroValue(merkleLeaves[i]) || hasNonZeroValue(merklePathElements[i]) || hasNonZeroValue(merklePathIndices[i]);
+    const hasCredential = hasNonZeroValue(credMessages[i]) || hasNonZeroValue(credSignatures[i]) || hasNonZeroValue(credPublicKeys[i]);
+    const hasRange = hasNonZeroValue(rangeValues[i]) || hasNonZeroValue(rangeMin[i]) || hasNonZeroValue(rangeMax[i]);
+    const hasOntology = hasNonZeroValue(ontologyCodes[i]) || hasNonZeroValue(ontologyPolicyIds[i]) || hasNonZeroValue(ontologyEpochs[i]);
+
+    const isInactive = !(hasMerkle || hasCredential || hasRange || hasOntology);
+
+    if (isInactive) {
+      types[i] = 4;
+    }
+  }
+}
+
+async function calculateParamsCommitment({
+  merkleRoots,
+  credPublicKeys,
+  rangeMin,
+  rangeMax,
+  ontologyPolicyIds,
+  ontologyEpochs
+}) {
+  const poseidon = await initPoseidon();
+  const F = poseidon.F;
+
+  const hashArray = (values) => {
+    let accumulator = F.toObject(F.e(0n));
+    for (const item of values) {
+      const normalized = normalizeFieldElement(item, F);
+      accumulator = F.toObject(poseidon([accumulator, normalized]));
+    }
+    return accumulator;
+  };
+
+  const merkleHash = hashArray(merkleRoots);
+  const credHash = hashArray(credPublicKeys);
+  const rangeMinHash = hashArray(rangeMin);
+  const rangeMaxHash = hashArray(rangeMax);
+  const ontologyPolicyIdHash = hashArray(ontologyPolicyIds);
+  const ontologyEpochHash = hashArray(ontologyEpochs);
+
+  const domainSeparator = normalizeFieldElement(1n, F);
+
+  let accumulator = F.toObject(F.e(0n));
+  const chainValues = [
+    merkleHash,
+    credHash,
+    rangeMinHash,
+    rangeMaxHash,
+    ontologyPolicyIdHash,
+    ontologyEpochHash,
+    domainSeparator
+  ];
+
+  for (const value of chainValues) {
+    accumulator = F.toObject(poseidon([accumulator, value]));
+  }
+
+  return accumulator.toString();
+}
+
 /**
  * Create valid circuit input for testing
  * @param {string} policyCommitment - Policy commitment value
@@ -77,17 +216,18 @@ function createCircuitInput(policyCommitment, options = {}) {
     policy = [0, 1, 11, 0, 0, 0, 0, 0, 0, 0],
     requesterAttrs = [1, 1, 0, 0, 0, 0], // attr0=1, attr1=1, others 0 => should pass
     randomizer = BigInt('12345'),
-    predicateTypes = [0, 0, 0, 0, 0], // All predicates disabled for simple test
+    predicateTypes = [4, 4, 4, 4, 4], // All predicates disabled by default
     merkleRoots = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
     credPublicKeys = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings  
-    rangeMin = [0, 0, 0, 0, 0],
-    rangeMax = [100, 100, 100, 100, 100],
-    ontologyPolicyIds = [0, 0, 0, 0, 0],
-    ontologyEpochs = [0, 0, 0, 0, 0],
-    numOperations = 3
+    rangeMin = ['0', '0', '0', '0', '0'],
+    rangeMax = ['0', '0', '0', '0', '0'],
+    ontologyPolicyIds = ['0', '0', '0', '0', '0'],
+    ontologyEpochs = ['0', '0', '0', '0', '0'],
+    numOperations = 3,
+    paramsCommitment = '0'
   } = options;
 
-  return {
+  const input = {
     // Private inputs
     policy: policy,
     requesterAttrs: requesterAttrs,
@@ -103,6 +243,7 @@ function createCircuitInput(policyCommitment, options = {}) {
 
     // Public inputs
     policyCommitment: policyCommitment,
+    paramsCommitment: paramsCommitment,
     merkleRoots: merkleRoots,
     credPublicKeys: credPublicKeys,
     rangeMin: rangeMin,
@@ -111,10 +252,14 @@ function createCircuitInput(policyCommitment, options = {}) {
     ontologyEpochs: ontologyEpochs,
     numOperations: numOperations
   };
+
+  normalizePredicateTypesInPlace(input);
+  return input;
 }
 
 module.exports = {
   generateGroth16Proof,
   calculatePolicyCommitment,
+  calculateParamsCommitment,
   createCircuitInput
 };

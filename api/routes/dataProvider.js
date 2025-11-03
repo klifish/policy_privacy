@@ -121,7 +121,18 @@ router.post('/publish', async (req, res, next) => {
       });
     }
 
-    const tx = await contractWithSigner.commitPolicy(commitmentBN, metadataURI || '');
+    const paramsCommitmentValue = req.body.paramsCommitment ?? 0;
+    let paramsCommitmentBN;
+    try {
+      paramsCommitmentBN = BigInt(paramsCommitmentValue);
+    } catch (e) {
+      return res.status(400).json({
+        error: 'Invalid paramsCommitment format',
+        message: 'Parameters commitment must be a valid number'
+      });
+    }
+
+    const tx = await contractWithSigner.commitPolicy(commitmentBN, paramsCommitmentBN, metadataURI || '');
     const receipt = await tx.wait();
 
     // Extract policy ID from events
@@ -148,6 +159,7 @@ router.post('/publish', async (req, res, next) => {
       providerAddress,
       dataHash,
       policyId,
+      paramsCommitment: paramsCommitmentBN.toString(),
       policyCommitment,
       metadataURI: metadataURI || '',
       dataLocation: dataLocation || '',
@@ -168,6 +180,7 @@ router.post('/publish', async (req, res, next) => {
       message: 'Data published successfully',
       dataId,
       policyId,
+      paramsCommitment: paramsCommitmentBN.toString(),
       transactionHash: tx.hash,
       gasUsed: receipt.gasUsed.toString(),
       data: {

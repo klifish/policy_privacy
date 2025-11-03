@@ -14,7 +14,7 @@ async function createRealProof(commitment, options = {}) {
       const input = createCircuitInput(actualCommitment, { policy, randomizer, ...options });
       const { pA, pB, pC, pubSignals } = await generateGroth16Proof(input);
       
-      return { pA, pB, pC, pubSignals, actualCommitment };
+      return { pA, pB, pC, pubSignals, actualCommitment, paramsCommitment: input.paramsCommitment };
     } else {
       // For backward compatibility with existing simple tests
       // Create mock data that will pass smart contract validation
@@ -27,13 +27,13 @@ async function createRealProof(commitment, options = {}) {
       const pubSignals = [
         1,                        // isAuthorized (output) - index 0
         commitment.toString(),    // policyCommitment - index 1
-        0, 0,                     // merkleRoots[2] - indices 2,3
-        0, 0,                     // credPublicKeys[2] - indices 4,5
-        0, 0,                     // rangeMin[2] - indices 6,7
-        100, 100,                 // rangeMax[2] - indices 8,9
-        0, 0,                     // ontologyPolicyIds[2] - indices 10,11
-        0, 0,                     // ontologyEpochs[2] - indices 12,13
-        3                         // numOperations - index 14
+        0,                        // paramsCommitment - index 2
+        0, 0, 0, 0, 0,            // merkleRoots[5] - indices 3-7
+        0, 0, 0, 0, 0,            // credPublicKeys[5] - indices 8-12
+        0, 0, 0, 0, 0,            // rangeMin[5] - indices 13-17
+        100, 100, 100, 100, 100,  // rangeMax[5] - indices 18-22
+        0, 0, 0, 0, 0,            // ontologyPolicyIds[5] - indices 23-27
+        0, 0, 0, 0, 0             // ontologyEpochs[5] - indices 28-32
       ];
       
       return { pA, pB, pC, pubSignals };
@@ -47,15 +47,15 @@ async function createRealProof(commitment, options = {}) {
     const pC = [seedValue + 6, seedValue + 7];
     
     const pubSignals = [
-      1,                        // isAuthorized (output) - index 0
-      commitment.toString(),    // policyCommitment - index 1
-      0, 0,                     // merkleRoots[2]
-      0, 0,                     // credPublicKeys[2]  
-      0, 0,                     // rangeMin[2]
-      100, 100,                 // rangeMax[2]
-      0, 0,                     // ontologyPolicyIds[2]
-      0, 0,                     // ontologyEpochs[2]
-      3                         // numOperations
+      1,
+      commitment.toString(),
+      0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      100, 100, 100, 100, 100,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0
     ];
     
     return { pA, pB, pC, pubSignals };
@@ -122,7 +122,7 @@ describe('PolicyPrivacy', function () {
       
       await expect(policyPrivacy.connect(dataSubject1).commitPolicy(commitment, metadataURI))
         .to.emit(policyPrivacy, 'PolicyCommitted')
-        .withArgs(dataSubject1.address, 1, commitment);
+        .withArgs(dataSubject1.address, 1, commitment, 0);
     });
 
     it('Should increment policy IDs correctly', async function () {
@@ -145,11 +145,12 @@ describe('PolicyPrivacy', function () {
       const tx = await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, metadataURI);
       const receipt = await tx.wait();
       
-      const [dataSubject, storedCommitment, isActive, timestamp, storedMetadataURI] = 
+      const [dataSubject, storedCommitment, storedParamsCommitment, isActive, timestamp, storedMetadataURI] = 
         await policyPrivacy.getPolicy(1);
       
       expect(dataSubject).to.equal(dataSubject1.address);
       expect(storedCommitment).to.equal(commitment);
+      expect(storedParamsCommitment).to.equal(0);
       expect(isActive).to.equal(true);
       expect(storedMetadataURI).to.equal(metadataURI);
       expect(timestamp).to.be.closeTo(Math.floor(Date.now() / 1000), 10);
@@ -407,7 +408,7 @@ describe('PolicyPrivacy', function () {
       // Patient commits the policy
       await expect(policyPrivacy.connect(dataSubject1).commitPolicy(medicalDataPolicyCommitment, metadataURI))
         .to.emit(policyPrivacy, 'PolicyCommitted')
-        .withArgs(dataSubject1.address, 1, medicalDataPolicyCommitment);
+        .withArgs(dataSubject1.address, 1, medicalDataPolicyCommitment, 0);
       
       // Healthcare provider proves they satisfy the policy (doctor + emergency)
       const { pA, pB, pC, pubSignals } = await createRealProof(medicalDataPolicyCommitment);

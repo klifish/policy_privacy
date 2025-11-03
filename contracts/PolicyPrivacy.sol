@@ -16,7 +16,7 @@ interface IVerifier {
  */
 contract PolicyPrivacy {
     // Events for tracking policy lifecycle
-    event PolicyCommitted(address indexed dataSubject, uint256 indexed policyId, uint256 commitment);
+    event PolicyCommitted(address indexed dataSubject, uint256 indexed policyId, uint256 commitment, uint256 paramsCommitment);
     event AccessRequested(address indexed requester, uint256 indexed policyId, uint256 requestId);
     event AccessGranted(address indexed requester, uint256 indexed policyId, uint256 requestId);
     event AccessDenied(address indexed requester, uint256 indexed policyId, uint256 requestId);
@@ -26,6 +26,7 @@ contract PolicyPrivacy {
     struct PolicyCommitment {
         address dataSubject;      // Who owns the data/policy
         uint256 commitment;       // Poseidon hash of policy + randomness
+        uint256 paramsCommitment; // Poseidon hash of external parameter configuration
         bool isActive;           // Whether policy is still valid
         uint256 timestamp;       // When policy was committed
         string metadataURI;      // Optional metadata (IPFS hash, etc.)
@@ -96,12 +97,13 @@ contract PolicyPrivacy {
         gasPadAccumulator = acc;
     }
 
-    function _commitPolicy(uint256 _commitment, string calldata _metadataURI) internal returns (uint256) {
+    function _commitPolicy(uint256 _commitment, uint256 _paramsCommitment, string calldata _metadataURI) internal returns (uint256) {
         uint256 policyId = nextPolicyId++;
 
         policies[policyId] = PolicyCommitment({
             dataSubject: msg.sender,
             commitment: _commitment,
+            paramsCommitment: _paramsCommitment,
             isActive: true,
             timestamp: block.timestamp,
             metadataURI: _metadataURI
@@ -109,18 +111,26 @@ contract PolicyPrivacy {
 
         subjectPolicies[msg.sender].push(policyId);
 
-        emit PolicyCommitted(msg.sender, policyId, _commitment);
+        emit PolicyCommitted(msg.sender, policyId, _commitment, _paramsCommitment);
 
         return policyId;
     }
 
     /**
-     * @dev Commit a new policy without revealing its contents
+     * @dev Commit a new policy without revealing its contents (full signature)
      * @param _commitment Poseidon hash of (policy || randomness)
+     * @param _paramsCommitment Poseidon hash of external parameter configuration
      * @param _metadataURI Optional metadata URI (e.g., IPFS hash)
      */
+    function commitPolicy(uint256 _commitment, uint256 _paramsCommitment, string calldata _metadataURI) public notPaused returns (uint256) {
+        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+    }
+
+    /**
+     * @dev Legacy helper preserving the previous signature (params commitment defaults to 0)
+     */
     function commitPolicy(uint256 _commitment, string calldata _metadataURI) external notPaused returns (uint256) {
-        return _commitPolicy(_commitment, _metadataURI);
+        return _commitPolicy(_commitment, 0, _metadataURI);
     }
 
     /**
@@ -128,11 +138,21 @@ contract PolicyPrivacy {
      */
     function commitPolicyWithGasPad(
         uint256 _commitment,
+        uint256 _paramsCommitment,
+        string calldata _metadataURI,
+        uint256 padIterations
+    ) public notPaused returns (uint256) {
+        _burnGas(padIterations);
+        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+    }
+
+    function commitPolicyWithGasPad(
+        uint256 _commitment,
         string calldata _metadataURI,
         uint256 padIterations
     ) external notPaused returns (uint256) {
         _burnGas(padIterations);
-        return _commitPolicy(_commitment, _metadataURI);
+        return _commitPolicy(_commitment, 0, _metadataURI);
     }
 
     function _requestAccess(
@@ -145,6 +165,7 @@ contract PolicyPrivacy {
         require(policies[_policyId].isActive, "Policy not active");
 
         require(_pubSignals[1] == policies[_policyId].commitment, "Policy commitment mismatch");
+        require(_pubSignals[2] == policies[_policyId].paramsCommitment, "Parameter commitment mismatch");
 
         uint256 requestId = nextRequestId++;
 
@@ -233,12 +254,20 @@ contract PolicyPrivacy {
     function getPolicy(uint256 _policyId) external view returns (
         address dataSubject,
         uint256 commitment,
+        uint256 paramsCommitment,
         bool isActive,
         uint256 timestamp,
         string memory metadataURI
     ) {
         PolicyCommitment memory policy = policies[_policyId];
-        return (policy.dataSubject, policy.commitment, policy.isActive, policy.timestamp, policy.metadataURI);
+        return (
+            policy.dataSubject,
+            policy.commitment,
+            policy.paramsCommitment,
+            policy.isActive,
+            policy.timestamp,
+            policy.metadataURI
+        );
     }
 
     /**
