@@ -215,7 +215,7 @@ const DEFAULT_PROOF_TYPES = Object.freeze([
 
 const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
   path_unify: [false, true],
-  gas_pad: [false, true],
+  gas_pad: [true],
   event_pad: [false, true],
   proof_pad: [false, true],
   batch_pattern: ['baseline', 'batched', 'staggered']
