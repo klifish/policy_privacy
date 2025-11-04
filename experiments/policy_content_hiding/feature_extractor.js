@@ -11,26 +11,26 @@
 function extractFeatures(executionResults) {
   return executionResults.map(result => {
     const features = result.features;
-    
+
     return {
       // Observable blockchain features
       commitGasUsed: parseInt(features.commitGasUsed),
       commitCalldataLength: features.commitCalldataLength,
       accessGasUsed: parseInt(features.accessGasUsed),
       accessCalldataLength: features.accessCalldataLength,
-      
+
       // Proof features (exclude internal-only timings)
       proofSize: features.proofSize,
-      
+
       // Event features
       commitLogsCount: features.commitLogsCount,
       commitLogsSize: features.commitLogsSize,
       accessLogsCount: features.accessLogsCount,
       accessLogsSize: features.accessLogsSize,
-      
+
       // Timing features
       blockDifference: features.blockDifference,
-      
+
       // Labels for classification
       duoTerm: result.duoTerm,
       ontologyNamespace: result.ontologyNamespace,
@@ -47,16 +47,17 @@ function normalizeFeatures(features) {
   const featureNames = Object.keys(features[0]).filter(
     key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
   );
-  
+  console.log('Normalizing features:', featureNames.join(', '));
+
   const normalized = features.map(f => ({ ...f }));
   const zeroVarianceFeatures = [];
-  
+
   for (const name of featureNames) {
     const values = features.map(f => f[name]);
     const min = Math.min(...values);
     const max = Math.max(...values);
     const range = max - min;
-    
+
     if (range > 0) {
       for (let i = 0; i < normalized.length; i++) {
         normalized[i][name] = (normalized[i][name] - min) / range;
@@ -74,7 +75,7 @@ function normalizeFeatures(features) {
       }
     }
   }
-  
+
   return normalized;
 }
 
@@ -84,7 +85,7 @@ function normalizeFeatures(features) {
 function splitTrainTest(data, testRatio = 0.3) {
   const shuffled = [...data].sort(() => Math.random() - 0.5);
   const splitIndex = Math.floor(shuffled.length * (1 - testRatio));
-  
+
   return {
     train: shuffled.slice(0, splitIndex),
     test: shuffled.slice(splitIndex)
@@ -103,9 +104,9 @@ function prepareClassificationData(features, labelKey) {
     delete x.satisfy;
     return Object.values(x);
   });
-  
+
   const y = features.map(f => f[labelKey]);
-  
+
   return { X, y };
 }
 
@@ -116,9 +117,9 @@ function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
     key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
   );
-  
+
   const stats = {};
-  
+
   for (const name of featureNames) {
     const values = features.map(f => f[name]);
     const sorted = [...values].sort((a, b) => a - b);
@@ -138,7 +139,7 @@ function calculateFeatureStats(features) {
       std: Math.sqrt(variance)
     };
   }
-  
+
   return stats;
 }
 

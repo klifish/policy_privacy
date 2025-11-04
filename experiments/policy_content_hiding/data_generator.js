@@ -221,9 +221,9 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
   batch_pattern: ['baseline', 'batched', 'staggered']
 });
 
-const GAS_PAD_ITERATIONS = Object.freeze({
-  commit: 40000n,
-  access: 60000n
+const GAS_PAD_TARGET_GAS = Object.freeze({
+  commit: 4000000n,
+  access: 5000000n
 });
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
@@ -1385,7 +1385,7 @@ async function executePolicy(policyData, contract) {
   const [signer] = await ethers.getSigners();
   // const gasPadEnabled = policyData.execution?.gas_pad === true;
   const gasPadEnabled = true; // Always enable gas padding for experiment
-  const commitPadIterations = gasPadEnabled ? GAS_PAD_ITERATIONS.commit : 0n;
+  const commitPadTarget = gasPadEnabled ? GAS_PAD_TARGET_GAS.commit : 0n;
 
   const contractWithSigner = contract.connect(signer);
 
@@ -1405,7 +1405,7 @@ async function executePolicy(policyData, contract) {
       policyCommitment,
       paramsCommitment,
       'ipfs://policy-metadata',
-      commitPadIterations
+      commitPadTarget
     )
     : await commitFn(
       policyCommitment,
@@ -1428,7 +1428,7 @@ async function executePolicy(policyData, contract) {
   const blockchainPolicyId = parsedEvent.args.policyId;
 
   // Request access with proof
-  const accessPadIterations = gasPadEnabled ? GAS_PAD_ITERATIONS.access : 0n;
+  const accessPadTarget = gasPadEnabled ? GAS_PAD_TARGET_GAS.access : 0n;
   if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
     throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
   }
@@ -1440,7 +1440,7 @@ async function executePolicy(policyData, contract) {
       proof.pB,
       proof.pC,
       proof.pubSignals,
-      accessPadIterations
+      accessPadTarget
     )
     : await contractWithSigner.requestAccess(
       blockchainPolicyId,

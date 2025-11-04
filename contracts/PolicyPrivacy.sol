@@ -56,7 +56,7 @@ contract PolicyPrivacy {
     address public immutable owner;
     bool public emergencyPaused;
 
-    uint256 private constant MAX_GAS_PAD_ITERATIONS = 120000;
+    uint256 private constant MAX_GAS_PAD_TARGET_GAS = 8_000_000;
     uint256 private gasPadAccumulator;
 
     modifier onlyOwner() {
@@ -81,19 +81,28 @@ contract PolicyPrivacy {
         nextRequestId = 1;
     }
 
-    function _burnGas(uint256 iterations) internal {
-        if (iterations == 0) {
+    function _padGasToTarget(uint256 startGas, uint256 targetGas) internal {
+        if (targetGas == 0) {
             return;
         }
-        require(iterations <= MAX_GAS_PAD_ITERATIONS, "Gas pad too large");
+        require(targetGas <= MAX_GAS_PAD_TARGET_GAS, "Gas pad target too large");
 
+        uint256 currentGas = gasleft();
+        uint256 gasUsed = startGas - currentGas;
+
+        if (gasUsed >= targetGas || targetGas >= startGas) {
+            return;
+        }
+
+        uint256 targetGasLeft = startGas - targetGas;
         uint256 acc = gasPadAccumulator;
-        unchecked {
-            for (uint256 i = 0; i < iterations; ++i) {
-                // Simple integer mixing to prevent loop removal by optimizer
-                acc = (acc ^ (i + 0x9e3779b97f4a7c15)) * 0x1000003d;
+
+        while (gasleft() > targetGasLeft) {
+            unchecked {
+                acc = (acc ^ (0x9e3779b97f4a7c15)) * 0x1000003d;
             }
         }
+
         gasPadAccumulator = acc;
     }
 
@@ -140,19 +149,23 @@ contract PolicyPrivacy {
         uint256 _commitment,
         uint256 _paramsCommitment,
         string calldata _metadataURI,
-        uint256 padIterations
+        uint256 targetGas
     ) public notPaused returns (uint256) {
-        _burnGas(padIterations);
-        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+        uint256 startGas = gasleft();
+        uint256 policyId = _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+        _padGasToTarget(startGas, targetGas);
+        return policyId;
     }
 
     function commitPolicyWithGasPad(
         uint256 _commitment,
         string calldata _metadataURI,
-        uint256 padIterations
+        uint256 targetGas
     ) external notPaused returns (uint256) {
-        _burnGas(padIterations);
-        return _commitPolicy(_commitment, 0, _metadataURI);
+        uint256 startGas = gasleft();
+        uint256 policyId = _commitPolicy(_commitment, 0, _metadataURI);
+        _padGasToTarget(startGas, targetGas);
+        return policyId;
     }
 
     function _requestAccess(
@@ -221,10 +234,12 @@ contract PolicyPrivacy {
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[33] calldata _pubSignals,
-        uint256 padIterations
+        uint256 targetGas
     ) external notPaused returns (uint256) {
-        _burnGas(padIterations);
-        return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
+        uint256 startGas = gasleft();
+        uint256 requestId = _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
+        _padGasToTarget(startGas, targetGas);
+        return requestId;
     }
 
     /**
