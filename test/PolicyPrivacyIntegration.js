@@ -4,16 +4,24 @@ const circomlibjs = require('circomlibjs');
 
 // Helper function to create test Groth16 proof components
 function createTestProof(commitment, paramsCommitment = 0, seedValue = 1) {
-  const pA = [seedValue, seedValue + 1];
-  const pB = [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]];
-  const pC = [seedValue + 6, seedValue + 7];
+  const toFixedHex = (value, pad = 64) => {
+    const bn = typeof value === 'bigint' ? value : BigInt(value);
+    return `0x${bn.toString(16).padStart(pad, '0')}`;
+  };
+
+  const pA = [toFixedHex(seedValue), toFixedHex(seedValue + 1)];
+  const pB = [
+    [toFixedHex(seedValue + 2), toFixedHex(seedValue + 3)],
+    [toFixedHex(seedValue + 4), toFixedHex(seedValue + 5)]
+  ];
+  const pC = [toFixedHex(seedValue + 6), toFixedHex(seedValue + 7)];
   
-  const pubSignals = Array(33).fill(0n);
-  pubSignals[0] = 1n; // isAuthorized
-  pubSignals[1] = BigInt(commitment);
-  pubSignals[2] = BigInt(paramsCommitment);
+  const pubSignals = Array(33).fill(toFixedHex(0));
+  pubSignals[0] = toFixedHex(1); // isAuthorized
+  pubSignals[1] = toFixedHex(commitment);
+  pubSignals[2] = toFixedHex(paramsCommitment);
   
-  return { pA, pB, pC, pubSignals: pubSignals.map(x => x.toString()) };
+  return { pA, pB, pC, pubSignals };
 }
 
 describe('PolicyPrivacy Integration Tests', function () {

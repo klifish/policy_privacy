@@ -51,11 +51,14 @@ async function generateGroth16Proof(input) {
     zkeyPath
   );
 
-  // Format proof for Solidity
-  const pA = [proof.pi_a[0], proof.pi_a[1]];
-  const pB = [[proof.pi_b[0][1], proof.pi_b[0][0]], [proof.pi_b[1][1], proof.pi_b[1][0]]];
-  const pC = [proof.pi_c[0], proof.pi_c[1]];
-  const pubSignals = publicSignals.map(x => x.toString());
+  // Format proof for Solidity with fixed-length encoding
+  const pA = [toFixedHex(proof.pi_a[0]), toFixedHex(proof.pi_a[1])];
+  const pB = [
+    [toFixedHex(proof.pi_b[0][1]), toFixedHex(proof.pi_b[0][0])],
+    [toFixedHex(proof.pi_b[1][1]), toFixedHex(proof.pi_b[1][0])]
+  ];
+  const pC = [toFixedHex(proof.pi_c[0]), toFixedHex(proof.pi_c[1])];
+  const pubSignals = publicSignals.map((x) => toFixedHex(x));
 
   return { pA, pB, pC, pubSignals };
 }
@@ -93,6 +96,26 @@ function normalizeFieldElement(value, F) {
     return F.toObject(F.e(BigInt(trimmed)));
   }
   throw new Error(`Unsupported field element type: ${typeof value}`);
+}
+
+function toFixedHex(value, pad = 64) {
+  let bn;
+  if (typeof value === 'bigint') {
+    bn = value;
+  } else if (typeof value === 'number') {
+    bn = BigInt(value);
+  } else if (typeof value === 'string') {
+    const trimmed = value.trim();
+    bn = trimmed.startsWith('0x') || trimmed.startsWith('0X') ? BigInt(trimmed) : BigInt(trimmed);
+  } else {
+    throw new Error(`Unsupported value type for toFixedHex: ${typeof value}`);
+  }
+
+  if (bn < 0n) {
+    throw new Error('Negative values are not supported for field encoding');
+  }
+
+  return `0x${bn.toString(16).padStart(pad, '0')}`;
 }
 
 function hasNonZeroValue(value) {

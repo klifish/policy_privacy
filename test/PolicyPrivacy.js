@@ -19,47 +19,63 @@ async function createRealProof(commitment, options = {}) {
       // For backward compatibility with existing simple tests
       // Create mock data that will pass smart contract validation
       const seedValue = parseInt(commitment.toString().slice(-4)) || 1;
-      const pA = [seedValue, seedValue + 1];
-      const pB = [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]];
-      const pC = [seedValue + 6, seedValue + 7];
+      const pA = [toFixedHex(seedValue), toFixedHex(seedValue + 1)];
+      const pB = [
+        [toFixedHex(seedValue + 2), toFixedHex(seedValue + 3)],
+        [toFixedHex(seedValue + 4), toFixedHex(seedValue + 5)]
+      ];
+      const pC = [toFixedHex(seedValue + 6), toFixedHex(seedValue + 7)];
       
       // Create public signals with proper structure for the smart contract
       const pubSignals = [
-        1,                        // isAuthorized (output) - index 0
-        commitment.toString(),    // policyCommitment - index 1
-        0,                        // paramsCommitment - index 2
-        0, 0, 0, 0, 0,            // merkleRoots[5] - indices 3-7
-        0, 0, 0, 0, 0,            // credPublicKeys[5] - indices 8-12
-        0, 0, 0, 0, 0,            // rangeMin[5] - indices 13-17
-        100, 100, 100, 100, 100,  // rangeMax[5] - indices 18-22
-        0, 0, 0, 0, 0,            // ontologyPolicyIds[5] - indices 23-27
-        0, 0, 0, 0, 0             // ontologyEpochs[5] - indices 28-32
+        toFixedHex(1),                        // isAuthorized (output) - index 0
+        toFixedHex(commitment),               // policyCommitment - index 1
+        toFixedHex(0),                        // paramsCommitment - index 2
+        toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0),            // merkleRoots[5]
+        toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0),            // credPublicKeys[5]
+        toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0),            // rangeMin[5]
+        toFixedHex(100), toFixedHex(100), toFixedHex(100), toFixedHex(100), toFixedHex(100),  // rangeMax[5]
+        toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0),            // ontologyPolicyIds[5]
+        toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0), toFixedHex(0)             // ontologyEpochs[5]
       ];
       
-      return { pA, pB, pC, pubSignals: pubSignals.map(x => x.toString()), paramsCommitment: 0 };
+      return { pA, pB, pC, pubSignals, paramsCommitment: toFixedHex(0) };
     }
   } catch (error) {
     console.log(`Warning: Could not generate real proof (${error.message}), using mock data`);
     // Fallback to mock data
     const seedValue = parseInt(commitment.toString().slice(-4)) || 1;
-    const pA = [seedValue, seedValue + 1];
-    const pB = [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]];
-    const pC = [seedValue + 6, seedValue + 7];
+    const pA = [toFixedHex(seedValue), toFixedHex(seedValue + 1)];
+    const pB = [
+      [toFixedHex(seedValue + 2), toFixedHex(seedValue + 3)],
+      [toFixedHex(seedValue + 4), toFixedHex(seedValue + 5)]
+    ];
+    const pC = [toFixedHex(seedValue + 6), toFixedHex(seedValue + 7)];
     
+    const zero = toFixedHex(0);
+    const hundred = toFixedHex(100);
     const pubSignals = [
-      1,
-      commitment.toString(),
-      0,
-      0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0,
-      100, 100, 100, 100, 100,
-      0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0
+      toFixedHex(1),
+      toFixedHex(commitment),
+      zero,
+      zero, zero, zero, zero, zero,
+      zero, zero, zero, zero, zero,
+      zero, zero, zero, zero, zero,
+      hundred, hundred, hundred, hundred, hundred,
+      zero, zero, zero, zero, zero,
+      zero, zero, zero, zero, zero
     ];
     
-    return { pA, pB, pC, pubSignals: pubSignals.map(x => x.toString()), paramsCommitment: 0 };
+    return { pA, pB, pC, pubSignals, paramsCommitment: zero };
   }
+}
+
+function toFixedHex(value, pad = 64) {
+  const bn = typeof value === 'bigint' ? value : BigInt(value);
+  if (bn < 0n) {
+    throw new Error('Negative values are not supported for fixed hex encoding');
+  }
+  return `0x${bn.toString(16).padStart(pad, '0')}`;
 }
 
 describe('PolicyPrivacy', function () {

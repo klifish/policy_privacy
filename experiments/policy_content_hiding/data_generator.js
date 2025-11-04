@@ -217,7 +217,7 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
   path_unify: [false, true],
   gas_pad: [true],
   event_pad: [false, true],
-  proof_pad: [true],
+  proof_pad: [false],
   batch_pattern: ['baseline', 'batched', 'staggered']
 });
 
