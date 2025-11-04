@@ -131,10 +131,10 @@ router.post('/verify', async (req, res, next) => {
       });
     }
 
-    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 15) {
+    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 33) {
       return res.status(400).json({
         error: 'Invalid proof format',
-        message: 'pubSignals must be an array of 15 elements'
+        message: 'pubSignals must be an array of 33 elements'
       });
     }
 
@@ -157,6 +157,7 @@ router.post('/verify', async (req, res, next) => {
     // Extract key information from public signals
     const isAuthorized = formattedProof.pubSignals[0] === '1';
     const policyCommitment = formattedProof.pubSignals[1];
+    const paramsCommitment = formattedProof.pubSignals[2];
 
     // Check policy commitment if provided
     let commitmentMatch = true;
@@ -175,8 +176,13 @@ router.post('/verify', async (req, res, next) => {
         pubSignals: {
           isAuthorized: formattedProof.pubSignals[0],
           policyCommitment: formattedProof.pubSignals[1],
-          merkleRoots: formattedProof.pubSignals.slice(2, 10),
-          other: formattedProof.pubSignals.slice(10)
+          paramsCommitment: formattedProof.pubSignals[2],
+          merkleRoots: formattedProof.pubSignals.slice(3, 8),
+          credPublicKeys: formattedProof.pubSignals.slice(8, 13),
+          rangeMin: formattedProof.pubSignals.slice(13, 18),
+          rangeMax: formattedProof.pubSignals.slice(18, 23),
+          ontologyPolicyIds: formattedProof.pubSignals.slice(23, 28),
+          ontologyEpochs: formattedProof.pubSignals.slice(28, 33)
         }
       }
     });

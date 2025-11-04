@@ -95,10 +95,11 @@ async function main() {
   console.log('✅ Sample policy committed with ID: 1');
 
   // Get policy details
-  const [dataSubject, storedCommitment, isActive, timestamp, storedMetadata] = await policyPrivacy.getPolicy(1);
+  const [dataSubject, storedCommitment, storedParamsCommitment, isActive, timestamp, storedMetadata] = await policyPrivacy.getPolicy(1);
   console.log('Policy details:');
   console.log('  Data Subject:', dataSubject);
   console.log('  Commitment:', storedCommitment.toString());
+  console.log('  Params Commitment:', storedParamsCommitment.toString());
   console.log('  Active:', isActive);
   console.log('  Metadata:', storedMetadata);
 

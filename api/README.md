@@ -177,7 +177,17 @@ curl -X POST http://localhost:3000/api/data-requester/request \
       "pA": ["123...", "456..."],
       "pB": [["789...", "012..."], ["345...", "678..."]],
       "pC": ["901...", "234..."],
-      "pubSignals": ["1", "12345678901234567890", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+      "pubSignals": [
+        "1",
+        "12345678901234567890",
+        "0",
+        "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0",
+        "100", "100", "100", "100", "100",
+        "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0"
+      ]
     },
     "purpose": "Medical research study"
   }'
@@ -228,7 +238,7 @@ curl -X POST http://localhost:3000/api/data-requester/request \
 
 - **Circuit**: PolicyPrivacyMain with parameters (N=3, M=2, DEPTH=10, K=3, MERKLE_LEVELS=8, RANGE_BITS=32)
 - **Proof System**: Groth16 with trusted setup
-- **Public Signals**: 15 signals including isAuthorized, policyCommitment, merkleRoots
+- **Public Signals**: 33 signals including isAuthorized, policyCommitment, paramsCommitment, merkle roots, credential keys, range bounds, ontology metadata
 - **Generation Time**: ~4-5 seconds per proof
 - **Verification**: On-chain using PolicyPrivacyMainVerifier.sol
 

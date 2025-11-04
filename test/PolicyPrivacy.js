@@ -36,7 +36,7 @@ async function createRealProof(commitment, options = {}) {
         0, 0, 0, 0, 0             // ontologyEpochs[5] - indices 28-32
       ];
       
-      return { pA, pB, pC, pubSignals };
+      return { pA, pB, pC, pubSignals: pubSignals.map(x => x.toString()), paramsCommitment: 0 };
     }
   } catch (error) {
     console.log(`Warning: Could not generate real proof (${error.message}), using mock data`);
@@ -58,7 +58,7 @@ async function createRealProof(commitment, options = {}) {
       0, 0, 0, 0, 0
     ];
     
-    return { pA, pB, pC, pubSignals };
+    return { pA, pB, pC, pubSignals: pubSignals.map(x => x.toString()), paramsCommitment: 0 };
   }
 }
 
@@ -184,9 +184,8 @@ describe('PolicyPrivacy', function () {
       
       // Setup policy
       const commitment = 424242;
-      await policyPrivacy.connect(requester1).commitPolicy(commitment, 'test-uri');
-      
-      const { pA, pB, pC, pubSignals } = await createRealProof(commitment);
+      const { pA, pB, pC, pubSignals, paramsCommitment } = await createRealProof(commitment);
+      await policyPrivacy.connect(requester1).commitPolicy(commitment, paramsCommitment, 'test-uri');
       
       // With real Groth16 verifier, mock proofs will be rejected
       // So we expect AccessRequested but AccessDenied (not AccessGranted)
@@ -202,11 +201,8 @@ describe('PolicyPrivacy', function () {
       
       // Setup policy  
       const commitment = 424242;
-      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'test-uri');
-      
-      // Set verifier to return false
-      
-      const { pA, pB, pC, pubSignals } = await createRealProof(commitment);
+      const { pA, pB, pC, pubSignals, paramsCommitment } = await createRealProof(commitment);
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, paramsCommitment, 'test-uri');
       
       await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
         .to.emit(policyPrivacy, 'AccessRequested')
@@ -219,11 +215,9 @@ describe('PolicyPrivacy', function () {
       const { policyPrivacy, verifier, requester1, dataSubject1 } = await loadFixture(deployPolicyPrivacyFixture);
       
       // Setup policy
-      await policyPrivacy.connect(dataSubject1).commitPolicy(424242, 'test-uri');
-      
-      // Set verifier to return true
-      
-      const { pA, pB, pC, pubSignals } = await createRealProof(424242);
+      const commitment = 424242;
+      const { pA, pB, pC, pubSignals, paramsCommitment } = await createRealProof(commitment);
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, paramsCommitment, 'test-uri');
       await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
       
       const requests = await policyPrivacy.getRequesterRequests(requester1.address);
@@ -304,7 +298,7 @@ describe('PolicyPrivacy', function () {
         .to.emit(policyPrivacy, 'PolicyRevoked')
         .withArgs(dataSubject1.address, 1);
       
-      const [, , isActive] = await policyPrivacy.getPolicy(1);
+      const [, , , isActive] = await policyPrivacy.getPolicy(1);
       expect(isActive).to.equal(false);
     });
 
@@ -367,8 +361,8 @@ describe('PolicyPrivacy', function () {
       
       // Setup test data
       const commitment = 777777;
-      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'view-test');
-      const { pA, pB, pC, pubSignals } = await createRealProof(commitment);
+      const { pA, pB, pC, pubSignals, paramsCommitment } = await createRealProof(commitment);
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, paramsCommitment, 'view-test');
       await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
     });
 
@@ -378,8 +372,8 @@ describe('PolicyPrivacy', function () {
       
       // Setup test data
       const commitment = 777777;
-      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, 'view-test');
-      const { pA, pB, pC, pubSignals } = await createRealProof(commitment);
+      const { pA, pB, pC, pubSignals, paramsCommitment } = await createRealProof(commitment);
+      await policyPrivacy.connect(dataSubject1).commitPolicy(commitment, paramsCommitment, 'view-test');
       await policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals);
       
       expect(await policyPrivacy.isAccessGranted(1)).to.equal(true);

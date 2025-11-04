@@ -118,7 +118,7 @@ router.post('/request', async (req, res, next) => {
 
     // Check if policy exists and is active
     const policyDetails = await req.contract.getPolicy(policyId);
-    if (!policyDetails[2]) { // isActive
+    if (!policyDetails[3]) { // isActive
       return res.status(400).json({
         error: 'Policy inactive',
         message: 'The specified policy is not active'

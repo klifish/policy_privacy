@@ -39,8 +39,8 @@ class ProofUtils {
     }
 
     // Validate pubSignals
-    if (!Array.isArray(pubSignals) || pubSignals.length !== 15) {
-      throw new Error('pubSignals must be an array of 15 elements');
+    if (!Array.isArray(pubSignals) || pubSignals.length !== 33) {
+      throw new Error('pubSignals must be an array of 33 elements');
     }
 
     // Validate that all elements are valid numbers
@@ -76,15 +76,20 @@ class ProofUtils {
    * @returns {Object} Extracted information
    */
   static extractPublicSignals(pubSignals) {
-    if (!Array.isArray(pubSignals) || pubSignals.length !== 15) {
+    if (!Array.isArray(pubSignals) || pubSignals.length !== 33) {
       throw new Error('Invalid public signals format');
     }
 
     return {
       isAuthorized: pubSignals[0] === '1' || pubSignals[0] === 1,
       policyCommitment: BigInt(pubSignals[1]).toString(),
-      merkleRoots: pubSignals.slice(2, 10).map(x => BigInt(x).toString()),
-      additionalOutputs: pubSignals.slice(10).map(x => BigInt(x).toString())
+      paramsCommitment: BigInt(pubSignals[2]).toString(),
+      merkleRoots: pubSignals.slice(3, 8).map(x => BigInt(x).toString()),
+      credPublicKeys: pubSignals.slice(8, 13).map(x => BigInt(x).toString()),
+      rangeMin: pubSignals.slice(13, 18).map(x => BigInt(x).toString()),
+      rangeMax: pubSignals.slice(18, 23).map(x => BigInt(x).toString()),
+      ontologyPolicyIds: pubSignals.slice(23, 28).map(x => BigInt(x).toString()),
+      ontologyEpochs: pubSignals.slice(28, 33).map(x => BigInt(x).toString())
     };
   }
 

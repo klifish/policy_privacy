@@ -51,11 +51,15 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
       ontologyPolicyIds: input.ontologyPolicyIds,
       ontologyEpochs: input.ontologyEpochs
     });
+    input.paramsCommitment = paramsCommitment;
 
     // Step 2: Data subject commits to policy
-    await expect(policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, paramsCommitment, 'ipfs://test-policy'))
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+
+    await expect(policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy'))
       .to.emit(policyPrivacy, 'PolicyCommitted')
-      .withArgs(dataSubject1.address, 1, policyCommitment, paramsCommitment);
+      .withArgs(dataSubject1.address, 1, policyCommitmentBN, paramsCommitmentBN);
     
     // Step 3: Data requester generates real Groth16 proof using snarkjs
     console.log('Generating Groth16 proof...');
@@ -64,8 +68,8 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     
     // Verify the public signals
     expect(pubSignals[0]).to.equal('1'); // isAuthorized should be 1 (true)
-    expect(pubSignals[1]).to.equal(policyCommitment); // policyCommitment should match
-    expect(pubSignals[2]).to.equal(paramsCommitment.toString());
+    expect(pubSignals[1]).to.equal(policyCommitmentBN.toString());
+    expect(pubSignals[2]).to.equal(paramsCommitmentBN.toString());
     
     // Step 4: Data requester submits proof to smart contract for verification
     await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
@@ -101,8 +105,11 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
       ontologyPolicyIds: inputForCommit.ontologyPolicyIds,
       ontologyEpochs: inputForCommit.ontologyEpochs
     });
+    inputForCommit.paramsCommitment = paramsCommitment;
 
-    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, paramsCommitment, 'ipfs://test-policy');
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy');
     
     // Step 2: Generate proof for a DIFFERENT policy commitment
     const wrongRandomizer = BigInt('99999');
@@ -138,8 +145,11 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
       ontologyPolicyIds: inputForCommit.ontologyPolicyIds,
       ontologyEpochs: inputForCommit.ontologyEpochs
     });
+    inputForCommit.paramsCommitment = paramsCommitment;
 
-    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, paramsCommitment, 'ipfs://test-policy');
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy');
     
     // Step 2: Generate proof with attributes that DON'T satisfy the policy
     const badRequesterAttrs = [0, 1, 0]; // attr0=0, but policy requires attr0 AND attr1

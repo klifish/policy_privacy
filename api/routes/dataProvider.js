@@ -267,9 +267,10 @@ router.get('/data/:id', async (req, res, next) => {
       dataRecord.policyDetails = {
         dataSubject: policyDetails[0],
         commitment: policyDetails[1].toString(),
-        isActive: policyDetails[2],
-        timestamp: new Date(Number(policyDetails[3]) * 1000).toISOString(),
-        metadataURI: policyDetails[4]
+        paramsCommitment: policyDetails[2].toString(),
+        isActive: policyDetails[3],
+        timestamp: new Date(Number(policyDetails[4]) * 1000).toISOString(),
+        metadataURI: policyDetails[5]
       };
     } catch (error) {
       console.warn('Failed to fetch policy details:', error.message);

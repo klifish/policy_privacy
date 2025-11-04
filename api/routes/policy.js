@@ -121,9 +121,10 @@ router.get('/:id', async (req, res, next) => {
       policyId: id,
       dataSubject: policyDetails[0],
       commitment: policyDetails[1].toString(),
-      isActive: policyDetails[2],
-      timestamp: new Date(Number(policyDetails[3]) * 1000).toISOString(),
-      metadataURI: policyDetails[4]
+      paramsCommitment: policyDetails[2].toString(),
+      isActive: policyDetails[3],
+      timestamp: new Date(Number(policyDetails[4]) * 1000).toISOString(),
+      metadataURI: policyDetails[5]
     };
 
     res.json(policy);
@@ -176,7 +177,7 @@ router.post('/:id/revoke', async (req, res, next) => {
       });
     }
 
-    if (!policyDetails[2]) {
+    if (!policyDetails[3]) {
       return res.status(400).json({
         error: 'Policy already inactive',
         message: 'Policy is already revoked or inactive'
@@ -241,9 +242,10 @@ router.get('/subject/:address', async (req, res, next) => {
           policyId,
           dataSubject: policyDetails[0],
           commitment: policyDetails[1].toString(),
-          isActive: policyDetails[2],
-          timestamp: new Date(Number(policyDetails[3]) * 1000).toISOString(),
-          metadataURI: policyDetails[4]
+          paramsCommitment: policyDetails[2].toString(),
+          isActive: policyDetails[3],
+          timestamp: new Date(Number(policyDetails[4]) * 1000).toISOString(),
+          metadataURI: policyDetails[5]
         };
 
         // Filter by status if specified

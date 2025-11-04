@@ -217,7 +217,7 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
   path_unify: [false, true],
   gas_pad: [true],
   event_pad: [false, true],
-  proof_pad: [false, true],
+  proof_pad: [true],
   batch_pattern: ['baseline', 'batched', 'staggered']
 });
 
@@ -1389,18 +1389,25 @@ async function executePolicy(policyData, contract) {
 
   const contractWithSigner = contract.connect(signer);
 
-  if (gasPadEnabled && typeof contractWithSigner.commitPolicyWithGasPad !== 'function') {
+  const commitWithPadFn = contractWithSigner['commitPolicyWithGasPad(uint256,uint256,string,uint256)'];
+  const commitFn = contractWithSigner['commitPolicy(uint256,uint256,string)'];
+
+  if (gasPadEnabled && typeof commitWithPadFn !== 'function') {
     throw new Error('Gas padding requested but commitPolicyWithGasPad is not available on the deployed contract.');
   }
 
+  if (!gasPadEnabled && typeof commitFn !== 'function') {
+    throw new Error('commitPolicy(uint256,uint256,string) overload is not available on the deployed contract.');
+  }
+
   const commitTx = gasPadEnabled
-    ? await contractWithSigner.commitPolicyWithGasPad(
+    ? await commitWithPadFn(
       policyCommitment,
       paramsCommitment,
       'ipfs://policy-metadata',
       commitPadIterations
     )
-    : await contractWithSigner.commitPolicy(
+    : await commitFn(
       policyCommitment,
       paramsCommitment,
       'ipfs://policy-metadata'
