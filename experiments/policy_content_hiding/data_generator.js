@@ -247,8 +247,8 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 4000000n,
-  access: 5000000n
+  commit: 6000000n,  // Increased from 5M to ensure padding is executed
+  access: 7000000n   // Increased from 6M to ensure padding is executed (must be > actual max gas)
 });
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
@@ -1537,7 +1537,7 @@ async function executeDataset(dataset, contract, outputPath) {
   console.log(`Executing ${dataset.length} policy instances...`);
 
   for (let i = 0; i < dataset.length; i++) {
-
+    // Debug limit removed - execute full dataset
     console.log(`Progress: ${i}/${dataset.length}`);
 
     try {

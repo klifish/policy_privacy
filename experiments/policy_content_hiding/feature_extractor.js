@@ -45,6 +45,8 @@ function extractFeatures(executionResults) {
  * Normalize features for ML (min-max scaling)
  */
 function normalizeFeatures(features) {
+  // Include all observable features for adversary modeling
+  // Note: Gas features may show ~360 gas difference due to padding limitations
   const featureNames = Object.keys(features[0]).filter(
     key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
   );
