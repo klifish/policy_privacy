@@ -33,6 +33,7 @@ function extractFeatures(executionResults) {
 
       // Labels for classification
       duoTerm: result.duoTerm,
+      duoTermCodes: result.duoTermCodes || [], // Array of all DUO terms in the policy
       ontologyNamespace: result.ontologyNamespace,
       ontologyValue: result.ontologyValue,
       satisfy: result.satisfy ? 1 : 0
@@ -45,9 +46,10 @@ function extractFeatures(executionResults) {
  */
 function normalizeFeatures(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
   );
   console.log('Normalizing features:', featureNames.join(', '));
+  // const featureNames = ["commitGasUsed", "accessGasUsed"];
 
   const normalized = features.map(f => ({ ...f }));
   const zeroVarianceFeatures = [];
@@ -99,6 +101,7 @@ function prepareClassificationData(features, labelKey) {
   const X = features.map(f => {
     const x = { ...f };
     delete x.duoTerm;
+    delete x.duoTermCodes;
     delete x.ontologyNamespace;
     delete x.ontologyValue;
     delete x.satisfy;
@@ -115,7 +118,7 @@ function prepareClassificationData(features, labelKey) {
  */
 function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
   );
 
   const stats = {};

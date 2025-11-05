@@ -8,10 +8,35 @@
 
 const crypto = require('crypto');
 const { ethers } = require('hardhat');
+const { id, getBytes } = require('ethers');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
 const { generateGroth16Proof, calculatePolicyCommitment, calculateParamsCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
 const { json } = require('stream/consumers');
+
+const EVENT_SIGNATURES = {
+  POLICY_COMMITTED: id('PolicyCommitted(address,uint256,uint256,uint256)'),
+  ACCESS_REQUESTED: id('AccessRequested(address,uint256,uint256)'),
+  ACCESS_GRANTED: id('AccessGranted(address,uint256,uint256)'),
+  ACCESS_DENIED: id('AccessDenied(address,uint256,uint256)')
+};
+
+const ACCESS_EVENT_TOPICS = new Set([
+  EVENT_SIGNATURES.ACCESS_REQUESTED,
+  EVENT_SIGNATURES.ACCESS_GRANTED,
+  EVENT_SIGNATURES.ACCESS_DENIED
+]);
+
+const LOG_ADDRESS_BYTES = 20;
+
+function computeLogPayloadSizeBytes(log) {
+  if (!log) {
+    return 0;
+  }
+  const topicsBytes = log.topics.length * 32;
+  const dataBytes = getBytes(log.data).length;
+  return LOG_ADDRESS_BYTES + topicsBytes + dataBytes;
+}
 
 // DUO Terms (Data Use Ontology) - based on actual DUO ontology
 // See: https://ega-archive.org/access/data-access-committee/data-use-ontology/
@@ -1451,6 +1476,24 @@ async function executePolicy(policyData, contract) {
     );
   const accessReceipt = await accessTx.wait();
 
+  const commitEventLogs = commitReceipt.logs.filter(
+    (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
+  );
+  const commitLogsCount = commitEventLogs.length;
+  const commitLogsSizeBytes = commitEventLogs.reduce(
+    (total, log) => total + computeLogPayloadSizeBytes(log),
+    0
+  );
+
+  const accessEventLogs = accessReceipt.logs.filter((log) =>
+    ACCESS_EVENT_TOPICS.has(log.topics[0])
+  );
+  const accessLogsCount = accessEventLogs.length;
+  const accessLogsSizeBytes = accessEventLogs.reduce(
+    (total, log) => total + computeLogPayloadSizeBytes(log),
+    0
+  );
+
   // Extract observable features
   const features = {
     // Transaction features
@@ -1464,10 +1507,10 @@ async function executePolicy(policyData, contract) {
     proofGenerationTime,
 
     // Event features
-    commitLogsCount: commitReceipt.logs.length,
-    commitLogsSize: JSON.stringify(commitReceipt.logs).length,
-    accessLogsCount: accessReceipt.logs.length,
-    accessLogsSize: JSON.stringify(accessReceipt.logs).length,
+    commitLogsCount,
+    commitLogsSize: commitLogsSizeBytes,
+    accessLogsCount,
+    accessLogsSize: accessLogsSizeBytes,
 
     // Timing (block numbers can reveal information)
     commitBlockNumber: commitReceipt.blockNumber,

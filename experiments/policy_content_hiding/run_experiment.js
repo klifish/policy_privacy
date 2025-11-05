@@ -19,6 +19,16 @@ const {
   executeDataset
 } = require('./data_generator');
 
+// DUO term ID to attribute code mapping
+const DUO_TO_ATTRIBUTE_CODE = {
+  0: 'GR',  // GENERAL_RESEARCH
+  1: 'DS',  // DISEASE_SPECIFIC
+  2: 'RS',  // RESEARCH_SPECIFIC
+  3: 'POA', // POPULATION_ANCESTRY
+  4: 'GS',  // GEOGRAPHICAL_RESTRICTION
+  5: 'CC'   // CLINICAL_CARE
+};
+
 const {
   loadDataset,
   evaluateDatasetQuality,
@@ -450,8 +460,25 @@ async function runExperiment(config = {}) {
   for (const duoTermId of observedDuoTermIds) {
     console.log(`  Training classifier for DUO term ${duoTermId}...`);
 
-    const trainY = trainData.map(f => (f.duoTerm === duoTermId ? 1 : 0));
-    const testY = testData.map(f => (f.duoTerm === duoTermId ? 1 : 0));
+    // Fixed: Use duoTermCodes array to check if term is present (not just primary term)
+    const duoCode = DUO_TO_ATTRIBUTE_CODE[duoTermId];
+    const trainY = trainData.map(f => {
+      // Check if this term is in the duoTermCodes array
+      const hasTerm = f.duoTerm === duoTermId ||
+                      (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
+      return hasTerm ? 1 : 0;
+    });
+    const testY = testData.map(f => {
+      const hasTerm = f.duoTerm === duoTermId ||
+                      (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
+      return hasTerm ? 1 : 0;
+    });
+
+    // Log label distribution for debugging
+    const trainPositives = trainY.filter(y => y === 1).length;
+    const testPositives = testY.filter(y => y === 1).length;
+    console.log(`    Train: ${trainPositives}/${trainY.length} positive (${(trainPositives/trainY.length*100).toFixed(1)}%)`);
+    console.log(`    Test: ${testPositives}/${testY.length} positive (${(testPositives/testY.length*100).toFixed(1)}%)`);
 
     const lr = new LogisticRegression(0.1, 500);
     lr.train(duoTrain.X, trainY);
