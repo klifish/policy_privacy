@@ -247,8 +247,8 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 6000000n,  // Target for commit transaction
-  access: 7100000n   // Target for access transaction (increased to 7.1M for transaction-level padding)
+  commit: 500000n,  // Target for commit transaction
+  access: 1000000n   // Target for access transaction (increased to 7.1M for transaction-level padding)
 });
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
@@ -1457,6 +1457,8 @@ async function executePolicy(policyData, contract) {
   if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
     throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
   }
+
+  // console.log("proof pubsignals:", proof.pubSignals);
 
   const accessTx = gasPadEnabled
     ? await contractWithSigner.requestAccessWithGasPad(
