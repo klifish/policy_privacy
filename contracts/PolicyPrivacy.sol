@@ -123,28 +123,50 @@ contract PolicyPrivacy {
         // Transaction gas breakdown:
         // Total TX gas = 21000 (base) + calldata_gas + execution_gas
         //
-        // We want: Total TX gas = targetGas for ALL policy types
-        // Therefore: execution_gas_after_padding = targetGas - 21000 - calldata_gas
+        // Calldata gas calculation (EIP-2028):
+        // - Zero bytes: 4 gas each  
+        // - Non-zero bytes: 16 gas each
         //
-        // Estimated transaction overhead:
-        // - Base: 21,000 gas
-        // - Calldata: ~44,192 gas (2762 bytes × 16 gas/byte for non-zero bytes)
-        // - Total overhead: ~65,192 gas
-        //
-        // This means if targetGas = 7,100,000:
-        //   Execution must consume: 7,100,000 - 65,192 = 7,034,808 gas
-        //
-        // Strategy: Calculate how much padding needed to reach target TRANSACTION gas
+        // Strategy: Calculate actual calldata costs and compensate with padding
+        // to normalize all transactions to the same total gas consumption
 
-        uint256 TX_OVERHEAD = 65192; // 21000 + 44192 (estimated)
+        // Calculate actual calldata costs dynamically
+        uint256 calldataLength = msg.data.length;
+        uint256 calldataZeroBytes = 0;
+        
+        // Count zero bytes in calldata
+        for (uint256 i = 0; i < calldataLength; i++) {
+            if (msg.data[i] == 0) {
+                calldataZeroBytes++;
+            }
+        }
+        
+        uint256 calldataNonZeroBytes = calldataLength - calldataZeroBytes;
+        uint256 actualCalldataGas = (calldataZeroBytes * 4) + (calldataNonZeroBytes * 16);
+        
+        // Calculate maximum possible calldata gas for this function
+        // (assuming all bytes are non-zero for worst case)
+        uint256 maxCalldataGas = calldataLength * 16;
+        
+        // Base transaction cost
+        uint256 BASE_TX_GAS = 21000;
+        
+        // Total overhead with MAXIMUM calldata cost (worst case)
+        uint256 maxTxOverhead = BASE_TX_GAS + maxCalldataGas;
 
         // Safety check: ensure target is reasonable
-        if (targetGas <= TX_OVERHEAD) {
+        if (targetGas <= maxTxOverhead) {
             return;
         }
 
-        // Calculate target execution gas (what we need to consume in this function)
-        uint256 targetExecutionGas = targetGas - TX_OVERHEAD;
+        // Calculate target execution gas based on MAXIMUM overhead
+        // This ensures all transactions reach the same total gas
+        uint256 targetExecutionGas = targetGas - maxTxOverhead;
+        
+        // Calculate additional padding needed to compensate for lower actual calldata cost
+        // Transactions with more zero bytes (lower calldata cost) need more execution padding
+        uint256 calldataCompensation = maxCalldataGas - actualCalldataGas;
+        targetExecutionGas += calldataCompensation;
 
         // If we've already exceeded the target execution gas, we can't pad backwards
         if (executionGasUsed >= targetExecutionGas) {
@@ -167,13 +189,24 @@ contract PolicyPrivacy {
         }
 
         // Calculate target gasleft() we need to reach
-        uint256 targetGasLeft = currentGas - paddingNeeded;
+        // Account for loop overhead and final storage write
+        // Storage write to non-zero: ~5000 gas, loop exit: ~50 gas
+        uint256 finalOperationsCost = 5050;
+        if (paddingNeeded <= finalOperationsCost) {
+            return; // Too small to pad accurately
+        }
+        
+        uint256 targetGasLeft = currentGas - paddingNeeded + finalOperationsCost;
 
         // Burn gas through computation until we reach target
+        // Use simple, predictable operations with consistent gas cost
         uint256 acc = gasPadAccumulator;
         while (gasleft() > targetGasLeft) {
             unchecked {
+                // Simple arithmetic operations with predictable gas costs
+                // Each iteration: ~30-40 gas
                 acc = (acc ^ (0x9e3779b97f4a7c15)) * 0x1000003d;
+                acc = acc + (acc >> 1) + (acc << 1);
             }
         }
 
