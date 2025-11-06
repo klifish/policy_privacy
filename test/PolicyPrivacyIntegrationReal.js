@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
-const { generateGroth16Proof, calculatePolicyCommitment, createCircuitInput } = require('./utils/proofGenerator');
+const { generateGroth16Proof, calculatePolicyCommitment, calculateParamsCommitment, createCircuitInput } = require('./utils/proofGenerator');
 
 describe('PolicyPrivacy - Real Groth16 Integration', function () {
   this.timeout(300000); // 5 minutes for proof generation
@@ -36,26 +36,40 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     
     console.log('Policy commitment:', policyCommitment);
     
-    // Step 2: Data subject commits to policy
-    await expect(policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, 'ipfs://test-policy'))
-      .to.emit(policyPrivacy, 'PolicyCommitted')
-      .withArgs(dataSubject1.address, 1, policyCommitment);
-    
-    // Step 3: Data requester generates real Groth16 proof using snarkjs
-    console.log('Generating Groth16 proof...');
+    // Prepare circuit input and parameter commitment
     const requesterAttrs = [1, 1, 0]; // Attributes that satisfy the policy
     const input = createCircuitInput(policyCommitment, { 
       policy, 
       randomizer, 
       requesterAttrs 
     });
+    const paramsCommitment = await calculateParamsCommitment({
+      merkleRoots: input.merkleRoots,
+      credPublicKeys: input.credPublicKeys,
+      rangeMin: input.rangeMin,
+      rangeMax: input.rangeMax,
+      ontologyPolicyIds: input.ontologyPolicyIds,
+      ontologyEpochs: input.ontologyEpochs
+    });
+    input.paramsCommitment = paramsCommitment;
+
+    // Step 2: Data subject commits to policy
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+
+    await expect(policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy'))
+      .to.emit(policyPrivacy, 'PolicyCommitted')
+      .withArgs(dataSubject1.address, 1, policyCommitmentBN, paramsCommitmentBN);
     
+    // Step 3: Data requester generates real Groth16 proof using snarkjs
+    console.log('Generating Groth16 proof...');
     const { pA, pB, pC, pubSignals } = await generateGroth16Proof(input);
     console.log('Proof generated successfully');
     
     // Verify the public signals
     expect(pubSignals[0]).to.equal('1'); // isAuthorized should be 1 (true)
-    expect(pubSignals[1]).to.equal(policyCommitment); // policyCommitment should match
+    expect(pubSignals[1]).to.equal(policyCommitmentBN.toString());
+    expect(pubSignals[2]).to.equal(paramsCommitmentBN.toString());
     
     // Step 4: Data requester submits proof to smart contract for verification
     await expect(policyPrivacy.connect(requester1).requestAccess(1, pA, pB, pC, pubSignals))
@@ -82,7 +96,20 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     const randomizer = BigInt('12345');
     const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
     
-    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, 'ipfs://test-policy');
+    const inputForCommit = createCircuitInput(policyCommitment, { policy, randomizer, requesterAttrs: [1, 1, 0] });
+    const paramsCommitment = await calculateParamsCommitment({
+      merkleRoots: inputForCommit.merkleRoots,
+      credPublicKeys: inputForCommit.credPublicKeys,
+      rangeMin: inputForCommit.rangeMin,
+      rangeMax: inputForCommit.rangeMax,
+      ontologyPolicyIds: inputForCommit.ontologyPolicyIds,
+      ontologyEpochs: inputForCommit.ontologyEpochs
+    });
+    inputForCommit.paramsCommitment = paramsCommitment;
+
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy');
     
     // Step 2: Generate proof for a DIFFERENT policy commitment
     const wrongRandomizer = BigInt('99999');
@@ -109,7 +136,20 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     const randomizer = BigInt('12345');
     const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
     
-    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitment, 'ipfs://test-policy');
+    const inputForCommit = createCircuitInput(policyCommitment, { policy, randomizer, requesterAttrs: badRequesterAttrs });
+    const paramsCommitment = await calculateParamsCommitment({
+      merkleRoots: inputForCommit.merkleRoots,
+      credPublicKeys: inputForCommit.credPublicKeys,
+      rangeMin: inputForCommit.rangeMin,
+      rangeMax: inputForCommit.rangeMax,
+      ontologyPolicyIds: inputForCommit.ontologyPolicyIds,
+      ontologyEpochs: inputForCommit.ontologyEpochs
+    });
+    inputForCommit.paramsCommitment = paramsCommitment;
+
+    const policyCommitmentBN = BigInt(policyCommitment);
+    const paramsCommitmentBN = BigInt(paramsCommitment);
+    await policyPrivacy.connect(dataSubject1).commitPolicy(policyCommitmentBN, paramsCommitmentBN, 'ipfs://test-policy');
     
     // Step 2: Generate proof with attributes that DON'T satisfy the policy
     const badRequesterAttrs = [0, 1, 0]; // attr0=0, but policy requires attr0 AND attr1

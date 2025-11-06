@@ -74,6 +74,33 @@ npx mocha test/policy_privacy_phase1_integration.js --timeout 100000
 - `utils/validation/validate_extended.js` - Test extended policy interpreter
 - `utils/validation/validate_legacy.js` - Test legacy policy interpreter
 
+### Policy Generator
+
+- `compiler/policy_generator.js` turns author-facing JSON policies into RPN tokens, policy commitments, and metadata aligned with `PolicyPrivacyMain`.
+- Usage:
+  ```bash
+  node compiler/policy_generator.js \
+    --in examples/policies/sample_policy.json \
+    --out artifacts/policies/sample_policy.compiled.json \
+    --depth 10 \
+    --randomizer 0x12345 \
+    --pretty
+  ```
+- Input JSON structure:
+  ```json
+  {
+    "attributes": { "DS": true, "RS": true, "POA": false, "GS": false, "CC": false },
+    "predicates": [
+      { "slot": 0, "duo": "DS", "namespace": "ICD10", "root": "0x…" },
+      { "slot": 1, "duo": "RS", "namespace": "OBI", "root": "0x…" }
+    ],
+    "logic": "DS | RS"
+  }
+  ```
+  Attributes are auto-bound to their ontology predicates (e.g., `DS` ⟶ `ICD10`) and compiled into postfix tokens with operator codes matching the interpreter circuit.
+  See [docs/POLICY_GENERATOR.md](docs/POLICY_GENERATOR.md) for full schema and integration notes.
+- `utils/policy/random_human_policy.js` can synthesize author-style DUO policies; use it to bootstrap datasets or fuzz the compiler.
+
 ## Documentation
 
 ### ICD-10 Set Builder

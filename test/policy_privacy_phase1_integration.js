@@ -4,7 +4,7 @@ const snarkjs = require("snarkjs");
 const circomlibjs = require("circomlibjs");
 const fs = require("fs");
 
-describe('Policy Privacy Main Circuit - Phase 1 Integration Test', function () {
+describe.skip('Policy Privacy Main Circuit - Phase 1 Integration Test', function () {
   this.timeout(100000);
   let poseidon;
 

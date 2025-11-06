@@ -1,0 +1,28 @@
+{
+  "policy_id": "example-policy",
+  "dataset_id": "example-dataset",
+  "attributes": {
+    "DS": true,
+    "RS": true,
+    "POA": false,
+    "GS": false,
+    "CC": false
+  },
+  "predicates": [
+    {
+      "slot": 0,
+      "duo": "DS",
+      "namespace": "ICD10",
+      "root": "0xfeedface",
+      "description": "ICD-10 whitelist for disease-specific research"
+    },
+    {
+      "slot": 1,
+      "duo": "RS",
+      "namespace": "OBI",
+      "root": "0xdecafbad",
+      "description": "OBI whitelist for research-specific restrictions"
+    }
+  ],
+  "logic": "DS | RS"
+}
