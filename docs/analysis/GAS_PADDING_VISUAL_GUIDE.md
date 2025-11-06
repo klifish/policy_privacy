@@ -155,12 +155,12 @@ Policy B:  21k + 44.0k + 175k + 6,860.0k = 7,100,000 gas (target)
 Policy C:  21k + 46.4k + 200k + 6,832.6k = 7,100,000 gas
 
 But TX_OVERHEAD assumes:
-           21k + 44.2k (fixed) = 65.2k
+           21k + 44.192k (fixed) = 65.192k
 
 So actual calculation:
-Policy A:  Target 7,034.8k exec → burns 6,884.8k → Total 7,099,640 gas ⚠️
-Policy B:  Target 7,034.8k exec → burns 6,859.8k → Total 7,100,000 gas ✓
-Policy C:  Target 7,034.8k exec → burns 6,834.8k → Total 7,100,360 gas ⚠️
+Policy A:  Target 7,034.808k exec → burns 6,884.808k → Total 7,099,640 gas ⚠️
+Policy B:  Target 7,034.808k exec → burns 6,859.808k → Total 7,100,000 gas ✓
+Policy C:  Target 7,034.808k exec → burns 6,834.808k → Total 7,100,360 gas ⚠️
 
 Variance: 7,100,360 - 7,099,640 = 720 gas across extremes
 Typical:  ±360 gas from target
