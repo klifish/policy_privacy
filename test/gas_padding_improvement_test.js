@@ -167,21 +167,3 @@ describe('Gas Padding Improvement', function () {
     });
   });
 });
-
-// Deploy a simple mock verifier for testing
-// This mock verifier always returns true for any proof
-const MockVerifierSource = `
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
-
-contract MockVerifier {
-    function verifyProof(
-        uint[2] calldata,
-        uint[2][2] calldata,
-        uint[2] calldata,
-        uint[33] calldata
-    ) external pure returns (bool) {
-        return true;
-    }
-}
-`;

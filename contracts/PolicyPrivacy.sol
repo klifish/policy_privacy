@@ -221,8 +221,9 @@ contract PolicyPrivacy {
             unchecked {
                 // Simple arithmetic operations with predictable gas costs
                 // Each iteration: ~30-40 gas
+                // Combine XOR, multiplication, and bit shifts for gas consumption
                 acc = (acc ^ (0x9e3779b97f4a7c15)) * 0x1000003d;
-                acc = acc + (acc >> 1) + (acc << 1);
+                acc = (acc << 1) + (acc >> 1); // Simplified: double + half
             }
         }
 
