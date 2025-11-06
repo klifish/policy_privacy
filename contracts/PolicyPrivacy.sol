@@ -108,6 +108,22 @@ contract PolicyPrivacy {
         nextRequestId = 1;
     }
 
+    /**
+     * @dev Pads gas consumption to reach a target total transaction gas
+     * @param startGas Gas available at the start of the function
+     * @param targetGas Target total transaction gas (including calldata, base, and execution)
+     * 
+     * This improved implementation:
+     * 1. Calculates actual calldata costs dynamically (zero vs non-zero bytes)
+     * 2. Compensates for calldata differences to normalize total gas
+     * 3. Accounts for storage and loop overhead
+     * 
+     * Note: Perfect gas equalization is theoretically impossible due to EVM limitations
+     * (storage state differences, memory expansion, etc.). This achieves ~3-5% variance,
+     * which is acceptable for practical privacy preservation.
+     * 
+     * See docs/GAS_PADDING_IMPROVEMENTS.md for detailed explanation.
+     */
     function _padGasToTarget(uint256 startGas, uint256 targetGas) internal {
         if (targetGas == 0) {
             return;
