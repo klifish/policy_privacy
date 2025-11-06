@@ -247,8 +247,8 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 6000000n,  // Increased from 5M to ensure padding is executed
-  access: 7000000n   // Increased from 6M to ensure padding is executed (must be > actual max gas)
+  commit: 6000000n,  // Target for commit transaction
+  access: 7100000n   // Target for access transaction (increased to 7.1M for transaction-level padding)
 });
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;

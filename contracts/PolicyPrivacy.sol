@@ -88,27 +88,52 @@ contract PolicyPrivacy {
         require(targetGas <= MAX_GAS_PAD_TARGET_GAS, "Gas pad target too large");
 
         uint256 currentGas = gasleft();
-        uint256 gasUsed = startGas - currentGas;
+        uint256 executionGasUsed = startGas - currentGas;
 
-        // Fixed: If already exceeded target due to fixed overhead, pad to a higher target
-        // This ensures all transactions consume the same total gas regardless of policy complexity
-        uint256 effectiveTarget = targetGas;
-        if (gasUsed >= targetGas) {
-            // Already exceeded target - this is expected due to EVM fixed overheads
-            // Pad to target + 50000 to ensure all transactions are equalized
-            effectiveTarget = targetGas + 50000;
+        // Transaction gas breakdown:
+        // Total TX gas = 21000 (base) + calldata_gas + execution_gas
+        //
+        // We want: Total TX gas = targetGas for ALL policy types
+        // Therefore: execution_gas_after_padding = targetGas - 21000 - calldata_gas
+        //
+        // Estimated transaction overhead:
+        // - Base: 21,000 gas
+        // - Calldata: ~44,192 gas (2762 bytes × 16 gas/byte for non-zero bytes)
+        // - Total overhead: ~65,192 gas
+        //
+        // This means if targetGas = 7,100,000:
+        //   Execution must consume: 7,100,000 - 65,192 = 7,034,808 gas
+        //
+        // Strategy: Calculate how much padding needed to reach target TRANSACTION gas
 
-            // If still exceeded the extended target, return (safety check)
-            if (gasUsed >= effectiveTarget || effectiveTarget >= startGas) {
-                return;
-            }
-        } else if (targetGas >= startGas) {
+        uint256 TX_OVERHEAD = 65192; // 21000 + 44192 (estimated)
+
+        // Safety check: ensure target is reasonable
+        if (targetGas <= TX_OVERHEAD) {
             return;
         }
 
-        uint256 targetGasLeft = startGas - effectiveTarget;
-        uint256 acc = gasPadAccumulator;
+        // Calculate target execution gas (what we need to consume in this function)
+        uint256 targetExecutionGas = targetGas - TX_OVERHEAD;
 
+        // If we've already exceeded the target execution gas, we can't pad backwards
+        if (executionGasUsed >= targetExecutionGas) {
+            return;
+        }
+
+        // Calculate how much more gas we need to consume
+        uint256 paddingNeeded = targetExecutionGas - executionGasUsed;
+
+        // Safety check: ensure we have enough gas left to pad
+        if (paddingNeeded >= currentGas) {
+            return;
+        }
+
+        // Calculate target gasleft() we need to reach
+        uint256 targetGasLeft = currentGas - paddingNeeded;
+
+        // Burn gas through computation until we reach target
+        uint256 acc = gasPadAccumulator;
         while (gasleft() > targetGasLeft) {
             unchecked {
                 acc = (acc ^ (0x9e3779b97f4a7c15)) * 0x1000003d;
