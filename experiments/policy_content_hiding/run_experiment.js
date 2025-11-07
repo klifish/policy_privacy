@@ -201,7 +201,7 @@ function printUsage() {
 async function runExperiment(config = {}) {
   const {
     numDuoTerms = 3,
-    executionsPerPolicy = 1,
+    executionsPerPolicy = 3,
     policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
@@ -474,11 +474,19 @@ async function runExperiment(config = {}) {
       return hasTerm ? 1 : 0;
     });
 
-    // Log label distribution for debugging
+    // Log label distribution
     const trainPositives = trainY.filter(y => y === 1).length;
     const testPositives = testY.filter(y => y === 1).length;
-    console.log(`    Train: ${trainPositives}/${trainY.length} positive (${(trainPositives/trainY.length*100).toFixed(1)}%)`);
-    console.log(`    Test: ${testPositives}/${testY.length} positive (${(testPositives/testY.length*100).toFixed(1)}%)`);
+    const trainRatio = trainPositives / trainY.length;
+    const testRatio = testPositives / testY.length;
+
+    console.log(`    Train: ${trainPositives}/${trainY.length} positive (${(trainRatio*100).toFixed(1)}%)`);
+    console.log(`    Test: ${testPositives}/${testY.length} positive (${(testRatio*100).toFixed(1)}%)`);
+
+    // Warn about severe class imbalance
+    if (testRatio < 0.3 || testRatio > 0.7) {
+      console.log(`    ⚠️  Class imbalance detected - Accuracy metric may be misleading!`);
+    }
 
     const lr = new LogisticRegression(0.1, 500);
     lr.train(duoTrain.X, trainY);
@@ -492,7 +500,12 @@ async function runExperiment(config = {}) {
       classifier: 'LogisticRegression',
       yTrue: testY,
       yPred: predictions,
-      yProba: probabilities
+      yProba: probabilities,
+      classDistribution: {
+        testPositive: testPositives,
+        testTotal: testY.length,
+        testRatio: testRatio
+      }
     });
   }
   console.log();
@@ -535,22 +548,43 @@ async function runExperiment(config = {}) {
 
   const evaluation = evaluateClassificationTasks(classificationResults);
 
-  console.log('Classification Results:');
+  console.log('Classification Results (Privacy Metrics):');
+  console.log('Note: AUC and Advantage are the primary privacy indicators.');
+  console.log('AUC ≤ 0.55 and Advantage ≤ 5% indicate good privacy protection.');
+  console.log('');
   for (const result of evaluation.results) {
-    console.log();
     console.log(`Task: ${result.task}`);
     console.log(`  Type: ${result.type}`);
-    console.log(`  Accuracy: ${(result.accuracy * 100).toFixed(2)}%`);
-    console.log(`  Random Baseline: ${(result.randomBaseline * 100).toFixed(2)}%`);
-    console.log(`  Advantage: ${(result.advantage * 100).toFixed(2)}%`);
 
+    // Show class distribution if available
+    if (result.classDistribution) {
+      const dist = result.classDistribution;
+      console.log(`  Test Set: ${dist.testPositive}/${dist.testTotal} positive (${(dist.testRatio*100).toFixed(1)}%)`);
+    }
+
+    // Primary privacy metrics
     if (result.auc !== null && result.auc !== undefined) {
-      console.log(`  AUC: ${result.auc.toFixed(4)}`);
+      const aucStatus = result.auc <= aucThreshold ? '✓' : '✗';
+      console.log(`  ${aucStatus} AUC: ${result.auc.toFixed(4)} (threshold: ≤${aucThreshold})`);
+    }
+
+    const advStatus = result.advantage <= advantageThreshold ? '✓' : '✗';
+    console.log(`  ${advStatus} Advantage: ${(result.advantage * 100).toFixed(2)}%`);
+    console.log(`     → Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing`);
+
+    // Secondary metrics for diagnostics
+    if (result.type === 'binary') {
+      console.log(`  Precision: ${(result.precision * 100).toFixed(2)}%, Recall: ${(result.recall * 100).toFixed(2)}%, F1: ${(result.f1 * 100).toFixed(2)}%`);
     }
 
     if (result.type === 'multi-class' && result.macroF1 !== undefined && result.macroF1 !== null) {
       console.log(`  Macro F1: ${(result.macroF1 * 100).toFixed(2)}%`);
     }
+
+    console.log();
+
+    // Note: Accuracy removed - misleading for imbalanced datasets
+    // Use AUC as the primary metric for privacy evaluation
   }
   console.log();
 
@@ -646,21 +680,31 @@ function generateReadableReport(report) {
   lines.push(`- **Test Ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
   lines.push('');
 
-  lines.push('## Classification Results');
+  lines.push('## Privacy Evaluation Results');
+  lines.push('');
+  lines.push('**Note:** AUC (Area Under ROC Curve) and Advantage are the primary privacy metrics.');
+  lines.push('- **AUC ≤ 0.55:** Indicates adversary cannot rank samples better than random');
+  lines.push('- **Advantage ≤ 5%:** Indicates adversary gains minimal benefit over random guessing');
+  lines.push('');
+  lines.push('> Accuracy metric removed: misleading for imbalanced datasets in privacy evaluation.');
   lines.push('');
 
   for (const result of report.evaluation.results) {
     lines.push(`### ${result.task}`);
     lines.push('');
     lines.push(`- **Type:** ${result.type}`);
-    lines.push(`- **Accuracy:** ${(result.accuracy * 100).toFixed(2)}%`);
-    lines.push(`- **Random Baseline:** ${(result.randomBaseline * 100).toFixed(2)}%`);
-    lines.push(`- **Advantage:** ${(result.advantage * 100).toFixed(2)}%`);
 
+    // Primary privacy metrics first
     if (result.auc !== null && result.auc !== undefined) {
-      lines.push(`- **AUC:** ${result.auc.toFixed(4)}`);
+      const aucStatus = result.auc <= 0.55 ? '✓ PASS' : '✗ FAIL';
+      lines.push(`- **AUC:** ${result.auc.toFixed(4)} (${aucStatus})`);
     }
 
+    const advStatus = result.advantage <= 0.05 ? '✓ PASS' : '✗ FAIL';
+    lines.push(`- **Advantage:** ${(result.advantage * 100).toFixed(2)}% (${advStatus})`);
+    lines.push(`  - *Interpretation: Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing*`);
+
+    // Secondary metrics
     if (result.type === 'multi-class' && result.macroF1 !== undefined && result.macroF1 !== null) {
       lines.push(`- **Macro F1:** ${(result.macroF1 * 100).toFixed(2)}%`);
     }
