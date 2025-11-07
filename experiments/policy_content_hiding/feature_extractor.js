@@ -36,6 +36,11 @@ function extractFeatures(executionResults) {
       duoTermCodes: result.duoTermCodes || [], // Array of all DUO terms in the policy
       ontologyNamespace: result.ontologyNamespace,
       ontologyValue: result.ontologyValue,
+
+      // ICD-10 chapter for multi-class classification
+      // Only set when namespace is ICD10, otherwise undefined
+      icd10Chapter: result.ontologyNamespace === 'ICD10' ? result.ontologyValue : undefined,
+
       satisfy: result.satisfy ? 1 : 0
     };
   });
@@ -48,7 +53,7 @@ function normalizeFeatures(features) {
   // Include all observable features for adversary modeling
   // Note: Gas features may show ~360 gas difference due to padding limitations
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime'].includes(key)
   );
   console.log('Normalizing features:', featureNames.join(', '));
   // const featureNames = ["commitGasUsed", "accessGasUsed"];
@@ -106,6 +111,7 @@ function prepareClassificationData(features, labelKey) {
     delete x.duoTermCodes;
     delete x.ontologyNamespace;
     delete x.ontologyValue;
+    delete x.icd10Chapter;
     delete x.satisfy;
     return Object.values(x);
   });
@@ -120,7 +126,7 @@ function prepareClassificationData(features, labelKey) {
  */
 function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy'].includes(key)
   );
 
   const stats = {};
