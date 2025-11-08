@@ -201,7 +201,7 @@ function printUsage() {
 async function runExperiment(config = {}) {
   const {
     numDuoTerms = 3,
-    executionsPerPolicy = 3,
+    executionsPerPolicy = 1,
     policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
@@ -465,12 +465,12 @@ async function runExperiment(config = {}) {
     const trainY = trainData.map(f => {
       // Check if this term is in the duoTermCodes array
       const hasTerm = f.duoTerm === duoTermId ||
-                      (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
+        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
       return hasTerm ? 1 : 0;
     });
     const testY = testData.map(f => {
       const hasTerm = f.duoTerm === duoTermId ||
-                      (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
+        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
       return hasTerm ? 1 : 0;
     });
 
@@ -480,8 +480,8 @@ async function runExperiment(config = {}) {
     const trainRatio = trainPositives / trainY.length;
     const testRatio = testPositives / testY.length;
 
-    console.log(`    Train: ${trainPositives}/${trainY.length} positive (${(trainRatio*100).toFixed(1)}%)`);
-    console.log(`    Test: ${testPositives}/${testY.length} positive (${(testRatio*100).toFixed(1)}%)`);
+    console.log(`    Train: ${trainPositives}/${trainY.length} positive (${(trainRatio * 100).toFixed(1)}%)`);
+    console.log(`    Test: ${testPositives}/${testY.length} positive (${(testRatio * 100).toFixed(1)}%)`);
 
     // Warn about severe class imbalance
     if (testRatio < 0.3 || testRatio > 0.7) {
@@ -559,7 +559,7 @@ async function runExperiment(config = {}) {
     // Show class distribution if available
     if (result.classDistribution) {
       const dist = result.classDistribution;
-      console.log(`  Test Set: ${dist.testPositive}/${dist.testTotal} positive (${(dist.testRatio*100).toFixed(1)}%)`);
+      console.log(`  Test Set: ${dist.testPositive}/${dist.testTotal} positive (${(dist.testRatio * 100).toFixed(1)}%)`);
     }
 
     // Primary privacy metrics
