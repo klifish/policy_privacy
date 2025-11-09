@@ -1,0 +1,357 @@
+{
+  "experiment": "Policy Content Hiding Evaluation",
+  "timestamp": "2025-11-08T18:18:57.560Z",
+  "config": {
+    "numDuoTermsRequested": 3,
+    "numDuoTermsObserved": 3,
+    "numIcd10Chapters": 11,
+    "executionsPerPolicy": 3,
+    "totalExecutions": 597,
+    "testRatio": 0.3
+  },
+  "evaluation": {
+    "timestamp": "2025-11-08T18:18:57.557Z",
+    "results": [
+      {
+        "task": "DUO Term 0 Presence",
+        "type": "binary",
+        "accuracy": 0.5027932960893855,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "auc": 0.5344569288389505,
+        "advantage": 0.0027932960893854997,
+        "randomBaseline": 0.5,
+        "classDistribution": {
+          "testPositive": 89,
+          "testTotal": 179,
+          "testRatio": 0.4972067039106145
+        }
+      },
+      {
+        "task": "DUO Term 1 Presence",
+        "type": "binary",
+        "accuracy": 0.5307262569832403,
+        "precision": 0.5714285714285714,
+        "recall": 0.18181818181818182,
+        "f1": 0.27586206896551724,
+        "auc": 0.5454545454545442,
+        "advantage": 0.030726256983240274,
+        "randomBaseline": 0.5,
+        "classDistribution": {
+          "testPositive": 88,
+          "testTotal": 179,
+          "testRatio": 0.49162011173184356
+        }
+      },
+      {
+        "task": "DUO Term 2 Presence",
+        "type": "binary",
+        "accuracy": 0.5027932960893855,
+        "precision": 0.5862068965517241,
+        "recall": 0.18085106382978725,
+        "f1": 0.2764227642276423,
+        "auc": 0.5002503128911124,
+        "advantage": 0.0027932960893854997,
+        "randomBaseline": 0.5,
+        "classDistribution": {
+          "testPositive": 94,
+          "testTotal": 179,
+          "testRatio": 0.5251396648044693
+        }
+      },
+      {
+        "task": "ICD-10 Chapter Prediction (DecisionTree)",
+        "type": "multi-class",
+        "accuracy": 0,
+        "macroF1": 0,
+        "perClassMetrics": {
+          "0": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "1": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "2": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "3": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "4": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "5": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "6": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "7": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "8": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "9": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "undefined": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          }
+        },
+        "advantage": -0.09090909090909091,
+        "randomBaseline": 0.09090909090909091,
+        "numClasses": 11
+      },
+      {
+        "task": "ICD-10 Chapter Prediction (RandomForest)",
+        "type": "multi-class",
+        "accuracy": 0,
+        "macroF1": 0,
+        "perClassMetrics": {
+          "0": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "1": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "2": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "3": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "4": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "5": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "6": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "7": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "8": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "9": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          },
+          "undefined": {
+            "precision": 0,
+            "recall": 0,
+            "f1": 0
+          }
+        },
+        "advantage": -0.09090909090909091,
+        "randomBaseline": 0.09090909090909091,
+        "numClasses": 11
+      }
+    ]
+  },
+  "privacyCheck": {
+    "overallPassed": true,
+    "results": [
+      {
+        "task": "DUO Term 0 Presence",
+        "passed": true,
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5344569288389505,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.0027932960893854997,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "task": "DUO Term 1 Presence",
+        "passed": true,
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5454545454545442,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.030726256983240274,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "task": "DUO Term 2 Presence",
+        "passed": true,
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5002503128911124,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.0027932960893854997,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "task": "ICD-10 Chapter Prediction (DecisionTree)",
+        "passed": true,
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.09090909090909091,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "task": "ICD-10 Chapter Prediction (RandomForest)",
+        "passed": true,
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.09090909090909091,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "thresholds": {
+      "aucMax": 0.55,
+      "advantageMax": 0.05
+    }
+  },
+  "featureStats": {
+    "commitGasUsed": {
+      "min": 501341,
+      "max": 501394,
+      "mean": 501385.46140939597,
+      "median": 501394,
+      "std": 19.227711423989206
+    },
+    "commitCalldataLength": {
+      "min": 394,
+      "max": 394,
+      "mean": 394,
+      "median": 394,
+      "std": 0
+    },
+    "accessGasUsed": {
+      "min": 1001453,
+      "max": 1001538,
+      "mean": 1001490.8003355705,
+      "median": 1001492,
+      "std": 24.94306402269787
+    },
+    "accessCalldataLength": {
+      "min": 2762,
+      "max": 2762,
+      "mean": 2762,
+      "median": 2762,
+      "std": 0
+    },
+    "proofSize": {
+      "min": 2870,
+      "max": 2870,
+      "mean": 2870,
+      "median": 2870,
+      "std": 0
+    },
+    "commitLogsCount": {
+      "min": 1,
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "std": 0
+    },
+    "commitLogsSize": {
+      "min": 180,
+      "max": 180,
+      "mean": 180,
+      "median": 180,
+      "std": 0
+    },
+    "accessLogsCount": {
+      "min": 2,
+      "max": 2,
+      "mean": 2,
+      "median": 2,
+      "std": 0
+    },
+    "accessLogsSize": {
+      "min": 296,
+      "max": 296,
+      "mean": 296,
+      "median": 296,
+      "std": 0
+    },
+    "blockDifference": {
+      "min": 2,
+      "max": 2,
+      "mean": 2,
+      "median": 2,
+      "std": 0
+    }
+  },
+  "conclusion": "System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing."
+}
