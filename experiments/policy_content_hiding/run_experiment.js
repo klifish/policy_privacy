@@ -201,7 +201,7 @@ function printUsage() {
 async function runExperiment(config = {}) {
   const {
     numDuoTerms = 3,
-    executionsPerPolicy = 1,
+    executionsPerPolicy = 3,
     policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
