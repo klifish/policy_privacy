@@ -1,148 +1,289 @@
-# Policy Content Hiding Evaluation Experiment
+# Policy Content Hiding Evaluation
 
-This experiment evaluates whether the Policy Privacy system achieves **Policy Content Hiding** — i.e., an adversary observing only on-chain transcripts cannot infer DUO terms or ICD-10 codes better than random guessing.
+> **Evaluating Privacy Protection for DUO Terms in Zero-Knowledge Policies**
 
-## Background
+## 📋 Quick Navigation
 
-Policy Content Hiding is the baseline property of Policy Privacy:
+- **[Why Accuracy Was Removed](./METRICS_EXPLANATION.md)** - Detailed explanation of privacy metrics
+- **[Output Examples](./example_output.md)** - Before/after comparison with real examples
+- **[Experiment Runner](./run_experiment.js)** - Main entry point
 
-- Policies are committed via Pedersen commitments and verified with ZK proofs
-- On-chain, only transaction metadata (gas, calldata length, proof size, events, timing) is observable
-- We verify empirically that no information about hidden policy content leaks through these channels
+---
 
-### DUO Terms and Ontology Linking
+## 🎯 Purpose
 
-The experiment uses Data Use Ontology (DUO) terms as specified in the [EGA DUO documentation](https://ega-archive.org/access/data-access-committee/data-use-ontology/):
+Evaluate whether the Policy Privacy system successfully **hides policy content** from adversaries observing blockchain transactions.
 
-**Ontology-Linked DUO Terms** (require external ontologies):
-- **DISEASE_SPECIFIC** (DUO:0000007) - Disease-specific research use, requires disease ontology (ICD-10)
+**What we protect**:
+- DUO terms (Data Use Ontology attributes)
+- ICD-10 disease codes
+- Policy structure and predicates
 
-**Non-Ontology-Linked DUO Terms** (standalone):
-- **GENERAL_RESEARCH** (DUO:0000042) - General research use
-- **POPULATION_RESEARCH** (DUO:0000011) - Population research
-- **CLINICAL_CARE** (DUO:0000043) - Clinical care use
-- **COMMERCIAL_USE** (DUO:0000046) - Commercial purpose
+**What adversaries can observe**:
+- Gas consumption
+- Calldata length
+- Event logs
+- Transaction timing
+- Block numbers
 
-This categorization ensures that policies are generated realistically: only disease-specific research policies are paired with ICD-10 codes, while other DUO terms are used standalone.
+---
 
-## Experiment Structure
+## 🚀 Quick Start
 
-### 1. Data Generation (`data_generator.js`)
-- Generate policies with DUO terms following actual ontology relationships
-- **Ontology-linked policies**: Disease-specific research paired with ICD-10 chapters
-- **Non-ontology-linked policies**: Other DUO terms used standalone
-- Execute each policy multiple times (satisfy + non-satisfy cases)
-- Collect observable features from blockchain transactions
+### Run Complete Experiment
+```bash
+node run_experiment.js
+```
 
-### 2. Feature Extraction (`feature_extractor.js`)
-- Extract observable features:
-  - Calldata length, logs size, events count
-  - Gas used, verification gas, proof size
-  - Timing / latency metrics
-- Normalize features for machine learning
+### With Custom Configuration
+```bash
+node run_experiment.js \
+  --num-duo-terms 3 \
+  --policy-count 200 \
+  --executions-per-policy 3
+```
 
-### 3. Attack Modeling (`classifiers.js`)
-- Implement classifiers (Logistic Regression, Decision Tree, Random Forest)
-- Train on prediction tasks:
-  - DUO term presence (binary classification)
-  - ICD-10 chapter (multi-class classification)
+### Resume from Checkpoint
+```bash
+node run_experiment.js --phase 3 --features results/features.json
+```
 
-### 4. Evaluation (`evaluator.js`)
-- Calculate metrics: Accuracy, AUC, Advantage (Acc − Acc_random)
-- Privacy thresholds: AUC ≈ 0.5, Advantage ≤ 0.05
+---
 
-### 5. Reporting
-- Generate detailed evaluation reports (JSON and Markdown)
-- Compare against random baseline
+## 📊 Key Metrics (Updated)
 
-## Usage
+### ⭐ Primary: AUC (Area Under ROC Curve)
+- **Threshold**: ≤ 0.55
+- **Measures**: Adversary's ability to rank samples by likelihood
+- **Why it matters**: Reflects real-world attack scenarios
 
-### Running the Full Experiment
+### ⭐ Secondary: Advantage over Random
+- **Threshold**: ≤ 5%
+- **Measures**: Improvement over random guessing
+- **Formula**: `Accuracy - (1 / NumClasses)`
+
+### 🔧 Diagnostic: Precision, Recall, F1
+- **Purpose**: Understanding classifier behavior
+- **Not used for pass/fail**: Depend on threshold and class distribution
+
+### ❌ Removed: Accuracy
+- **Why removed**: Misleading for imbalanced datasets
+- **See**: [METRICS_EXPLANATION.md](./METRICS_EXPLANATION.md) for full explanation
+
+---
+
+## 📚 Documentation
+
+| Document | Lines | Purpose |
+|----------|-------|---------|
+| **[METRICS_EXPLANATION.md](./METRICS_EXPLANATION.md)** | 402 | Why accuracy misleads, AUC interpretation |
+| **[example_output.md](./example_output.md)** | 280 | Before/after output comparison |
+| **README.md** (this file) | - | Quick reference and guide |
+
+---
+
+## 🔄 Experiment Phases
+
+### Phase 1: Data Generation & Execution ⚙️
+1. Generate diverse policies with DUO terms
+2. Deploy contracts to blockchain
+3. Execute transactions (commit + access)
+4. Collect observable features
+
+**Output**: `dataset_*.json`, `execution_results.json`
+
+### Phase 2: Feature Extraction 📊
+1. Parse transaction data
+2. Calculate feature statistics
+3. Normalize for ML training
+
+**Output**: `features.json`
+
+### Phase 3: Attack Modeling 🎯
+1. Train binary classifiers (DUO term presence)
+2. Train multi-class classifiers (ICD-10 chapter)
+3. Generate predictions on test set
+
+**Models**: Logistic Regression, Decision Tree, Random Forest
+
+### Phase 4: Evaluation 🔍
+Calculate privacy metrics:
+- ✅ AUC ≤ 0.55
+- ✅ Advantage ≤ 5%
+- 📊 Precision/Recall/F1 (diagnostic)
+
+### Phase 5: Reporting 📝
+Generate reports:
+- Console output with ✓/✗ indicators
+- `evaluation_report.json`
+- `evaluation_report.md`
+
+---
+
+## 📖 Reading Results
+
+### ✅ Good Privacy Protection
+```text
+Task: DUO Term 2 Presence
+  Test Set: 78/180 positive (43.3%)
+  ✓ AUC: 0.4893 (threshold: ≤0.55)
+  ✓ Advantage: 0.00%
+     → Adversary performs 0.00% better than random guessing
+```
+**Verdict**: Privacy is preserved
+
+### ⚠️ Borderline
+```text
+Task: DUO Term 1 Presence
+  Test Set: 91/180 positive (50.6%)
+  ✗ AUC: 0.5270 (threshold: ≤0.55)
+  ✓ Advantage: 0.00%
+```
+**Verdict**: Slight ranking ability but acceptable
+
+### ❌ Privacy Breach
+```text
+Task: DUO Term 0 Presence
+  Test Set: 93/180 positive (51.7%)
+  ✗ AUC: 0.5720 (threshold: ≤0.55)
+  ✗ Advantage: 5.56%
+```
+**Verdict**: Action required - investigate feature leakage
+
+---
+
+## ⚙️ Configuration Options
 
 ```bash
-# Ensure dependencies are installed
-npm install
+# Dataset
+--num-duo-terms <n>           # DUO terms to test (default: 3)
+--policy-count <n>            # Policies to generate (default: 200)
+--executions-per-policy <n>   # Executions per policy (default: 3)
 
-# Build circuits (required for proof generation)
-npm run build:circuit
+# Evaluation
+--test-ratio <float>          # Train/test split (default: 0.3)
+--auc-threshold <float>       # AUC threshold (default: 0.55)
+--advantage-threshold <float> # Advantage threshold (default: 0.05)
 
-# Run the experiment
-npx hardhat run experiments/policy_content_hiding/run_experiment.js
+# Resume
+--phase <n>                   # Start from phase 1-3
+--features <path>             # Use existing features
+--execution-results <path>    # Use existing execution data
+--dataset <path>              # Use existing dataset
+
+# Quality
+--evaluate-dataset            # Run dataset quality checks
 ```
 
-### Running Tests
+---
 
+## 🔍 Understanding Output
+
+### Output Format
+```text
+Task: [Task Name]
+  Test Set: X/Y positive (Z%)          ← Class distribution
+  [✓/✗] AUC: 0.XXXX (threshold: ≤0.55) ← PRIMARY METRIC
+  [✓/✗] Advantage: X.XX%                ← SECONDARY METRIC
+     → Adversary performs X.XX% better than random guessing
+  Precision: X%, Recall: X%, F1: X%    ← Diagnostic info
+```
+
+### Decision Rule
+
+| AUC | Advantage | Verdict |
+|-----|-----------|---------|
+| ✓ ≤ 0.55 | ✓ ≤ 5% | ✅ **PASS** - Privacy protected |
+| ✗ > 0.55 | ✓ ≤ 5% | ❌ **FAIL** - Ranking attack possible |
+| ✓ ≤ 0.55 | ✗ > 5% | ⚠️ **INVESTIGATE** - Calibration issue |
+| ✗ > 0.55 | ✗ > 5% | ❌ **CRITICAL** - Severe privacy breach |
+
+---
+
+## 🛠️ Troubleshooting
+
+### "No signer available"
 ```bash
-# Run the experiment test
-npx mocha test/experiments/policy_content_hiding_test.js --timeout 300000
+export AMOY_PRIVATE_KEY="0x..."
+# Or add to .env file
 ```
 
-### Custom Configuration
+### "Insufficient balance"
+Get testnet tokens from Polygon Amoy faucet
 
-```javascript
-const { runExperiment } = require('./run_experiment');
+### "Class imbalance detected"
+This is informational - system automatically uses AUC instead of accuracy
 
-runExperiment({
-  numDuoTerms: 5,              // Number of DUO terms to test
-  numIcd10Chapters: 10,         // Number of ICD-10 chapters to test
-  executionsPerPolicy: 10,      // Executions per policy combination
-  testRatio: 0.3,              // Train/test split ratio
-  aucThreshold: 0.55,          // AUC privacy threshold
-  advantageThreshold: 0.05     // Advantage privacy threshold
-});
+### "Wrong compiler version"
+```bash
+npm install -g circom@2.1.0
+circom --version
 ```
 
-## Output
+---
 
-The experiment generates the following outputs in `experiments/policy_content_hiding/results/`:
+## 📁 Output Files
 
-- `execution_results.json` - Raw execution data with observable features
-- `features.json` - Extracted and normalized features
-- `evaluation_report.json` - Detailed evaluation metrics
-- `evaluation_report.md` - Human-readable report
+```
+results/
+├── dataset_<timestamp>.json      # Generated policies
+├── execution_results.json        # Transaction data + features
+├── features.json                 # Normalized features
+├── evaluation_report.json        # Complete metrics
+├── evaluation_report.md          # Human-readable report
+└── dataset_quality.json          # Dataset statistics
+```
 
-## Privacy Thresholds
+---
 
-### Success Criteria
+## 💡 Best Practices
 
-The system achieves Policy Content Hiding if:
+### For Accurate Results
+- Use ≥200 policies with ≥3 executions each
+- Check dataset quality with `--evaluate-dataset`
+- Run multiple times with different seeds
+- Investigate features causing leakage
 
-1. **AUC ≈ 0.5** (close to random for binary classification)
-2. **Advantage ≤ 0.05** (accuracy improvement over random baseline ≤ 5%)
+### For Cost Efficiency
+- Start with `--policy-count 50` for testing
+- Use testnet (Polygon Amoy)
+- Resume from checkpoint with `--phase`
+- Test config changes with Phase 3 only
 
-### Interpretation
+---
 
-- **PASS**: Adversaries cannot infer policy content better than random guessing
-- **FAIL**: Observable features leak information about policy content
+## 🔗 Related Documentation
 
-## Experiment Phases
+- [Gas Padding Summary](../../docs/GAS_PADDING_SUMMARY.md)
+- [Gas Padding Improvements](../../docs/GAS_PADDING_IMPROVEMENTS.md)
+- [Policy Generator](../../compiler/policy_generator.js)
 
-### Phase 1: Data Generation and Execution
-Generate policy dataset and execute on blockchain to collect observable features.
+---
 
-### Phase 2: Feature Extraction
-Extract and normalize observable features from transaction data.
+## ❓ FAQ
 
-### Phase 3: Attack Modeling
-Train classifiers to attempt inferring policy content from features.
+**Q: Why was accuracy removed?**  
+A: Accuracy is misleading for imbalanced datasets. A classifier can achieve high accuracy by always predicting the majority class, while still leaking information through probability scores (measured by AUC). See [METRICS_EXPLANATION.md](./METRICS_EXPLANATION.md).
 
-### Phase 4: Evaluation
-Calculate metrics and compare against privacy thresholds.
+**Q: What if AUC passes but Advantage fails?**  
+A: This suggests a calibration issue. The classifier has good ranking (low AUC) but poor threshold selection (high advantage). Still a privacy concern.
 
-### Phase 5: Reporting
-Generate comprehensive evaluation reports.
+**Q: Should I always trust AUC over Advantage?**  
+A: Yes, for privacy evaluation. AUC measures ranking ability, which is the most realistic attack model.
 
-## Implementation Notes
+**Q: What does negative Advantage mean?**  
+A: The classifier performs worse than random guessing (good for privacy).
 
-- Uses lightweight ML implementations (no heavy dependencies)
-- Reuses existing proof generation infrastructure
-- Executes real ZK proofs and smart contract transactions
-- Minimal changes to existing codebase
+---
 
-## Future Extensions
+## 📝 Summary
 
-- Test leaky vs secure configurations
-- Add more sophisticated attack models
-- Evaluate temporal correlation attacks
-- Test with larger datasets
-- Add visualization of results
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Primary Metric** | Accuracy (misleading) | AUC (robust) |
+| **Visual Clarity** | Plain numbers | ✓/✗ indicators |
+| **Class Context** | Hidden | Shown upfront |
+| **False Positives** | Possible | Eliminated |
+| **Expert Required** | Yes | No |
+
+**Key Improvement**: Prevents false sense of security from low accuracy hiding high AUC (privacy breach).

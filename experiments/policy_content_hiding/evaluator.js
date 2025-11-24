@@ -105,14 +105,14 @@ function calculatePerClassMetrics(yTrue, yPred) {
 /**
  * Evaluate binary classification task
  */
-function evaluateBinaryClassification(yTrue, yPred, yProba, taskName) {
+function evaluateBinaryClassification(yTrue, yPred, yProba, taskName, classDistribution = null) {
   const accuracy = calculateAccuracy(yTrue, yPred);
   const { precision, recall } = calculatePrecisionRecall(yTrue, yPred);
   const f1 = precision + recall > 0 ? 2 * precision * recall / (precision + recall) : 0;
   const auc = yProba ? calculateAUC(yTrue, yProba) : null;
   const advantage = calculateAdvantage(accuracy, 2); // Binary classification
-  
-  return {
+
+  const result = {
     task: taskName,
     type: 'binary',
     accuracy,
@@ -123,6 +123,13 @@ function evaluateBinaryClassification(yTrue, yPred, yProba, taskName) {
     advantage,
     randomBaseline: 0.5
   };
+
+  // Include class distribution if provided
+  if (classDistribution) {
+    result.classDistribution = classDistribution;
+  }
+
+  return result;
 }
 
 /**
@@ -158,7 +165,7 @@ function evaluateClassificationTasks(results) {
     timestamp: new Date().toISOString(),
     results: []
   };
-  
+
   for (const result of results) {
     if (result.type === 'binary') {
       evaluation.results.push(
@@ -166,7 +173,8 @@ function evaluateClassificationTasks(results) {
           result.yTrue,
           result.yPred,
           result.yProba,
-          result.taskName
+          result.taskName,
+          result.classDistribution  // Pass class distribution
         )
       );
     } else {
@@ -179,7 +187,7 @@ function evaluateClassificationTasks(results) {
       );
     }
   }
-  
+
   return evaluation;
 }
 

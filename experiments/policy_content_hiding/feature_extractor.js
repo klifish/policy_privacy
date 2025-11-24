@@ -7,9 +7,42 @@
 
 /**
  * Extract features from execution results
+ *
+ * @param {Array} executionResults - Raw execution results
+ * @param {Object} options - Extraction options
+ * @param {boolean} options.excludeColdStart - If true, exclude the first sample (cold start)
+ * @returns {Array} Extracted features
  */
-function extractFeatures(executionResults) {
-  return executionResults.map(result => {
+function extractFeatures(executionResults, options = {}) {
+  const { excludeColdStart = true } = options;
+
+  // Filter out cold start sample if requested
+  let results = executionResults;
+  if (excludeColdStart && executionResults.length > 0) {
+    // Check if first sample has significantly higher gas (cold start indicator)
+    const firstCommitGas = parseInt(executionResults[0].features.commitGasUsed);
+    const secondCommitGas = executionResults.length > 1
+      ? parseInt(executionResults[1].features.commitGasUsed)
+      : firstCommitGas;
+
+    const gasDifference = Math.abs(firstCommitGas - secondCommitGas);
+
+    if (gasDifference > 10000) {
+      console.log('Cold start detected and excluded:');
+      console.log(`  Sample 0 commit gas: ${firstCommitGas}`);
+      console.log(`  Sample 1 commit gas: ${secondCommitGas}`);
+      console.log(`  Difference: ${gasDifference} gas (likely SSTORE cold start)`);
+      console.log();
+
+      // Exclude first sample
+      results = executionResults.slice(1);
+    } else {
+      console.log('No significant cold start detected, keeping all samples');
+      console.log();
+    }
+  }
+
+  return results.map(result => {
     const features = result.features;
 
     return {
@@ -31,11 +64,16 @@ function extractFeatures(executionResults) {
       // Timing features
       blockDifference: features.blockDifference,
 
-      // Labels for classification
+      // Labels for classification (NOT used as features)
       duoTerm: result.duoTerm,
       duoTermCodes: result.duoTermCodes || [], // Array of all DUO terms in the policy
       ontologyNamespace: result.ontologyNamespace,
       ontologyValue: result.ontologyValue,
+
+      // ICD-10 chapter for multi-class classification
+      // Only set when namespace is ICD10, otherwise undefined
+      icd10Chapter: result.ontologyNamespace === 'ICD10' ? result.ontologyValue : undefined,
+
       satisfy: result.satisfy ? 1 : 0
     };
   });
@@ -48,7 +86,7 @@ function normalizeFeatures(features) {
   // Include all observable features for adversary modeling
   // Note: Gas features may show ~360 gas difference due to padding limitations
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy', 'proofGenerationTime'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime'].includes(key)
   );
   console.log('Normalizing features:', featureNames.join(', '));
   // const featureNames = ["commitGasUsed", "accessGasUsed"];
@@ -106,6 +144,7 @@ function prepareClassificationData(features, labelKey) {
     delete x.duoTermCodes;
     delete x.ontologyNamespace;
     delete x.ontologyValue;
+    delete x.icd10Chapter;
     delete x.satisfy;
     return Object.values(x);
   });
@@ -120,7 +159,7 @@ function prepareClassificationData(features, labelKey) {
  */
 function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'satisfy'].includes(key)
+    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy'].includes(key)
   );
 
   const stats = {};
