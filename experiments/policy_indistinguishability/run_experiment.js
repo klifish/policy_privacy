@@ -53,7 +53,13 @@ function parsePairTargets(value) {
 }
 
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = {};
+  const config = {
+    policyCount: 200,
+    executionsPerPolicy: 2,
+    satisfyRatio: 0.5,
+    testRatio: 0.3,
+    permutationIterations: 500
+  };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -65,7 +71,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         config.policyCount = parseInt(argv[++i], 10);
         break;
       case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 10);
+        config.executionsPerPolicy = parseInt(argv[++i], 3);
         break;
       case '--satisfy-ratio':
         config.satisfyRatio = parseFloat(argv[++i]);
@@ -451,6 +457,7 @@ async function runExperiment(config = {}) {
       satisfyRatio: config.satisfyRatio,
       seed: config.seed
     };
+    console.log(datasetConfig);
 
     const dataset = await generateDataset(datasetConfig);
     datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
@@ -615,6 +622,7 @@ if (require.main === module) {
     process.exit(0);
   }
 
+  console.log(config);
   runExperiment(config)
     .then((report) => {
       process.exit(report.privacySummary.overallPassed ? 0 : 1);
