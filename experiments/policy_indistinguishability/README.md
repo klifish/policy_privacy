@@ -66,11 +66,26 @@ Outputs are written to the specified `--output` folder:
 
 ## Interpreting Results
 
-- **PASS** – All checked classifiers remain at/below the configured AUC & advantage limits and statistical tests show no significant drift (`p > 0.05`, small MMD).  
+- **PASS** – All checked classifiers remain at/below the configured AUC & advantage limits and statistical tests show no significant drift (`p > 0.05`, small MMD).
 - **FAIL** – At least one classifier exceeds thresholds or statistical tests detect distinguishable distributions. The report highlights the offending level, scope, and top-leaking features (based on logistic weights).
+
+## Important Note on Features
+
+**Only on-chain observable features are included in the attack model:**
+- Gas metrics: `commitGasUsed`, `accessGasUsed`
+- Calldata: `commitCalldataLength`, `accessCalldataLength`
+- Proof: `proofSize` (calldata size)
+- Events: `commitLogsCount`, `commitLogsSize`, `accessLogsCount`, `accessLogsSize`
+- Timing: `blockDifference`
+
+**Excluded:** `proofGenerationTime` - This is client-side timing information not visible on-chain. Including it would overestimate the adversary's capability.
 
 ## Notes & Next Steps
 
-- The experiment reuses the PCH generator ensuring compatibility with existing policy circuits.  
-- Additional attack models (e.g. boosted trees, neural siamese networks) can be plugged in by extending `attacks.js`.  
+- The experiment reuses the PCH generator ensuring compatibility with existing policy circuits.
+- Additional attack models (e.g. boosted trees, neural siamese networks) can be plugged in by extending `attacks.js`.
 - For regression tracking, commit generated reports and compare successive runs to ensure newly introduced protections keep all metrics within the privacy envelope.
+- **Known leakage sources (as of latest tests):**
+  - `accessGasUsed` - Primary leakage, especially for controlled_difference pairs
+  - `commitGasUsed` - Secondary leakage despite gas padding
+  - Non-linear patterns detectable by RandomForest classifiers
