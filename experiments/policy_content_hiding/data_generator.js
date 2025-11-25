@@ -252,7 +252,7 @@ const GAS_PAD_TARGET_GAS = Object.freeze({
 });
 
 // Gas randomization configuration
-const GAS_PAD_VARIANCE = 0.25; // ±25% randomization range (125k for commit, 250k for access)
+const GAS_PAD_VARIANCE = 0.1; // ±10% randomization range (50k for commit, 100k for access)
 
 /**
  * Generate a randomized gas target within the configured variance range.
