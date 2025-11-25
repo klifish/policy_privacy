@@ -10,11 +10,106 @@
 const fs = require('fs');
 const path = require('path');
 
+// Progress tracking utilities
+class ProgressTracker {
+  constructor(totalSteps) {
+    this.totalSteps = totalSteps;
+    this.currentStep = 0;
+    this.startTime = Date.now();
+    this.stepStartTime = Date.now();
+    this.stepTimings = [];
+    this.subStepMode = false;
+  }
+
+  startStep(stepName) {
+    this.currentStep++;
+    this.stepStartTime = Date.now();
+    this.currentStepName = stepName;
+    this.subStepMode = false;
+    this._displayProgress();
+  }
+
+  completeStep() {
+    const stepDuration = Date.now() - this.stepStartTime;
+    this.stepTimings.push(stepDuration);
+    this.subStepMode = false;
+    this._displayProgress(true);
+  }
+
+  // For fine-grained progress within a step (e.g., executing policies one by one)
+  updateSubProgress(current, total, extraInfo = '') {
+    this.subStepMode = true;
+    this.subStepCurrent = current;
+    this.subStepTotal = total;
+    this.subStepInfo = extraInfo;
+    this._displayProgress(false, true);
+  }
+
+  _displayProgress(completed = false, isSubStep = false) {
+    const elapsed = Date.now() - this.startTime;
+    const elapsedSeconds = Math.floor(elapsed / 1000);
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    const elapsedSecondsRemainder = elapsedSeconds % 60;
+
+    const percentage = ((this.currentStep / this.totalSteps) * 100).toFixed(1);
+    const progressBar = this._generateProgressBar(this.currentStep, this.totalSteps);
+
+    let timeEstimate = '';
+    if (this.stepTimings.length > 0 && this.currentStep < this.totalSteps) {
+      const avgStepTime = this.stepTimings.reduce((a, b) => a + b, 0) / this.stepTimings.length;
+      const remainingSteps = this.totalSteps - this.currentStep;
+      const estimatedRemainingTime = avgStepTime * remainingSteps;
+      const estMinutes = Math.floor(estimatedRemainingTime / 60000);
+      const estSeconds = Math.floor((estimatedRemainingTime % 60000) / 1000);
+      timeEstimate = ` | ETA: ${estMinutes}m ${estSeconds}s`;
+    }
+
+    const status = completed ? '✓' : '▶';
+
+    if (isSubStep && this.subStepMode) {
+      // Display sub-step progress with fine-grained ETA
+      const subPercentage = ((this.subStepCurrent / this.subStepTotal) * 100).toFixed(1);
+      const subProgressBar = this._generateProgressBar(this.subStepCurrent, this.subStepTotal, 20);
+
+      // Calculate ETA based on current sub-step progress
+      const stepElapsed = Date.now() - this.stepStartTime;
+      let subTimeEstimate = '';
+      if (this.subStepCurrent > 0 && this.subStepCurrent < this.subStepTotal) {
+        const avgTimePerSubStep = stepElapsed / this.subStepCurrent;
+        const remainingSubSteps = this.subStepTotal - this.subStepCurrent;
+        const estRemainingTime = avgTimePerSubStep * remainingSubSteps;
+        const estMin = Math.floor(estRemainingTime / 60000);
+        const estSec = Math.floor((estRemainingTime % 60000) / 1000);
+        subTimeEstimate = ` | ETA: ${estMin}m ${estSec}s`;
+      }
+
+      // Use \r to overwrite the same line for sub-progress updates
+      process.stdout.write(`\r${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
+      process.stdout.write(`\n   └─ [${this.subStepCurrent}/${this.subStepTotal}] ${subProgressBar} ${subPercentage}%${this.subStepInfo}${subTimeEstimate}${' '.repeat(20)}`);
+    } else {
+      console.log(`\n${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
+      console.log(`   Time elapsed: ${elapsedMinutes}m ${elapsedSecondsRemainder}s${timeEstimate}`);
+    }
+  }
+
+  _generateProgressBar(current, total, width = 30) {
+    const filled = Math.floor((current / total) * width);
+    const empty = width - filled;
+    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+  }
+
+  complete() {
+    const totalTime = Date.now() - this.startTime;
+    const totalMinutes = Math.floor(totalTime / 60000);
+    const totalSeconds = Math.floor((totalTime % 60000) / 1000);
+    console.log(`\n\n✓ All steps completed in ${totalMinutes}m ${totalSeconds}s`);
+  }
+}
+
 const {
   DEFAULT_PAIR_TARGETS,
   FEATURE_KEYS,
   generateDataset,
-  executeDataset,
   buildPairsFromExecutionResults
 } = require('./data_generator');
 const {
@@ -22,6 +117,57 @@ const {
   runPairwiseAttacks,
   runTwoSampleTests
 } = require('./attacks');
+
+// Import executePolicy from the base data generator for fine-grained execution
+const { executePolicy } = require('../policy_content_hiding/data_generator');
+
+// Execute dataset sequentially with real-time progress tracking
+async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker) {
+  const results = [];
+
+  console.log(`Executing ${dataset.length} policy instances sequentially...`);
+
+  for (let i = 0; i < dataset.length; i++) {
+    const policyData = dataset[i];
+
+    try {
+      const result = await executePolicy(policyData, contract);
+      results.push(result);
+
+      // Update progress after each execution
+      if (progressTracker) {
+        progressTracker.updateSubProgress(
+          i + 1,
+          dataset.length,
+          ` | Executed ${i + 1}/${dataset.length} policies`
+        );
+      }
+    } catch (error) {
+      console.error(`\nError executing policy ${i}:`, error.message);
+
+      // Update progress even on failure
+      if (progressTracker) {
+        progressTracker.updateSubProgress(
+          i + 1,
+          dataset.length,
+          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`
+        );
+      }
+      // Continue with next policy instead of stopping
+    }
+  }
+
+  // Final sub-progress update
+  if (progressTracker) {
+    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
+  }
+
+  // Save results
+  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
+  console.log(`\n   Saved ${results.length}/${dataset.length} successful results to ${outputPath}`);
+
+  return results;
+}
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
@@ -71,7 +217,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         config.policyCount = parseInt(argv[++i], 10);
         break;
       case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 3);
+        config.executionsPerPolicy = parseInt(argv[++i], 10);
         break;
       case '--satisfy-ratio':
         config.satisfyRatio = parseFloat(argv[++i]);
@@ -447,6 +593,14 @@ async function runExperiment(config = {}) {
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
+  // Initialize progress tracker based on starting phase
+  let totalSteps = 0;
+  if (startPhase <= 1) totalSteps += 3; // Dataset generation, contract deployment, execution
+  if (startPhase <= 2) totalSteps += 1; // Policy pairing
+  totalSteps += 4; // Single-sample attacks, pairwise attacks, two-sample tests, report generation
+
+  const progress = new ProgressTracker(totalSteps);
+
   // Phase 1 – dataset generation & execution
   if (startPhase <= 1) {
     console.log('Phase 1: Dataset Generation & Execution');
@@ -459,11 +613,14 @@ async function runExperiment(config = {}) {
     };
     console.log(datasetConfig);
 
+    progress.startStep('Generating dataset');
     const dataset = await generateDataset(datasetConfig);
     datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
     fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
     console.log(`Dataset saved to: ${datasetOutputPath}`);
+    progress.completeStep();
 
+    progress.startStep('Deploying contracts (Verifier & PolicyPrivacy)');
     const { ethers } = require('hardhat');
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
     const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
@@ -473,9 +630,12 @@ async function runExperiment(config = {}) {
 
     const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
     await policyPrivacy.waitForDeployment();
+    console.log(`Contracts deployed successfully`);
+    progress.completeStep();
 
-    executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
-    console.log(`Execution results saved to: ${executionResultsOutputPath}`);
+    progress.startStep(`Executing dataset on-chain (${dataset.length} executions)`);
+    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress);
+    progress.completeStep();
     console.log('');
   } else {
     console.log('Skipping Phase 1: Dataset Generation & Execution');
@@ -502,6 +662,7 @@ async function runExperiment(config = {}) {
     console.log('Phase 2: Policy Pair Construction');
     console.log('-'.repeat(60));
 
+    progress.startStep('Building policy pairs from execution results');
     const pairData = buildPairsFromExecutionResults(executionResults, pairTargets);
     pairs = pairData.pairs;
     policies = pairData.policies;
@@ -515,6 +676,7 @@ async function runExperiment(config = {}) {
     };
     fs.writeFileSync(pairsOutputPath, JSON.stringify(payload, null, 2));
     console.log(`Policy pairs saved to: ${pairsOutputPath}`);
+    progress.completeStep();
     console.log('');
   } else {
     console.log('Skipping Phase 2: Policy Pair Construction');
@@ -539,18 +701,25 @@ async function runExperiment(config = {}) {
   console.log('Phase 3: Attack Modelling & Reporting');
   console.log('-'.repeat(60));
 
+  progress.startStep(`Running single-sample attacks (${pairs.length} pairs)`);
   const singleSampleResults = runSingleSampleAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
+  progress.completeStep();
 
+  progress.startStep('Running pairwise attacks');
   const pairwiseResults = runPairwiseAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
+  progress.completeStep();
 
+  progress.startStep('Running two-sample statistical tests');
   const statisticsResults = runTwoSampleTests(pairs);
+  progress.completeStep();
 
+  progress.startStep('Generating privacy analysis and reports');
   const privacySummary = buildPrivacySummary(
     singleSampleResults,
     pairwiseResults,
@@ -608,6 +777,9 @@ async function runExperiment(config = {}) {
 
   console.log(`Saved JSON report to: ${reportJsonPath}`);
   console.log(`Saved Markdown report to: ${reportMarkdownPath}`);
+  progress.completeStep();
+
+  progress.complete();
   console.log('');
   console.log(`Overall status: ${privacySummary.overallPassed ? 'PASS' : 'FAIL'}`);
   console.log('='.repeat(60));

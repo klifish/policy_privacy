@@ -36,6 +36,30 @@ cd experiments/policy_indistinguishability
 node run_experiment.js --output ./results/pi_run
 ```
 
+**New Feature: Real-time Progress Tracking**
+
+The experiment now displays real-time progress with estimated completion time:
+
+**Main Progress:**
+```
+▶ [3/8] [███████████░░░░░░░░░░░░░░░░░░░] 37.5% | Executing dataset on-chain (1000 executions)
+   Time elapsed: 5m 23s | ETA: 7m 12s
+```
+
+**Fine-grained Policy Execution Progress:**
+```
+▶ [3/8] [███████████░░░░░░░░░░░░░░░░░░░] 37.5% | Executing dataset on-chain (1000 executions)
+   └─ [523/1000] [██████████░░░░░░░░░░] 52.3% | Executing policy 523/1000 | ETA: 3m 45s
+```
+
+Features:
+- **Main progress bar** showing overall experiment completion
+- **Sub-progress tracking** for policy execution with per-policy ETA
+- Real-time updates during dataset execution (most time-consuming phase)
+- **Accurate ETA calculation** based on average policy execution time
+- Visual progress bars at both step and sub-step levels
+- Total elapsed time tracking
+
 Phased execution (resume between steps) mirrors the PCH pipeline:
 
 ```bash
