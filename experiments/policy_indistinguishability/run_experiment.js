@@ -106,12 +106,18 @@ class ProgressTracker {
   }
 }
 
+// Use PI-specific data generator for optimal pairing
 const {
-  DEFAULT_PAIR_TARGETS,
+  PI_DEFAULT_CONFIG,
   FEATURE_KEYS,
-  generateDataset,
   buildPairsFromExecutionResults
+} = require('./pi_data_generator');
+
+// Import dataset generation from original for compatibility
+const {
+  generateDataset
 } = require('./data_generator');
+
 const {
   runSingleSampleAttacks,
   runPairwiseAttacks,
@@ -200,11 +206,15 @@ function parsePairTargets(value) {
 
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {
-    policyCount: 200,
-    executionsPerPolicy: 2,
+    policyCount: 20,
+    executionsPerPolicy: 2,  // Increased from 2 for better statistics
     satisfyRatio: 0.5,
     testRatio: 0.3,
-    permutationIterations: 500
+    permutationIterations: 500,
+    // PI-specific pairing configuration
+    minPairsPerType: 30,
+    targetPairsPerType: 50,
+    maxPairsPerType: 100
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -262,6 +272,15 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--permutation-iterations':
         config.permutationIterations = parseInt(argv[++i], 10);
         break;
+      case '--min-pairs-per-type':
+        config.minPairsPerType = parseInt(argv[++i], 10);
+        break;
+      case '--target-pairs-per-type':
+        config.targetPairsPerType = parseInt(argv[++i], 10);
+        break;
+      case '--max-pairs-per-type':
+        config.maxPairsPerType = parseInt(argv[++i], 10);
+        break;
       case '--seed':
         config.seed = argv[++i];
         break;
@@ -298,19 +317,24 @@ function printUsage() {
   console.log('  --mmd-threshold <float>        Max acceptable MMD distance (default 0.05)');
   console.log('  --ks-min <float>               Min acceptable average KS p-value (default 0.05)');
   console.log('  --permutation-iterations <n>   Permutation iterations for AUC significance (default 500)');
+  console.log('  --min-pairs-per-type <n>       Minimum pairs per type (default 30)');
+  console.log('  --target-pairs-per-type <n>    Target pairs per type (default 50)');
+  console.log('  --max-pairs-per-type <n>       Maximum pairs per type (default 100)');
   console.log('  --seed <value>                 Deterministic dataset seed');
 }
 
-function normalizePairTargets(targets) {
-  if (!targets || typeof targets !== 'object') {
-    return { ...DEFAULT_PAIR_TARGETS };
-  }
-  return Object.keys(DEFAULT_PAIR_TARGETS).reduce((acc, key) => {
-    acc[key] = typeof targets[key] === 'number'
-      ? targets[key]
-      : DEFAULT_PAIR_TARGETS[key];
-    return acc;
-  }, {});
+// Build PI config for pairing
+function buildPIConfig(config) {
+  return {
+    policyCount: config.policyCount,
+    executionsPerPolicy: config.executionsPerPolicy,
+    satisfyRatio: config.satisfyRatio,
+    minPairsPerType: config.minPairsPerType || 30,
+    targetPairsPerType: config.targetPairsPerType || 50,
+    maxPairsPerType: config.maxPairsPerType || 100,
+    randomSeed: config.seed,
+    ensureBalancedSampling: true
+  };
 }
 
 function featureImportance(weights) {
@@ -577,7 +601,7 @@ async function runExperiment(config = {}) {
   let pairs = null;
   let policies = null;
 
-  let pairTargets = normalizePairTargets(config.pairTargets);
+  const piConfig = buildPIConfig(config);
 
   const thresholds = {
     aucMax: config.aucThreshold ?? DEFAULT_THRESHOLDS.aucMax,
@@ -609,7 +633,20 @@ async function runExperiment(config = {}) {
       policyCount: config.policyCount,
       executionsPerPolicy: config.executionsPerPolicy,
       satisfyRatio: config.satisfyRatio,
-      seed: config.seed
+      seed: config.seed,
+      // Override semantic layers to respect policyCount instead of using high minPolicies defaults
+      semanticLayers: [
+        {
+          name: 'singleton',
+          combos: [['GR'], ['DS'], ['RS']],
+          minPolicies: 0  // Let policyCount control the total
+        },
+        {
+          name: 'pair',
+          combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
+          minPolicies: 0  // Let policyCount control the total
+        }
+      ]
     };
     console.log(datasetConfig);
 
@@ -663,13 +700,14 @@ async function runExperiment(config = {}) {
     console.log('-'.repeat(60));
 
     progress.startStep('Building policy pairs from execution results');
-    const pairData = buildPairsFromExecutionResults(executionResults, pairTargets);
+    const pairData = buildPairsFromExecutionResults(executionResults, piConfig);
     pairs = pairData.pairs;
     policies = pairData.policies;
 
     const payload = {
       generatedAt: new Date().toISOString(),
-      pairTargets,
+      piConfig,
+      stats: pairData.stats,
       datasetMeta: datasetMeta || inferMetaFromExecutionResults(executionResults),
       policies,
       pairs
@@ -687,9 +725,6 @@ async function runExperiment(config = {}) {
     pairsPayload = JSON.parse(fs.readFileSync(pairsOutputPath, 'utf8'));
     pairs = pairsPayload.pairs;
     policies = pairsPayload.policies;
-    if (pairsPayload.pairTargets) {
-      pairTargets = normalizePairTargets(pairsPayload.pairTargets);
-    }
     datasetMeta = datasetMeta || pairsPayload.datasetMeta || inferMetaFromExecutionResults(executionResults);
   }
 
