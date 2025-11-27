@@ -611,6 +611,9 @@ async function runExperiment(config = {}) {
     ksPValueMin: config.ksPValueMin ?? DEFAULT_THRESHOLDS.ksPValueMin
   };
 
+  // Extract pairTargets from config (used in report generation)
+  const pairTargets = config.pairTargets || null;
+
   console.log('='.repeat(60));
   console.log('Policy Indistinguishability Experiment');
   console.log('='.repeat(60));
@@ -648,8 +651,6 @@ async function runExperiment(config = {}) {
         }
       ]
     };
-    console.log(datasetConfig);
-
     progress.startStep('Generating dataset');
     const dataset = await generateDataset(datasetConfig);
     datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
