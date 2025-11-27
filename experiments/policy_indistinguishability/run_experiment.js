@@ -206,10 +206,10 @@ function parsePairTargets(value) {
 
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {
-    policyCount: 20,
-    executionsPerPolicy: 2,  // Increased from 2 for better statistics
+    policyCount: 200,
+    executionsPerPolicy: 5,  // Increased from 2 for better statistics
     satisfyRatio: 0.5,
-    testRatio: 0.3,
+    testRatio: 0.2,
     permutationIterations: 500,
     // PI-specific pairing configuration
     minPairsPerType: 30,
