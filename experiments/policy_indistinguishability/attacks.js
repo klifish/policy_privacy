@@ -100,6 +100,7 @@ function runSingleSampleAttacks(pairs, options = {}) {
   );
 
   scopedGroups.forEach(({ pairType, subset }) => {
+    console.log(`Running single-sample PI attack for pair type: ${pairType} (${subset.length} pairs)`);
     const dataset = buildSingleSampleDataset(subset);
     if (!ensureDatasetReady(dataset)) {
       results.push({
