@@ -180,11 +180,12 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, progres
       const result = await executePolicy(policyData, contract);
       results.push(result);
 
-      // Save checkpoint every 10 executions
+      // Save checkpoint every 10 executions, including the dataset for full context recovery
       if (checkpointPath && (i + 1) % 10 === 0) {
         saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
           lastIndex: i,
-          results
+          results,
+          dataset  // Save the dataset for complete context recovery
         });
       }
 
@@ -260,8 +261,8 @@ function parsePairTargets(value) {
 
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {
-    policyCount: 200,
-    executionsPerPolicy: 5,  // Increased from 2 for better statistics
+    policyCount: 100,
+    executionsPerPolicy: 2,  // Increased from 2 for better statistics
     satisfyRatio: 0.5,
     testRatio: 0.2,
     permutationIterations: 500,
@@ -697,31 +698,61 @@ async function runExperiment(config = {}) {
   if (startPhase <= 1) {
     console.log('Phase 1: Dataset Generation & Execution');
     console.log('-'.repeat(60));
-    const datasetConfig = {
-      policyCount: config.policyCount,
-      executionsPerPolicy: config.executionsPerPolicy,
-      satisfyRatio: config.satisfyRatio,
-      seed: config.seed,
-      // Override semantic layers to respect policyCount instead of using high minPolicies defaults
-      semanticLayers: [
-        {
-          name: 'singleton',
-          combos: [['GR'], ['DS'], ['RS']],
-          minPolicies: 0  // Let policyCount control the total
-        },
-        {
-          name: 'pair',
-          combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
-          minPolicies: 0  // Let policyCount control the total
-        }
-      ]
-    };
-    progress.startStep('Generating dataset');
-    const dataset = await generateDataset(datasetConfig);
-    datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-    fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-    console.log(`Dataset saved to: ${datasetOutputPath}`);
-    progress.completeStep();
+
+    let dataset = null;
+
+    // Check if resuming from a checkpoint that contains the dataset
+    if (config.resume && checkpointPath) {
+      const checkpoint = loadCheckpoint(checkpointPath);
+      if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data && checkpoint.data.dataset) {
+        dataset = checkpoint.data.dataset;
+        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(checkpoint.data.results || []);
+        console.log(`Resuming with dataset from checkpoint (${dataset.length} entries)`);
+      }
+    }
+
+    // If no checkpoint dataset, check if dataset file exists
+    if (!dataset && fs.existsSync(datasetOutputPath)) {
+      try {
+        dataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
+        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
+        console.log(`Loaded existing dataset from ${datasetOutputPath} (${dataset.length} entries)`);
+      } catch (err) {
+        console.warn(`Failed to load dataset from ${datasetOutputPath}: ${err.message}`);
+      }
+    }
+
+    // Only generate new dataset if none exists
+    if (!dataset) {
+      const datasetConfig = {
+        policyCount: config.policyCount,
+        executionsPerPolicy: config.executionsPerPolicy,
+        satisfyRatio: config.satisfyRatio,
+        seed: config.seed,
+        // Override semantic layers to respect policyCount instead of using high minPolicies defaults
+        semanticLayers: [
+          {
+            name: 'singleton',
+            combos: [['GR'], ['DS'], ['RS']],
+            minPolicies: 0  // Let policyCount control the total
+          },
+          {
+            name: 'pair',
+            combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
+            minPolicies: 0  // Let policyCount control the total
+          }
+        ]
+      };
+      progress.startStep('Generating dataset');
+      dataset = await generateDataset(datasetConfig);
+      datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
+      fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
+      console.log(`Dataset saved to: ${datasetOutputPath}`);
+      progress.completeStep();
+    } else {
+      progress.startStep('Using existing dataset');
+      progress.completeStep();
+    }
 
     progress.startStep('Deploying contracts (Verifier & PolicyPrivacy)');
     const { ethers } = require('hardhat');
