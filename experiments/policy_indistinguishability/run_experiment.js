@@ -127,18 +127,66 @@ const {
 // Import executePolicy from the base data generator for fine-grained execution
 const { executePolicy } = require('../policy_content_hiding/data_generator');
 
-// Execute dataset sequentially with real-time progress tracking
-async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker) {
-  const results = [];
+// Checkpoint utilities
+function saveCheckpoint(checkpointPath, phase, step, data) {
+  const checkpoint = {
+    timestamp: new Date().toISOString(),
+    phase,
+    step,
+    data
+  };
+  fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2));
+}
 
-  console.log(`Executing ${dataset.length} policy instances sequentially...`);
+function loadCheckpoint(checkpointPath) {
+  if (!fs.existsSync(checkpointPath)) {
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+  } catch (error) {
+    console.warn(`Failed to load checkpoint: ${error.message}`);
+    return null;
+  }
+}
 
-  for (let i = 0; i < dataset.length; i++) {
+function clearCheckpoint(checkpointPath) {
+  if (fs.existsSync(checkpointPath)) {
+    fs.unlinkSync(checkpointPath);
+  }
+}
+
+// Execute dataset sequentially with real-time progress tracking and checkpoint support
+async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker, checkpointPath) {
+  let results = [];
+  let startIndex = 0;
+
+  // Try to resume from checkpoint
+  if (checkpointPath) {
+    const checkpoint = loadCheckpoint(checkpointPath);
+    if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data) {
+      results = checkpoint.data.results || [];
+      startIndex = checkpoint.data.lastIndex + 1;
+      console.log(`\n   Resuming from checkpoint: ${results.length} policies already executed`);
+    }
+  }
+
+  console.log(`Executing ${dataset.length - startIndex} policy instances sequentially (${startIndex} already done)...`);
+
+  for (let i = startIndex; i < dataset.length; i++) {
     const policyData = dataset[i];
 
     try {
       const result = await executePolicy(policyData, contract);
       results.push(result);
+
+      // Save checkpoint every 10 executions
+      if (checkpointPath && (i + 1) % 10 === 0) {
+        saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
+          lastIndex: i,
+          results
+        });
+      }
 
       // Update progress after each execution
       if (progressTracker) {
@@ -172,6 +220,11 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, progres
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
   console.log(`\n   Saved ${results.length}/${dataset.length} successful results to ${outputPath}`);
 
+  // Clear checkpoint after successful completion
+  if (checkpointPath) {
+    clearCheckpoint(checkpointPath);
+  }
+
   return results;
 }
 
@@ -189,7 +242,8 @@ const DEFAULT_OUTPUT_FILENAMES = Object.freeze({
   pairs: 'pi_pairs.json',
   analysis: 'pi_analysis.json',
   reportJson: 'pi_report.json',
-  reportMarkdown: 'pi_report.md'
+  reportMarkdown: 'pi_report.md',
+  checkpoint: 'pi_checkpoint.json'
 });
 
 function parsePairTargets(value) {
@@ -284,6 +338,12 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--seed':
         config.seed = argv[++i];
         break;
+      case '--resume':
+        config.resume = true;
+        break;
+      case '--checkpoint':
+        config.checkpointPath = path.resolve(argv[++i]);
+        break;
       case '--help':
       case '-h':
         config.help = true;
@@ -321,6 +381,8 @@ function printUsage() {
   console.log('  --target-pairs-per-type <n>    Target pairs per type (default 50)');
   console.log('  --max-pairs-per-type <n>       Maximum pairs per type (default 100)');
   console.log('  --seed <value>                 Deterministic dataset seed');
+  console.log('  --resume                       Resume from checkpoint if available');
+  console.log('  --checkpoint <path>            Custom checkpoint file path');
 }
 
 // Build PI config for pairing
@@ -594,6 +656,9 @@ async function runExperiment(config = {}) {
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.analysis);
   const reportJsonPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportJson);
   const reportMarkdownPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportMarkdown);
+  const checkpointPath = config.checkpointPath
+    ? path.resolve(config.checkpointPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.checkpoint);
 
   let datasetMeta = null;
   let executionResults = null;
@@ -672,7 +737,7 @@ async function runExperiment(config = {}) {
     progress.completeStep();
 
     progress.startStep(`Executing dataset on-chain (${dataset.length} executions)`);
-    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress);
+    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress, config.resume ? checkpointPath : null);
     progress.completeStep();
     console.log('');
   } else {

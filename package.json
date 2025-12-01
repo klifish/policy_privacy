@@ -47,8 +47,8 @@
     "experiment:policy:pch:phase2": "node experiments/policy_content_hiding/run_experiment.js --phase 2 --execution-results experiments/policy_content_hiding/results/execution_results.json",
     "experiment:policy:pch:phase3": "node experiments/policy_content_hiding/run_experiment.js --phase 3 --features experiments/policy_content_hiding/results/features.json",
     "experiment:policy:pch:amoy": "npx hardhat run experiments/policy_content_hiding/run_experiment.js --network polygonAmoy",
-    "experiment:policy:pi": "node experiments/policy_indistinguishability/run_experiment.js",
-    "experiment:policy:pi:nohup": "nohup node experiments/policy_indistinguishability/run_experiment.js > experiments/policy_indistinguishability/nohup.out 2>&1 &",
+    "experiment:policy:pi": "node experiments/policy_indistinguishability/run_experiment.js --resume",
+    "experiment:policy:pi:nohup": "nohup node experiments/policy_indistinguishability/run_experiment.js --resume > experiments/policy_indistinguishability/nohup.out 2>&1 &",
     "experiment:policy:pi:phase1": "node experiments/policy_indistinguishability/run_experiment.js --phase 1",
     "experiment:policy:pi:phase2": "node experiments/policy_indistinguishability/run_experiment.js --phase 2 --execution-results experiments/policy_indistinguishability/results/pi_execution_results.json",
     "experiment:policy:pi:phase3": "node experiments/policy_indistinguishability/run_experiment.js --phase 3 --pairs experiments/policy_indistinguishability/results/pi_pairs.json"
