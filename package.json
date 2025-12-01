@@ -51,7 +51,12 @@
     "experiment:policy:pi:nohup": "nohup node experiments/policy_indistinguishability/run_experiment.js --resume > experiments/policy_indistinguishability/nohup.out 2>&1 &",
     "experiment:policy:pi:phase1": "node experiments/policy_indistinguishability/run_experiment.js --phase 1",
     "experiment:policy:pi:phase2": "node experiments/policy_indistinguishability/run_experiment.js --phase 2 --execution-results experiments/policy_indistinguishability/results/pi_execution_results.json",
-    "experiment:policy:pi:phase3": "node experiments/policy_indistinguishability/run_experiment.js --phase 3 --pairs experiments/policy_indistinguishability/results/pi_pairs.json"
+    "experiment:policy:pi:phase3": "node experiments/policy_indistinguishability/run_experiment.js --phase 3 --pairs experiments/policy_indistinguishability/results/pi_pairs.json",
+    "experiment:policy:spp": "node experiments/structure_and_parameter_privacy/run_experiment.js",
+    "experiment:policy:spp:phase1": "node experiments/structure_and_parameter_privacy/run_experiment.js --phase 1",
+    "experiment:policy:spp:phase2": "node experiments/structure_and_parameter_privacy/run_experiment.js --phase 2 --execution-results experiments/structure_and_parameter_privacy/results/execution_results.json",
+    "experiment:policy:spp:test": "node experiments/structure_and_parameter_privacy/run_experiment.js --policies-per-family 3 --executions-per-policy 2 --output experiments/structure_and_parameter_privacy/results/test",
+    "test:experiments:spp": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/experiments/structure_parameter_privacy_test.js --timeout 100000"
   },
   "author": "",
   "license": "ISC",
