@@ -12,25 +12,23 @@ const {
   classifyStructureType,
   classifyPredicateCombo,
   classifyParameterType,
-  STRUCTURE_TYPES,
-  PREDICATE_COMBOS,
-  PARAMETER_TYPES
-} = require('../../experiments/structure_and_parameter_privacy/data_generator');
-
-const {
-  generateDataset: generateV2Dataset,
-  analyzeLogicShape: analyzeLogicShapeV2,
   classifyLogicStructure,
   classifyNestingDepth,
   classifyPredicateCount,
   classifySetSize,
   classifyRangeWidth,
+  STRUCTURE_TYPES,
+  PREDICATE_COMBOS,
+  PARAMETER_TYPES,
   LOGIC_STRUCTURES,
   NESTING_DEPTHS,
   PREDICATE_COUNTS,
   SET_SIZES,
   RANGE_WIDTHS
-} = require('../../experiments/structure_and_parameter_privacy/data_generator_v2');
+} = require('../../experiments/structure_and_parameter_privacy/data_generator');
+
+// Alias for improved classification tests
+const analyzeLogicShapeV2 = analyzeLogicShape;
 
 const {
   runSupervisedAttacks,
@@ -62,16 +60,26 @@ describe('Structure & Parameter Privacy Experiment', function () {
       const logic = '(GR & (DS & P[ICD10]))';
       const stats = analyzeLogicShape(logic);
 
-      expect(classifyStructureType(stats)).to.equal(STRUCTURE_TYPES.WITH_SETS);
-      expect(classifyPredicateCombo(stats)).to.equal(PREDICATE_COMBOS.SINGLE_PREDICATE_MIXED);
+      // Test new classification functions
+      expect(classifyLogicStructure(stats)).to.equal(LOGIC_STRUCTURES.AND_ONLY);
+      expect(classifyPredicateCount(stats)).to.equal(PREDICATE_COUNTS.SINGLE);
 
       const policy = {
         structure: {
           whitelistSize: 4,
           merkleDepth: 3
+        },
+        semantics: {
+          logicNormalized: logic
         }
       };
-      expect(classifyParameterType(policy)).to.equal(PARAMETER_TYPES.NARROW_RANGE);
+      expect(classifySetSize(policy)).to.equal(SET_SIZES.SMALL);
+      expect(classifyRangeWidth(policy)).to.equal(RANGE_WIDTHS.NONE);
+
+      // Test backward compatibility aliases
+      expect(classifyStructureType(stats)).to.equal(classifyLogicStructure(stats));
+      expect(classifyPredicateCombo(stats)).to.equal(classifyPredicateCount(stats));
+      expect(classifyParameterType(policy)).to.equal(classifySetSize(policy));
     });
   });
 
@@ -249,7 +257,7 @@ describe('Structure & Parameter Privacy Experiment', function () {
     });
   });
 
-  describe('V2 Classification Improvements', function () {
+  describe('Improved Classification', function () {
     describe('Independent Dimension Classification', function () {
       it('separates set size and range width', function () {
         // Test set size (whitelist only)
@@ -327,9 +335,9 @@ describe('Structure & Parameter Privacy Experiment', function () {
       });
     });
 
-    describe('V2 Dataset Generation', function () {
-      it('generates dataset with all V2 dimensions', async function () {
-        const dataset = await generateV2Dataset({
+    describe('Dataset Generation', function () {
+      it('generates dataset with all dimensions', async function () {
+        const dataset = await generateDataset({
           policyCount: 10,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
@@ -349,7 +357,7 @@ describe('Structure & Parameter Privacy Experiment', function () {
           'rangeWidth'
         );
 
-        // Check V2 classifications are valid
+        // Check classifications are valid
         expect(Object.values(LOGIC_STRUCTURES)).to.include(sample.logicStructure);
         expect(Object.values(NESTING_DEPTHS)).to.include(sample.nestingDepth);
         expect(Object.values(PREDICATE_COUNTS)).to.include(sample.predicateCount);
@@ -357,29 +365,30 @@ describe('Structure & Parameter Privacy Experiment', function () {
         expect(Object.values(RANGE_WIDTHS)).to.include(sample.rangeWidth);
       });
 
-      it('maintains backward compatibility with V1 classifications', async function () {
-        const dataset = await generateV2Dataset({
+      it('maintains backward compatibility aliases', async function () {
+        const dataset = await generateDataset({
           policyCount: 6,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
-          seed: 'v2-compat-test'
+          seed: 'compat-test'
         });
 
         const sample = dataset[0];
-        // Should have both V1 and V2 classifications
+        // Should have backward compatibility aliases
         expect(sample).to.include.keys(
-          'structureType_v1',
-          'predicateCombo_v1',
-          'paramType_v1'
+          'structureType',
+          'predicateCombo',
+          'paramType'
         );
 
-        expect(Object.values(STRUCTURE_TYPES)).to.include(sample.structureType_v1);
-        expect(Object.values(PREDICATE_COMBOS)).to.include(sample.predicateCombo_v1);
-        expect(Object.values(PARAMETER_TYPES)).to.include(sample.paramType_v1);
+        // Aliases should point to new classifications
+        expect(sample.structureType).to.equal(sample.logicStructure);
+        expect(sample.predicateCombo).to.equal(sample.predicateCount);
+        expect(sample.paramType).to.equal(sample.setSize);
       });
 
       it('includes balance metrics in metadata', async function () {
-        const dataset = await generateV2Dataset({
+        const dataset = await generateDataset({
           policyCount: 20,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
@@ -387,12 +396,10 @@ describe('Structure & Parameter Privacy Experiment', function () {
         });
 
         expect(dataset.__meta.balanceMetrics).to.be.an('object');
-        expect(dataset.__meta.balanceMetrics.v2).to.be.an('object');
-        expect(dataset.__meta.balanceMetrics.v1).to.be.an('object');
 
         // Check balance metrics structure
-        const v2Balance = dataset.__meta.balanceMetrics.v2;
-        expect(v2Balance).to.have.keys(
+        const balance = dataset.__meta.balanceMetrics;
+        expect(balance).to.have.keys(
           'logicStructure',
           'nestingDepth',
           'predicateCount',
@@ -401,7 +408,7 @@ describe('Structure & Parameter Privacy Experiment', function () {
         );
 
         // Each dimension should have balance metrics
-        Object.values(v2Balance).forEach(metric => {
+        Object.values(balance).forEach(metric => {
           expect(metric).to.include.keys('minMaxRatio', 'coefficientOfVariation');
           expect(metric.minMaxRatio).to.be.a('string');
           expect(metric.coefficientOfVariation).to.be.a('string');
@@ -409,35 +416,29 @@ describe('Structure & Parameter Privacy Experiment', function () {
       });
     });
 
-    describe('Balance Improvements', function () {
-      it('improves balance compared to V1', async function () {
-        const dataset = await generateV2Dataset({
+    describe('Balance Quality', function () {
+      it('has reasonable balance across dimensions', async function () {
+        const dataset = await generateDataset({
           policyCount: 50,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
-          seed: 'balance-comparison-' + Date.now()
+          seed: 'balance-test-' + Date.now()
         });
 
-        const v2Balance = dataset.__meta.balanceMetrics.v2;
-        const v1Balance = dataset.__meta.balanceMetrics.v1;
+        const balance = dataset.__meta.balanceMetrics;
 
-        // Calculate average min/max ratio for each version
-        const v2Ratios = Object.values(v2Balance).map(m => parseFloat(m.minMaxRatio));
-        const v1Ratios = Object.values(v1Balance).map(m => parseFloat(m.minMaxRatio));
+        // Calculate average min/max ratio
+        const ratios = Object.values(balance).map(m => parseFloat(m.minMaxRatio));
+        const avgBalance = ratios.reduce((a, b) => a + b, 0) / ratios.length;
 
-        const v2AvgBalance = v2Ratios.reduce((a, b) => a + b, 0) / v2Ratios.length;
-        const v1AvgBalance = v1Ratios.reduce((a, b) => a + b, 0) / v1Ratios.length;
+        console.log(`    Average balance (min/max ratio): ${avgBalance.toFixed(3)}`);
 
-        // V2 should have better balance (higher min/max ratio)
-        // Note: This may not always pass with small samples, but should with 50+ policies
-        console.log(`    Balance comparison: V2=${v2AvgBalance.toFixed(3)} vs V1=${v1AvgBalance.toFixed(3)}`);
-
-        // At minimum, V2 should not be significantly worse
-        expect(v2AvgBalance).to.be.at.least(v1AvgBalance * 0.8);
+        // Should have at least some balance (not all data in one category)
+        expect(avgBalance).to.be.greaterThan(0.1);
       });
 
       it('has independent set size and range width distributions', async function () {
-        const dataset = await generateV2Dataset({
+        const dataset = await generateDataset({
           policyCount: 40,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
@@ -466,7 +467,7 @@ describe('Structure & Parameter Privacy Experiment', function () {
 
     describe('Dimension Orthogonality', function () {
       it('allows all combinations of dimensions', async function () {
-        const dataset = await generateV2Dataset({
+        const dataset = await generateDataset({
           policyCount: 60,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,
@@ -494,8 +495,8 @@ describe('Structure & Parameter Privacy Experiment', function () {
     });
 
     describe('Integration with Attack Framework', function () {
-      it('V2 dataset works with existing attack functions', async function () {
-        const dataset = await generateV2Dataset({
+      it('dataset works with existing attack functions', async function () {
+        const dataset = await generateDataset({
           policyCount: 12,
           executionsPerPolicy: 1,
           satisfyRatio: 0.5,

@@ -1,9 +1,18 @@
 /**
  * Structure & Parameter Privacy – Dataset Generator
  *
- * This module reuses the Policy Content Hiding dataset generator to produce
- * real postfix interpreter policies, then annotates each policy with
- * structure/parameter labels that can be used by the SPP attacks.
+ * This module generates policy datasets with improved classification dimensions:
+ * 1. Logic Structure: Boolean connectives independent of predicates
+ * 2. Nesting Depth: Structural complexity levels
+ * 3. Predicate Count: Number of predicates in policy
+ * 4. Set Size: Whitelist size (separated from range width)
+ * 5. Range Width: Numeric range predicates (separated from set size)
+ *
+ * IMPROVEMENTS from original version:
+ * - Fixed paramType: Separated SET_SIZE and RANGE_WIDTH into independent dimensions
+ * - Redesigned structure classification: More granular and balanced categories
+ * - Decoupled dimensions: Reduced correlation between classification axes
+ * - Added balance metrics for data quality assessment
  */
 
 const {
@@ -17,39 +26,80 @@ const DEFAULT_DATASET_CONFIG = Object.freeze({
   seed: 'spp-dataset'
 });
 
-const STRUCTURE_TYPES = Object.freeze({
-  SIMPLE_AND: 'simple_and',
-  WITH_OR: 'with_or',
-  NESTED: 'nested',
-  WITH_SETS: 'with_sets',
-  COMPLEX: 'complex'
-});
+// ============================================================================
+// CLASSIFICATION DIMENSIONS
+// ============================================================================
 
-const PREDICATE_COMBOS = Object.freeze({
-  ATTRIBUTE_ONLY: 'attribute_only',
-  SINGLE_PREDICATE: 'single_predicate',
-  SINGLE_PREDICATE_MIXED: 'single_predicate_mixed',
-  MULTI_PREDICATE: 'multi_predicate'
-});
-
-const PARAMETER_TYPES = Object.freeze({
-  NO_SETS: 'no_sets',
-  NARROW_RANGE: 'narrow_range',
-  SMALL_SET: 'small_set',
-  MEDIUM_SET: 'medium_set',
-  LARGE_SET: 'large_set',
-  WIDE_RANGE: 'wide_range'
+/**
+ * Dimension 1: Logic Structure
+ * Focus: Boolean connectives, independent of predicates
+ */
+const LOGIC_STRUCTURES = Object.freeze({
+  AND_ONLY: 'and_only',          // Only AND connectives
+  OR_ONLY: 'or_only',            // Only OR connectives
+  AND_OR_MIXED: 'and_or_mixed',  // Both AND and OR
+  NEGATION_HEAVY: 'negation_heavy' // Has NOT operators (≥2)
 });
 
 /**
- * Increment helper for summary tables.
+ * Dimension 2: Nesting Depth
+ * Focus: Structural complexity independent of logic type
  */
+const NESTING_DEPTHS = Object.freeze({
+  FLAT: 'flat',          // maxDepth ≤ 1
+  SHALLOW: 'shallow',    // maxDepth == 2
+  MEDIUM: 'medium',      // maxDepth == 3
+  DEEP: 'deep'           // maxDepth ≥ 4
+});
+
+/**
+ * Dimension 3: Predicate Count
+ * Focus: Number of predicates, independent of attributes
+ */
+const PREDICATE_COUNTS = Object.freeze({
+  NONE: 'none',       // 0 predicates
+  SINGLE: 'single',   // 1 predicate
+  FEW: 'few',         // 2-3 predicates
+  MANY: 'many'        // 4+ predicates
+});
+
+/**
+ * Dimension 4: Set Size
+ * Focus: Whitelist/set size only (separated from range width)
+ */
+const SET_SIZES = Object.freeze({
+  NONE: 'none',       // whitelistSize == 0
+  SMALL: 'small',     // 1-4 elements
+  MEDIUM: 'medium',   // 5-16 elements
+  LARGE: 'large'      // 17+ elements
+});
+
+/**
+ * Dimension 5: Range Width
+ * Focus: Numeric range predicates (separated from set size)
+ */
+const RANGE_WIDTHS = Object.freeze({
+  NONE: 'none',       // No range predicates
+  NARROW: 'narrow',   // Range < 10 (approximated by Merkle depth ≤ 3)
+  MEDIUM: 'medium',   // 10-50 (depth 4-6)
+  WIDE: 'wide'        // 50+ (depth ≥ 7)
+});
+
+// Backward compatibility aliases
+const STRUCTURE_TYPES = LOGIC_STRUCTURES;
+const PREDICATE_COMBOS = PREDICATE_COUNTS;
+const PARAMETER_TYPES = SET_SIZES;
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
 function increment(map, key) {
   map[key] = (map[key] || 0) + 1;
 }
 
 /**
- * Compute basic structural statistics from a normalized logic string.
+ * Compute basic structural statistics from a normalized logic string
  */
 function analyzeLogicShape(logic = '') {
   const predicateNamespaces = new Set();
@@ -116,112 +166,175 @@ function analyzeLogicShape(logic = '') {
   return stats;
 }
 
+// ============================================================================
+// CLASSIFICATION FUNCTIONS
+// ============================================================================
+
 /**
- * Classify structure type using boolean heuristics.
+ * Classify logic structure (independent of predicates)
  */
-function classifyStructureType(stats) {
-  const hasPredicates = stats.hasPredicates;
-  const hasOr = stats.hasOr;
-  const depth = stats.maxDepth;
+function classifyLogicStructure(stats) {
+  const { hasAnd, hasOr, hasNot, notCount } = stats;
 
-  if (!hasPredicates && !hasOr && depth <= 1) {
-    return STRUCTURE_TYPES.SIMPLE_AND;
+  // Priority: negation-heavy first
+  if (notCount >= 2) {
+    return LOGIC_STRUCTURES.NEGATION_HEAVY;
   }
 
-  if (!hasPredicates && hasOr && depth <= 2) {
-    return STRUCTURE_TYPES.WITH_OR;
+  // Pure forms
+  if (hasAnd && !hasOr) {
+    return LOGIC_STRUCTURES.AND_ONLY;
   }
 
-  if (!hasPredicates && depth > 2) {
-    return STRUCTURE_TYPES.NESTED;
+  if (hasOr && !hasAnd) {
+    return LOGIC_STRUCTURES.OR_ONLY;
   }
 
-  if (hasPredicates && !hasOr && depth <= 2) {
-    return STRUCTURE_TYPES.WITH_SETS;
+  // Mixed (both AND and OR)
+  if (hasAnd && hasOr) {
+    return LOGIC_STRUCTURES.AND_OR_MIXED;
   }
 
-  return STRUCTURE_TYPES.COMPLEX;
+  // Default: single atom, treat as AND_ONLY
+  return LOGIC_STRUCTURES.AND_ONLY;
 }
 
 /**
- * Classify predicate combination type.
+ * Classify nesting depth
  */
-function classifyPredicateCombo(stats) {
-  const predicateCount = stats.predicateNamespaces.length;
-  const attributeCount = stats.attributeTokens.length;
+function classifyNestingDepth(stats) {
+  const { maxDepth } = stats;
 
-  if (predicateCount === 0) {
-    return PREDICATE_COMBOS.ATTRIBUTE_ONLY;
+  if (maxDepth <= 1) {
+    return NESTING_DEPTHS.FLAT;
+  } else if (maxDepth === 2) {
+    return NESTING_DEPTHS.SHALLOW;
+  } else if (maxDepth === 3) {
+    return NESTING_DEPTHS.MEDIUM;
+  } else {
+    return NESTING_DEPTHS.DEEP;
   }
-
-  if (predicateCount === 1 && attributeCount === 0) {
-    return PREDICATE_COMBOS.SINGLE_PREDICATE;
-  }
-
-  if (predicateCount === 1 && attributeCount > 0) {
-    return PREDICATE_COMBOS.SINGLE_PREDICATE_MIXED;
-  }
-
-  return PREDICATE_COMBOS.MULTI_PREDICATE;
 }
 
 /**
- * Classify parameter bucket using whitelist size + Merkle depth hints.
- * Merkle depth is used as a proxy for "range width" padding.
+ * Classify predicate count
  */
-function classifyParameterType(policy) {
+function classifyPredicateCount(stats) {
+  const count = stats.predicateNamespaces.length;
+
+  if (count === 0) {
+    return PREDICATE_COUNTS.NONE;
+  } else if (count === 1) {
+    return PREDICATE_COUNTS.SINGLE;
+  } else if (count >= 2 && count <= 3) {
+    return PREDICATE_COUNTS.FEW;
+  } else {
+    return PREDICATE_COUNTS.MANY;
+  }
+}
+
+/**
+ * Classify set size (only based on whitelist, no Merkle depth)
+ */
+function classifySetSize(policy) {
   const whitelistSize = policy?.structure?.whitelistSize || 0;
+
+  if (whitelistSize === 0) {
+    return SET_SIZES.NONE;
+  } else if (whitelistSize <= 4) {
+    return SET_SIZES.SMALL;
+  } else if (whitelistSize <= 16) {
+    return SET_SIZES.MEDIUM;
+  } else {
+    return SET_SIZES.LARGE;
+  }
+}
+
+/**
+ * Classify range width (separate dimension from set size)
+ * NOTE: Currently approximated by Merkle depth as proxy
+ * TODO: Replace with actual range analysis from predicates
+ */
+function classifyRangeWidth(policy) {
   const merkleDepth = policy?.structure?.merkleDepth || 0;
 
-  if (!whitelistSize) {
-    return PARAMETER_TYPES.NO_SETS;
+  // Check if policy has range predicates
+  const logic = policy?.semantics?.logicNormalized || '';
+  const hasRangePredicates = /RANGE|AGE|VALUE/i.test(logic);
+
+  if (!hasRangePredicates) {
+    return RANGE_WIDTHS.NONE;
   }
 
+  // Approximate range width by Merkle depth
+  // This is a placeholder - ideally parse actual range values
   if (merkleDepth <= 3) {
-    return PARAMETER_TYPES.NARROW_RANGE;
+    return RANGE_WIDTHS.NARROW;
+  } else if (merkleDepth <= 6) {
+    return RANGE_WIDTHS.MEDIUM;
+  } else {
+    return RANGE_WIDTHS.WIDE;
   }
-
-  if (whitelistSize <= 4) {
-    return PARAMETER_TYPES.SMALL_SET;
-  }
-
-  if (whitelistSize <= 8) {
-    return PARAMETER_TYPES.MEDIUM_SET;
-  }
-
-  if (merkleDepth >= 7) {
-    return PARAMETER_TYPES.WIDE_RANGE;
-  }
-
-  return PARAMETER_TYPES.LARGE_SET;
 }
 
+// Backward compatibility aliases
+const classifyStructureType = classifyLogicStructure;
+const classifyPredicateCombo = classifyPredicateCount;
+const classifyParameterType = classifySetSize;
+
+// ============================================================================
+// ANNOTATION AND DATASET GENERATION
+// ============================================================================
+
 /**
- * Annotate a dataset entry with structure+parameter labels.
+ * Annotate a policy with all classification dimensions
  */
 function annotatePolicy(policy) {
   const logic = policy?.semantics?.logicNormalized || policy?.semantics?.logicOriginal || '';
   const stats = analyzeLogicShape(logic);
 
-  policy.structureType = classifyStructureType(stats);
-  policy.predicateCombo = classifyPredicateCombo(stats);
-  policy.paramType = classifyParameterType(policy);
+  // Apply all classifications
+  policy.logicStructure = classifyLogicStructure(stats);
+  policy.nestingDepth = classifyNestingDepth(stats);
+  policy.predicateCount = classifyPredicateCount(stats);
+  policy.setSize = classifySetSize(policy);
+  policy.rangeWidth = classifyRangeWidth(policy);
+
+  // Backward compatibility aliases
+  policy.structureType = policy.logicStructure;
+  policy.predicateCombo = policy.predicateCount;
+  policy.paramType = policy.setSize;
+
   policy.structureStats = stats;
 
   return policy;
 }
 
 /**
- * Summarize dataset coverage by category.
+ * Summarize dataset coverage by category
  */
 function summarizeDataset(dataset) {
   const summary = {
+    logicStructures: {},
+    nestingDepths: {},
+    predicateCounts: {},
+    setSizes: {},
+    rangeWidths: {},
+
+    // Backward compatibility
     structureTypes: {},
     predicateCombos: {},
     parameterTypes: {}
   };
 
   dataset.forEach((policy) => {
+    increment(summary.logicStructures, policy.logicStructure);
+    increment(summary.nestingDepths, policy.nestingDepth);
+    increment(summary.predicateCounts, policy.predicateCount);
+    increment(summary.setSizes, policy.setSize);
+    increment(summary.rangeWidths, policy.rangeWidth);
+
+    // Backward compatibility
     increment(summary.structureTypes, policy.structureType);
     increment(summary.predicateCombos, policy.predicateCombo);
     increment(summary.parameterTypes, policy.paramType);
@@ -231,13 +344,38 @@ function summarizeDataset(dataset) {
 }
 
 /**
- * Generate dataset + annotations reusing the base policy generator.
+ * Calculate balance metrics for a classification dimension
+ */
+function calculateBalanceMetrics(distribution) {
+  const counts = Object.values(distribution);
+  if (counts.length === 0) return { minMaxRatio: '0.000', coefficientOfVariation: '0.000' };
+
+  const min = Math.min(...counts);
+  const max = Math.max(...counts);
+  const mean = counts.reduce((a, b) => a + b, 0) / counts.length;
+  const variance = counts.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / counts.length;
+  const stdDev = Math.sqrt(variance);
+
+  return {
+    min,
+    max,
+    mean: mean.toFixed(1),
+    minMaxRatio: (min / max).toFixed(3),
+    coefficientOfVariation: (stdDev / mean).toFixed(3)
+  };
+}
+
+/**
+ * Generate dataset with annotations
  */
 async function generateDataset(config = {}) {
   const mergedConfig = {
     ...DEFAULT_DATASET_CONFIG,
     ...config
   };
+
+  console.log('Generating SPP dataset with improved classification...');
+  console.log(`Target: ${mergedConfig.policyCount} policies`);
 
   const dataset = await generatePolicyDataset({
     policyCount: mergedConfig.policyCount,
@@ -252,6 +390,17 @@ async function generateDataset(config = {}) {
 
   dataset.forEach(annotatePolicy);
 
+  const summary = summarizeDataset(dataset);
+
+  // Calculate balance metrics
+  const balanceMetrics = {
+    logicStructure: calculateBalanceMetrics(summary.logicStructures),
+    nestingDepth: calculateBalanceMetrics(summary.nestingDepths),
+    predicateCount: calculateBalanceMetrics(summary.predicateCounts),
+    setSize: calculateBalanceMetrics(summary.setSizes),
+    rangeWidth: calculateBalanceMetrics(summary.rangeWidths)
+  };
+
   dataset.__meta = {
     ...dataset.__meta,
     sppConfig: {
@@ -260,21 +409,54 @@ async function generateDataset(config = {}) {
       satisfyRatio: mergedConfig.satisfyRatio,
       seed: mergedConfig.seed
     },
-    sppSummary: summarizeDataset(dataset)
+    sppSummary: summary,
+    balanceMetrics
   };
+
+  // Print balance metrics
+  console.log('\n=== Balance Metrics ===');
+  Object.entries(balanceMetrics).forEach(([dim, metrics]) => {
+    console.log(`  ${dim}: min/max=${metrics.minMaxRatio}, CV=${metrics.coefficientOfVariation}`);
+  });
 
   return dataset;
 }
 
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
 module.exports = {
+  // Constants
+  LOGIC_STRUCTURES,
+  NESTING_DEPTHS,
+  PREDICATE_COUNTS,
+  SET_SIZES,
+  RANGE_WIDTHS,
+
+  // Backward compatibility aliases
   STRUCTURE_TYPES,
   PREDICATE_COMBOS,
   PARAMETER_TYPES,
+
+  // Analysis functions
   analyzeLogicShape,
+
+  // Classification functions
+  classifyLogicStructure,
+  classifyNestingDepth,
+  classifyPredicateCount,
+  classifySetSize,
+  classifyRangeWidth,
+
+  // Backward compatibility aliases
   classifyStructureType,
   classifyPredicateCombo,
   classifyParameterType,
+
+  // Dataset functions
   summarizeDataset,
   annotatePolicy,
-  generateDataset
+  generateDataset,
+  calculateBalanceMetrics
 };
