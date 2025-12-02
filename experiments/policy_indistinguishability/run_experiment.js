@@ -10,18 +10,224 @@
 const fs = require('fs');
 const path = require('path');
 
+// Progress tracking utilities
+class ProgressTracker {
+  constructor(totalSteps) {
+    this.totalSteps = totalSteps;
+    this.currentStep = 0;
+    this.startTime = Date.now();
+    this.stepStartTime = Date.now();
+    this.stepTimings = [];
+    this.subStepMode = false;
+  }
+
+  startStep(stepName) {
+    this.currentStep++;
+    this.stepStartTime = Date.now();
+    this.currentStepName = stepName;
+    this.subStepMode = false;
+    this._displayProgress();
+  }
+
+  completeStep() {
+    const stepDuration = Date.now() - this.stepStartTime;
+    this.stepTimings.push(stepDuration);
+    this.subStepMode = false;
+    this._displayProgress(true);
+  }
+
+  // For fine-grained progress within a step (e.g., executing policies one by one)
+  updateSubProgress(current, total, extraInfo = '') {
+    this.subStepMode = true;
+    this.subStepCurrent = current;
+    this.subStepTotal = total;
+    this.subStepInfo = extraInfo;
+    this._displayProgress(false, true);
+  }
+
+  _displayProgress(completed = false, isSubStep = false) {
+    const elapsed = Date.now() - this.startTime;
+    const elapsedSeconds = Math.floor(elapsed / 1000);
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    const elapsedSecondsRemainder = elapsedSeconds % 60;
+
+    const percentage = ((this.currentStep / this.totalSteps) * 100).toFixed(1);
+    const progressBar = this._generateProgressBar(this.currentStep, this.totalSteps);
+
+    let timeEstimate = '';
+    if (this.stepTimings.length > 0 && this.currentStep < this.totalSteps) {
+      const avgStepTime = this.stepTimings.reduce((a, b) => a + b, 0) / this.stepTimings.length;
+      const remainingSteps = this.totalSteps - this.currentStep;
+      const estimatedRemainingTime = avgStepTime * remainingSteps;
+      const estMinutes = Math.floor(estimatedRemainingTime / 60000);
+      const estSeconds = Math.floor((estimatedRemainingTime % 60000) / 1000);
+      timeEstimate = ` | ETA: ${estMinutes}m ${estSeconds}s`;
+    }
+
+    const status = completed ? '✓' : '▶';
+
+    if (isSubStep && this.subStepMode) {
+      // Display sub-step progress with fine-grained ETA
+      const subPercentage = ((this.subStepCurrent / this.subStepTotal) * 100).toFixed(1);
+      const subProgressBar = this._generateProgressBar(this.subStepCurrent, this.subStepTotal, 20);
+
+      // Calculate ETA based on current sub-step progress
+      const stepElapsed = Date.now() - this.stepStartTime;
+      let subTimeEstimate = '';
+      if (this.subStepCurrent > 0 && this.subStepCurrent < this.subStepTotal) {
+        const avgTimePerSubStep = stepElapsed / this.subStepCurrent;
+        const remainingSubSteps = this.subStepTotal - this.subStepCurrent;
+        const estRemainingTime = avgTimePerSubStep * remainingSubSteps;
+        const estMin = Math.floor(estRemainingTime / 60000);
+        const estSec = Math.floor((estRemainingTime % 60000) / 1000);
+        subTimeEstimate = ` | ETA: ${estMin}m ${estSec}s`;
+      }
+
+      // Use \r to overwrite the same line for sub-progress updates
+      process.stdout.write(`\r${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
+      process.stdout.write(`\n   └─ [${this.subStepCurrent}/${this.subStepTotal}] ${subProgressBar} ${subPercentage}%${this.subStepInfo}${subTimeEstimate}${' '.repeat(20)}`);
+    } else {
+      console.log(`\n${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
+      console.log(`   Time elapsed: ${elapsedMinutes}m ${elapsedSecondsRemainder}s${timeEstimate}`);
+    }
+  }
+
+  _generateProgressBar(current, total, width = 30) {
+    const filled = Math.floor((current / total) * width);
+    const empty = width - filled;
+    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+  }
+
+  complete() {
+    const totalTime = Date.now() - this.startTime;
+    const totalMinutes = Math.floor(totalTime / 60000);
+    const totalSeconds = Math.floor((totalTime % 60000) / 1000);
+    console.log(`\n\n✓ All steps completed in ${totalMinutes}m ${totalSeconds}s`);
+  }
+}
+
+// Use PI-specific data generator for optimal pairing
 const {
-  DEFAULT_PAIR_TARGETS,
+  PI_DEFAULT_CONFIG,
   FEATURE_KEYS,
-  generateDataset,
-  executeDataset,
   buildPairsFromExecutionResults
+} = require('./pi_data_generator');
+
+// Import dataset generation from original for compatibility
+const {
+  generateDataset
 } = require('./data_generator');
+
 const {
   runSingleSampleAttacks,
   runPairwiseAttacks,
   runTwoSampleTests
 } = require('./attacks');
+
+// Import executePolicy from the base data generator for fine-grained execution
+const { executePolicy } = require('../policy_content_hiding/data_generator');
+
+// Checkpoint utilities
+function saveCheckpoint(checkpointPath, phase, step, data) {
+  const checkpoint = {
+    timestamp: new Date().toISOString(),
+    phase,
+    step,
+    data
+  };
+  fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2));
+}
+
+function loadCheckpoint(checkpointPath) {
+  if (!fs.existsSync(checkpointPath)) {
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+  } catch (error) {
+    console.warn(`Failed to load checkpoint: ${error.message}`);
+    return null;
+  }
+}
+
+function clearCheckpoint(checkpointPath) {
+  if (fs.existsSync(checkpointPath)) {
+    fs.unlinkSync(checkpointPath);
+  }
+}
+
+// Execute dataset sequentially with real-time progress tracking and checkpoint support
+async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker, checkpointPath) {
+  let results = [];
+  let startIndex = 0;
+
+  // Try to resume from checkpoint
+  if (checkpointPath) {
+    const checkpoint = loadCheckpoint(checkpointPath);
+    if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data) {
+      results = checkpoint.data.results || [];
+      startIndex = checkpoint.data.lastIndex + 1;
+      console.log(`\n   Resuming from checkpoint: ${results.length} policies already executed`);
+    }
+  }
+
+  console.log(`Executing ${dataset.length - startIndex} policy instances sequentially (${startIndex} already done)...`);
+
+  for (let i = startIndex; i < dataset.length; i++) {
+    const policyData = dataset[i];
+
+    try {
+      const result = await executePolicy(policyData, contract);
+      results.push(result);
+
+      // Save checkpoint every 10 executions, including the dataset for full context recovery
+      if (checkpointPath && (i + 1) % 10 === 0) {
+        saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
+          lastIndex: i,
+          results,
+          dataset  // Save the dataset for complete context recovery
+        });
+      }
+
+      // Update progress after each execution
+      if (progressTracker) {
+        progressTracker.updateSubProgress(
+          i + 1,
+          dataset.length,
+          ` | Executed ${i + 1}/${dataset.length} policies`
+        );
+      }
+    } catch (error) {
+      console.error(`\nError executing policy ${i}:`, error.message);
+
+      // Update progress even on failure
+      if (progressTracker) {
+        progressTracker.updateSubProgress(
+          i + 1,
+          dataset.length,
+          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`
+        );
+      }
+      // Continue with next policy instead of stopping
+    }
+  }
+
+  // Final sub-progress update
+  if (progressTracker) {
+    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
+  }
+
+  // Save results
+  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
+  console.log(`\n   Saved ${results.length}/${dataset.length} successful results to ${outputPath}`);
+
+  // Clear checkpoint after successful completion
+  if (checkpointPath) {
+    clearCheckpoint(checkpointPath);
+  }
+
+  return results;
+}
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
@@ -37,7 +243,8 @@ const DEFAULT_OUTPUT_FILENAMES = Object.freeze({
   pairs: 'pi_pairs.json',
   analysis: 'pi_analysis.json',
   reportJson: 'pi_report.json',
-  reportMarkdown: 'pi_report.md'
+  reportMarkdown: 'pi_report.md',
+  checkpoint: 'pi_checkpoint.json'
 });
 
 function parsePairTargets(value) {
@@ -53,7 +260,17 @@ function parsePairTargets(value) {
 }
 
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = {};
+  const config = {
+    policyCount: 100,
+    executionsPerPolicy: 2,  // Increased from 2 for better statistics
+    satisfyRatio: 0.5,
+    testRatio: 0.2,
+    permutationIterations: 500,
+    // PI-specific pairing configuration
+    minPairsPerType: 30,
+    targetPairsPerType: 50,
+    maxPairsPerType: 100
+  };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -110,8 +327,23 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--permutation-iterations':
         config.permutationIterations = parseInt(argv[++i], 10);
         break;
+      case '--min-pairs-per-type':
+        config.minPairsPerType = parseInt(argv[++i], 10);
+        break;
+      case '--target-pairs-per-type':
+        config.targetPairsPerType = parseInt(argv[++i], 10);
+        break;
+      case '--max-pairs-per-type':
+        config.maxPairsPerType = parseInt(argv[++i], 10);
+        break;
       case '--seed':
         config.seed = argv[++i];
+        break;
+      case '--resume':
+        config.resume = true;
+        break;
+      case '--checkpoint':
+        config.checkpointPath = path.resolve(argv[++i]);
         break;
       case '--help':
       case '-h':
@@ -146,19 +378,26 @@ function printUsage() {
   console.log('  --mmd-threshold <float>        Max acceptable MMD distance (default 0.05)');
   console.log('  --ks-min <float>               Min acceptable average KS p-value (default 0.05)');
   console.log('  --permutation-iterations <n>   Permutation iterations for AUC significance (default 500)');
+  console.log('  --min-pairs-per-type <n>       Minimum pairs per type (default 30)');
+  console.log('  --target-pairs-per-type <n>    Target pairs per type (default 50)');
+  console.log('  --max-pairs-per-type <n>       Maximum pairs per type (default 100)');
   console.log('  --seed <value>                 Deterministic dataset seed');
+  console.log('  --resume                       Resume from checkpoint if available');
+  console.log('  --checkpoint <path>            Custom checkpoint file path');
 }
 
-function normalizePairTargets(targets) {
-  if (!targets || typeof targets !== 'object') {
-    return { ...DEFAULT_PAIR_TARGETS };
-  }
-  return Object.keys(DEFAULT_PAIR_TARGETS).reduce((acc, key) => {
-    acc[key] = typeof targets[key] === 'number'
-      ? targets[key]
-      : DEFAULT_PAIR_TARGETS[key];
-    return acc;
-  }, {});
+// Build PI config for pairing
+function buildPIConfig(config) {
+  return {
+    policyCount: config.policyCount,
+    executionsPerPolicy: config.executionsPerPolicy,
+    satisfyRatio: config.satisfyRatio,
+    minPairsPerType: config.minPairsPerType || 30,
+    targetPairsPerType: config.targetPairsPerType || 50,
+    maxPairsPerType: config.maxPairsPerType || 100,
+    randomSeed: config.seed,
+    ensureBalancedSampling: true
+  };
 }
 
 function featureImportance(weights) {
@@ -418,6 +657,9 @@ async function runExperiment(config = {}) {
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.analysis);
   const reportJsonPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportJson);
   const reportMarkdownPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportMarkdown);
+  const checkpointPath = config.checkpointPath
+    ? path.resolve(config.checkpointPath)
+    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.checkpoint);
 
   let datasetMeta = null;
   let executionResults = null;
@@ -425,7 +667,7 @@ async function runExperiment(config = {}) {
   let pairs = null;
   let policies = null;
 
-  let pairTargets = normalizePairTargets(config.pairTargets);
+  const piConfig = buildPIConfig(config);
 
   const thresholds = {
     aucMax: config.aucThreshold ?? DEFAULT_THRESHOLDS.aucMax,
@@ -435,28 +677,84 @@ async function runExperiment(config = {}) {
     ksPValueMin: config.ksPValueMin ?? DEFAULT_THRESHOLDS.ksPValueMin
   };
 
+  // Extract pairTargets from config (used in report generation)
+  const pairTargets = config.pairTargets || null;
+
   console.log('='.repeat(60));
   console.log('Policy Indistinguishability Experiment');
   console.log('='.repeat(60));
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
+  // Initialize progress tracker based on starting phase
+  let totalSteps = 0;
+  if (startPhase <= 1) totalSteps += 3; // Dataset generation, contract deployment, execution
+  if (startPhase <= 2) totalSteps += 1; // Policy pairing
+  totalSteps += 4; // Single-sample attacks, pairwise attacks, two-sample tests, report generation
+
+  const progress = new ProgressTracker(totalSteps);
+
   // Phase 1 – dataset generation & execution
   if (startPhase <= 1) {
     console.log('Phase 1: Dataset Generation & Execution');
     console.log('-'.repeat(60));
-    const datasetConfig = {
-      policyCount: config.policyCount,
-      executionsPerPolicy: config.executionsPerPolicy,
-      satisfyRatio: config.satisfyRatio,
-      seed: config.seed
-    };
 
-    const dataset = await generateDataset(datasetConfig);
-    datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-    fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-    console.log(`Dataset saved to: ${datasetOutputPath}`);
+    let dataset = null;
 
+    // Check if resuming from a checkpoint that contains the dataset
+    if (config.resume && checkpointPath) {
+      const checkpoint = loadCheckpoint(checkpointPath);
+      if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data && checkpoint.data.dataset) {
+        dataset = checkpoint.data.dataset;
+        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(checkpoint.data.results || []);
+        console.log(`Resuming with dataset from checkpoint (${dataset.length} entries)`);
+      }
+    }
+
+    // If no checkpoint dataset, check if dataset file exists
+    if (!dataset && fs.existsSync(datasetOutputPath)) {
+      try {
+        dataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
+        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
+        console.log(`Loaded existing dataset from ${datasetOutputPath} (${dataset.length} entries)`);
+      } catch (err) {
+        console.warn(`Failed to load dataset from ${datasetOutputPath}: ${err.message}`);
+      }
+    }
+
+    // Only generate new dataset if none exists
+    if (!dataset) {
+      const datasetConfig = {
+        policyCount: config.policyCount,
+        executionsPerPolicy: config.executionsPerPolicy,
+        satisfyRatio: config.satisfyRatio,
+        seed: config.seed,
+        // Override semantic layers to respect policyCount instead of using high minPolicies defaults
+        semanticLayers: [
+          {
+            name: 'singleton',
+            combos: [['GR'], ['DS'], ['RS']],
+            minPolicies: 0  // Let policyCount control the total
+          },
+          {
+            name: 'pair',
+            combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
+            minPolicies: 0  // Let policyCount control the total
+          }
+        ]
+      };
+      progress.startStep('Generating dataset');
+      dataset = await generateDataset(datasetConfig);
+      datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
+      fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
+      console.log(`Dataset saved to: ${datasetOutputPath}`);
+      progress.completeStep();
+    } else {
+      progress.startStep('Using existing dataset');
+      progress.completeStep();
+    }
+
+    progress.startStep('Deploying contracts (Verifier & PolicyPrivacy)');
     const { ethers } = require('hardhat');
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
     const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
@@ -466,9 +764,12 @@ async function runExperiment(config = {}) {
 
     const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
     await policyPrivacy.waitForDeployment();
+    console.log(`Contracts deployed successfully`);
+    progress.completeStep();
 
-    executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
-    console.log(`Execution results saved to: ${executionResultsOutputPath}`);
+    progress.startStep(`Executing dataset on-chain (${dataset.length} executions)`);
+    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress, config.resume ? checkpointPath : null);
+    progress.completeStep();
     console.log('');
   } else {
     console.log('Skipping Phase 1: Dataset Generation & Execution');
@@ -495,19 +796,22 @@ async function runExperiment(config = {}) {
     console.log('Phase 2: Policy Pair Construction');
     console.log('-'.repeat(60));
 
-    const pairData = buildPairsFromExecutionResults(executionResults, pairTargets);
+    progress.startStep('Building policy pairs from execution results');
+    const pairData = buildPairsFromExecutionResults(executionResults, piConfig);
     pairs = pairData.pairs;
     policies = pairData.policies;
 
     const payload = {
       generatedAt: new Date().toISOString(),
-      pairTargets,
+      piConfig,
+      stats: pairData.stats,
       datasetMeta: datasetMeta || inferMetaFromExecutionResults(executionResults),
       policies,
       pairs
     };
     fs.writeFileSync(pairsOutputPath, JSON.stringify(payload, null, 2));
     console.log(`Policy pairs saved to: ${pairsOutputPath}`);
+    progress.completeStep();
     console.log('');
   } else {
     console.log('Skipping Phase 2: Policy Pair Construction');
@@ -518,9 +822,6 @@ async function runExperiment(config = {}) {
     pairsPayload = JSON.parse(fs.readFileSync(pairsOutputPath, 'utf8'));
     pairs = pairsPayload.pairs;
     policies = pairsPayload.policies;
-    if (pairsPayload.pairTargets) {
-      pairTargets = normalizePairTargets(pairsPayload.pairTargets);
-    }
     datasetMeta = datasetMeta || pairsPayload.datasetMeta || inferMetaFromExecutionResults(executionResults);
   }
 
@@ -532,18 +833,25 @@ async function runExperiment(config = {}) {
   console.log('Phase 3: Attack Modelling & Reporting');
   console.log('-'.repeat(60));
 
+  progress.startStep(`Running single-sample attacks (${pairs.length} pairs)`);
   const singleSampleResults = runSingleSampleAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
+  progress.completeStep();
 
+  progress.startStep('Running pairwise attacks');
   const pairwiseResults = runPairwiseAttacks(pairs, {
     testRatio: config.testRatio,
     permutationIterations: config.permutationIterations
   });
+  progress.completeStep();
 
+  progress.startStep('Running two-sample statistical tests');
   const statisticsResults = runTwoSampleTests(pairs);
+  progress.completeStep();
 
+  progress.startStep('Generating privacy analysis and reports');
   const privacySummary = buildPrivacySummary(
     singleSampleResults,
     pairwiseResults,
@@ -601,6 +909,9 @@ async function runExperiment(config = {}) {
 
   console.log(`Saved JSON report to: ${reportJsonPath}`);
   console.log(`Saved Markdown report to: ${reportMarkdownPath}`);
+  progress.completeStep();
+
+  progress.complete();
   console.log('');
   console.log(`Overall status: ${privacySummary.overallPassed ? 'PASS' : 'FAIL'}`);
   console.log('='.repeat(60));
@@ -615,6 +926,7 @@ if (require.main === module) {
     process.exit(0);
   }
 
+  console.log(config);
   runExperiment(config)
     .then((report) => {
       process.exit(report.privacySummary.overallPassed ? 0 : 1);

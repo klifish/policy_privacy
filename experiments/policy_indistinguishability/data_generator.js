@@ -22,13 +22,14 @@ const DEFAULT_PAIR_TARGETS = Object.freeze({
   controlled_difference: 5
 });
 
+// Observable on-chain features only (excluding proofGenerationTime - client-side only)
 const FEATURE_KEYS = Object.freeze([
   'commitGasUsed',
   'commitCalldataLength',
   'accessGasUsed',
   'accessCalldataLength',
   'proofSize',
-  'proofGenerationTime',
+  // 'proofGenerationTime',  // EXCLUDED: Not observable on-chain (client-side timing)
   'commitLogsCount',
   'commitLogsSize',
   'accessLogsCount',

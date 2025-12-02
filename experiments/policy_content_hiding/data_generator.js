@@ -247,9 +247,31 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 500000n,  // Target for commit transaction
-  access: 1000000n   // Target for access transaction (increased to 7.1M for transaction-level padding)
+  commit: 500000n,  // Base target for commit transaction
+  access: 1000000n   // Base target for access transaction
 });
+
+// Gas randomization configuration
+const GAS_PAD_VARIANCE = 0.1; // ±10% randomization range (50k for commit, 100k for access)
+
+/**
+ * Generate a randomized gas target within the configured variance range.
+ * This adds noise to prevent gas-based policy fingerprinting.
+ *
+ * @param {bigint} baseTarget - Base gas target
+ * @param {number} variance - Variance ratio (default: 0.10 for ±10%)
+ * @returns {bigint} Randomized gas target
+ */
+function getRandomGasTarget(baseTarget, variance = GAS_PAD_VARIANCE) {
+  const base = Number(baseTarget);
+  // Generate random factor in range [1-variance, 1+variance]
+  // Using crypto-grade randomness for better distribution
+  const randomBytes = crypto.randomBytes(4);
+  const randomValue = randomBytes.readUInt32BE(0) / 0xFFFFFFFF; // [0, 1]
+  const randomFactor = 1 + (randomValue - 0.5) * 2 * variance;
+  const randomizedTarget = Math.floor(base * randomFactor);
+  return BigInt(randomizedTarget);
+}
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
 const DISABLED_PREDICATE_TYPE = 4;
@@ -1162,7 +1184,6 @@ async function generateDataset(config = {}) {
     obiScopes = OBI_SCOPE_LIBRARY,
     policyDepth = DEFAULT_POLICY_DEPTH
   } = config;
-
   // console.log(JSON.stringify({ semanticLayers }, null, 2));
 
   const rng = createDeterministicRng(seed); // random number generator  
@@ -1410,7 +1431,7 @@ async function executePolicy(policyData, contract) {
   const [signer] = await ethers.getSigners();
   // const gasPadEnabled = policyData.execution?.gas_pad === true;
   const gasPadEnabled = true; // Always enable gas padding for experiment
-  const commitPadTarget = gasPadEnabled ? GAS_PAD_TARGET_GAS.commit : 0n;
+  const commitPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.commit) : 0n;
 
   const contractWithSigner = contract.connect(signer);
 
@@ -1453,7 +1474,7 @@ async function executePolicy(policyData, contract) {
   const blockchainPolicyId = parsedEvent.args.policyId;
 
   // Request access with proof
-  const accessPadTarget = gasPadEnabled ? GAS_PAD_TARGET_GAS.access : 0n;
+  const accessPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.access) : 0n;
   if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
     throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
   }
@@ -1567,6 +1588,9 @@ module.exports = {
   HANCESTRO_GROUPS,
   ISO3166_REGIONS,
   SNOMED_TERMS,
+  GAS_PAD_TARGET_GAS,
+  GAS_PAD_VARIANCE,
+  getRandomGasTarget,
   isOntologyLinked,
   getOntologyNamespace,
   getOntologyValues,
