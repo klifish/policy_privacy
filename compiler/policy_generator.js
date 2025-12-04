@@ -23,7 +23,8 @@ const ATTRIBUTE_DEFINITIONS = [
   { code: 'RS', label: 'Research-specific restrictions', namespace: 'OBI', requiresPredicate: true },
   { code: 'POA', label: 'Population origins/ancestry', namespace: 'HANCESTRO', requiresPredicate: true },
   { code: 'GS', label: 'Geographical restriction', namespace: 'ISO3166', requiresPredicate: true },
-  { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true }
+  { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true },
+  { code: 'CU', label: 'Commercial use', namespace: null, requiresPredicate: false }
 ];
 
 // Flexible identifier mapping for DUO attributes.
@@ -60,7 +61,12 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   CC: 'CC',
   CLINICAL_CARE: 'CC',
   CLINICALCARE: 'CC',
-  DUO0000043: 'CC'
+  DUO0000043: 'CC',
+
+  CU: 'CU',
+  COMMERCIAL_USE: 'CU',
+  COMMERCIAL: 'CU',
+  DUO0000046: 'CU'
 });
 
 // Operator table used by shunting-yard during logic parsing.

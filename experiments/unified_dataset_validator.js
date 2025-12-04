@@ -79,6 +79,30 @@ function aggregatePoliciesByDefinition(dataset) {
   return Array.from(policies.values());
 }
 
+function hasStructuralDifference(policyA, policyB) {
+  if (!policyA?.structure || !policyB?.structure) {
+    return false;
+  }
+  const keys = ['policyHash', 'policyDepth', 'whitelistSize', 'merkleDepth', 'proofType'];
+  return keys.some((key) => {
+    const valueA = policyA.structure?.[key];
+    const valueB = policyB.structure?.[key];
+    return valueA !== valueB;
+  });
+}
+
+function hasExecutionDifference(policyA, policyB) {
+  const profileA = policyA?.executionProfile || {};
+  const profileB = policyB?.executionProfile || {};
+  const keys = new Set([...Object.keys(profileA), ...Object.keys(profileB)]);
+  for (const key of keys) {
+    if (profileA[key] !== profileB[key]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -274,31 +298,16 @@ function validatePIRequirements(dataset, config) {
   // Aggregate by policy
   const policies = aggregatePoliciesByDefinition(dataset);
 
-  // Sample pairs to estimate diversity (full pairing would be too expensive)
-  const sampleSize = Math.min(100, policies.length);
-  const sampledIndices = [];
-  for (let i = 0; i < sampleSize; i++) {
-    sampledIndices.push(Math.floor(Math.random() * policies.length));
+  // Sample subset of policies (without replacement) to estimate pair distribution
+  const sampleSize = Math.min(80, policies.length);
+  const shuffled = policies.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
+  const sampledPolicies = shuffled.slice(0, sampleSize);
 
   const similarities = [];
-  for (let i = 0; i < sampledIndices.length; i++) {
-    for (let j = i + 1; j < sampledIndices.length; j++) {
-      const policyA = policies[sampledIndices[i]];
-      const policyB = policies[sampledIndices[j]];
-
-      if (policyA && policyB && policyA.semantics && policyB.semantics) {
-        const similarity = computeSemanticSimilarity(policyA.semantics, policyB.semantics);
-        similarities.push(similarity);
-      }
-    }
-  }
-
-  // Calculate diversity metrics
-  const avgSimilarity = similarities.reduce((a, b) => a + b, 0) / similarities.length;
-  const avgDiversity = 1 - avgSimilarity;
-
-  // Estimate pair type distribution
   const pairTypes = {
     semantic_equivalent: 0,
     structural_variant: 0,
@@ -306,52 +315,82 @@ function validatePIRequirements(dataset, config) {
     controlled_difference: 0
   };
 
-  similarities.forEach(sim => {
-    if (sim >= 0.999) pairTypes.semantic_equivalent++;
-    else if (sim >= 0.95) pairTypes.weak_equivalent++;
-    else pairTypes.controlled_difference++;
-  });
+  for (let i = 0; i < sampledPolicies.length; i++) {
+    for (let j = i + 1; j < sampledPolicies.length; j++) {
+      const policyA = sampledPolicies[i];
+      const policyB = sampledPolicies[j];
+      if (!policyA || !policyB) continue;
+
+      const similarity = computeSemanticSimilarity(policyA.semantics, policyB.semantics);
+      similarities.push(similarity);
+
+      const structuralDiff = hasStructuralDifference(policyA, policyB);
+      const executionDiff = hasExecutionDifference(policyA, policyB);
+
+      if (similarity >= 0.999) {
+        if (structuralDiff && executionDiff) {
+          pairTypes.structural_variant += 1;
+        } else if (structuralDiff) {
+          pairTypes.semantic_equivalent += 1;
+        } else {
+          pairTypes.weak_equivalent += 1;
+        }
+      } else if (similarity >= 0.95) {
+        pairTypes.weak_equivalent += 1;
+      } else {
+        pairTypes.controlled_difference += 1;
+      }
+    }
+  }
+
+  const totalPairsSampled = similarities.length;
+  const avgSimilarity = totalPairsSampled > 0
+    ? similarities.reduce((a, b) => a + b, 0) / totalPairsSampled
+    : 1;
+  const avgDiversity = 1 - avgSimilarity;
 
   console.log('\n📊 Semantic Diversity (sampled):');
   console.log(`  Average similarity:  ${avgSimilarity.toFixed(3)}`);
   console.log(`  Average diversity:   ${avgDiversity.toFixed(3)}`);
-  console.log(`  Sample size:         ${similarities.length} pairs`);
+  console.log(`  Sampled pairs:       ${totalPairsSampled}`);
 
   console.log('\n📊 Estimated Pair Type Distribution:');
   Object.entries(pairTypes).forEach(([type, count]) => {
-    const pct = ((count / similarities.length) * 100).toFixed(1);
+    const pct = totalPairsSampled > 0 ? ((count / totalPairsSampled) * 100).toFixed(1) : '0.0';
     console.log(`  ${type.padEnd(25)}: ${count.toString().padStart(4)} (${pct}%)`);
   });
 
-  // Validation
+  const totalPossiblePairs = (policies.length * (policies.length - 1)) / 2;
+  const estimatedTotals = {};
+  console.log('\n📈 Estimated Total Pairs (scaled):');
+  Object.entries(pairTypes).forEach(([type, count]) => {
+    const estimated = totalPairsSampled > 0
+      ? Math.round((count / totalPairsSampled) * totalPossiblePairs)
+      : 0;
+    estimatedTotals[type] = estimated;
+    console.log(`  ${type.padEnd(25)}: ~${estimated.toLocaleString()}`);
+  });
+
   const issues = [];
   const diversityThreshold = config.validation.pi.minSemanticDiversity;
-
   if (avgDiversity < diversityThreshold) {
     issues.push(`Average diversity ${avgDiversity.toFixed(3)} < ${diversityThreshold}`);
   }
 
-  // Estimate total pairs per type (assuming sampled distribution is representative)
-  const totalPossiblePairs = (policies.length * (policies.length - 1)) / 2;
-  console.log(`\n📈 Estimated Total Pairs: ${totalPossiblePairs.toLocaleString()}`);
-
-  Object.entries(pairTypes).forEach(([type, sampledCount]) => {
-    const estimatedTotal = Math.floor((sampledCount / similarities.length) * totalPossiblePairs);
-    console.log(`  ${type}: ~${estimatedTotal.toLocaleString()}`);
-
-    const minRequired = config.validation.pi.minPairsPerType;
-    if (estimatedTotal < minRequired) {
-      issues.push(`Estimated ${type} pairs (${estimatedTotal}) < ${minRequired}`);
+  const minPairsPerType = config.validation.pi.minPairsPerType;
+  ['semantic_equivalent', 'structural_variant'].forEach((type) => {
+    if ((estimatedTotals[type] || 0) < minPairsPerType) {
+      issues.push(`Estimated ${type} pairs (${estimatedTotals[type] || 0}) < ${minPairsPerType}`);
     }
   });
 
   if (issues.length === 0) {
     console.log('\n✅ PI Requirements: PASSED');
-    return { passed: true, issues: [] };
+    return { passed: true, issues: [], pairTypes, avgDiversity, estimatedTotals };
   } else {
     console.log('\n❌ PI Requirements: FAILED');
     issues.forEach(issue => console.log(`  ⚠️  ${issue}`));
-    return { passed: false, issues };
+    return { passed: false, issues, pairTypes, avgDiversity, estimatedTotals };
   }
 }
 
@@ -383,7 +422,18 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG) {
     policyCount: config.policyCount,
     executionsPerPolicy: config.executionsPerPolicy,
     satisfyRatio: config.satisfyRatio,
-    seed: config.seed
+    seed: config.seed,
+    semanticLayers: config.semanticLayers,
+    whitelistBuckets: config.whitelistBuckets,
+    merkleDepthOptions: config.merkleDepthOptions,
+    logicOptions: config.logicOptions,
+    executionProtections: config.executionProtections,
+    duoConflicts: config.duoConflicts,
+    icd10Scopes: config.icd10Scopes,
+    obiScopes: config.obiScopes,
+    hancestroScopes: config.hancestroScopes,
+    iso3166Scopes: config.iso3166Scopes,
+    snomedScopes: config.snomedScopes
   });
 
   const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);

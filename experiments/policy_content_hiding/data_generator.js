@@ -53,7 +53,7 @@ const DUO_TERMS = {
 // Attribute configuration for policy generation within the experiment.
 // The main circuit instance currently supports N=3 attributes and M=2 predicates,
 // so we focus on the subset {GR, DS, RS}.
-const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC'];
+const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC', 'CU'];
 
 const POLICY_PREDICATE_SLOTS = [
   {
@@ -99,7 +99,8 @@ const DUO_TO_ATTRIBUTE_CODE = {
   [DUO_TERMS.RESEARCH_SPECIFIC]: 'RS',
   [DUO_TERMS.POPULATION_ANCESTRY]: 'POA',
   [DUO_TERMS.GEOGRAPHICAL_RESTRICTION]: 'GS',
-  [DUO_TERMS.CLINICAL_CARE]: 'CC'
+  [DUO_TERMS.CLINICAL_CARE]: 'CC',
+  [DUO_TERMS.COMMERCIAL_USE]: 'CU'
 };
 
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
@@ -137,7 +138,12 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   CC: 'CC',
   CLINICAL_CARE: 'CC',
   CLINICALCARE: 'CC',
-  DUO0000043: 'CC'
+  DUO0000043: 'CC',
+
+  CU: 'CU',
+  COMMERCIAL_USE: 'CU',
+  COMMERCIAL: 'CU',
+  DUO0000046: 'CU'
 });
 
 const ATTRIBUTE_PREDICATE_SLOT = {
@@ -524,6 +530,205 @@ const OBI_SCOPE_LIBRARY = Object.freeze([
   }
 ]);
 
+const HANCESTRO_SCOPE_LIBRARY = Object.freeze([
+  {
+    id: 'EUROPEAN',
+    value: HANCESTRO_GROUPS.EUROPEAN,
+    label: 'European ancestry cohort',
+    whitelistTerms: [
+      'HANCESTRO:0005',
+      'HANCESTRO:0006',
+      'HANCESTRO:0007',
+      'HANCESTRO:0008',
+      'HANCESTRO:0010',
+      'HANCESTRO:0012',
+      'HANCESTRO:0013',
+      'HANCESTRO:0014',
+      'HANCESTRO:0020',
+      'HANCESTRO:0021',
+      'HANCESTRO:0030',
+      'HANCESTRO:0040'
+    ]
+  },
+  {
+    id: 'AFRICAN',
+    value: HANCESTRO_GROUPS.AFRICAN,
+    label: 'African ancestry cohort',
+    whitelistTerms: [
+      'HANCESTRO:0008',
+      'HANCESTRO:0009',
+      'HANCESTRO:0026',
+      'HANCESTRO:0032',
+      'HANCESTRO:0035',
+      'HANCESTRO:0048',
+      'HANCESTRO:0050',
+      'HANCESTRO:0060',
+      'HANCESTRO:0061',
+      'HANCESTRO:0062',
+      'HANCESTRO:0063',
+      'HANCESTRO:0064'
+    ]
+  },
+  {
+    id: 'ASIAN',
+    value: HANCESTRO_GROUPS.ASIAN,
+    label: 'Asian ancestry cohort',
+    whitelistTerms: [
+      'HANCESTRO:0010',
+      'HANCESTRO:0011',
+      'HANCESTRO:0015',
+      'HANCESTRO:0018',
+      'HANCESTRO:0022',
+      'HANCESTRO:0031',
+      'HANCESTRO:0042',
+      'HANCESTRO:0044',
+      'HANCESTRO:0052',
+      'HANCESTRO:0054',
+      'HANCESTRO:0066',
+      'HANCESTRO:0067'
+    ]
+  },
+  {
+    id: 'HISPANIC_LATIN',
+    value: HANCESTRO_GROUPS.HISPANIC_LATIN,
+    label: 'Hispanic or Latin American cohort',
+    whitelistTerms: [
+      'HANCESTRO:0014',
+      'HANCESTRO:0016',
+      'HANCESTRO:0017',
+      'HANCESTRO:0023',
+      'HANCESTRO:0033',
+      'HANCESTRO:0045',
+      'HANCESTRO:0046',
+      'HANCESTRO:0056',
+      'HANCESTRO:0057',
+      'HANCESTRO:0068',
+      'HANCESTRO:0069',
+      'HANCESTRO:0070'
+    ]
+  },
+  {
+    id: 'NATIVE_AMERICAN',
+    value: HANCESTRO_GROUPS.NATIVE_AMERICAN,
+    label: 'Native American cohort',
+    whitelistTerms: [
+      'HANCESTRO:0013',
+      'HANCESTRO:0024',
+      'HANCESTRO:0025',
+      'HANCESTRO:0027',
+      'HANCESTRO:0028',
+      'HANCESTRO:0029',
+      'HANCESTRO:0034',
+      'HANCESTRO:0041',
+      'HANCESTRO:0049',
+      'HANCESTRO:0058',
+      'HANCESTRO:0065',
+      'HANCESTRO:0071'
+    ]
+  }
+]);
+
+const ISO3166_SCOPE_LIBRARY = Object.freeze([
+  {
+    id: 'NORTH_AMERICA',
+    value: ISO3166_REGIONS.NORTH_AMERICA,
+    label: 'North America',
+    whitelistTerms: ['US', 'CA', 'MX', 'BM', 'GL', 'PM', 'PR', 'VI', 'BQ', 'CW', 'SX', 'HT']
+  },
+  {
+    id: 'EUROPE',
+    value: ISO3166_REGIONS.EUROPE,
+    label: 'Europe',
+    whitelistTerms: ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'SE', 'NO', 'FI', 'PL', 'PT', 'IE', 'CH', 'AT']
+  },
+  {
+    id: 'ASIA',
+    value: ISO3166_REGIONS.ASIA,
+    label: 'Asia-Pacific',
+    whitelistTerms: ['CN', 'JP', 'KR', 'HK', 'SG', 'TW', 'TH', 'VN', 'MY', 'PH', 'ID', 'IN', 'PK', 'LK']
+  },
+  {
+    id: 'OCEANIA',
+    value: ISO3166_REGIONS.OCEANIA,
+    label: 'Oceania',
+    whitelistTerms: ['AU', 'NZ', 'PG', 'FJ', 'WS', 'TO', 'SB', 'VU', 'PF', 'NC', 'CK', 'NU']
+  },
+  {
+    id: 'AFRICA',
+    value: ISO3166_REGIONS.AFRICA,
+    label: 'Africa',
+    whitelistTerms: ['ZA', 'NG', 'EG', 'KE', 'TZ', 'GH', 'CI', 'UG', 'DZ', 'MA', 'TN', 'SN', 'ET']
+  }
+]);
+
+const SNOMED_SCOPE_LIBRARY = Object.freeze([
+  {
+    id: 'DIAGNOSTIC',
+    value: SNOMED_TERMS.DIAGNOSTIC,
+    label: 'Diagnostic procedures',
+    whitelistTerms: [
+      'SNOMED:25245007',
+      'SNOMED:363413005',
+      'SNOMED:118227000',
+      'SNOMED:252465000',
+      'SNOMED:113076002',
+      'SNOMED:252465004'
+    ]
+  },
+  {
+    id: 'THERAPEUTIC',
+    value: SNOMED_TERMS.THERAPEUTIC,
+    label: 'Therapeutic procedures',
+    whitelistTerms: [
+      'SNOMED:708339004',
+      'SNOMED:432102000',
+      'SNOMED:23426006',
+      'SNOMED:397956004',
+      'SNOMED:386053000',
+      'SNOMED:225390008'
+    ]
+  },
+  {
+    id: 'PREVENTIVE',
+    value: SNOMED_TERMS.PREVENTIVE,
+    label: 'Preventive care',
+    whitelistTerms: [
+      'SNOMED:703423007',
+      'SNOMED:710815001',
+      'SNOMED:394703006',
+      'SNOMED:243796009',
+      'SNOMED:171828008',
+      'SNOMED:243788004'
+    ]
+  },
+  {
+    id: 'PALLIATIVE',
+    value: SNOMED_TERMS.PALLIATIVE,
+    label: 'Palliative care',
+    whitelistTerms: [
+      'SNOMED:385763009',
+      'SNOMED:385712009',
+      'SNOMED:385725000',
+      'SNOMED:385749007',
+      'SNOMED:385797002',
+      'SNOMED:385795005'
+    ]
+  },
+  {
+    id: 'EMERGENCY',
+    value: SNOMED_TERMS.EMERGENCY,
+    label: 'Emergency care',
+    whitelistTerms: [
+      'SNOMED:50849002',
+      'SNOMED:74074008',
+      'SNOMED:50849003',
+      'SNOMED:114500000',
+      'SNOMED:50849004',
+      'SNOMED:87100002'
+    ]
+  }
+]);
+
 // ---------------------------------------------------------------------
 // RNG helpers
 // ---------------------------------------------------------------------
@@ -695,36 +900,104 @@ function checkCombinationConflicts(combo, conflictRules = []) {
   return true;
 }
 
-function maybeNegate(rng, token, probability) {
+function maybeNegate(rng, token, probability, budget) {
   if (probability <= 0) {
     return token;
   }
-  return rng() < probability ? `!${token}` : token;
+  if (budget && budget.remaining <= 0) {
+    return token;
+  }
+  if (rng() < probability) {
+    if (budget) {
+      budget.remaining = Math.max(0, budget.remaining - 1);
+    }
+    return `!${token}`;
+  }
+  return token;
 }
 
 function buildLogicFromCombination(rng, combo, options = {}) {
   const {
     notProbability = 0.2,
     groupNotProbability = 0.1,
-    operators = ['AND', 'OR']
+    operators = ['AND', 'OR'],
+    maxNotOperators = Infinity
   } = options;
 
+  const notBudget = Number.isFinite(maxNotOperators)
+    ? { remaining: Math.max(0, maxNotOperators) }
+    : null;
+
   if (combo.length === 1) {
-    return maybeNegate(rng, combo[0], notProbability);
+    return maybeNegate(rng, combo[0], notProbability, notBudget);
   }
 
   const tokens = combo.slice();
 
   shuffleInPlace(rng, tokens);
 
-  let expr = maybeNegate(rng, tokens[0], notProbability);
+  let expr = maybeNegate(rng, tokens[0], notProbability, notBudget);
   for (let i = 1; i < tokens.length; i += 1) {
     const operator = randomChoice(rng, operators);
-    const right = maybeNegate(rng, tokens[i], notProbability);
+    const right = maybeNegate(rng, tokens[i], notProbability, notBudget);
     const grouped = `(${expr} ${operator === 'AND' ? '&' : '|'} ${right})`;
-    expr = maybeNegate(rng, grouped, groupNotProbability);
+    expr = maybeNegate(rng, grouped, groupNotProbability, notBudget);
   }
   return expr;
+}
+
+function mergeLogicOptions(...candidates) {
+  const merged = {};
+  candidates.filter(Boolean).forEach((options) => {
+    Object.entries(options).forEach(([key, value]) => {
+      merged[key] = Array.isArray(value) ? value.slice() : value;
+    });
+  });
+  return merged;
+}
+
+function normalizeArrayOption(option) {
+  if (option === undefined || option === null) {
+    return null;
+  }
+  if (Array.isArray(option)) {
+    return option.length > 0 ? option : null;
+  }
+  return [option];
+}
+
+function resolveOptionArray(...options) {
+  for (const option of options) {
+    const normalized = normalizeArrayOption(option);
+    if (normalized && normalized.length > 0) {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+function mergeExecutionProtections(...sources) {
+  const merged = {};
+  sources.filter(Boolean).forEach((source) => {
+    Object.entries(source).forEach(([key, value]) => {
+      merged[key] = Array.isArray(value) ? value.slice() : [value];
+    });
+  });
+  return merged;
+}
+
+function estimateBaseTokenCount(combo) {
+  let predicateCount = 0;
+  let nonPredicateCount = 0;
+  combo.forEach((code) => {
+    if (ATTRIBUTE_PREDICATE_SLOT[code] !== undefined) {
+      predicateCount += 1;
+    } else {
+      nonPredicateCount += 1;
+    }
+  });
+  const structuralOps = Math.max(0, combo.length - 1);
+  return predicateCount * 3 + nonPredicateCount + structuralOps;
 }
 
 function getIcdScopeByValue(value) {
@@ -800,26 +1073,99 @@ async function createPolicyBlueprint(params) {
     combo,
     rng,
     config,
-    index
+    index,
+    layerConfig = {},
+    variantProfile = null,
+    layerState = {}
   } = params;
 
   const attributeOrder = config.attributeOrder || POLICY_ATTRIBUTE_ORDER;
   const combination = canonicalizeDuoCombination(combo);
-  const logic = buildLogicFromCombination(rng, combination, config.logicOptions || {});
 
-  const proofType = randomChoice(rng, config.proofTypes || DEFAULT_PROOF_TYPES);
-  const executionProtections = config.executionProtections || DEFAULT_EXECUTION_PROTECTIONS;
+  const logicOptions = mergeLogicOptions(
+    config.logicOptions,
+    layerConfig.logicOptions,
+    variantProfile?.logicOptions
+  );
+  const depthLimit = config.policyDepth || DEFAULT_POLICY_DEPTH;
+  const baseTokenEstimate = estimateBaseTokenCount(combination);
+  if (baseTokenEstimate > depthLimit) {
+    throw new Error(`Combination ${combination.join('+')} requires ${baseTokenEstimate} tokens but depth limit is ${depthLimit}`);
+  }
+  const configuredNotLimit = logicOptions.maxNotOperators;
+  const computedNotLimit = Math.max(0, depthLimit - baseTokenEstimate);
+  const effectiveNotLimit = Number.isFinite(configuredNotLimit)
+    ? Math.min(configuredNotLimit, computedNotLimit)
+    : computedNotLimit;
+  const logicOptionsWithBudget = {
+    ...logicOptions,
+    maxNotOperators: effectiveNotLimit
+  };
+
+  const whitelistBuckets = resolveOptionArray(
+    variantProfile?.whitelistBuckets,
+    layerConfig.whitelistBuckets,
+    config.whitelistBuckets,
+    DEFAULT_WHITELIST_BUCKETS
+  ) || DEFAULT_WHITELIST_BUCKETS;
+
+  const merkleDepthOptions = resolveOptionArray(
+    variantProfile?.merkleDepthOptions,
+    layerConfig.merkleDepthOptions,
+    config.merkleDepthOptions,
+    DEFAULT_MERKLE_DEPTH_OPTIONS
+  ) || DEFAULT_MERKLE_DEPTH_OPTIONS;
+
+  const proofTypes = resolveOptionArray(
+    variantProfile?.proofTypes,
+    layerConfig.proofTypes,
+    config.proofTypes,
+    DEFAULT_PROOF_TYPES
+  ) || DEFAULT_PROOF_TYPES;
+
+  const executionProtections = mergeExecutionProtections(
+    DEFAULT_EXECUTION_PROTECTIONS,
+    config.executionProtections,
+    layerConfig.executionProtections,
+    variantProfile?.executionProtections
+  );
+
+  const proofType = randomChoice(rng, proofTypes);
+
+  const logicOverride = variantProfile?.logic || layerConfig.logic;
+  const lockLogic = Boolean(
+    variantProfile?.lockLogicToCombination ??
+    layerConfig.lockLogicToCombination
+  );
+  let logic;
+  const logicCacheKey = combination.join('+');
+  if (logicOverride) {
+    logic = logicOverride;
+  } else if (lockLogic) {
+    layerState.logicCache = layerState.logicCache || new Map();
+    if (layerState.logicCache.has(logicCacheKey)) {
+      logic = layerState.logicCache.get(logicCacheKey);
+    } else {
+      logic = buildLogicFromCombination(rng, combination, logicOptionsWithBudget || {});
+      layerState.logicCache.set(logicCacheKey, logic);
+    }
+  } else {
+    logic = buildLogicFromCombination(rng, combination, logicOptionsWithBudget || {});
+  }
 
   const structure = {
     whitelistSize: 0,
-    merkleDepth: randomChoice(rng, config.merkleDepthOptions || DEFAULT_MERKLE_DEPTH_OPTIONS),
+    merkleDepth: randomChoice(rng, merkleDepthOptions),
     proofType,
     predicateRoots: {},
     whitelists: {}
   };
 
+  const variantLabel = variantProfile?.name || variantProfile?.label || variantProfile?.id || null;
+
   const semantics = {
     layer: layerName,
+    layerVariant: variantLabel,
     duoTerms: combination.slice(),
     duoTermValues: combination.map((code) => ATTRIBUTE_CODE_TO_DUO_TERM[code]),
     primaryDuoTerm: combination[0],
@@ -829,83 +1175,123 @@ async function createPolicyBlueprint(params) {
     hasCredential: proofType === 'credential_proof',
     predicateCount: combination.filter((code) => ATTRIBUTE_PREDICATE_SLOT[code] !== undefined).length,
     icd10Scope: null,
-    obiScope: null
+    obiScope: null,
+    populationScope: null,
+    geoScope: null,
+    clinicalScope: null
   };
 
   const predicateSlots = [];
   const predicateValuesBySlot = {};
-  if (combination.includes('DS')) {
-    const icdScopes = config.icd10Scopes || ICD10_SCOPE_LIBRARY;
-    const chosenScope = randomChoice(rng, icdScopes);
-    const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
-    const adjustedDepth = ensureDepthForSize(config.merkleDepthOptions || DEFAULT_MERKLE_DEPTH_OPTIONS, whitelistSize);
+
+  const icdScopes = variantProfile?.icd10Scopes || layerConfig.icd10Scopes || config.icd10Scopes || ICD10_SCOPE_LIBRARY;
+  const obiScopes = variantProfile?.obiScopes || layerConfig.obiScopes || config.obiScopes || OBI_SCOPE_LIBRARY;
+  const ancestryScopes = variantProfile?.hancestroScopes || layerConfig.hancestroScopes || config.hancestroScopes || HANCESTRO_SCOPE_LIBRARY;
+  const geoScopes = variantProfile?.iso3166Scopes || layerConfig.iso3166Scopes || config.iso3166Scopes || ISO3166_SCOPE_LIBRARY;
+  const clinicalScopes = variantProfile?.snomedScopes || layerConfig.snomedScopes || config.snomedScopes || SNOMED_SCOPE_LIBRARY;
+
+  async function attachPredicate(options) {
+    const {
+      code,
+      namespace,
+      scopes,
+      semanticsKey,
+      extraMetadata = () => ({})
+    } = options;
+
+    if (!combination.includes(code)) {
+      return;
+    }
+
+    const chosenScope = randomChoice(rng, scopes);
+    const whitelistSize = randomChoice(rng, whitelistBuckets);
+    const adjustedDepth = ensureDepthForSize(merkleDepthOptions, whitelistSize);
     structure.whitelistSize = Math.max(structure.whitelistSize, whitelistSize);
     structure.merkleDepth = Math.max(structure.merkleDepth, adjustedDepth);
 
     const whitelist = await buildOntologyWhitelistForScope({
       rng,
-      namespace: 'ICD10',
-      availableTerms: chosenScope.whitelistTerms,
+      namespace,
+      availableTerms: chosenScope.whitelistTerms || [],
       whitelistSize,
       merkleDepth: adjustedDepth
     });
 
-    structure.predicateRoots[ATTRIBUTE_PREDICATE_SLOT.DS] = whitelist.rootHex;
-    structure.whitelists[ATTRIBUTE_PREDICATE_SLOT.DS] = {
-      namespace: 'ICD10',
+    const slot = ATTRIBUTE_PREDICATE_SLOT[code];
+    structure.predicateRoots[slot] = whitelist.rootHex;
+    structure.whitelists[slot] = {
+      namespace,
       scopeId: chosenScope.id,
       scopeLabel: chosenScope.label,
-      codeRange: chosenScope.codeRange,
       configHash: whitelist.configHash,
       leafCount: whitelist.leafCount,
-      selectedTerms: whitelist.terms
+      selectedTerms: whitelist.terms,
+      ...extraMetadata(chosenScope)
     };
 
-    predicateSlots.push(ATTRIBUTE_PREDICATE_SLOT.DS);
-    predicateValuesBySlot[ATTRIBUTE_PREDICATE_SLOT.DS] = chosenScope.value;
-    semantics.icd10Scope = {
+    predicateSlots.push(slot);
+    predicateValuesBySlot[slot] = chosenScope.value;
+    semantics[semanticsKey] = {
       id: chosenScope.id,
       label: chosenScope.label,
-      level: chosenScope.level,
-      codeRange: chosenScope.codeRange
+      ...(chosenScope.level ? { level: chosenScope.level } : {}),
+      ...(chosenScope.codeRange ? { codeRange: chosenScope.codeRange } : {})
     };
   }
 
-  if (combination.includes('RS')) {
-    // console.log('Building RS predicate for policy', layerName, index);
-    const obiScopes = config.obiScopes || OBI_SCOPE_LIBRARY;
-    const chosenObi = randomChoice(rng, obiScopes);
-    const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
-    const adjustedDepth = ensureDepthForSize(config.merkleDepthOptions || DEFAULT_MERKLE_DEPTH_OPTIONS, whitelistSize);
-    structure.whitelistSize = Math.max(structure.whitelistSize, whitelistSize);
-    structure.merkleDepth = Math.max(structure.merkleDepth, adjustedDepth);
-
-    const whitelist = await buildOntologyWhitelistForScope({
-      rng,
-      namespace: 'OBI',
-      availableTerms: chosenObi.whitelistTerms || [chosenObi.termId],
-      whitelistSize,
-      merkleDepth: adjustedDepth
+  if (combination.includes('DS')) {
+    await attachPredicate({
+      code: 'DS',
+      namespace: 'ICD10',
+      scopes: icdScopes,
+      semanticsKey: 'icd10Scope',
+      extraMetadata: (scope) => ({
+        codeRange: scope.codeRange,
+        level: scope.level
+      })
     });
+  }
 
-    structure.predicateRoots[ATTRIBUTE_PREDICATE_SLOT.RS] = whitelist.rootHex;
-    structure.whitelists[ATTRIBUTE_PREDICATE_SLOT.RS] = {
+  if (combination.includes('RS')) {
+    await attachPredicate({
+      code: 'RS',
       namespace: 'OBI',
-      scopeId: chosenObi.id,
-      scopeLabel: chosenObi.label,
-      termId: chosenObi.termId,
-      configHash: whitelist.configHash,
-      leafCount: whitelist.leafCount,
-      selectedTerms: whitelist.terms
-    };
+      scopes: obiScopes,
+      semanticsKey: 'obiScope',
+      extraMetadata: (scope) => ({
+        termId: scope.termId
+      })
+    });
+  }
 
-    predicateSlots.push(ATTRIBUTE_PREDICATE_SLOT.RS);
-    predicateValuesBySlot[ATTRIBUTE_PREDICATE_SLOT.RS] = chosenObi.value;
-    semantics.obiScope = {
-      id: chosenObi.id,
-      label: chosenObi.label,
-      termId: chosenObi.termId
-    };
+  if (combination.includes('POA')) {
+    await attachPredicate({
+      code: 'POA',
+      namespace: 'HANCESTRO',
+      scopes: ancestryScopes,
+      semanticsKey: 'populationScope',
+      extraMetadata: () => ({})
+    });
+  }
+
+  if (combination.includes('GS')) {
+    await attachPredicate({
+      code: 'GS',
+      namespace: 'ISO3166',
+      scopes: geoScopes,
+      semanticsKey: 'geoScope',
+      extraMetadata: () => ({})
+    });
+  }
+
+  if (combination.includes('CC')) {
+    await attachPredicate({
+      code: 'CC',
+      namespace: 'SNOMED',
+      scopes: clinicalScopes,
+      semanticsKey: 'clinicalScope',
+      extraMetadata: () => ({})
+    });
   }
 
   if (predicateSlots.length === 0) {
@@ -931,22 +1317,29 @@ async function createPolicyBlueprint(params) {
   });
 
   const policyId = `${layerName || 'layer'}-${index}`;
-  const artifacts = await generatePolicyArtifacts(
-    {
-      policy_id: policyId,
-      attributes,
-      predicates: predicateTemplates,
-      logic
-    },
-    {
-      depth: config.policyDepth || DEFAULT_POLICY_DEPTH,
-      attributeOrder
-    }
-  );
+  let artifacts;
+  try {
+    artifacts = await generatePolicyArtifacts(
+      {
+        policy_id: policyId,
+        attributes,
+        predicates: predicateTemplates,
+        logic
+      },
+      {
+        depth: config.policyDepth || DEFAULT_POLICY_DEPTH,
+        attributeOrder
+      }
+    );
+  } catch (error) {
+    error.message = `[layer:${layerName} combo:${combination.join('+')}] ${error.message}`;
+    throw error;
+  }
 
   const blueprint = {
     id: policyId,
     layerName,
+    layerVariant: variantLabel,
     index,
     duoTerms: combination.slice(),
     semantics: {
@@ -972,17 +1365,42 @@ async function createPolicyBlueprint(params) {
   return blueprint;
 }
 
+function getVariantProfiles(layer) {
+  if (Array.isArray(layer.variants) && layer.variants.length > 0) {
+    return layer.variants;
+  }
+  if (Array.isArray(layer.variantProfiles) && layer.variantProfiles.length > 0) {
+    return layer.variantProfiles;
+  }
+  return [null];
+}
+
 async function buildPolicyBlueprints(config, rng) {
   const policyCount = config.policyCount ?? DEFAULT_POLICY_COUNT;
   const semanticLayers = config.semanticLayers || DEFAULT_SEMANTIC_LAYERS;
   const conflictRules = config.duoConflicts || DEFAULT_DUO_CONFLICT_RULES;
 
-  const layers = semanticLayers.map((layer) => ({
-    name: layer.name || 'layer',
-    combos: (layer.combos || []).map((combo) => canonicalizeDuoCombination(combo))
-      .filter((combo) => checkCombinationConflicts(combo, conflictRules)),
-    minPolicies: layer.minPolicies ?? 0
-  })).filter((layer) => layer.combos.length > 0);
+  const layers = semanticLayers.map((layer) => {
+    const combos = (layer.combos || [])
+      .map((combo) => canonicalizeDuoCombination(combo))
+      .filter((combo) => checkCombinationConflicts(combo, conflictRules));
+    const minPolicies = layer.minPolicies ?? 0;
+    let maxPolicies = layer.maxPolicies ?? Number.POSITIVE_INFINITY;
+    if (!Number.isFinite(maxPolicies)) {
+      maxPolicies = Number.POSITIVE_INFINITY;
+    }
+    if (maxPolicies < minPolicies) {
+      maxPolicies = minPolicies;
+    }
+    return {
+      ...layer,
+      name: layer.name || 'layer',
+      combos,
+      minPolicies,
+      maxPolicies,
+      _state: layer._state || {}
+    };
+  }).filter((layer) => layer.combos.length > 0);
 
   if (layers.length === 0) {
     throw new Error('No semantic layers available to sample policies');
@@ -990,37 +1408,69 @@ async function buildPolicyBlueprints(config, rng) {
 
   const totalMinPolicies = layers.reduce((sum, layer) => sum + layer.minPolicies, 0);
   const targetPolicies = Math.max(policyCount, totalMinPolicies);
-  const remaining = targetPolicies - totalMinPolicies;
-  const perLayerBonus = Math.floor(remaining / layers.length);
-  let leftover = remaining - perLayerBonus * layers.length;
 
-  const layerTargets = layers.map((layer) => {
-    const base = layer.minPolicies + perLayerBonus;
-    const allocation = leftover > 0 ? 1 : 0;
-    if (allocation > 0) leftover -= 1;
-    return { layer, target: Math.max(layer.minPolicies, base + allocation) };
-  });
+  const layerTargets = layers.map((layer) => Math.min(layer.maxPolicies, layer.minPolicies));
+  let assigned = layerTargets.reduce((sum, value) => sum + value, 0);
+
+  while (assigned < targetPolicies) {
+    let progressed = false;
+    for (let i = 0; i < layers.length && assigned < targetPolicies; i += 1) {
+      const layer = layers[i];
+      if (layerTargets[i] < layer.maxPolicies) {
+        layerTargets[i] += 1;
+        assigned += 1;
+        progressed = true;
+      }
+    }
+    if (!progressed) {
+      break;
+    }
+  }
+
+  if (assigned < targetPolicies) {
+    console.warn(`Unable to reach desired policy count (${targetPolicies}); capped at ${assigned} due to layer max policies.`);
+  }
+
+  const targetPlan = layers.map((layer, idx) => ({
+    layer,
+    target: layerTargets[idx]
+  }));
 
   console.log('Policy blueprint targets per layer:',
-    layerTargets.map(({ layer, target }) => ({ layer: layer.name, target })));
+    targetPlan.map(({ layer, target }) => ({
+      layer: layer.name,
+      target,
+      min: layer.minPolicies,
+      max: Number.isFinite(layer.maxPolicies) ? layer.maxPolicies : '∞'
+    })));
 
   const blueprints = [];
   let policyIndex = 0;
-  for (const { layer, target } of layerTargets) {
+
+  for (const { layer, target } of targetPlan) {
     if (target === 0) continue;
+    const variantProfiles = getVariantProfiles(layer);
     let comboIndex = 0;
-    for (let i = 0; i < target; i += 1) {
+    let produced = 0;
+    while (produced < target) {
       const combo = layer.combos[comboIndex % layer.combos.length];
       comboIndex += 1;
-      const blueprint = await createPolicyBlueprint({
-        layerName: layer.name,
-        combo,
-        rng,
-        config,
-        index: policyIndex
-      });
-      blueprints.push(blueprint);
-      policyIndex += 1;
+      for (const variantProfile of variantProfiles) {
+        if (produced >= target) break;
+        const blueprint = await createPolicyBlueprint({
+          layerName: layer.name,
+          combo,
+          rng,
+          config,
+          index: policyIndex,
+          layerConfig: layer,
+          variantProfile,
+          layerState: layer._state
+        });
+        blueprints.push(blueprint);
+        produced += 1;
+        policyIndex += 1;
+      }
     }
   }
 
@@ -1197,6 +1647,9 @@ async function generateDataset(config = {}) {
     duoConflicts = DEFAULT_DUO_CONFLICT_RULES,
     icd10Scopes = ICD10_SCOPE_LIBRARY,
     obiScopes = OBI_SCOPE_LIBRARY,
+    hancestroScopes = HANCESTRO_SCOPE_LIBRARY,
+    iso3166Scopes = ISO3166_SCOPE_LIBRARY,
+    snomedScopes = SNOMED_SCOPE_LIBRARY,
     policyDepth = DEFAULT_POLICY_DEPTH
   } = config;
   // console.log(JSON.stringify({ semanticLayers }, null, 2));
@@ -1238,6 +1691,9 @@ async function generateDataset(config = {}) {
     duoConflicts,
     icd10Scopes,
     obiScopes,
+    hancestroScopes,
+    iso3166Scopes,
+    snomedScopes,
     policyDepth
   };
 
@@ -1278,6 +1734,7 @@ async function generateDataset(config = {}) {
         policyId: blueprint.id,
         executionId: execIndex,
         layer: blueprint.layerName,
+        layerVariant: blueprint.layerVariant || null,
         duoTerm: ATTRIBUTE_CODE_TO_DUO_TERM[blueprint.semantics.primaryDuoTerm],
         duoTerms: blueprint.duoTerms.map((code) => ATTRIBUTE_CODE_TO_DUO_TERM[code]),
         duoTermCodes: blueprint.duoTerms.slice(),

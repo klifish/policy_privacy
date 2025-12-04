@@ -3,112 +3,253 @@
   "title": "Unified Dataset Configuration - SPP/PI Optimized",
   "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
 
-  "policyCount": 250,
+  "policyCount": 420,
   "executionsPerPolicy": 5,
   "satisfyRatio": 0.5,
   "seed": "unified-optimized-2025",
 
   "semanticLayers": [
     {
-      "name": "singleton_simple",
-      "comment": "Simple singletons for flat structure + none predicates",
+      "name": "flat_singleton",
+      "comment": "Flat AND-only policies without predicates (set_size none, logic and_only)",
       "combos": [
         ["GR"],
-        ["GR"],
-        ["GR"]
+        ["CU"]
       ],
-      "minPolicies": 25,
-      "maxPolicies": 30
+      "minPolicies": 60,
+      "maxPolicies": 70,
+      "logicOptions": {
+        "operators": ["AND"],
+        "notProbability": 0.05,
+        "groupNotProbability": 0.0
+      }
     },
     {
-      "name": "singleton_predicate",
-      "comment": "Singletons with predicates for single/few predicate counts",
+      "name": "single_predicate_small",
+      "comment": "Singleton predicates targeting set_size small + predicate_count single",
       "combos": [
         ["DS"],
         ["RS"],
-        ["DS"],
-        ["RS"]
+        ["POA"],
+        ["GS"],
+        ["CC"],
+        ["CC"]
+      ],
+      "minPolicies": 50,
+      "maxPolicies": 60,
+      "logicOptions": {
+        "operators": ["AND"],
+        "notProbability": 0.1,
+        "groupNotProbability": 0.05
+      },
+      "whitelistBuckets": [2, 4],
+      "merkleDepthOptions": [2, 3, 4]
+    },
+    {
+      "name": "dual_mixed_medium",
+      "comment": "Two/three predicate mixes for and_or_mixed logic + medium set sizes",
+      "combos": [
+        ["GR", "DS"],
+        ["GR", "RS"],
+        ["DS", "RS"],
+        ["DS", "POA"],
+        ["RS", "GS"],
+        ["POA", "GS"],
+        ["DS", "CC"],
+        ["RS", "CC"],
+        ["POA", "CC"],
+        ["GS", "CC"],
+        ["CU", "DS"],
+        ["CU", "RS"],
+        ["CU", "POA"],
+        ["CU", "GS"],
+        ["CU", "CC"]
       ],
       "minPolicies": 30,
-      "maxPolicies": 35
+      "maxPolicies": 40,
+      "logicOptions": {
+        "operators": ["AND", "OR"],
+        "notProbability": 0.2,
+        "groupNotProbability": 0.15
+      },
+      "whitelistBuckets": [8, 12, 16],
+      "merkleDepthOptions": [3, 4, 5]
     },
     {
-      "name": "pair_and",
-      "comment": "Pairs with AND for and_only logic + shallow depth",
+      "name": "or_only",
+      "comment": "Force OR-only logic for logicStructure.or_only coverage",
       "combos": [
-        ["GR", "DS"],
-        ["GR", "RS"],
         ["DS", "RS"],
-        ["GR", "DS"],
-        ["GR", "RS"]
-      ],
-      "minPolicies": 40,
-      "maxPolicies": 50
-    },
-    {
-      "name": "pair_or",
-      "comment": "Pairs with OR for or_only logic",
-      "combos": [
-        ["GR", "DS"],
-        ["GR", "RS"],
-        ["DS", "RS"],
-        ["GR", "DS"]
+        ["DS", "POA"],
+        ["RS", "CC"],
+        ["POA", "GS"],
+        ["GS", "CC"],
+        ["POA", "CC"],
+        ["CU", "DS"],
+        ["CU", "RS"]
       ],
       "minPolicies": 25,
-      "maxPolicies": 30
+      "maxPolicies": 35,
+      "logicOptions": {
+        "operators": ["OR"],
+        "notProbability": 0.0,
+        "groupNotProbability": 0.0
+      },
+      "whitelistBuckets": [4, 8, 12],
+      "merkleDepthOptions": [3, 4, 5]
     },
     {
-      "name": "pair_mixed",
-      "comment": "Pairs with mixed AND/OR for and_or_mixed logic",
+      "name": "negation_heavy",
+      "comment": "High NOT probability to populate negation_heavy bucket",
       "combos": [
         ["GR", "DS"],
         ["GR", "RS"],
         ["DS", "RS"],
-        ["GR", "DS"],
-        ["DS", "RS"]
-      ],
-      "minPolicies": 30,
-      "maxPolicies": 35
-    },
-    {
-      "name": "negation",
-      "comment": "Policies with negation for negation_heavy logic",
-      "combos": [
-        ["GR", "DS"],
-        ["GR", "RS"],
-        ["DS", "RS"],
-        ["GR"],
-        ["DS"]
-      ],
-      "minPolicies": 25,
-      "maxPolicies": 30
-    },
-    {
-      "name": "triple",
-      "comment": "Triple combinations for medium/deep nesting + few/many predicates",
-      "combos": [
+        ["DS", "POA"],
+        ["RS", "GS"],
         ["GR", "DS", "RS"],
-        ["GR", "DS", "RS"],
-        ["GR", "DS", "RS"]
+        ["GR", "CC"],
+        ["DS", "CC"],
+        ["RS", "CC"],
+        ["CU", "DS"],
+        ["CU", "RS"],
+        ["CU", "DS", "RS"]
       ],
-      "minPolicies": 20,
-      "maxPolicies": 25
+      "minPolicies": 70,
+      "maxPolicies": 80,
+      "logicOptions": {
+        "operators": ["AND", "OR"],
+        "notProbability": 0.7,
+        "groupNotProbability": 0.5
+      },
+      "whitelistBuckets": [4, 8, 12, 16]
     },
     {
-      "name": "varied_params",
-      "comment": "Ensure diversity in set sizes and ranges",
+      "name": "deep_nested_large",
+      "comment": "Encourage deeper nesting + large set sizes with high-merkle predicates",
       "combos": [
-        ["DS"],
-        ["RS"],
-        ["DS", "RS"],
-        ["GR", "DS"]
+        ["GR", "DS", "CC"],
+        ["GR", "RS", "POA"],
+        ["GR", "DS", "GS"],
+        ["CU", "DS", "POA"],
+        ["CU", "RS", "GS"]
       ],
-      "minPolicies": 20,
-      "maxPolicies": 25
+      "minPolicies": 55,
+      "maxPolicies": 65,
+      "logicOptions": {
+        "operators": ["AND", "OR"],
+        "notProbability": 0.25,
+        "groupNotProbability": 0.2
+      },
+      "whitelistBuckets": [12, 16, 20, 24, 32],
+      "merkleDepthOptions": [4, 5, 6, 7, 8]
+    },
+    {
+      "name": "structural_variants",
+      "comment": "Duplicate semantics with different structure/execution to feed PI pairs",
+      "combos": [
+        ["DS", "RS"],
+        ["DS", "GS"],
+        ["RS", "POA"],
+        ["DS", "CC"],
+        ["RS", "CC"],
+        ["CU", "DS"],
+        ["CU", "RS"],
+        ["CU", "POA"],
+        ["CU", "GS"],
+        ["CU", "CC"],
+        ["POA", "GS"],
+        ["POA", "CC"],
+        ["GS", "CC"],
+        ["DS", "POA"],
+        ["RS", "GS"]
+      ],
+      "minPolicies": 90,
+      "maxPolicies": 120,
+      "logicOptions": {
+        "operators": ["OR", "OR", "AND"],
+        "notProbability": 0.15,
+        "groupNotProbability": 0.05
+      },
+      "lockLogicToCombination": true,
+      "variants": [
+        {
+          "name": "sparse_low_cost",
+          "whitelistBuckets": [2, 4],
+          "merkleDepthOptions": [2, 3],
+          "executionProtections": {
+            "path_unify": [false],
+            "gas_pad": [false],
+            "event_pad": [false],
+            "proof_pad": [false],
+            "batch_pattern": ["baseline"]
+          }
+        },
+        {
+          "name": "structure_only_shift",
+          "whitelistBuckets": [12, 16],
+          "merkleDepthOptions": [5, 6],
+          "executionProtections": {
+            "path_unify": [false],
+            "gas_pad": [false],
+            "event_pad": [false],
+            "proof_pad": [false],
+            "batch_pattern": ["baseline"]
+          }
+        },
+        {
+          "name": "structure_mid_depth",
+          "whitelistBuckets": [8, 12],
+          "merkleDepthOptions": [4, 5],
+          "executionProtections": {
+            "path_unify": [false],
+            "gas_pad": [false],
+            "event_pad": [false],
+            "proof_pad": [false],
+            "batch_pattern": ["baseline"]
+          }
+        },
+        {
+          "name": "structure_large_range",
+          "whitelistBuckets": [20, 24, 32],
+          "merkleDepthOptions": [6, 7],
+          "executionProtections": {
+            "path_unify": [false],
+            "gas_pad": [false],
+            "event_pad": [false],
+            "proof_pad": [false],
+            "batch_pattern": ["baseline"]
+          }
+        },
+        {
+          "name": "padded_high_cost",
+          "whitelistBuckets": [16, 24, 32],
+          "merkleDepthOptions": [6, 7, 8],
+          "executionProtections": {
+            "path_unify": [true],
+            "gas_pad": [true],
+            "event_pad": [true],
+            "proof_pad": [true],
+            "batch_pattern": ["batched", "staggered"]
+          }
+        },
+        {
+          "name": "padded_staggered_only",
+          "whitelistBuckets": [12, 20],
+          "merkleDepthOptions": [5, 6],
+          "executionProtections": {
+            "path_unify": [true],
+            "gas_pad": [true],
+            "event_pad": [true],
+            "proof_pad": [true],
+            "batch_pattern": ["staggered"]
+          }
+        }
+      ]
     }
   ],
 
-  "whitelistBuckets": [0, 2, 4, 8, 12, 16, 20, 24, 32],
+  "whitelistBuckets": [2, 4, 8, 12, 16, 20, 24, 32],
   "merkleDepthOptions": [2, 3, 4, 5, 6, 7, 8],
 
   "logicOptions": {
@@ -134,24 +275,11 @@
   },
 
   "notes": [
-    "This configuration generates 250 policies (increased from 200) to ensure better coverage",
-    "Semantic layers are designed to target specific SPP dimensions:",
-    "  - singleton_simple: flat + none predicates + none set size",
-    "  - singleton_predicate: flat + single predicate + small/medium/large set sizes",
-    "  - pair_and: shallow + and_only logic",
-    "  - pair_or: shallow + or_only logic (via operators option)",
-    "  - pair_mixed: shallow + and_or_mixed logic",
-    "  - negation: varying depths + negation_heavy logic",
-    "  - triple: medium/deep nesting + few predicates",
-    "  - varied_params: ensure diversity in whitelist sizes and merkle depths",
-    "",
-    "Challenges and limitations:",
-    "  1. or_only logic: Requires modifying layer-specific logic options (not currently supported)",
-    "  2. negation_heavy: Requires ≥2 NOT operators, controlled by notProbability",
-    "  3. deep nesting: Limited by DEPTH=10 constraint, triple combos are the practical limit",
-    "  4. many predicates: Hard to achieve (4+ predicates exceed depth limit)",
-    "  5. range_width: Depends on having range predicates (not in current DUO setup)",
-    "",
+    "This configuration emits 420 policies with dedicated layers for SPP balance and a PI-focused structural variant stage.",
+    "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus deep nesting.",
+    "POA/GS/CC/CU predicates are enabled so predicate_count.none/single/few buckets remain above thresholds while set_size.large is non-zero.",
+    "The structural_variants layer locks logic per combination and emits 4 structure-only + 2 padded execution variants, which the validator now scales to estimate total PI pairs.",
+    "Semantic similarity incorporates ICD/OBI/population/geo/clinical scopes and layer variants so average diversity reflects true ontology coverage.",
     "Recommended usage:",
     "  node unified_dataset_validator.js --config=unified_dataset_config_optimized.json"
   ]

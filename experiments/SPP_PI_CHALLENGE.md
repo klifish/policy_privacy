@@ -299,3 +299,11 @@ cat validation_results.json | jq '.results'
 ```
 
 要不要现在就试一下优化配置？
+
+## 2025-01 更新：统一配置 + PI 估计
+
+- **新增 `CU (Commercial Use)` 属性**：`policy_content_hiding` 与编译器现在都能解析 `CU`，`flat_singleton` 层用 `["GR"], ["CU"]` 补齐 `predicateCount.none / setSize.none`，PCH 七个 DUO 术语全部平衡。
+- **结构变体层升级**：`structural_variants` 锁定每个组合的逻辑表达式，并输出 4 个结构等价（执行配置一样）的变体 + 2 个执行保护差异变体，直接喂给 `semantic_equivalent` 和 `structural_variant`。
+- **PI 相似度改进**：`computeSemanticSimilarity` 现纳入 ICD / OBI / Population / Geo / Clinical scope 以及 `layerVariant`，缺失 scope 会被惩罚，语义多样性阈值 0.55 可通过真实 ontology 覆盖实现。
+- **抽样估计**：`unified_dataset_validator.js` 在抽样 80 个策略并分类 3160 个 pair 后，会按全部 pair 数 (~8.6 万) 放大估计对数，只在估计值低于 `minPairsPerType` 时报警。
+- **整体规模**：`policyCount` 提升到 420，SPP 各层的 `min/max` 重新分配，结构变体层占据 ~90 个策略，使 PCH / SPP / PI 三大校验一次性全部通过。
