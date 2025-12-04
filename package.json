@@ -43,6 +43,7 @@
     "setup": "node scripts/setup.js",
     "visualize-circuit": "node scripts/generate_circuit_visualization.js",
     "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
+    "experiment:policy:pch": "node experiments/policy_content_hiding/run_experiment.js",
     "experiment:policy:pch:phase1": "node experiments/policy_content_hiding/run_experiment.js --phase 1",
     "experiment:policy:pch:phase2": "node experiments/policy_content_hiding/run_experiment.js --phase 2 --execution-results experiments/policy_content_hiding/results/execution_results.json",
     "experiment:policy:pch:phase3": "node experiments/policy_content_hiding/run_experiment.js --phase 3 --features experiments/policy_content_hiding/results/features.json",

@@ -819,9 +819,7 @@ async function createPolicyBlueprint(params) {
 
   const predicateSlots = [];
   const predicateValuesBySlot = {};
-  console.log('Generating policy', layerName, index, 'with combination', combination, 'and logic', logic);
   if (combination.includes('DS')) {
-    console.log('Building DS predicate for policy', layerName, index);
     const icdScopes = config.icd10Scopes || ICD10_SCOPE_LIBRARY;
     const chosenScope = randomChoice(rng, icdScopes);
     const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
@@ -859,7 +857,7 @@ async function createPolicyBlueprint(params) {
   }
 
   if (combination.includes('RS')) {
-    console.log('Building RS predicate for policy', layerName, index);
+    // console.log('Building RS predicate for policy', layerName, index);
     const obiScopes = config.obiScopes || OBI_SCOPE_LIBRARY;
     const chosenObi = randomChoice(rng, obiScopes);
     const whitelistSize = randomChoice(rng, config.whitelistBuckets || DEFAULT_WHITELIST_BUCKETS);
@@ -971,7 +969,6 @@ async function buildPolicyBlueprints(config, rng) {
     minPolicies: layer.minPolicies ?? 0
   })).filter((layer) => layer.combos.length > 0);
 
-
   if (layers.length === 0) {
     throw new Error('No semantic layers available to sample policies');
   }
@@ -988,6 +985,9 @@ async function buildPolicyBlueprints(config, rng) {
     if (allocation > 0) leftover -= 1;
     return { layer, target: Math.max(layer.minPolicies, base + allocation) };
   });
+
+  console.log('Policy blueprint targets per layer:',
+    layerTargets.map(({ layer, target }) => ({ layer: layer.name, target })));
 
   const blueprints = [];
   let policyIndex = 0;
@@ -1193,6 +1193,7 @@ async function generateDataset(config = {}) {
     : null;
 
   console.log('Allowed codes:', allowedCodes);
+
   const normalizedLayers = (semanticLayers || DEFAULT_SEMANTIC_LAYERS)
     .map((layer) => {
       const combos = (layer.combos || [])
@@ -1241,12 +1242,15 @@ async function generateDataset(config = {}) {
     incrementCounter(coverage.layers, blueprint.layerName || 'layer');
     incrementCounter(coverage.combos, blueprint.duoTerms.join('+'));
     blueprint.duoTerms.forEach((code) => incrementCounter(coverage.duoTerms, code));
+
+    // TODO: Track ICD-10 scope coverage only in this experiment
     if (blueprint.semantics.icd10Scope) {
       incrementCounter(coverage.icd10, blueprint.semantics.icd10Scope.id);
     }
     incrementCounter(coverage.proofTypes, blueprint.structure.proofType);
   });
 
+  // TODO: need to be confirmed further, seems not consider ontology predicates when generate requester attributes
   blueprints.forEach((blueprint, blueprintIndex) => {
     const plan = buildSatisfactionPlan(executionsPerPolicy, satisfyRatio, rng);
     plan.forEach((satisfy, execIndex) => {
