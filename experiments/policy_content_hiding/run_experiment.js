@@ -58,6 +58,10 @@ const {
   ensureSufficientBalance
 } = require('../core/blockchain');
 
+const {
+  getArtifactPaths
+} = require('../unified/artifacts');
+
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {};
 

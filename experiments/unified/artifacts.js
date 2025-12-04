@@ -4,9 +4,9 @@ const path = require('path');
 const {
   annotatePolicy,
   summarizeDataset
-} = require('./structure_and_parameter_privacy/data_generator');
+} = require('../structure_and_parameter_privacy/data_generator');
 
-const DEFAULT_ARTIFACT_DIR = path.join(__dirname, 'unified_dataset_artifacts');
+const DEFAULT_ARTIFACT_DIR = path.join(__dirname, 'artifacts_data');
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {

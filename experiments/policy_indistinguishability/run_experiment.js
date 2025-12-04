@@ -12,7 +12,7 @@ const path = require('path');
 
 const {
   getArtifactPaths
-} = require('../unified_dataset_artifacts');
+} = require('../unified/artifacts');
 
 const { ProgressTracker } = require('../core/progress');
 

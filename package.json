@@ -58,7 +58,15 @@
     "experiment:policy:spp:phase2": "node experiments/structure_and_parameter_privacy/run_experiment.js --phase 2 --execution-results experiments/structure_and_parameter_privacy/results/execution_results.json",
     "experiment:policy:spp:test": "node experiments/structure_and_parameter_privacy/run_experiment.js --policies-per-family 3 --executions-per-policy 2 --output experiments/structure_and_parameter_privacy/results/test",
     "test:experiments:spp": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/experiments/structure_parameter_privacy_test.js --timeout 100000",
-    "experiment:policy:unified": "UNIFIED_CONFIG_PATH=experiments/unified_dataset_config_optimized.json npx hardhat run experiments/run_unified_dataset.js"
+    "unified": "UNIFIED_CONFIG_PATH=experiments/unified/configs/unified_dataset_config_optimized.json npx hardhat run experiments/unified/run.js --network localhost",
+    "unified:testnet": "npx hardhat run experiments/unified/run.js --network amoy -- --config=experiments/unified/configs/unified_dataset_config_optimized.json",
+    "unified:config": "npx hardhat run experiments/unified/run.js --network localhost --config=experiments/unified/configs/unified_dataset_config_optimized.json",
+    "unified:validate": "node experiments/test_validator.js",
+    "exp:pch": "node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2",
+    "exp:spp": "node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2",
+    "exp:pi": "node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2",
+    "exp:all": "npm run exp:pch && npm run exp:spp && npm run exp:pi",
+    "exp:quick": "npm run unified && npm run exp:all"
   },
   "author": "",
   "license": "ISC",

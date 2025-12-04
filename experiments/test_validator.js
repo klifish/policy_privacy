@@ -6,7 +6,7 @@
 const {
   validateUnifiedDataset,
   UNIFIED_CONFIG
-} = require('./unified_dataset_validator');
+} = require('./unified/validator');
 
 async function runQuickTest() {
   console.log('🧪 Running quick validation test with small dataset...\n');

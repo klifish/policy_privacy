@@ -9,12 +9,12 @@
 #### 1. 生成统一数据集 (Phase 1)
 ```bash
 # 在本地网络运行
-npx hardhat run run_unified_dataset.js --network localhost \
-  --config=unified_dataset_config_optimized.json
+npx hardhat run unified/run.js --network localhost \
+  --config=unified/configs/unified_dataset_config_optimized.json
 
 # 在测试网运行
-npx hardhat run run_unified_dataset.js --network amoy \
-  --config=unified_dataset_config_optimized.json
+npx hardhat run unified/run.js --network amoy \
+  --config=unified/configs/unified_dataset_config_optimized.json
 ```
 
 #### 2. 运行实验分析 (Phase 2+)
@@ -52,10 +52,13 @@ experiments/
 │   ├── spp/                           # SPP 实验文档
 │   └── pi/                            # PI 实验文档
 │
-├── run_unified_dataset.js             # 统一数据集生成入口
-├── unified_dataset_validator.js       # 数据集验证器
-├── unified_dataset_artifacts.js       # Artifact 管理
-├── constraint_aware_generator.js      # 约束感知生成器
+├── unified/                           # 统一数据集模块
+│   ├── run.js                         # 统一数据集生成入口
+│   ├── validator.js                   # 数据集验证器
+│   ├── artifacts.js                   # Artifact 管理
+│   ├── constraint-generator.js        # 约束感知生成器
+│   ├── configs/                       # 配置文件
+│   └── artifacts_data/                # 生成的数据
 │
 ├── policy_content_hiding/             # PCH 实验
 │   ├── run_experiment.js              # 实验入口

@@ -19,22 +19,22 @@ const { ethers } = require('hardhat');
 const {
   validateUnifiedDataset,
   UNIFIED_CONFIG
-} = require('./unified_dataset_validator');
+} = require('./validator');
 
 const {
   annotateDatasetForSPP,
   writeDatasetArtifacts,
   writeExecutionArtifacts
-} = require('./unified_dataset_artifacts');
+} = require('./artifacts');
 
 const {
   executeDataset
-} = require('./policy_content_hiding/data_generator');
+} = require('../policy_content_hiding/data_generator');
 
 const {
   ensureSufficientBalance,
   deployPolicyPrivacyContracts
-} = require('./core/blockchain');
+} = require('../core/blockchain');
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {

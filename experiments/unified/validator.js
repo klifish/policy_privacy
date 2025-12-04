@@ -24,13 +24,13 @@ const {
   aggregatePoliciesByDefinition,
   annotateDatasetForSPP,
   writeDatasetArtifacts
-} = require('./unified_dataset_artifacts');
+} = require('./artifacts');
 
 // Import generators and analyzers
 const {
   generateDataset: generatePCHDataset,
   DUO_TERMS
-} = require('./policy_content_hiding/data_generator');
+} = require('../policy_content_hiding/data_generator');
 
 const {
   annotatePolicy,
@@ -41,11 +41,11 @@ const {
   PREDICATE_COUNTS,
   SET_SIZES,
   RANGE_WIDTHS
-} = require('./structure_and_parameter_privacy/data_generator');
+} = require('../structure_and_parameter_privacy/data_generator');
 
 const {
   computeSemanticSimilarity
-} = require('./policy_indistinguishability/data_generator');
+} = require('../policy_indistinguishability/data_generator');
 
 // ============================================================================
 // HELPER FUNCTIONS
