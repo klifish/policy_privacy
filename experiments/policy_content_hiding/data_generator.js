@@ -283,18 +283,33 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
     combos: [
       ['GR'],
       ['DS'],
-      ['RS']
+      ['RS'],
+      ['POA'],
+      ['GS'],
+      ['CC']
     ],
-    minPolicies: 60
+    minPolicies: 120
   },
   {
     name: 'pair',
     combos: [
       ['GR', 'DS'],
       ['GR', 'RS'],
-      ['DS', 'RS']
+      ['GR', 'POA'],
+      ['GR', 'GS'],
+      ['GR', 'CC'],
+      ['DS', 'RS'],
+      ['DS', 'POA'],
+      ['DS', 'GS'],
+      ['DS', 'CC'],
+      ['RS', 'POA'],
+      ['RS', 'GS'],
+      ['RS', 'CC'],
+      ['POA', 'GS'],
+      ['POA', 'CC'],
+      ['GS', 'CC']
     ],
-    minPolicies: 40
+    minPolicies: 80
   }
 ]);
 

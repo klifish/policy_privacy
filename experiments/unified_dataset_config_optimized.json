@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified Dataset Configuration - SPP/PI Optimized",
+  "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
+
+  "policyCount": 250,
+  "executionsPerPolicy": 5,
+  "satisfyRatio": 0.5,
+  "seed": "unified-optimized-2025",
+
+  "semanticLayers": [
+    {
+      "name": "singleton_simple",
+      "comment": "Simple singletons for flat structure + none predicates",
+      "combos": [
+        ["GR"],
+        ["GR"],
+        ["GR"]
+      ],
+      "minPolicies": 25,
+      "maxPolicies": 30
+    },
+    {
+      "name": "singleton_predicate",
+      "comment": "Singletons with predicates for single/few predicate counts",
+      "combos": [
+        ["DS"],
+        ["RS"],
+        ["DS"],
+        ["RS"]
+      ],
+      "minPolicies": 30,
+      "maxPolicies": 35
+    },
+    {
+      "name": "pair_and",
+      "comment": "Pairs with AND for and_only logic + shallow depth",
+      "combos": [
+        ["GR", "DS"],
+        ["GR", "RS"],
+        ["DS", "RS"],
+        ["GR", "DS"],
+        ["GR", "RS"]
+      ],
+      "minPolicies": 40,
+      "maxPolicies": 50
+    },
+    {
+      "name": "pair_or",
+      "comment": "Pairs with OR for or_only logic",
+      "combos": [
+        ["GR", "DS"],
+        ["GR", "RS"],
+        ["DS", "RS"],
+        ["GR", "DS"]
+      ],
+      "minPolicies": 25,
+      "maxPolicies": 30
+    },
+    {
+      "name": "pair_mixed",
+      "comment": "Pairs with mixed AND/OR for and_or_mixed logic",
+      "combos": [
+        ["GR", "DS"],
+        ["GR", "RS"],
+        ["DS", "RS"],
+        ["GR", "DS"],
+        ["DS", "RS"]
+      ],
+      "minPolicies": 30,
+      "maxPolicies": 35
+    },
+    {
+      "name": "negation",
+      "comment": "Policies with negation for negation_heavy logic",
+      "combos": [
+        ["GR", "DS"],
+        ["GR", "RS"],
+        ["DS", "RS"],
+        ["GR"],
+        ["DS"]
+      ],
+      "minPolicies": 25,
+      "maxPolicies": 30
+    },
+    {
+      "name": "triple",
+      "comment": "Triple combinations for medium/deep nesting + few/many predicates",
+      "combos": [
+        ["GR", "DS", "RS"],
+        ["GR", "DS", "RS"],
+        ["GR", "DS", "RS"]
+      ],
+      "minPolicies": 20,
+      "maxPolicies": 25
+    },
+    {
+      "name": "varied_params",
+      "comment": "Ensure diversity in set sizes and ranges",
+      "combos": [
+        ["DS"],
+        ["RS"],
+        ["DS", "RS"],
+        ["GR", "DS"]
+      ],
+      "minPolicies": 20,
+      "maxPolicies": 25
+    }
+  ],
+
+  "whitelistBuckets": [0, 2, 4, 8, 12, 16, 20, 24, 32],
+  "merkleDepthOptions": [2, 3, 4, 5, 6, 7, 8],
+
+  "logicOptions": {
+    "notProbability": 0.3,
+    "groupNotProbability": 0.15,
+    "operators": ["AND", "OR"]
+  },
+
+  "validation": {
+    "pch": {
+      "minPoliciesPerDUO": 25,
+      "minMaxRatio": 0.35
+    },
+    "spp": {
+      "minPoliciesPerCategory": 15,
+      "minMaxRatio": 0.25,
+      "maxCV": 0.65
+    },
+    "pi": {
+      "minPairsPerType": 30,
+      "minSemanticDiversity": 0.55
+    }
+  },
+
+  "notes": [
+    "This configuration generates 250 policies (increased from 200) to ensure better coverage",
+    "Semantic layers are designed to target specific SPP dimensions:",
+    "  - singleton_simple: flat + none predicates + none set size",
+    "  - singleton_predicate: flat + single predicate + small/medium/large set sizes",
+    "  - pair_and: shallow + and_only logic",
+    "  - pair_or: shallow + or_only logic (via operators option)",
+    "  - pair_mixed: shallow + and_or_mixed logic",
+    "  - negation: varying depths + negation_heavy logic",
+    "  - triple: medium/deep nesting + few predicates",
+    "  - varied_params: ensure diversity in whitelist sizes and merkle depths",
+    "",
+    "Challenges and limitations:",
+    "  1. or_only logic: Requires modifying layer-specific logic options (not currently supported)",
+    "  2. negation_heavy: Requires ≥2 NOT operators, controlled by notProbability",
+    "  3. deep nesting: Limited by DEPTH=10 constraint, triple combos are the practical limit",
+    "  4. many predicates: Hard to achieve (4+ predicates exceed depth limit)",
+    "  5. range_width: Depends on having range predicates (not in current DUO setup)",
+    "",
+    "Recommended usage:",
+    "  node unified_dataset_validator.js --config=unified_dataset_config_optimized.json"
+  ]
+}

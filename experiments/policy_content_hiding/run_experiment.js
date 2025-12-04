@@ -200,8 +200,8 @@ function printUsage() {
 
 async function runExperiment(config = {}) {
   const {
-    numDuoTerms = 3,
-    executionsPerPolicy = 3,
+    numDuoTerms = 6,
+    executionsPerPolicy = 2,
     policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
@@ -759,6 +759,8 @@ if (require.main === module) {
     printUsage();
     process.exit(0);
   }
+
+  console.log('Starting experiment with configuration:', cliConfig);
 
   runExperiment(cliConfig)
     .then(report => {
