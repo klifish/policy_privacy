@@ -1,0 +1,85 @@
+{
+  "config": {
+    "policyCount": 200,
+    "executionsPerPolicy": 5,
+    "satisfyRatio": 0.5,
+    "seed": "unified-validation-2024",
+    "validation": {
+      "pch": {
+        "minPoliciesPerDUO": 20,
+        "minMaxRatio": 0.4
+      },
+      "spp": {
+        "minPoliciesPerCategory": 15,
+        "minMaxRatio": 0.3,
+        "maxCV": 0.6
+      },
+      "pi": {
+        "minPairsPerType": 30,
+        "minSemanticDiversity": 0.6
+      }
+    }
+  },
+  "results": {
+    "pch": {
+      "passed": true,
+      "issues": []
+    },
+    "spp": {
+      "passed": false,
+      "issues": [
+        "Logic Structure: min count 4 < 15",
+        "Logic Structure: min/max ratio 0.027 < 0.3",
+        "Logic Structure: CV 0.896 > 0.6",
+        "Predicate Count: min/max ratio 0.226 < 0.3",
+        "Predicate Count: CV 0.705 > 0.6"
+      ],
+      "metrics": {
+        "logicStructures": {
+          "min": 4,
+          "max": 147,
+          "mean": "66.7",
+          "minMaxRatio": "0.027",
+          "coefficientOfVariation": "0.896"
+        },
+        "nestingDepths": {
+          "min": 90,
+          "max": 110,
+          "mean": "100.0",
+          "minMaxRatio": "0.818",
+          "coefficientOfVariation": "0.100"
+        },
+        "predicateCounts": {
+          "min": 30,
+          "max": 133,
+          "mean": "66.7",
+          "minMaxRatio": "0.226",
+          "coefficientOfVariation": "0.705"
+        },
+        "setSizes": {
+          "min": 35,
+          "max": 85,
+          "mean": "50.0",
+          "minMaxRatio": "0.412",
+          "coefficientOfVariation": "0.408"
+        },
+        "rangeWidths": {
+          "min": 200,
+          "max": 200,
+          "mean": "200.0",
+          "minMaxRatio": "1.000",
+          "coefficientOfVariation": "0.000"
+        }
+      }
+    },
+    "pi": {
+      "passed": false,
+      "issues": [
+        "Average diversity 0.373 < 0.6",
+        "Estimated structural_variant pairs (0) < 30"
+      ]
+    }
+  },
+  "timestamp": "2025-12-04T10:43:42.749Z",
+  "allPassed": false
+}
