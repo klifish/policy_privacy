@@ -167,6 +167,12 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
       config.datasetQualityOutput = path.resolve(argv[++i]);
+    } else if (arg === '--use-unified-dataset' || arg === '--unified') {
+      config.useUnifiedDataset = true;
+    } else if (arg === '--unified-dir') {
+      config.unifiedDatasetDir = path.resolve(argv[++i]);
+    } else if (arg.startsWith('--unified-dir=')) {
+      config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
     } else if (arg === '--help' || arg === '-h') {
       config.help = true;
     } else {
@@ -187,6 +193,8 @@ function printUsage() {
   console.log('  --execution-results <path>  Path to execution results from phase 1 (for resuming at phase 2)');
   console.log('  --executions <value>        Executions per policy (number) or execution results path (legacy)');
   console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
+  console.log('  --use-unified-dataset       Reuse dataset/executions from unified pipeline');
+  console.log('  --unified-dir <path>        Override unified artifact directory');
   console.log('  --output <dir>              Output directory for generated artifacts');
   console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
   console.log('  --policy-count <n>          Number of base policies to generate (default 200)');
@@ -207,16 +215,22 @@ async function runExperiment(config = {}) {
     testRatio = 0.3,
     aucThreshold = 0.55,
     advantageThreshold = 0.05,
-    startPhase = 1,
-    datasetPath = null,
-    executionResultsPath = null,
+    startPhase: startPhaseOverride = undefined,
+    datasetPath: initialDatasetPath = null,
+    executionResultsPath: initialExecutionResultsPath = null,
     featuresPath = null,
     evaluateDataset = false,
     datasetQualityOutput = null,
-    phase: phaseAlias = undefined
+    phase: phaseAlias = undefined,
+    useUnifiedDataset = false,
+    unifiedDatasetDir = null
   } = config;
 
-  const startAtPhase = Number.isInteger(phaseAlias) ? phaseAlias : startPhase;
+  const startAtPhase = Number.isInteger(phaseAlias)
+    ? phaseAlias
+    : Number.isInteger(startPhaseOverride)
+      ? startPhaseOverride
+      : (useUnifiedDataset ? 2 : 1);
 
   if (startAtPhase < 1 || startAtPhase > 3) {
     throw new Error('startPhase/phase must be between 1 and 3 when resuming the experiment.');
@@ -227,15 +241,38 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(resolvedOutputDir, { recursive: true });
   }
 
+  let datasetPath = initialDatasetPath;
+  let executionResultsPath = initialExecutionResultsPath;
+  let datasetPathOverride = datasetPath ? path.resolve(datasetPath) : null;
+  let executionResultsPathOverride = executionResultsPath ? path.resolve(executionResultsPath) : null;
+  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
+  let unifiedPaths = null;
+
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.pchDataset}`);
+    console.log();
+
+    if (!datasetPathOverride) {
+      datasetPathOverride = unifiedPaths.policyDefinitions;
+      datasetPath = datasetPathOverride;
+    }
+
+    if (!executionResultsPathOverride) {
+      executionResultsPathOverride = unifiedPaths.pchDataset;
+      executionResultsPath = executionResultsPathOverride;
+    }
+  }
+
   const timestamp = Date.now();
-  const datasetOutputPath = datasetPath
-    ? path.resolve(datasetPath)
+  const datasetOutputPath = datasetPathOverride
     : path.join(resolvedOutputDir, `dataset_${timestamp}.json`);
-  const executionResultsOutputPath = executionResultsPath
-    ? path.resolve(executionResultsPath)
+  const executionResultsOutputPath = executionResultsPathOverride
     : path.join(resolvedOutputDir, 'execution_results.json');
-  const featuresOutputPath = featuresPath
-    ? path.resolve(featuresPath)
+  const featuresOutputPath = featuresPathOverride
     : path.join(resolvedOutputDir, 'features.json');
   const datasetQualityOutputPath = datasetQualityOutput
     ? path.resolve(datasetQualityOutput)

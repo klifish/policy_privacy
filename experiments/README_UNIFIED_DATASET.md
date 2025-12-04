@@ -41,15 +41,37 @@ node unified_dataset_validator.js --config=my_config.json
 1. 降低验证阈值（编辑`my_config.json`中的`validation`部分）
 2. 或者接受轻微的不平衡
 
-### 4. 验证通过后
-
-使用**相同的配置**（特别是`seed`）运行实验：
+### 4. 一次性执行链上并生成共享数据
 
 ```bash
-# 例如，运行SPP实验
-cd structure_and_parameter_privacy
-node run_experiment.js --seed=unified-validation-2024 --policyCount=200 --executionsPerPolicy=5
+npx hardhat run experiments/run_unified_dataset.js --network <network> \
+  --config=experiments/unified_dataset_config_optimized.json \
+  --artifact-dir=experiments/unified_dataset_artifacts
 ```
+
+该脚本会：
+- 调用`unified_dataset_validator.js`生成并验证策略
+- 自动对数据集打SPP标注，保存到`experiments/unified_dataset_artifacts/`
+- 部署`PolicyPrivacy` + Verifier合约并执行全部策略一次
+- 输出`executed_dataset.json / pch_dataset.json / spp_dataset.json / pi_dataset.json`
+
+### 5. 使用共享数据运行三个实验
+
+统一的链上结果准备好后，三个实验只需从**第2阶段**开始：
+
+```bash
+# PCH（特征提取 + 攻击 + 报告）
+node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2
+
+# SPP（攻击 + 报告，自动使用spp_dataset.json）
+node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2
+
+# PI（配对 + 攻击 + 报告）
+node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2
+```
+
+> `--use-unified-dataset` 会自动定位 `experiments/unified_dataset_artifacts/` 下的共享文件，
+> 并将`startPhase`默认切换为2，确保不会重复生成/上链。
 
 ## 文件说明
 
@@ -57,9 +79,11 @@ node run_experiment.js --seed=unified-validation-2024 --policyCount=200 --execut
 |------|------|
 | `unified_dataset_validator.js` | 主验证脚本 |
 | `unified_dataset_config.example.json` | 配置示例 |
+| `run_unified_dataset.js` | 验证 + 链上执行一体化脚本（生成共享数据） |
 | `UNIFIED_DATASET_WORKFLOW.md` | 详细工作流程文档 |
 | `test_validator.js` | 快速测试脚本 |
 | `validation_results.json` | 验证结果输出（自动生成） |
+| `unified_dataset_artifacts/` | 共享数据输出目录（policy、executed、pch/spp/pi切片） |
 
 ## 常见问题
 

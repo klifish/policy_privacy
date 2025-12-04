@@ -20,6 +20,12 @@
 const fs = require('fs');
 const path = require('path');
 
+const {
+  aggregatePoliciesByDefinition,
+  annotateDatasetForSPP,
+  writeDatasetArtifacts
+} = require('./unified_dataset_artifacts');
+
 // Import generators and analyzers
 const {
   generateDataset: generatePCHDataset,
@@ -44,40 +50,6 @@ const {
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Aggregate dataset by policy (without requiring execution results)
- * This is a simplified version that works with policy definitions only
- */
-function aggregatePoliciesByDefinition(dataset) {
-  const policies = new Map();
-
-  for (const result of dataset) {
-    const id = result.policyId;
-
-    if (!policies.has(id)) {
-      policies.set(id, {
-        policyId: id,
-        policyIndex: result.policyIndex,
-        layer: result.layer,
-        duoTerm: result.duoTerm,
-        duoTerms: Array.isArray(result.duoTerms) ? result.duoTerms.slice() : [],
-        semantics: { ...result.semantics },
-        structure: { ...result.structure },
-        executionProfile: { ...(result.execution || {}) },
-        predicateSlots: Array.isArray(result.predicateSlots) ? result.predicateSlots.slice() : [],
-        ontologyNamespace: result.ontologyNamespace,
-        ontologyValue: result.ontologyValue,
-        executionCount: 0
-      });
-    }
-
-    const policy = policies.get(id);
-    policy.executionCount++;
-  }
-
-  return Array.from(policies.values());
-}
 
 function hasStructuralDifference(policyA, policyB) {
   if (!policyA?.structure || !policyB?.structure) {
@@ -398,7 +370,14 @@ function validatePIRequirements(dataset, config) {
 // MAIN VALIDATION WORKFLOW
 // ============================================================================
 
-async function validateUnifiedDataset(config = UNIFIED_CONFIG) {
+async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
+  const {
+    saveDatasetPath = null,
+    writeArtifacts = false,
+    artifactDir = null,
+    sourceConfigPath = null
+  } = options;
+
   console.log('╔' + '═'.repeat(78) + '╗');
   console.log('║' + ' '.repeat(20) + 'UNIFIED DATASET VALIDATOR' + ' '.repeat(33) + '║');
   console.log('╚' + '═'.repeat(78) + '╝');
@@ -486,6 +465,30 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG) {
 
   console.log(`\n💾 Results saved to: ${resultPath}`);
 
+  const artifactRequested = Boolean(saveDatasetPath) || writeArtifacts;
+  if (artifactRequested && !allPassed) {
+    console.warn('\n⚠️  Validation failed. Dataset artifacts were not saved.');
+  } else if (artifactRequested && allPassed) {
+    const { dataset: annotatedDataset, summary } = annotateDatasetForSPP(dataset);
+
+    if (saveDatasetPath) {
+      fs.mkdirSync(path.dirname(saveDatasetPath), { recursive: true });
+      fs.writeFileSync(saveDatasetPath, JSON.stringify(annotatedDataset, null, 2));
+      console.log(`\n💾 Unified dataset saved to: ${saveDatasetPath}`);
+    }
+
+    if (writeArtifacts) {
+      const { paths } = writeDatasetArtifacts({
+        dataset: annotatedDataset,
+        config,
+        artifactDir,
+        summary,
+        sourceConfigPath
+      });
+      console.log(`\n📁 Unified dataset artifacts written to: ${paths.dir}`);
+    }
+  }
+
   return {
     allPassed,
     results,
@@ -502,17 +505,32 @@ if (require.main === module) {
 
   // Parse command line arguments
   let customConfig = { ...UNIFIED_CONFIG };
+  let configPath = null;
+  let datasetOutPath = null;
+  let saveArtifacts = false;
+  let artifactDir = null;
 
   args.forEach(arg => {
     if (arg.startsWith('--config=')) {
-      const configPath = arg.split('=')[1];
+      configPath = path.resolve(arg.split('=')[1]);
       const loadedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       customConfig = { ...customConfig, ...loadedConfig };
+    } else if (arg.startsWith('--dataset-out=')) {
+      datasetOutPath = path.resolve(arg.split('=')[1]);
+    } else if (arg === '--save-artifacts') {
+      saveArtifacts = true;
+    } else if (arg.startsWith('--artifact-dir=')) {
+      artifactDir = path.resolve(arg.split('=')[1]);
     }
   });
 
   // Run validation
-  validateUnifiedDataset(customConfig)
+  validateUnifiedDataset(customConfig, {
+    saveDatasetPath: datasetOutPath,
+    writeArtifacts: saveArtifacts,
+    artifactDir,
+    sourceConfigPath: configPath
+  })
     .then(({ allPassed }) => {
       process.exit(allPassed ? 0 : 1);
     })

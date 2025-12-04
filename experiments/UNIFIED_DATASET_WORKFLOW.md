@@ -155,23 +155,29 @@ node unified_dataset_validator.js --config=my_config.json
 
 ### 步骤4: 验证通过后执行链上操作
 
-验证通过后，使用相同配置运行实际实验：
+推荐使用一体化脚本完成“生成一次数据 + 上链一次”：
 
 ```bash
-# 运行PCH实验（会执行链上操作）
-cd policy_content_hiding
-node run_experiment.js --config=../my_config.json
-
-# 或运行SPP实验
-cd ../structure_and_parameter_privacy
-node run_experiment.js --config=../my_config.json
-
-# 或运行PI实验
-cd ../policy_indistinguishability
-node run_experiment.js --config=../my_config.json
+npx hardhat run experiments/run_unified_dataset.js --network <network> \
+  --config=my_config.json \
+  --artifact-dir=experiments/unified_dataset_artifacts
 ```
 
-**重要**：三个实验应该使用相同的配置（特别是`seed`参数）来确保生成完全相同的策略。
+脚本会自动：
+1. 用`my_config.json`重新生成并验证数据集
+2. 打SPP标注并写入`policy_definitions.json`
+3. 部署合约并执行全部策略一次，输出`executed_dataset.json`
+4. 根据实验需求切片出`pch_dataset.json`、`spp_dataset.json`、`pi_dataset.json`
+
+生成完共享数据后，三个实验统一从**阶段2**开始：
+
+```bash
+node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2
+node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2
+node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2
+```
+
+**重要**：三个实验必须使用同一个共享目录（默认`experiments/unified_dataset_artifacts/`）以确保策略完全一致。
 
 ## 配置参数
 

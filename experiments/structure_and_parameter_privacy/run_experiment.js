@@ -28,6 +28,10 @@ const {
   executePolicy
 } = require('../policy_content_hiding/data_generator');
 
+const {
+  getArtifactPaths
+} = require('../unified_dataset_artifacts');
+
 // Progress tracking utilities
 class ProgressTracker {
   constructor(totalSteps) {
@@ -265,12 +269,23 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--seed':
         config.seed = argv[++i];
         break;
+      case '--use-unified-dataset':
+      case '--unified':
+        config.useUnifiedDataset = true;
+        break;
+      case '--unified-dir':
+        config.unifiedDatasetDir = path.resolve(argv[++i]);
+        break;
       case '--help':
       case '-h':
         config.help = true;
         break;
       default:
-        console.warn(`Unknown argument ${arg} ignored`);
+        if (arg.startsWith('--unified-dir=')) {
+          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
+        } else {
+          console.warn(`Unknown argument ${arg} ignored`);
+        }
     }
   }
 
@@ -293,6 +308,8 @@ function printUsage() {
   console.log('  --phase <1|2|3>                   Resume from given phase');
   console.log('  --dataset <path>                  Use pre-generated dataset JSON (phase ≥2)');
   console.log('  --execution-results <path>        Path to cached execution results');
+  console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
+  console.log('  --unified-dir <path>              Override unified artifact directory');
   console.log('  --seed <value>                    Random seed for reproducibility');
   console.log('  --help, -h                        Show this help message');
 }
@@ -551,7 +568,10 @@ function generateMarkdownReport(report) {
  * Main experiment runner
  */
 async function runExperiment(config = {}) {
-  const startPhase = config.startPhase || 1;
+  const useUnifiedDataset = Boolean(config.useUnifiedDataset);
+  const startPhase = Number.isInteger(config.startPhase)
+    ? config.startPhase
+    : (useUnifiedDataset ? 2 : 1);
   const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
 
   if (!fs.existsSync(outputDir)) {
@@ -559,8 +579,33 @@ async function runExperiment(config = {}) {
   }
 
   const outputDatasetPath = path.join(outputDir, 'dataset.json');
-  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : outputDatasetPath;
-  const executionResultsPath = config.executionResultsPath || path.join(outputDir, 'execution_results.json');
+  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : null;
+  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
+
+  let unifiedPaths = null;
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.sppDataset}`);
+    console.log();
+
+    if (!datasetSourcePath) {
+      datasetSourcePath = unifiedPaths.policyDefinitions;
+    }
+    if (!executionResultsPath) {
+      executionResultsPath = unifiedPaths.sppDataset;
+    }
+  }
+
+  if (!datasetSourcePath) {
+    datasetSourcePath = outputDatasetPath;
+  }
+
+  if (!executionResultsPath) {
+    executionResultsPath = path.join(outputDir, 'execution_results.json');
+  }
   const reportJsonPath = path.join(outputDir, 'report.json');
   const reportMarkdownPath = path.join(outputDir, 'report.md');
 

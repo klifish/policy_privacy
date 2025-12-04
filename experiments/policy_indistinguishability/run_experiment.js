@@ -10,6 +10,10 @@
 const fs = require('fs');
 const path = require('path');
 
+const {
+  getArtifactPaths
+} = require('../unified_dataset_artifacts');
+
 // Progress tracking utilities
 class ProgressTracker {
   constructor(totalSteps) {
@@ -345,12 +349,23 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--checkpoint':
         config.checkpointPath = path.resolve(argv[++i]);
         break;
+      case '--use-unified-dataset':
+      case '--unified':
+        config.useUnifiedDataset = true;
+        break;
+      case '--unified-dir':
+        config.unifiedDatasetDir = path.resolve(argv[++i]);
+        break;
       case '--help':
       case '-h':
         config.help = true;
         break;
       default:
-        console.warn(`Unknown argument ${arg} ignored`);
+        if (arg.startsWith('--unified-dir=')) {
+          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
+        } else {
+          console.warn(`Unknown argument ${arg} ignored`);
+        }
     }
   }
 
@@ -370,6 +385,8 @@ function printUsage() {
   console.log('  --phase <1|2|3>                Resume pipeline from given phase');
   console.log('  --dataset <path>               Path to cached dataset JSON');
   console.log('  --execution-results <path>     Path to cached execution results JSON');
+  console.log('  --use-unified-dataset          Reuse artifacts from unified dataset pipeline');
+  console.log('  --unified-dir <path>           Override unified artifact directory');
   console.log('  --pairs <path>                 Path to cached policy pair JSON');
   console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
@@ -633,7 +650,10 @@ function inferMetaFromExecutionResults(executionResults) {
 }
 
 async function runExperiment(config = {}) {
-  const startPhase = Number.isInteger(config.startPhase) ? config.startPhase : 1;
+  const useUnifiedDataset = Boolean(config.useUnifiedDataset);
+  const startPhase = Number.isInteger(config.startPhase)
+    ? config.startPhase
+    : (useUnifiedDataset ? 2 : 1);
   if (startPhase < 1 || startPhase > 3) {
     throw new Error('startPhase/phase must be between 1 and 3.');
   }
@@ -643,11 +663,31 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const datasetOutputPath = config.datasetPath
-    ? path.resolve(config.datasetPath)
+  let datasetPath = config.datasetPath ? path.resolve(config.datasetPath) : null;
+  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
+  let unifiedPaths = null;
+
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.piDataset}`);
+    console.log();
+
+    if (!datasetPath) {
+      datasetPath = unifiedPaths.policyDefinitions;
+    }
+    if (!executionResultsPath) {
+      executionResultsPath = unifiedPaths.piDataset;
+    }
+  }
+
+  const datasetOutputPath = datasetPath
+    ? datasetPath
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.dataset);
-  const executionResultsOutputPath = config.executionResultsPath
-    ? path.resolve(config.executionResultsPath)
+  const executionResultsOutputPath = executionResultsPath
+    ? executionResultsPath
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.executionResults);
   const pairsOutputPath = config.pairsPath
     ? path.resolve(config.pairsPath)
