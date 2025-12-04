@@ -51,9 +51,15 @@ const DUO_TERMS = {
 };
 
 // Attribute configuration for policy generation within the experiment.
-// The main circuit instance currently supports N=3 attributes and M=2 predicates,
-// so we focus on the subset {GR, DS, RS}.
-const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC', 'CU'];
+// The main circuit instance currently supports N=6 attributes and M=5 predicates.
+// Circuit parameters: PolicyPrivacyMain(6, 5, 10, 4, 8, 32)
+// Attributes: GR, DS, RS, POA, GS, CC (6 total, matching circuit N=6)
+// Note: CU is defined but excluded from circuit inputs due to N=6 limitation
+const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC'];
+
+// Full set of recognized attribute codes (including CU for validation/filtering)
+// This allows configurations to reference CU even though it's not in circuit inputs
+const POLICY_ATTRIBUTE_CODES = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC', 'CU'];
 
 const POLICY_PREDICATE_SLOTS = [
   {
@@ -835,7 +841,8 @@ function incrementCounter(map, key, amount = 1) {
   map.set(key, current + amount);
 }
 
-const ATTRIBUTE_CODE_SET = new Set(POLICY_ATTRIBUTE_ORDER);
+// Use POLICY_ATTRIBUTE_CODES for validation (includes CU) but POLICY_ATTRIBUTE_ORDER for circuit inputs (excludes CU)
+const ATTRIBUTE_CODE_SET = new Set(POLICY_ATTRIBUTE_CODES);
 
 const ATTRIBUTE_CODE_TO_DUO_TERM = Object.freeze(
   Object.entries(DUO_TO_ATTRIBUTE_CODE).reduce((acc, [duoValue, code]) => {
@@ -1652,7 +1659,6 @@ async function generateDataset(config = {}) {
     snomedScopes = SNOMED_SCOPE_LIBRARY,
     policyDepth = DEFAULT_POLICY_DEPTH
   } = config;
-  // console.log(JSON.stringify({ semanticLayers }, null, 2));
 
   const rng = createDeterministicRng(seed); // random number generator  
 
@@ -1662,13 +1668,25 @@ async function generateDataset(config = {}) {
 
   console.log('Allowed codes:', allowedCodes);
 
+  // Filter for circuit-supported attributes (N=6, excludes CU)
+  const circuitSupportedCodes = new Set(attributeOrder);
+
   const normalizedLayers = (semanticLayers || DEFAULT_SEMANTIC_LAYERS)
     .map((layer) => {
       const combos = (layer.combos || [])
         .map((combo) => canonicalizeDuoCombination(combo))
         .filter((combo) => {
-          if (!allowedCodes) return true;
-          return combo.every((code) => allowedCodes.has(code));
+          // Filter by allowed codes if specified
+          if (allowedCodes && !combo.every((code) => allowedCodes.has(code))) {
+            return false;
+          }
+          // Filter out combos with attributes not supported by circuit
+          const unsupported = combo.filter(code => !circuitSupportedCodes.has(code));
+          if (unsupported.length > 0) {
+            console.log(`Filtering out combo ${combo.join('+')} - contains unsupported attributes: ${unsupported.join(', ')}`);
+            return false;
+          }
+          return true;
         });
       return {
         ...layer,
@@ -1698,6 +1716,10 @@ async function generateDataset(config = {}) {
   };
 
   const blueprints = await buildPolicyBlueprints(blueprintConfig, rng);
+
+  // No need to filter here since we already filtered at the combo level
+  // All blueprints should now only contain circuit-supported attributes
+
   const dataset = [];
 
   const coverage = {
