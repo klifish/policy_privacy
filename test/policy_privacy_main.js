@@ -120,10 +120,10 @@ describe.skip("Policy Privacy Main Circuit Test", function () {
             this.skip();
         }
 
-        // Test parameters matching circuit: N=3, M=5, DEPTH=10
-        const N = CIRCUIT_N;  // requester attributes  
+        // Test parameters matching circuit: N=6, M=5, DEPTH=20
+        const N = CIRCUIT_N;  // requester attributes
         const M = CIRCUIT_M;  // external predicates
-        const DEPTH = 10;  // policy depth
+        const DEPTH = 20;  // policy depth
 
         // Policy: attr0 AND attr1 (simpler test first)
         // RPN encoding: [0, 1, 8, 0, 0, 0, 0, 0, 0, 0]  

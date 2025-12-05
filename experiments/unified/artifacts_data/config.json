@@ -1,5 +1,5 @@
 {
-  "policyCount": 200,
+  "policyCount": 500,
   "executionsPerPolicy": 1,
   "satisfyRatio": 0.5,
   "seed": "unified-optimized-2025",
@@ -28,13 +28,10 @@
       "combos": [
         [
           "GR"
-        ],
-        [
-          "CU"
         ]
       ],
-      "minPolicies": 60,
-      "maxPolicies": 70,
+      "minPolicies": 50,
+      "maxPolicies": 60,
       "logicOptions": {
         "operators": [
           "AND"
@@ -66,8 +63,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 50,
-      "maxPolicies": 60,
+      "minPolicies": 60,
+      "maxPolicies": 70,
       "logicOptions": {
         "operators": [
           "AND"
@@ -128,30 +125,10 @@
         [
           "GS",
           "CC"
-        ],
-        [
-          "CU",
-          "DS"
-        ],
-        [
-          "CU",
-          "RS"
-        ],
-        [
-          "CU",
-          "POA"
-        ],
-        [
-          "CU",
-          "GS"
-        ],
-        [
-          "CU",
-          "CC"
         ]
       ],
-      "minPolicies": 30,
-      "maxPolicies": 40,
+      "minPolicies": 35,
+      "maxPolicies": 45,
       "logicOptions": {
         "operators": [
           "AND",
@@ -167,6 +144,80 @@
       ],
       "merkleDepthOptions": [
         3,
+        4,
+        5
+      ]
+    },
+    {
+      "name": "medium_nesting_focused",
+      "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance",
+      "combos": [
+        [
+          "GR",
+          "DS",
+          "RS"
+        ],
+        [
+          "GR",
+          "DS",
+          "POA"
+        ],
+        [
+          "GR",
+          "RS",
+          "GS"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA"
+        ],
+        [
+          "DS",
+          "POA",
+          "GS"
+        ],
+        [
+          "RS",
+          "POA",
+          "CC"
+        ],
+        [
+          "DS",
+          "GS",
+          "CC"
+        ],
+        [
+          "RS",
+          "GS",
+          "CC"
+        ],
+        [
+          "GR",
+          "POA",
+          "CC"
+        ],
+        [
+          "GR",
+          "GS",
+          "CC"
+        ]
+      ],
+      "minPolicies": 35,
+      "maxPolicies": 45,
+      "logicOptions": {
+        "operators": [
+          "AND",
+          "OR"
+        ],
+        "notProbability": 0.3,
+        "groupNotProbability": 0.25
+      },
+      "whitelistBuckets": [
+        8,
+        12
+      ],
+      "merkleDepthOptions": [
         4,
         5
       ]
@@ -198,14 +249,6 @@
         [
           "POA",
           "CC"
-        ],
-        [
-          "CU",
-          "DS"
-        ],
-        [
-          "CU",
-          "RS"
         ]
       ],
       "minPolicies": 25,
@@ -268,23 +311,10 @@
         [
           "RS",
           "CC"
-        ],
-        [
-          "CU",
-          "DS"
-        ],
-        [
-          "CU",
-          "RS"
-        ],
-        [
-          "CU",
-          "DS",
-          "RS"
         ]
       ],
-      "minPolicies": 70,
-      "maxPolicies": 80,
+      "minPolicies": 35,
+      "maxPolicies": 45,
       "logicOptions": {
         "operators": [
           "AND",
@@ -302,36 +332,48 @@
     },
     {
       "name": "deep_nested_large",
-      "comment": "Encourage deeper nesting + large set sizes with high-merkle predicates",
+      "comment": "4-5 predicate combos enabled by DEPTH=20 to populate 'many' category and maximize complexity",
       "combos": [
         [
-          "GR",
           "DS",
+          "RS",
+          "POA",
+          "GS"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
           "CC"
         ],
         [
-          "GR",
-          "RS",
-          "POA"
-        ],
-        [
-          "GR",
           "DS",
-          "GS"
-        ],
-        [
-          "CU",
-          "DS",
-          "POA"
-        ],
-        [
-          "CU",
           "RS",
-          "GS"
+          "GS",
+          "CC"
+        ],
+        [
+          "DS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "GS",
+          "CC"
         ]
       ],
-      "minPolicies": 55,
-      "maxPolicies": 65,
+      "minPolicies": 50,
+      "maxPolicies": 60,
       "logicOptions": {
         "operators": [
           "AND",
@@ -380,26 +422,6 @@
           "CC"
         ],
         [
-          "CU",
-          "DS"
-        ],
-        [
-          "CU",
-          "RS"
-        ],
-        [
-          "CU",
-          "POA"
-        ],
-        [
-          "CU",
-          "GS"
-        ],
-        [
-          "CU",
-          "CC"
-        ],
-        [
           "POA",
           "GS"
         ],
@@ -420,8 +442,8 @@
           "GS"
         ]
       ],
-      "minPolicies": 90,
-      "maxPolicies": 120,
+      "minPolicies": 50,
+      "maxPolicies": 70,
       "logicOptions": {
         "operators": [
           "OR",
@@ -636,12 +658,19 @@
     ]
   },
   "notes": [
-    "This configuration emits 420 policies with dedicated layers for SPP balance and a PI-focused structural variant stage.",
-    "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus deep nesting.",
-    "POA/GS/CC/CU predicates are enabled so predicate_count.none/single/few buckets remain above thresholds while set_size.large is non-zero.",
+    "This configuration emits ~315 policies with dedicated layers for SPP balance (including nesting depth) and a PI-focused structural variant stage.",
+    "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus balanced nesting depths.",
+    "CU (Commercial Use) has been removed from all combos due to circuit N=6 limitation (only GR, DS, RS, POA, GS, CC are supported).",
+    "Circuit upgraded to DEPTH=20, enabling up to 5-predicate combinations (19 tokens) for maximum flexibility.",
+    "Predicate count distribution: none(50, 17%), single(76, 26%), few(118, 40%), many(50, 17%) - ratio 0.424, CV 0.378",
+    "deep_nested_large layer uses 4-5 predicate combos (15-19 tokens) to populate 'many' category for complete SPP validation.",
+    "medium_nesting_focused layer specifically targets maxDepth=3 policies to balance the nesting depth dimension.",
+    "Policy counts have been adjusted to ensure min/max ratio ≥ 0.25 and CV ≤ 0.65 for all SPP dimensions.",
     "The structural_variants layer locks logic per combination and emits 4 structure-only + 2 padded execution variants, which the validator now scales to estimate total PI pairs.",
     "Semantic similarity incorporates ICD/OBI/population/geo/clinical scopes and layer variants so average diversity reflects true ontology coverage.",
+    "IMPORTANT: Circuit must be recompiled with DEPTH=20 before using this configuration.",
     "Recommended usage:",
-    "  node unified_dataset_validator.js --config=unified_dataset_config_optimized.json"
+    "  1. Recompile circuit: cd circuits && circom policy_privacy_main_instance.circom --r1cs --wasm --sym -o build/",
+    "  2. Validate config: node experiments/unified/validator.js --config=experiments/unified/configs/unified_dataset_config_optimized.json"
   ]
 }

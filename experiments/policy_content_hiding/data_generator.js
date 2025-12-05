@@ -237,9 +237,9 @@ const SNOMED_TERMS = {
 const DEFAULT_POLICY_COUNT = 200;
 const DEFAULT_EXECUTIONS_PER_POLICY = 20;
 const DEFAULT_SATISFY_RATIO = 0.5;
-// Circom instance is compiled with DEPTH=10 (see circuits/policy_privacy_main_instance.circom)
-// so dataset generator must not emit policies longer than 10 tokens.
-const DEFAULT_POLICY_DEPTH = 10;
+// Circom instance is compiled with DEPTH=20 (see circuits/policy_privacy_main_instance.circom)
+// so dataset generator must not emit policies longer than 20 tokens.
+const DEFAULT_POLICY_DEPTH = 20;
 
 const DEFAULT_WHITELIST_BUCKETS = Object.freeze([4, 8, 16, 24, 32]);
 const DEFAULT_MERKLE_DEPTH_OPTIONS = Object.freeze([3, 4, 5, 6, 7]);
