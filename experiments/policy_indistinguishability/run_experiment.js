@@ -515,12 +515,16 @@ function renderMarkdownReport(report) {
 
   lines.push('## Two-sample Diagnostics');
   lines.push('');
-  report.statistics.aggregated.forEach((entry) => {
-    lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
-    Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
-      lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
+  if (report.statistics && report.statistics.aggregated && report.statistics.aggregated.length > 0) {
+    report.statistics.aggregated.forEach((entry) => {
+      lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
+      Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
+        lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
+      });
     });
-  });
+  } else {
+    lines.push('_No two-sample statistical tests performed._');
+  }
   lines.push('');
 
   lines.push('## Conclusion');
@@ -841,8 +845,9 @@ async function runExperiment(config = {}) {
     },
     pairTargets,
     pairCounts,
-    singleSample: singleSampleResults,
-    pairwise: pairwiseResults,
+    singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
+    multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
+    twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
     statistics: statisticsResults,
     privacySummary,
     conclusion: privacySummary.overallPassed
