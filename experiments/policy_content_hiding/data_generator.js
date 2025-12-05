@@ -1929,7 +1929,7 @@ async function executePolicy(policyData, contract) {
   const [signer] = await ethers.getSigners();
   // const gasPadEnabled = policyData.execution?.gas_pad === true;
   const gasPadEnabled = true; // Always enable gas padding for experiment
-  const commitPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.commit) : 0n;
+  const commitPadTarget = GAS_PAD_TARGET_GAS.commit
 
   const contractWithSigner = contract.connect(signer);
 
@@ -1972,7 +1972,7 @@ async function executePolicy(policyData, contract) {
   const blockchainPolicyId = parsedEvent.args.policyId;
 
   // Request access with proof
-  const accessPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.access) : 0n;
+  const accessPadTarget = GAS_PAD_TARGET_GAS.access;
   if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
     throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
   }
