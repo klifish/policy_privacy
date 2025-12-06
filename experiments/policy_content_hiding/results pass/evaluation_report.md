@@ -44,13 +44,6 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 - **Advantage:** 0.28% (✓ PASS)
   - *Interpretation: Adversary performs 0.28% better than random guessing*
 
-### ICD-10 Chapter Prediction (DecisionTree)
-
-- **Type:** multi-class
-- **Advantage:** -9.09% (✓ PASS)
-  - *Interpretation: Adversary performs -9.09% better than random guessing*
-- **Macro F1:** 0.00%
-
 ### ICD-10 Chapter Prediction (RandomForest)
 
 - **Type:** multi-class
@@ -77,10 +70,6 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 - ✓ **AUC:** 0.5003 (threshold: 0.55)
 - ✓ **Advantage:** 0.0028 (threshold: 0.05)
-
-### ICD-10 Chapter Prediction (DecisionTree): ✓ PASS
-
-- ✓ **Advantage:** -0.0909 (threshold: 0.05)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 

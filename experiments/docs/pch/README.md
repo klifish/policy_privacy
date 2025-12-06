@@ -104,7 +104,7 @@ node run_experiment.js --phase 3 --features results/features.json
 2. Train multi-class classifiers (ICD-10 chapter)
 3. Generate predictions on test set
 
-**Models**: Logistic Regression, Decision Tree, Random Forest
+**Models**: Logistic Regression, Random Forest
 
 ### Phase 4: Evaluation 🔍
 Calculate privacy metrics:

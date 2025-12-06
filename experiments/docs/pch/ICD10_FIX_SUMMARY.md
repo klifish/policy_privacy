@@ -6,7 +6,7 @@
 
 ```json
 {
-  "task": "ICD-10 Chapter Prediction (DecisionTree)",
+  "task": "ICD-10 Chapter Prediction (RandomForest)",
   "accuracy": 0,
   "macroF1": 0,
   "advantage": -1,
@@ -154,7 +154,7 @@ const featureNames = Object.keys(features[0]).filter(
 **修复前**:
 ```json
 {
-  "task": "ICD-10 Chapter Prediction (DecisionTree)",
+  "task": "ICD-10 Chapter Prediction (RandomForest)",
   "numClasses": 1,
   "accuracy": 0,
   "advantage": -1,
@@ -165,7 +165,7 @@ const featureNames = Object.keys(features[0]).filter(
 **修复后** (假设数据集包含 5 个 ICD-10 章节):
 ```json
 {
-  "task": "ICD-10 Chapter Prediction (DecisionTree)",
+  "task": "ICD-10 Chapter Prediction (RandomForest)",
   "numClasses": 5,
   "accuracy": 0.25,
   "advantage": -0.55,

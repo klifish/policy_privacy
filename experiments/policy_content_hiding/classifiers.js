@@ -73,6 +73,7 @@ class LogisticRegression {
 
 /**
  * Simple Decision Tree for multi-class classification
+ * Used internally by the random forest ensemble.
  */
 class DecisionTreeNode {
   constructor() {
@@ -277,6 +278,5 @@ class RandomForest {
 
 module.exports = {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 };

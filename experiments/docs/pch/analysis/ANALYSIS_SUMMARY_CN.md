@@ -20,7 +20,6 @@
 
 | Task | Accuracy | Advantage | 状态 |
 |------|----------|-----------|------|
-| ICD-10 (DecisionTree) | 0% | -9.09% | ✅ PASS |
 | ICD-10 (RandomForest) | 0% | -9.09% | ✅ PASS |
 
 **医疗敏感信息得到了优秀的保护！** ✅

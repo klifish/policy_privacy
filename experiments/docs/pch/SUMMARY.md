@@ -62,8 +62,7 @@ The experiment consists of 5 modular components:
 #### 3. Attack Modeling (`classifiers.js`)
 Implements lightweight ML classifiers (no external ML libraries):
 - **Logistic Regression** - Binary classification (DUO terms)
-- **Decision Tree** - Multi-class classification (ICD-10 chapters)
-- **Random Forest** - Ensemble multi-class classification
+- **Random Forest** - Multi-class classification (ICD-10 chapters)
 
 #### 4. Evaluation (`evaluator.js`)
 - Calculates metrics:
@@ -108,7 +107,7 @@ For each DUO term (GENERAL_RESEARCH, DISEASE_SPECIFIC, etc.):
 
 #### Task 2: ICD-10 Chapter Prediction (Multi-class)
 - **Question:** Which ICD-10 chapter does the policy relate to?
-- **Classifiers:** Decision Tree, Random Forest
+- **Classifier:** Random Forest (ensemble)
 - **Success Criterion:** Advantage ≤ 0.05
 
 ### Privacy Thresholds
@@ -139,10 +138,9 @@ For each DUO term (GENERAL_RESEARCH, DISEASE_SPECIFIC, etc.):
 - ✓ Split data into train and test sets
 - ✓ Calculate feature statistics
 
-**Classifiers (4 tests):**
+**Classifiers (3 tests):**
 - ✓ Logistic Regression - train and predict
 - ✓ Logistic Regression - probability predictions
-- ✓ Decision Tree - multi-class classification
 - ✓ Random Forest - ensemble predictions
 
 **Evaluator (6 tests):**

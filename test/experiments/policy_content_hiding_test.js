@@ -35,7 +35,6 @@ const {
 
 const {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 } = require('../../experiments/policy_content_hiding/classifiers');
 
@@ -320,28 +319,6 @@ describe('Policy Content Hiding Evaluation', function () {
 
         expect(probas).to.be.an('array').with.lengthOf(2);
         expect(probas[0]).to.be.lessThan(probas[1]);
-      });
-    });
-
-    describe('Decision Tree', function () {
-      it('should train and predict multi-class classification', function () {
-        const X = [
-          [0, 0],
-          [0, 1],
-          [1, 0],
-          [1, 1],
-          [2, 2],
-          [2, 3]
-        ];
-        const y = [0, 0, 1, 1, 2, 2];
-
-        const dt = new SimpleDecisionTree(3);
-        dt.train(X, y);
-
-        const predictions = dt.predict(X);
-
-        // Should classify training data correctly
-        expect(predictions).to.deep.equal(y);
       });
     });
 

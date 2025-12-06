@@ -45,7 +45,6 @@ const {
 
 const {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 } = require('./classifiers');
 
@@ -489,24 +488,11 @@ async function runExperiment(config = {}) {
   console.log();
 
   console.log('Task 2: ICD-10 Chapter Prediction (Multi-class)');
-  console.log('  Training Decision Tree classifier...');
+  console.log('  Training Random Forest classifier...');
 
   const icdTrain = prepareClassificationData(trainData, 'icd10Chapter');
   const icdTest = prepareClassificationData(testData, 'icd10Chapter');
 
-  const decisionTree = new SimpleDecisionTree(5);
-  decisionTree.train(icdTrain.X, icdTrain.y);
-  const decisionTreePredictions = decisionTree.predict(icdTest.X);
-
-  classificationResults.push({
-    type: 'multi-class',
-    taskName: 'ICD-10 Chapter Prediction (DecisionTree)',
-    classifier: 'DecisionTree',
-    yTrue: icdTest.y,
-    yPred: decisionTreePredictions
-  });
-
-  console.log('  Training Random Forest classifier...');
   const randomForest = new RandomForest(10, 5);
   randomForest.train(icdTrain.X, icdTrain.y);
   const randomForestPredictions = randomForest.predict(icdTest.X);

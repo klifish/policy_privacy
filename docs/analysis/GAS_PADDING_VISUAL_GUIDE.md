@@ -204,8 +204,7 @@ Training Data:
 
 Classifiers:
   ├── Logistic Regression (binary per term)
-  ├── Decision Tree (multi-class)
-  └── Random Forest (ensemble)
+  └── Random Forest (multi-class ensemble)
 
 Results (Current):
   ✗ DUO Term 1: AUC 0.52, Advantage 0.17 (FAIL)
