@@ -1,7 +1,7 @@
 {
   "config": {
-    "policyCount": 500,
-    "executionsPerPolicy": 2,
+    "policyCount": 100,
+    "executionsPerPolicy": 1,
     "satisfyRatio": 0.5,
     "seed": "unified-optimized-2025",
     "validation": {
@@ -685,37 +685,37 @@
       "issues": [],
       "metrics": {
         "logicStructures": {
-          "min": 82,
-          "max": 201,
-          "mean": "143.3",
-          "minMaxRatio": "0.408",
-          "coefficientOfVariation": "0.339"
+          "min": 57,
+          "max": 151,
+          "mean": "113.3",
+          "minMaxRatio": "0.377",
+          "coefficientOfVariation": "0.358"
         },
         "nestingDepths": {
-          "min": 50,
-          "max": 190,
-          "mean": "107.5",
-          "minMaxRatio": "0.263",
-          "coefficientOfVariation": "0.528"
+          "min": 39,
+          "max": 141,
+          "mean": "85.0",
+          "minMaxRatio": "0.277",
+          "coefficientOfVariation": "0.496"
         },
         "predicateCounts": {
-          "min": 60,
-          "max": 215,
-          "mean": "107.5",
-          "minMaxRatio": "0.279",
-          "coefficientOfVariation": "0.592"
+          "min": 50,
+          "max": 160,
+          "mean": "85.0",
+          "minMaxRatio": "0.313",
+          "coefficientOfVariation": "0.529"
         },
         "setSizes": {
-          "min": 60,
-          "max": 186,
-          "mean": "107.5",
-          "minMaxRatio": "0.323",
-          "coefficientOfVariation": "0.439"
+          "min": 50,
+          "max": 142,
+          "mean": "85.0",
+          "minMaxRatio": "0.352",
+          "coefficientOfVariation": "0.405"
         },
         "rangeWidths": {
-          "min": 430,
-          "max": 430,
-          "mean": "430.0",
+          "min": 340,
+          "max": 340,
+          "mean": "340.0",
           "minMaxRatio": "1.000",
           "coefficientOfVariation": "0.000"
         }
@@ -726,19 +726,19 @@
       "issues": [],
       "pairTypes": {
         "semantic_equivalent": 6,
-        "structural_variant": 79,
-        "weak_equivalent": 3,
-        "controlled_difference": 3072
+        "structural_variant": 32,
+        "weak_equivalent": 1,
+        "controlled_difference": 3121
       },
-      "avgDiversity": 0.5724688818565402,
+      "avgDiversity": 0.5746690400843867,
       "estimatedTotals": {
-        "semantic_equivalent": 175,
-        "structural_variant": 2306,
-        "weak_equivalent": 88,
-        "controlled_difference": 89666
+        "semantic_equivalent": 109,
+        "structural_variant": 584,
+        "weak_equivalent": 18,
+        "controlled_difference": 56919
       }
     }
   },
-  "timestamp": "2025-12-07T10:20:14.851Z",
+  "timestamp": "2025-12-07T10:32:25.387Z",
   "allPassed": true
 }

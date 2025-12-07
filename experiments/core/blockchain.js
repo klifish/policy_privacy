@@ -21,7 +21,7 @@ const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
 const GAS_ESTIMATES = Object.freeze({
   deployment: 4_500_000n,
   commit: 250_000n,
-  access: 650_000n,
+  access: 750_000n,
   bufferPercent: 25n
 });
 

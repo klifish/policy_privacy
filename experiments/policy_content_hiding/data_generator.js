@@ -259,8 +259,8 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 500000n,  // Base target for commit transaction
-  access: 1000000n   // Base target for access transaction
+  commit: 250000n,  // Base target for commit transaction
+  access: 750000n   // Base target for access transaction
 });
 
 // Gas randomization configuration
@@ -1957,6 +1957,7 @@ async function executePolicy(policyData, contract) {
       'ipfs://policy-metadata'
     );
   const commitReceipt = await commitTx.wait();
+  console.log('commit gasUsed:', commitReceipt.gasUsed.toString());
 
   // Extract policy ID from events
   const policyCommittedEvent = commitReceipt.logs.find(log => {
@@ -1996,6 +1997,7 @@ async function executePolicy(policyData, contract) {
       proof.pubSignals
     );
   const accessReceipt = await accessTx.wait();
+  console.log('access gasUsed:', accessReceipt.gasUsed.toString());
 
   const commitEventLogs = commitReceipt.logs.filter(
     (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
