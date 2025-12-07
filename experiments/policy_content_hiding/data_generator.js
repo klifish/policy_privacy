@@ -2009,6 +2009,18 @@ async function executePolicy(policyData, contract) {
   const accessEventLogs = accessReceipt.logs.filter((log) =>
     ACCESS_EVENT_TOPICS.has(log.topics[0])
   );
+
+  accessReceipt.logs.forEach((log, idx) => {
+    const topic0 = log.topics[0];
+    let name = 'UNKNOWN';
+    if (topic0 === EVENT_SIGNATURES.ACCESS_REQUESTED) name = 'AccessRequested';
+    else if (topic0 === EVENT_SIGNATURES.ACCESS_GRANTED) name = 'AccessGranted';
+    else if (topic0 === EVENT_SIGNATURES.ACCESS_DENIED) name = 'AccessDenied';
+    else if (topic0 === EVENT_SIGNATURES.POLICY_COMMITTED) name = 'PolicyCommitted';
+
+    console.log(`access log[${idx}] event = ${name}`, { topic0 });
+  });
+
   const accessLogsCount = accessEventLogs.length;
   const accessLogsSizeBytes = accessEventLogs.reduce(
     (total, log) => total + computeLogPayloadSizeBytes(log),
