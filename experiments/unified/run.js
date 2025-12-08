@@ -101,6 +101,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     writeArtifacts: false,
     sourceConfigPath: options.configPath
   });
+  const effectiveConfig = validationResult.config ?? config;
 
   if (!validationResult.allPassed) {
     throw new Error('Unified dataset validation failed. Resolve issues before executing on-chain.');
@@ -110,7 +111,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   const { dataset: annotatedDataset, summary } = annotateDatasetForSPP(validationResult.dataset);
   const { paths } = writeDatasetArtifacts({
     dataset: annotatedDataset,
-    config,
+    config: effectiveConfig,
     artifactDir: options.artifactDir,
     summary,
     sourceConfigPath: options.configPath

@@ -1,6 +1,6 @@
 {
   "config": {
-    "policyCount": 100,
+    "policyCount": 200,
     "executionsPerPolicy": 1,
     "satisfyRatio": 0.5,
     "seed": "unified-optimized-2025",
@@ -22,6 +22,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Unified Dataset Configuration - SPP/PI Optimized",
     "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
+    "policyCountTarget": 200,
     "semanticLayers": [
       {
         "name": "flat_singleton",
@@ -31,8 +32,8 @@
             "GR"
           ]
         ],
-        "minPolicies": 50,
-        "maxPolicies": 60,
+        "minPolicies": 20,
+        "maxPolicies": 24,
         "logicOptions": {
           "operators": [
             "AND"
@@ -59,13 +60,10 @@
           ],
           [
             "CC"
-          ],
-          [
-            "CC"
           ]
         ],
-        "minPolicies": 60,
-        "maxPolicies": 70,
+        "minPolicies": 24,
+        "maxPolicies": 28,
         "logicOptions": {
           "operators": [
             "AND"
@@ -128,8 +126,8 @@
             "CC"
           ]
         ],
-        "minPolicies": 35,
-        "maxPolicies": 45,
+        "minPolicies": 14,
+        "maxPolicies": 18,
         "logicOptions": {
           "operators": [
             "AND",
@@ -204,8 +202,8 @@
             "CC"
           ]
         ],
-        "minPolicies": 35,
-        "maxPolicies": 45,
+        "minPolicies": 14,
+        "maxPolicies": 18,
         "logicOptions": {
           "operators": [
             "AND",
@@ -252,8 +250,8 @@
             "CC"
           ]
         ],
-        "minPolicies": 25,
-        "maxPolicies": 35,
+        "minPolicies": 10,
+        "maxPolicies": 14,
         "logicOptions": {
           "operators": [
             "OR"
@@ -314,8 +312,8 @@
             "CC"
           ]
         ],
-        "minPolicies": 35,
-        "maxPolicies": 45,
+        "minPolicies": 14,
+        "maxPolicies": 18,
         "logicOptions": {
           "operators": [
             "AND",
@@ -373,8 +371,8 @@
             "CC"
           ]
         ],
-        "minPolicies": 50,
-        "maxPolicies": 60,
+        "minPolicies": 20,
+        "maxPolicies": 24,
         "logicOptions": {
           "operators": [
             "AND",
@@ -443,8 +441,8 @@
             "GS"
           ]
         ],
-        "minPolicies": 50,
-        "maxPolicies": 70,
+        "minPolicies": 20,
+        "maxPolicies": 28,
         "logicOptions": {
           "operators": [
             "OR",
@@ -673,7 +671,14 @@
       "Recommended usage:",
       "  1. Recompile circuit: cd circuits && circom policy_privacy_main_instance.circom --r1cs --wasm --sym -o build/",
       "  2. Validate config: node experiments/unified/validator.js --config=experiments/unified/configs/unified_dataset_config_optimized.json"
-    ]
+    ],
+    "policyCountScaleInfo": {
+      "originalPolicyCount": 500,
+      "requestedPolicyCount": 200,
+      "effectivePolicyCount": 200,
+      "scaleFactor": 0.4,
+      "totalLayerMinimum": 136
+    }
   },
   "results": {
     "pch": {
@@ -685,37 +690,37 @@
       "issues": [],
       "metrics": {
         "logicStructures": {
-          "min": 57,
-          "max": 151,
-          "mean": "113.3",
-          "minMaxRatio": "0.377",
-          "coefficientOfVariation": "0.358"
+          "min": 39,
+          "max": 79,
+          "mean": "57.3",
+          "minMaxRatio": "0.494",
+          "coefficientOfVariation": "0.288"
         },
         "nestingDepths": {
-          "min": 39,
-          "max": 141,
-          "mean": "85.0",
-          "minMaxRatio": "0.277",
-          "coefficientOfVariation": "0.496"
+          "min": 20,
+          "max": 76,
+          "mean": "43.0",
+          "minMaxRatio": "0.263",
+          "coefficientOfVariation": "0.528"
         },
         "predicateCounts": {
-          "min": 50,
-          "max": 160,
-          "mean": "85.0",
-          "minMaxRatio": "0.313",
-          "coefficientOfVariation": "0.529"
+          "min": 24,
+          "max": 86,
+          "mean": "43.0",
+          "minMaxRatio": "0.279",
+          "coefficientOfVariation": "0.592"
         },
         "setSizes": {
-          "min": 50,
-          "max": 142,
-          "mean": "85.0",
-          "minMaxRatio": "0.352",
-          "coefficientOfVariation": "0.405"
+          "min": 24,
+          "max": 81,
+          "mean": "43.0",
+          "minMaxRatio": "0.296",
+          "coefficientOfVariation": "0.519"
         },
         "rangeWidths": {
-          "min": 340,
-          "max": 340,
-          "mean": "340.0",
+          "min": 172,
+          "max": 172,
+          "mean": "172.0",
           "minMaxRatio": "1.000",
           "coefficientOfVariation": "0.000"
         }
@@ -725,20 +730,20 @@
       "passed": true,
       "issues": [],
       "pairTypes": {
-        "semantic_equivalent": 6,
-        "structural_variant": 32,
-        "weak_equivalent": 1,
-        "controlled_difference": 3121
+        "semantic_equivalent": 12,
+        "structural_variant": 61,
+        "weak_equivalent": 4,
+        "controlled_difference": 3083
       },
-      "avgDiversity": 0.5746690400843867,
+      "avgDiversity": 0.568629219409281,
       "estimatedTotals": {
-        "semantic_equivalent": 109,
-        "structural_variant": 584,
-        "weak_equivalent": 18,
-        "controlled_difference": 56919
+        "semantic_equivalent": 56,
+        "structural_variant": 284,
+        "weak_equivalent": 19,
+        "controlled_difference": 14348
       }
     }
   },
-  "timestamp": "2025-12-07T10:32:25.387Z",
+  "timestamp": "2025-12-08T12:27:26.499Z",
   "allPassed": true
 }

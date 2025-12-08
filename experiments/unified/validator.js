@@ -103,6 +103,110 @@ const UNIFIED_CONFIG = {
   }
 };
 
+function cloneSemanticLayer(layer) {
+  return {
+    ...layer
+  };
+}
+
+function normalizePolicyCountConfig(baseConfig = {}) {
+  const normalized = {
+    ...baseConfig,
+    semanticLayers: Array.isArray(baseConfig.semanticLayers)
+      ? baseConfig.semanticLayers.map(cloneSemanticLayer)
+      : []
+  };
+
+  const targetFromConfig = Number(normalized.policyCountTarget ?? normalized.maxPolicyCount ?? 0);
+  const targetFromEnv = Number(process.env.UNIFIED_POLICY_TARGET ?? 0);
+  const candidates = [targetFromConfig, targetFromEnv].filter(
+    (value) => Number.isFinite(value) && value > 0
+  );
+
+  if (candidates.length === 0) {
+    return { config: normalized, scaleInfo: null };
+  }
+
+  const desired = Math.min(...candidates, normalized.policyCount ?? Infinity);
+  if (!Number.isFinite(desired) || !normalized.policyCount || desired >= normalized.policyCount) {
+    return { config: normalized, scaleInfo: null };
+  }
+
+  const targetPolicyCount = Math.max(1, Math.floor(desired));
+  const originalPolicyCount = normalized.policyCount;
+  const scale = targetPolicyCount / originalPolicyCount;
+
+  normalized.semanticLayers.forEach((layer) => {
+    if (typeof layer.minPolicies === 'number') {
+      layer.minPolicies = Math.max(1, Math.floor(layer.minPolicies * scale));
+    }
+    if (typeof layer.maxPolicies === 'number' && Number.isFinite(layer.maxPolicies)) {
+      const scaledMax = Math.max(layer.minPolicies ?? 1, Math.floor(layer.maxPolicies * scale));
+      layer.maxPolicies = Math.max(layer.minPolicies ?? 1, scaledMax);
+    }
+  });
+
+  let totalMin = normalized.semanticLayers.reduce(
+    (sum, layer) => sum + (typeof layer.minPolicies === 'number' ? layer.minPolicies : 0),
+    0
+  );
+
+  if (totalMin > targetPolicyCount) {
+    let overflow = totalMin - targetPolicyCount;
+    const adjustableLayers = normalized.semanticLayers.filter(
+      (layer) => typeof layer.minPolicies === 'number' && layer.minPolicies > 1
+    );
+
+    while (overflow > 0 && adjustableLayers.length > 0) {
+      adjustableLayers.sort((a, b) => (b.minPolicies ?? 0) - (a.minPolicies ?? 0));
+      let progressed = false;
+      for (const layer of adjustableLayers) {
+        if (overflow === 0) {
+          break;
+        }
+        if (layer.minPolicies > 1) {
+          layer.minPolicies -= 1;
+          if (typeof layer.maxPolicies === 'number' && Number.isFinite(layer.maxPolicies)) {
+            layer.maxPolicies = Math.max(layer.maxPolicies, layer.minPolicies);
+          }
+          overflow -= 1;
+          progressed = true;
+        }
+      }
+      if (!progressed) {
+        break;
+      }
+    }
+    totalMin = normalized.semanticLayers.reduce(
+      (sum, layer) => sum + (typeof layer.minPolicies === 'number' ? layer.minPolicies : 0),
+      0
+    );
+
+    if (overflow > 0) {
+      console.warn(
+        `Requested target of ${targetPolicyCount} policies is below the feasible minimum. ` +
+        `Using ${totalMin} policies instead.`
+      );
+      normalized.policyCount = totalMin;
+    } else {
+      normalized.policyCount = targetPolicyCount;
+    }
+  } else {
+    normalized.policyCount = targetPolicyCount;
+  }
+  normalized.policyCountTarget = targetPolicyCount;
+
+  normalized.policyCountScaleInfo = {
+    originalPolicyCount,
+    requestedPolicyCount: targetPolicyCount,
+    effectivePolicyCount: normalized.policyCount,
+    scaleFactor: Number((normalized.policyCount / originalPolicyCount).toFixed(3)),
+    totalLayerMinimum: totalMin
+  };
+
+  return { config: normalized, scaleInfo: normalized.policyCountScaleInfo };
+}
+
 // ============================================================================
 // PCH VALIDATION
 // ============================================================================
@@ -378,14 +482,22 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
     sourceConfigPath = null
   } = options;
 
+  const { config: normalizedConfig, scaleInfo } = normalizePolicyCountConfig(config);
+
   console.log('╔' + '═'.repeat(78) + '╗');
   console.log('║' + ' '.repeat(20) + 'UNIFIED DATASET VALIDATOR' + ' '.repeat(33) + '║');
   console.log('╚' + '═'.repeat(78) + '╝');
 
   console.log('\n📋 Configuration:');
-  console.log(`  Policy count:              ${config.policyCount}`);
-  console.log(`  Executions per policy:     ${config.executionsPerPolicy}`);
-  console.log(`  Seed:                      ${config.seed}`);
+  console.log(`  Policy count:              ${normalizedConfig.policyCount}`);
+  if (scaleInfo) {
+    console.log(
+      `  Target override:           ${scaleInfo.requestedPolicyCount} ` +
+      `(scale ${scaleInfo.scaleFactor})`
+    );
+  }
+  console.log(`  Executions per policy:     ${normalizedConfig.executionsPerPolicy}`);
+  console.log(`  Seed:                      ${normalizedConfig.seed}`);
 
   // Step 1: Generate dataset (without blockchain execution)
   console.log('\n' + '='.repeat(80));
@@ -398,21 +510,22 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   // The PCH generateDataset only creates policy artifacts and metadata
   // Actual blockchain execution is done separately via executePolicy()
   const dataset = await generatePCHDataset({
-    policyCount: config.policyCount,
-    executionsPerPolicy: config.executionsPerPolicy,
-    satisfyRatio: config.satisfyRatio,
-    seed: config.seed,
-    semanticLayers: config.semanticLayers,
-    whitelistBuckets: config.whitelistBuckets,
-    merkleDepthOptions: config.merkleDepthOptions,
-    logicOptions: config.logicOptions,
-    executionProtections: config.executionProtections,
-    duoConflicts: config.duoConflicts,
-    icd10Scopes: config.icd10Scopes,
-    obiScopes: config.obiScopes,
-    hancestroScopes: config.hancestroScopes,
-    iso3166Scopes: config.iso3166Scopes,
-    snomedScopes: config.snomedScopes
+    policyCount: normalizedConfig.policyCount,
+    executionsPerPolicy: normalizedConfig.executionsPerPolicy,
+    satisfyRatio: normalizedConfig.satisfyRatio,
+    seed: normalizedConfig.seed,
+    semanticLayers: normalizedConfig.semanticLayers,
+    whitelistBuckets: normalizedConfig.whitelistBuckets,
+    merkleDepthOptions: normalizedConfig.merkleDepthOptions,
+    logicOptions: normalizedConfig.logicOptions,
+    executionProtections: normalizedConfig.executionProtections,
+    duoConflicts: normalizedConfig.duoConflicts,
+    icd10Scopes: normalizedConfig.icd10Scopes,
+    obiScopes: normalizedConfig.obiScopes,
+    hancestroScopes: normalizedConfig.hancestroScopes,
+    iso3166Scopes: normalizedConfig.iso3166Scopes,
+    snomedScopes: normalizedConfig.snomedScopes,
+    maxPolicyInstances: normalizedConfig.maxPolicyInstances ?? null
   });
 
   const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -420,9 +533,9 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
 
   // Step 2-4: Validate against all three experiments
   const results = {
-    pch: validatePCHRequirements(dataset, config),
-    spp: validateSPPRequirements(dataset, config),
-    pi: validatePIRequirements(dataset, config)
+    pch: validatePCHRequirements(dataset, normalizedConfig),
+    spp: validateSPPRequirements(dataset, normalizedConfig),
+    pi: validatePIRequirements(dataset, normalizedConfig)
   };
 
   // Step 5: Overall summary
@@ -457,7 +570,7 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   // Save results to file
   const resultPath = path.join(__dirname, 'validation_results.json');
   fs.writeFileSync(resultPath, JSON.stringify({
-    config,
+    config: normalizedConfig,
     results,
     timestamp: new Date().toISOString(),
     allPassed
@@ -480,7 +593,7 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
     if (writeArtifacts) {
       const { paths } = writeDatasetArtifacts({
         dataset: annotatedDataset,
-        config,
+        config: normalizedConfig,
         artifactDir,
         summary,
         sourceConfigPath
@@ -492,7 +605,8 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   return {
     allPassed,
     results,
-    dataset
+    dataset,
+    config: normalizedConfig
   };
 }
 

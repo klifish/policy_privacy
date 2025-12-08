@@ -1,6 +1,6 @@
 {
-  "policyCount": 500,
-  "executionsPerPolicy": 2,
+  "policyCount": 200,
+  "executionsPerPolicy": 1,
   "satisfyRatio": 0.5,
   "seed": "unified-optimized-2025",
   "validation": {
@@ -21,6 +21,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Unified Dataset Configuration - SPP/PI Optimized",
   "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
+  "policyCountTarget": 200,
   "semanticLayers": [
     {
       "name": "flat_singleton",
@@ -30,8 +31,8 @@
           "GR"
         ]
       ],
-      "minPolicies": 50,
-      "maxPolicies": 60,
+      "minPolicies": 20,
+      "maxPolicies": 24,
       "logicOptions": {
         "operators": [
           "AND"
@@ -58,13 +59,10 @@
         ],
         [
           "CC"
-        ],
-        [
-          "CC"
         ]
       ],
-      "minPolicies": 60,
-      "maxPolicies": 70,
+      "minPolicies": 24,
+      "maxPolicies": 28,
       "logicOptions": {
         "operators": [
           "AND"
@@ -127,8 +125,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 35,
-      "maxPolicies": 45,
+      "minPolicies": 14,
+      "maxPolicies": 18,
       "logicOptions": {
         "operators": [
           "AND",
@@ -203,8 +201,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 35,
-      "maxPolicies": 45,
+      "minPolicies": 14,
+      "maxPolicies": 18,
       "logicOptions": {
         "operators": [
           "AND",
@@ -251,8 +249,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 25,
-      "maxPolicies": 35,
+      "minPolicies": 10,
+      "maxPolicies": 14,
       "logicOptions": {
         "operators": [
           "OR"
@@ -313,8 +311,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 35,
-      "maxPolicies": 45,
+      "minPolicies": 14,
+      "maxPolicies": 18,
       "logicOptions": {
         "operators": [
           "AND",
@@ -372,8 +370,8 @@
           "CC"
         ]
       ],
-      "minPolicies": 50,
-      "maxPolicies": 60,
+      "minPolicies": 20,
+      "maxPolicies": 24,
       "logicOptions": {
         "operators": [
           "AND",
@@ -442,8 +440,8 @@
           "GS"
         ]
       ],
-      "minPolicies": 50,
-      "maxPolicies": 70,
+      "minPolicies": 20,
+      "maxPolicies": 28,
       "logicOptions": {
         "operators": [
           "OR",
@@ -672,5 +670,12 @@
     "Recommended usage:",
     "  1. Recompile circuit: cd circuits && circom policy_privacy_main_instance.circom --r1cs --wasm --sym -o build/",
     "  2. Validate config: node experiments/unified/validator.js --config=experiments/unified/configs/unified_dataset_config_optimized.json"
-  ]
+  ],
+  "policyCountScaleInfo": {
+    "originalPolicyCount": 500,
+    "requestedPolicyCount": 200,
+    "effectivePolicyCount": 200,
+    "scaleFactor": 0.4,
+    "totalLayerMinimum": 136
+  }
 }
