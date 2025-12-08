@@ -802,6 +802,60 @@ function sampleWithoutReplacement(rng, source, count) {
   return indices.slice(0, count).map((idx) => source[idx]);
 }
 
+function formatNumberLike(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  if (typeof value === 'object' && typeof value.toString === 'function') {
+    return value.toString();
+  }
+  return value;
+}
+
+function serializeTransactionResponse(tx) {
+  if (!tx) return null;
+  return {
+    hash: tx.hash || null,
+    from: tx.from || null,
+    to: tx.to || null,
+    nonce: typeof tx.nonce === 'number' ? tx.nonce : null,
+    gasLimit: formatNumberLike(tx.gasLimit),
+    maxFeePerGas: formatNumberLike(tx.maxFeePerGas),
+    maxPriorityFeePerGas: formatNumberLike(tx.maxPriorityFeePerGas),
+    value: formatNumberLike(tx.value),
+    type: tx.type ?? null,
+    chainId: typeof tx.chainId === 'number' ? tx.chainId : null,
+    dataLength: tx.data ? tx.data.length : 0
+  };
+}
+
+function serializeLog(log) {
+  if (!log) return null;
+  return {
+    address: log.address || null,
+    data: log.data || null,
+    topics: Array.isArray(log.topics) ? log.topics.slice() : [],
+    index: typeof log.logIndex === 'number' ? log.logIndex : null,
+    transactionIndex: typeof log.transactionIndex === 'number' ? log.transactionIndex : null
+  };
+}
+
+function serializeReceipt(receipt) {
+  if (!receipt) return null;
+  return {
+    transactionHash: receipt.transactionHash || null,
+    blockNumber: typeof receipt.blockNumber === 'number' ? receipt.blockNumber : null,
+    gasUsed: formatNumberLike(receipt.gasUsed),
+    cumulativeGasUsed: formatNumberLike(receipt.cumulativeGasUsed),
+    status: receipt.status ?? null,
+    contractAddress: receipt.contractAddress || null,
+    logs: Array.isArray(receipt.logs) ? receipt.logs.map(serializeLog) : []
+  };
+}
+
 function applyProofPadding(originalProof, targetLength = DEFAULT_PROOF_PAD_TARGET_BYTES, baseLengthHint) {
   const baseLength = typeof baseLengthHint === 'number'
     ? baseLengthHint
@@ -2058,7 +2112,17 @@ async function executePolicy(policyData, contract) {
     features,
     policyCommitment,
     paramsCommitment,
-    blockchainPolicyId: blockchainPolicyId.toString()
+    blockchainPolicyId: blockchainPolicyId.toString(),
+    transactions: {
+      commit: {
+        tx: serializeTransactionResponse(commitTx),
+        receipt: serializeReceipt(commitReceipt)
+      },
+      access: {
+        tx: serializeTransactionResponse(accessTx),
+        receipt: serializeReceipt(accessReceipt)
+      }
+    }
   };
 }
 
