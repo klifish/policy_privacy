@@ -652,12 +652,30 @@ plan = [
 ### Step 2a: Requester Attribute Generation
 
 ```javascript
-function generateRequesterAttrs(selection, satisfy, options) {
-  const activeCodes = resolveActiveCodes(selection);  // e.g., ["DS"]
-  const attrs = attributeOrder.map(() => 0);
+function generateRequesterAttrs(selection, satisfy, options = {}) {
+  const activeCodes = resolveActiveCodes(selection);
+  const tokens = options.policyTokens;
+  const numOperations = options.numOperations;
 
+  if (Array.isArray(tokens) && tokens.length > 0) {
+    // Enumerate all attribute combinations (N ≤ 6) to find one that
+    // matches the satisfy flag when evaluated against the policy RPN.
+    const attrs = findAssignmentForPolicy({
+      targetTruth: satisfy,
+      attributeOrder,
+      activeIndices: activeCodes.map((code) => attributeOrder.indexOf(code)),
+      policyTokens: tokens,
+      numOperations,
+      predicateCount: POLICY_PREDICATE_SLOTS.length
+    });
+    if (attrs) {
+      return attrs;
+    }
+  }
+
+  // Fallback: legacy heuristic (used when tokens are unavailable)
+  const attrs = attributeOrder.map(() => 0);
   if (satisfy) {
-    // Set all required attributes to 1
     activeCodes.forEach((code) => {
       const idx = attributeOrder.indexOf(code);
       if (idx >= 0) {
@@ -667,21 +685,17 @@ function generateRequesterAttrs(selection, satisfy, options) {
     return attrs;
   }
 
-  // Don't satisfy: randomly fail 1 to N attributes
-  const failCount = randomInt(rng, 1, activeCodes.length);
+  const failCount = randomInt(rng, 1, activeCodes.length || 1);
   const codesToFail = sampleWithoutReplacement(rng, activeCodes, failCount);
   const codesToPartiallySatisfy = activeCodes.filter(
-    code => !codesToFail.includes(code)
+    (code) => !codesToFail.includes(code)
   );
-
-  // Partially satisfy some attributes (60% chance)
   codesToPartiallySatisfy.forEach((code) => {
     const idx = attributeOrder.indexOf(code);
     if (idx >= 0 && rng() < 0.6) {
       attrs[idx] = 1;
     }
   });
-
   return attrs;
 }
 ```
@@ -690,10 +704,10 @@ function generateRequesterAttrs(selection, satisfy, options) {
 
 | Blueprint DUO Terms | Satisfy | Requester Attrs | Explanation |
 |---------------------|---------|-----------------|-------------|
-| `["DS"]` | `true` | `[0,1,0,0,0,0]` | DS attribute set to 1 |
-| `["DS"]` | `false` | `[0,0,0,0,0,0]` | DS attribute failed (set to 0) |
-| `["GR", "DS"]` | `true` | `[1,1,0,0,0,0]` | Both GR and DS set to 1 |
-| `["GR", "DS"]` | `false` | `[1,0,0,0,0,0]` | DS failed, GR partially satisfied (60% chance) |
+| `["DS"]` | `true` | `[0,1,0,0,0,0]` | Evaluated mask that satisfies policy logic |
+| `["DS"]` | `false` | `[0,0,0,0,0,0]` | Enumerated mask that violates logic |
+| `["GR", "DS"]` | `true` | `[1,1,0,0,0,0]` | Both GR and DS set as required |
+| `["GR", "DS"]` | `false` | `[1,0,0,0,0,0]` | Finds mask that falsifies the policy |
 | `["GR", "DS"]` | `false` | `[0,0,0,0,0,0]` | Both failed |
 | `["DS", "RS"]` | `false` | `[0,1,0,0,0,0]` | RS failed, DS partially satisfied |
 
@@ -1057,8 +1071,8 @@ This enables:
 ```
 
 **Problem**:
-- `generateRequesterAttrs` only considers DUO term attributes
-- Does not validate against ontology predicate values
+- `generateRequesterAttrs` enumerates DUO term assignments to satisfy/violate logic
+- Still assumes ontology predicate proofs are satisfied when `satisfy=true`
 - Example:
   ```javascript
   Policy: DS=1 AND ICD10=NEOPLASMS
@@ -1070,7 +1084,7 @@ This enables:
 
 **Current Assumption**:
 - Ontology validation occurs in ZK circuit, not in attribute vector
-- `requesterAttrs` only encodes DUO term matching
+- `requesterAttrs` only encodes DUO term matching; predicates are assumed true when `satisfy=true`
 - Actual ontology proof is generated separately during execution
 
 **Impact**: May not affect experiment if ontology proofs are properly generated during blockchain execution phase.

@@ -7,6 +7,9 @@
  */
 
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const snarkjs = require('snarkjs');
 const { ethers } = require('hardhat');
 const { id, getBytes } = require('ethers');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
@@ -28,6 +31,11 @@ const ACCESS_EVENT_TOPICS = new Set([
 ]);
 
 const LOG_ADDRESS_BYTES = 20;
+const VERIFICATION_KEY_PATH = path.join(
+  __dirname,
+  '../../build/circuits/policy_privacy_main_vk.json'
+);
+let verificationKeyPromise = null;
 
 function computeLogPayloadSizeBytes(log) {
   if (!log) {
@@ -856,6 +864,221 @@ function serializeReceipt(receipt) {
   };
 }
 
+function evaluatePolicyTokens(tokens, numOperations, attrs, predicateTruth, attributeCount, predicateCount) {
+  if (!Array.isArray(tokens) || tokens.length === 0) {
+    return false;
+  }
+  const opCount = Math.min(
+    Number.isInteger(numOperations) && numOperations > 0 ? numOperations : tokens.length,
+    tokens.length
+  );
+  const stack = [];
+  const predicates = Array.isArray(predicateTruth) ? predicateTruth : [];
+  for (let i = 0; i < opCount; i += 1) {
+    const token = tokens[i];
+    if (!Number.isInteger(token)) {
+      continue;
+    }
+    if (token < attributeCount) {
+      stack.push(Boolean(attrs[token]));
+      continue;
+    }
+    if (token < attributeCount + predicateCount) {
+      const slot = token - attributeCount;
+      stack.push(Boolean(predicates[slot]));
+      continue;
+    }
+    const opCode = token - attributeCount - predicateCount;
+    if (opCode === 0) {
+      if (stack.length < 2) return false;
+      const right = stack.pop();
+      const left = stack.pop();
+      stack.push(left && right);
+    } else if (opCode === 1) {
+      if (stack.length < 2) return false;
+      const right = stack.pop();
+      const left = stack.pop();
+      stack.push(left || right);
+    } else if (opCode === 2) {
+      if (stack.length < 1) return false;
+      const value = stack.pop();
+      stack.push(!value);
+    } else {
+      return false;
+    }
+  }
+  if (stack.length === 0) {
+    return false;
+  }
+  return Boolean(stack[stack.length - 1]);
+}
+
+function buildAttrsFromMask(mask, length) {
+  return Array.from({ length }, (_, idx) => ((mask >> idx) & 1) ? 1 : 0);
+}
+
+function toBigInt(value) {
+  if (typeof value === 'bigint') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return BigInt(value);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return 0n;
+    }
+    return BigInt(trimmed);
+  }
+  throw new Error(`Unsupported value for BigInt conversion: ${value}`);
+}
+
+async function loadVerificationKey() {
+  if (!verificationKeyPromise) {
+    verificationKeyPromise = (async () => {
+      if (!fs.existsSync(VERIFICATION_KEY_PATH)) {
+        throw new Error(
+          `Verification key not found at ${VERIFICATION_KEY_PATH}. ` +
+          'Run `npm run build:circuit:export:verificationkey` to generate it.'
+        );
+      }
+      const raw = JSON.parse(fs.readFileSync(VERIFICATION_KEY_PATH, 'utf8'));
+      return raw;
+    })();
+  }
+  return verificationKeyPromise;
+}
+
+function formatProofForVerification(formattedProof) {
+  if (!formattedProof) {
+    throw new Error('Proof is required for verification');
+  }
+  const { pA, pB, pC } = formattedProof;
+  if (!Array.isArray(pA) || !Array.isArray(pB) || !Array.isArray(pC)) {
+    throw new Error('Malformed proof structure');
+  }
+  const pi_a = [toBigInt(pA[0]), toBigInt(pA[1])];
+  const pi_b = [
+    [toBigInt(pB[0][1]), toBigInt(pB[0][0])],
+    [toBigInt(pB[1][1]), toBigInt(pB[1][0])]
+  ];
+  const pi_c = [toBigInt(pC[0]), toBigInt(pC[1])];
+  return { pi_a, pi_b, pi_c };
+}
+
+async function verifyGroth16ProofOffline(formattedProof) {
+  const verificationKey = await loadVerificationKey();
+  const snarkProof = formatProofForVerification(formattedProof);
+  const publicSignals = formattedProof.pubSignals.map((value) => toBigInt(value));
+  const valid = await snarkjs.groth16.verify(verificationKey, publicSignals, snarkProof);
+  if (!valid) {
+    throw new Error('Offline Groth16 verification failed for generated proof.');
+  }
+}
+
+function findAssignmentForPolicy({
+  targetTruth,
+  attributeOrder,
+  activeIndices,
+  policyTokens,
+  numOperations,
+  predicateCount
+}) {
+  if (!Array.isArray(policyTokens) || policyTokens.length === 0) {
+    return null;
+  }
+  const attributeCount = attributeOrder.length;
+  if (attributeCount === 0 || attributeCount > 20) {
+    return null;
+  }
+  const predicateTruth = Array.from({ length: predicateCount }, () => 1);
+  const filteredActive = activeIndices.filter((idx) => idx >= 0);
+  const requiredSet = new Set(filteredActive);
+  const maxMask = 1 << attributeCount;
+  let bestPrimary = null;
+  let bestFallback = null;
+
+  for (let mask = 0; mask < maxMask; mask += 1) {
+    const attrs = buildAttrsFromMask(mask, attributeCount);
+    const evalResult = evaluatePolicyTokens(
+      policyTokens,
+      numOperations,
+      attrs,
+      predicateTruth,
+      attributeCount,
+      predicateCount
+    );
+    if (evalResult !== targetTruth) {
+      continue;
+    }
+    const meetsPrimary = targetTruth
+      ? activeIndices.every((idx) => idx < 0 || attrs[idx] === 1)
+      : activeIndices.some((idx) => idx >= 0 && attrs[idx] === 0);
+    const extraOnes = attrs.reduce(
+      (sum, value, idx) => sum + (value && !requiredSet.has(idx) ? 1 : 0),
+      0
+    );
+    if (targetTruth) {
+      const missingRequired = filteredActive.reduce(
+        (sum, idx) => sum + (attrs[idx] === 1 ? 0 : 1),
+        0
+      );
+      const candidate = { attrs, mask, missingRequired, extraOnes };
+      if (meetsPrimary) {
+        if (
+          !bestPrimary ||
+          missingRequired < bestPrimary.missingRequired ||
+          (missingRequired === bestPrimary.missingRequired && extraOnes < bestPrimary.extraOnes) ||
+          (missingRequired === bestPrimary.missingRequired &&
+            extraOnes === bestPrimary.extraOnes &&
+            mask < bestPrimary.mask)
+        ) {
+          bestPrimary = candidate;
+        }
+      } else if (
+        !bestFallback ||
+        missingRequired < bestFallback.missingRequired ||
+        (missingRequired === bestFallback.missingRequired && extraOnes < bestFallback.extraOnes) ||
+        (missingRequired === bestFallback.missingRequired &&
+          extraOnes === bestFallback.extraOnes &&
+          mask < bestFallback.mask)
+      ) {
+        bestFallback = candidate;
+      }
+    } else {
+      const requiredTrue = filteredActive.reduce(
+        (sum, idx) => sum + (attrs[idx] === 1 ? 1 : 0),
+        0
+      );
+      const candidate = { attrs, mask, requiredTrue, extraOnes };
+      if (meetsPrimary) {
+        if (
+          !bestPrimary ||
+          requiredTrue < bestPrimary.requiredTrue ||
+          (requiredTrue === bestPrimary.requiredTrue && extraOnes < bestPrimary.extraOnes) ||
+          (requiredTrue === bestPrimary.requiredTrue &&
+            extraOnes === bestPrimary.extraOnes &&
+            mask < bestPrimary.mask)
+        ) {
+          bestPrimary = candidate;
+        }
+      } else if (
+        !bestFallback ||
+        requiredTrue < bestFallback.requiredTrue ||
+        (requiredTrue === bestFallback.requiredTrue && extraOnes < bestFallback.extraOnes) ||
+        (requiredTrue === bestFallback.requiredTrue &&
+          extraOnes === bestFallback.extraOnes &&
+          mask < bestFallback.mask)
+      ) {
+        bestFallback = candidate;
+      }
+    }
+  }
+
+  return (bestPrimary || bestFallback)?.attrs ?? null;
+}
+
 function applyProofPadding(originalProof, targetLength = DEFAULT_PROOF_PAD_TARGET_BYTES, baseLengthHint) {
   const baseLength = typeof baseLengthHint === 'number'
     ? baseLengthHint
@@ -1653,10 +1876,34 @@ function resolveActiveCodes(selection) {
 function generateRequesterAttrs(selection, satisfy, options = {}) {
   const {
     attributeOrder = POLICY_ATTRIBUTE_ORDER,
-    rng = Math.random
+    rng = Math.random,
+    policyTokens = null,
+    numOperations = null,
+    predicateCount = POLICY_PREDICATE_SLOTS.length
   } = options;
 
   const activeCodes = resolveActiveCodes(selection);
+  const activeIndices = activeCodes
+    .map((code) => attributeOrder.indexOf(code))
+    .filter((idx) => idx >= 0);
+
+  if (Array.isArray(policyTokens) && policyTokens.length > 0) {
+    const attrs = findAssignmentForPolicy({
+      targetTruth: satisfy,
+      attributeOrder,
+      activeIndices,
+      policyTokens,
+      numOperations,
+      predicateCount
+    });
+    if (attrs) {
+      return attrs;
+    }
+    console.warn(
+      'generateRequesterAttrs: unable to find assignment matching satisfy flag; falling back to heuristic generation.'
+    );
+  }
+
   const activeSet = new Set(activeCodes);
   const attrs = attributeOrder.map(() => 0);
 
@@ -1803,7 +2050,9 @@ async function generateDataset(config = {}) {
     plan.forEach((satisfy, execIndex) => {
       const requesterAttrs = generateRequesterAttrs(blueprint.duoTerms, satisfy, {
         attributeOrder,
-        rng
+        rng,
+        policyTokens: blueprint.artifacts.policy,
+        numOperations: blueprint.artifacts.numOperations
       });
       const datasetEntry = {
         policyIndex: blueprintIndex,
@@ -1964,6 +2213,7 @@ async function executePolicy(policyData, contract) {
   // Measure proof generation time
   const proofStartTime = Date.now();
   const proof = await generateGroth16Proof(circuitInput);
+  await verifyGroth16ProofOffline(proof);
   const proofGenerationTime = Date.now() - proofStartTime;
 
   const baseProofLength = JSON.stringify(proof).length;
@@ -2130,7 +2380,6 @@ async function executePolicy(policyData, contract) {
  * Execute dataset and collect all features
  */
 async function executeDataset(dataset, contract, outputPath) {
-  const fs = require('fs');
   const results = [];
 
   console.log(`Executing ${dataset.length} policy instances...`);
@@ -2170,6 +2419,9 @@ module.exports = {
   isOntologyLinked,
   getOntologyNamespace,
   getOntologyValues,
+  POLICY_ATTRIBUTE_ORDER,
+  POLICY_PREDICATE_SLOTS,
+  evaluatePolicyTokens,
   generatePolicy,
   generateRequesterAttrs,
   generateDataset,
