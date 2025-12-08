@@ -63,7 +63,7 @@
     "unified:config": "npx hardhat run experiments/unified/run.js --network localhost --config=experiments/unified/configs/unified_dataset_config_optimized.json",
     "unified:validate": "node experiments/test_validator.js",
     "exp:pch": "node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2",
-    "exp:spp": "node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2",
+    "exp:spp": "node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2 --balance-method undersample",
     "exp:pi": "node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2",
     "exp:all": "npm run exp:pch && npm run exp:spp && npm run exp:pi",
     "exp:quick": "npm run unified && npm run exp:all"

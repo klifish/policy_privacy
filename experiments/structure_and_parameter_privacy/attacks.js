@@ -66,6 +66,92 @@ function aggregateByFamily(executionResults) {
 }
 
 /**
+ * Balance dataset using SMOTE-like oversampling
+ * @param {Array} minorityData - Minority class samples
+ * @param {number} targetCount - Target number of samples
+ * @returns {Array} Balanced dataset
+ */
+function oversampleMinorityClass(minorityData, targetCount) {
+  const syntheticSamples = [];
+  const originalCount = minorityData.length;
+  const needed = targetCount - originalCount;
+
+  if (needed <= 0) {
+    return minorityData;
+  }
+
+  // Simple oversampling: duplicate with small random noise
+  for (let i = 0; i < needed; i++) {
+    const sourceIdx = Math.floor(Math.random() * originalCount);
+    const source = minorityData[sourceIdx];
+
+    // Add small random noise to features
+    const noisyFeatures = source.features.map(f => {
+      const noise = (Math.random() - 0.5) * 0.02 * f; // ±1% noise
+      return f + noise;
+    });
+
+    syntheticSamples.push({
+      features: noisyFeatures,
+      label: source.label
+    });
+  }
+
+  return [...minorityData, ...syntheticSamples];
+}
+
+/**
+ * Undersample majority class
+ * @param {Array} majorityData - Majority class samples
+ * @param {number} targetCount - Target number of samples
+ * @returns {Array} Undersampled dataset
+ */
+function undersampleMajorityClass(majorityData, targetCount) {
+  if (targetCount >= majorityData.length) {
+    return majorityData;
+  }
+
+  // Random undersampling
+  const shuffled = [...majorityData].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, targetCount);
+}
+
+/**
+ * Balance dataset using combination of over/undersampling
+ * @param {Array} class0Data - Class 0 samples
+ * @param {Array} class1Data - Class 1 samples
+ * @param {string} method - 'oversample', 'undersample', 'both', 'none'
+ * @returns {Object} Balanced dataset {class0, class1}
+ */
+function balanceDataset(class0Data, class1Data, method = 'both') {
+  const count0 = class0Data.length;
+  const count1 = class1Data.length;
+
+  if (method === 'none') {
+    return { class0: class0Data, class1: class1Data };
+  }
+
+  const minCount = Math.min(count0, count1);
+  const maxCount = Math.max(count0, count1);
+  const targetCount = method === 'both' ? Math.ceil((minCount + maxCount) / 2) :
+                      method === 'oversample' ? maxCount : minCount;
+
+  let balanced0, balanced1;
+
+  if (count0 < count1) {
+    // Class 0 is minority
+    balanced0 = method === 'undersample' ? class0Data : oversampleMinorityClass(class0Data, targetCount);
+    balanced1 = method === 'oversample' ? class1Data : undersampleMajorityClass(class1Data, targetCount);
+  } else {
+    // Class 1 is minority
+    balanced0 = method === 'oversample' ? class0Data : undersampleMajorityClass(class0Data, targetCount);
+    balanced1 = method === 'undersample' ? class1Data : oversampleMinorityClass(class1Data, targetCount);
+  }
+
+  return { class0: balanced0, class1: balanced1 };
+}
+
+/**
  * Split data into train/test sets
  */
 function trainTestSplit(data, testRatio = 0.3) {
@@ -163,10 +249,12 @@ function runSupervisedAttacks(executionResults, config = {}) {
   const {
     targetAttribute = 'structureType',  // 'structureType', 'predicateCombo', 'paramType'
     testRatio = 0.3,
-    permutationIterations = 500
+    permutationIterations = 500,
+    balanceMethod = 'both'  // 'oversample', 'undersample', 'both', 'none'
   } = config;
 
   console.log(`\nRunning supervised classification attack on: ${targetAttribute}`);
+  console.log(`Balance method: ${balanceMethod}`);
 
   // Group by target attribute
   const groups = new Map();
@@ -189,35 +277,56 @@ function runSupervisedAttacks(executionResults, config = {}) {
       const class0 = classes[i];
       const class1 = classes[j];
 
-      const data0 = groups.get(class0);
-      const data1 = groups.get(class1);
+      const data0Raw = groups.get(class0);
+      const data1Raw = groups.get(class1);
 
-      console.log(`\nClassifying ${class0} vs ${class1} (${data0.length} vs ${data1.length} samples)`);
+      const originalCount0 = data0Raw.length;
+      const originalCount1 = data1Raw.length;
+      const imbalanceRatio = Math.max(originalCount0, originalCount1) / Math.min(originalCount0, originalCount1);
 
-      // Extract features and labels
-      const features = [
-        ...data0.map(r => featuresToArray(extractFeatures(r))),
-        ...data1.map(r => featuresToArray(extractFeatures(r)))
-      ];
+      console.log(`\nClassifying ${class0} vs ${class1} (${originalCount0} vs ${originalCount1} samples, ratio ${imbalanceRatio.toFixed(2)}:1)`);
 
-      const labels = [
-        ...Array(data0.length).fill(0),
-        ...Array(data1.length).fill(1)
-      ];
+      // Prepare data for balancing
+      const class0Data = data0Raw.map(r => ({
+        features: featuresToArray(extractFeatures(r)),
+        label: 0
+      }));
+
+      const class1Data = data1Raw.map(r => ({
+        features: featuresToArray(extractFeatures(r)),
+        label: 1
+      }));
 
       // Skip if insufficient data
-      if (features.length < 20) {
-        console.log(`  Skipping: insufficient data (${features.length} samples)`);
+      if (class0Data.length + class1Data.length < 20) {
+        console.log(`  Skipping: insufficient data (${class0Data.length + class1Data.length} samples)`);
         results.push({
           targetAttribute,
           class0,
           class1,
           skipped: true,
           reason: 'insufficient_data',
-          sampleCount: features.length
+          sampleCount: class0Data.length + class1Data.length,
+          originalCount0,
+          originalCount1
         });
         continue;
       }
+
+      // Apply balancing
+      const balanced = balanceDataset(class0Data, class1Data, balanceMethod);
+      const balancedData = [...balanced.class0, ...balanced.class1];
+
+      const balancedCount0 = balanced.class0.length;
+      const balancedCount1 = balanced.class1.length;
+
+      if (balanceMethod !== 'none') {
+        console.log(`  Balanced: ${balancedCount0} vs ${balancedCount1} samples (from ${originalCount0} vs ${originalCount1})`);
+      }
+
+      // Extract features and labels from balanced data
+      const features = balancedData.map(d => d.features);
+      const labels = balancedData.map(d => d.label);
 
       // Train/test split
       const { train, test } = trainTestSplit(
@@ -258,6 +367,12 @@ function runSupervisedAttacks(executionResults, config = {}) {
         class0,
         class1,
         sampleCount: features.length,
+        originalCount0,
+        originalCount1,
+        balancedCount0,
+        balancedCount1,
+        imbalanceRatio,
+        balanceMethod,
         trainSize: train.length,
         testSize: test.length,
         logisticRegression: {

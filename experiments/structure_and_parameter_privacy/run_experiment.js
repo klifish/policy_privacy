@@ -80,7 +80,8 @@ const DEFAULT_CONFIG = {
   testRatio: 0.3,
   permutationIterations: 500,
   kValues: [2, 3, 4, 5],
-  seed: 'spp-experiment'
+  seed: 'spp-experiment',
+  balanceMethod: 'both'  // 'oversample', 'undersample', 'both', 'none'
 };
 
 const DEFAULT_THRESHOLDS = {
@@ -131,6 +132,9 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--seed':
         config.seed = argv[++i];
         break;
+      case '--balance-method':
+        config.balanceMethod = argv[++i];
+        break;
       case '--use-unified-dataset':
       case '--unified':
         config.useUnifiedDataset = true;
@@ -167,6 +171,7 @@ function printUsage() {
   console.log('  --satisfy-ratio <float>           Ratio of satisfying executions (default: 0.5)');
   console.log('  --test-ratio <float>              Train/test split ratio (default: 0.3)');
   console.log('  --permutation-iterations <n>      Permutation test iterations (default: 500)');
+  console.log('  --balance-method <method>         Dataset balancing: oversample|undersample|both|none (default: both)');
   console.log('  --phase <1|2|3>                   Resume from given phase');
   console.log('  --dataset <path>                  Use pre-generated dataset JSON (phase ≥2)');
   console.log('  --execution-results <path>        Path to cached execution results');
@@ -335,6 +340,7 @@ function generateMarkdownReport(report) {
   lines.push(`- **Executions per policy:** ${report.config.executionsPerPolicy}`);
   lines.push(`- **Satisfy ratio:** ${report.config.satisfyRatio.toFixed(2)}`);
   lines.push(`- **Test ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
+  lines.push(`- **Balance method:** ${report.config.balanceMethod || 'both'}`);
   if (report.dataset.meta?.families !== undefined) {
     lines.push(`- **Generated families:** ${report.dataset.meta.families}`);
   }
@@ -552,19 +558,22 @@ async function runExperiment(config = {}) {
   const supervisedStructure = runSupervisedAttacks(executionResults, {
     targetAttribute: 'structureType',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
 
   const supervisedPredicate = runSupervisedAttacks(executionResults, {
     targetAttribute: 'predicateCombo',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
 
   const supervisedParam = runSupervisedAttacks(executionResults, {
     targetAttribute: 'paramType',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
   progress.completeStep();
 
@@ -638,7 +647,8 @@ async function runExperiment(config = {}) {
       executionsPerPolicy: config.executionsPerPolicy,
       satisfyRatio: config.satisfyRatio,
       testRatio: config.testRatio,
-      seed: config.seed
+      seed: config.seed,
+      balanceMethod: config.balanceMethod
     },
     dataset: {
       meta: datasetMeta,
