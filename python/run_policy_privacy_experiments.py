@@ -54,7 +54,8 @@ def parse_args() -> argparse.Namespace:
         description="Run policy privacy experiments with scikit-learn",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    default_data_dir = Path(__file__).parent / "data" / "artifacts_data testnet 01"
+    default_data_dir = Path(__file__).parent / "data" / \
+        "artifacts_data testnet 01"
     parser.add_argument(
         "--data-dir",
         type=Path,
@@ -70,7 +71,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).parent / "results" / "policy_privacy_report.json",
+        default=Path(__file__).parent / "results" /
+        "policy_privacy_report.json",
         help="Where to store the aggregated metrics report",
     )
     parser.add_argument(
@@ -149,7 +151,8 @@ def prepare_dataframe(
 
     df = pd.DataFrame(rows)
     if dropped:
-        print(f"[warn] Dropped {dropped} records due to missing features/labels")
+        print(
+            f"[warn] Dropped {dropped} records due to missing features/labels")
     return df
 
 
@@ -266,10 +269,26 @@ def run_pch_experiment(
     random_state: int,
 ) -> Dict[str, object]:
     records = load_json(dataset_path)
-    df = prepare_dataframe(
-        records,
-        label_getter=lambda record: (record.get("duoTermCodes") or ["UNKNOWN"])[0],
-    )
+    rows: List[Dict[str, object]] = []
+    dropped = 0
+    for record in records:
+        features = extract_feature_row(record.get("features", {}))
+        duo_terms = record.get("duoTermCodes") or []
+        if features is None or not duo_terms:
+            dropped += 1
+            continue
+        for term in duo_terms:
+            row = {"label": term}
+            row.update(features)
+            rows.append(row)
+
+    if not rows:
+        raise ValueError("No usable PCH records found")
+    if dropped:
+        print(
+            f"[warn] Dropped {dropped} PCH records due to missing features/duo terms")
+
+    df = pd.DataFrame(rows)
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
     X_train, X_test, y_train, y_test = build_stratified_split(
@@ -310,7 +329,8 @@ def run_spp_experiment(
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
     X = df[list(FEATURE_KEYS)].to_numpy()
     results: Dict[str, object] = {}
-    targets = ["logicStructure", "nestingDepth", "predicateCount", "setSize", "rangeWidth"]
+    targets = ["logicStructure", "nestingDepth",
+               "predicateCount", "setSize", "rangeWidth"]
 
     for target in targets:
         labels = [item.get(target) for item in records]

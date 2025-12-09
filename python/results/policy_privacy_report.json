@@ -8,34 +8,34 @@
     "advantage_max": 0.05
   },
   "pch": {
-    "samples": 172,
+    "samples": 364,
     "class_distribution": {
       "GR": 44,
-      "DS": 68,
-      "RS": 34,
-      "POA": 13,
-      "GS": 8,
-      "CC": 5
+      "DS": 78,
+      "RS": 75,
+      "POA": 55,
+      "GS": 51,
+      "CC": 61
     },
     "evaluations": [
       {
         "model": "logistic_regression",
-        "accuracy": 0.1346153846153846,
-        "macro_f1": 0.12097423510466988,
-        "advantage_vs_random": -0.03205128205128205,
-        "advantage_vs_majority": -0.257051282051282,
-        "passed": false,
-        "auc": 0.5938317486638671,
-        "auc_passed": false
+        "accuracy": 0.1,
+        "macro_f1": 0.08395721925133688,
+        "advantage_vs_random": -0.06666666666666665,
+        "advantage_vs_majority": -0.1125984251968504,
+        "passed": true,
+        "auc": 0.4415524749679518,
+        "auc_passed": true
       },
       {
         "model": "random_forest",
-        "accuracy": 0.25,
-        "macro_f1": 0.16138101664417454,
-        "advantage_vs_random": 0.08333333333333334,
-        "advantage_vs_majority": -0.14166666666666666,
-        "passed": false,
-        "auc": 0.48349909494799376,
+        "accuracy": 0.14545454545454545,
+        "macro_f1": 0.16095287141798767,
+        "advantage_vs_random": -0.02121212121212121,
+        "advantage_vs_majority": -0.06714387974230496,
+        "passed": true,
+        "auc": 0.48075813510179605,
         "auc_passed": true
       }
     ]
