@@ -267,8 +267,8 @@ const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
 });
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
-  commit: 250000n,  // Base target for commit transaction
-  access: 750000n   // Base target for access transaction
+  commit: 300000n,  // Base target for commit transaction
+  access: 1000000n   // Base target for access transaction
 });
 
 // Gas randomization configuration
