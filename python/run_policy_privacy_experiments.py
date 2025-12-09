@@ -11,8 +11,8 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import subprocess
 from collections import Counter, defaultdict
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -48,19 +48,21 @@ DEFAULT_THRESHOLDS = {
     "advantage_max": 0.05,
 }
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run policy privacy experiments with scikit-learn",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    default_data_dir = Path(__file__).parent / "data" / \
-        "artifacts_data testnet 01"
+    default_data_dir = Path(__file__).parent / "data"
     parser.add_argument(
         "--data-dir",
         type=Path,
         default=default_data_dir,
-        help="Directory that contains the *_dataset.json files",
+        help="Directory that contains dataset folders (each with *_dataset.json)",
     )
     parser.add_argument(
         "--pi-pairs",
@@ -86,6 +88,11 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=42,
         help="Random seed used for deterministic splits",
+    )
+    parser.add_argument(
+        "--skip-auto-pairs",
+        action="store_true",
+        help="Disable automatic PI pair generation when pi_pairs.json is missing",
     )
     return parser.parse_args()
 
@@ -125,6 +132,110 @@ def extract_feature_row(feature_bag: Dict[str, object]) -> Optional[Dict[str, fl
             return None
         row[key] = numeric_value
     return row
+
+
+def discover_dataset_dirs(base_dir: Path) -> List[Path]:
+    if base_dir.is_file():
+        raise ValueError(f"{base_dir} is a file; expected directory")
+    if (base_dir / "pch_dataset.json").exists():
+        return [base_dir]
+    dirs: List[Path] = []
+    if base_dir.exists():
+        for entry in sorted(base_dir.iterdir()):
+            if entry.is_dir() and (entry / "pch_dataset.json").exists():
+                dirs.append(entry)
+    return dirs
+
+
+def aggregate_json_arrays(dataset_dirs: Sequence[Path], filename: str) -> List[dict]:
+    combined: List[dict] = []
+    for directory in dataset_dirs:
+        file_path = directory / filename
+        if not file_path.exists():
+            print(f"[warn] {file_path} missing; skipping")
+            continue
+        data = load_json(file_path)
+        if isinstance(data, list):
+            combined.extend(data)
+        else:
+            print(f"[warn] {file_path} is not a JSON array; skipping")
+    return combined
+
+
+def load_pi_pairs(path: Path) -> List[dict]:
+    data = load_json(path)
+    if isinstance(data, dict) and "pairs" in data:
+        return list(data["pairs"])
+    if isinstance(data, list):
+        return data
+    raise ValueError(f"Unrecognized PI pairs format at {path}")
+
+
+def aggregate_pi_pairs(dataset_dirs: Sequence[Path]) -> Tuple[List[dict], List[str]]:
+    pairs: List[dict] = []
+    sources: List[str] = []
+    for directory in dataset_dirs:
+        file_path = directory / "pi_pairs.json"
+        if not file_path.exists():
+            print(f"[warn] {file_path} missing; skipping PI pairs")
+            continue
+        try:
+            data = load_pi_pairs(file_path)
+        except ValueError as exc:
+            print(f"[warn] {exc}")
+            continue
+        pairs.extend(data)
+        sources.append(str(file_path))
+    return pairs, sources
+
+
+def auto_generate_pi_pairs(
+    directory: Path,
+    random_state: Optional[int],
+) -> bool:
+    pair_file = directory / "pi_pairs.json"
+    if pair_file.exists():
+        return True
+
+    dataset_path = directory / "pi_dataset.json"
+    if not dataset_path.exists():
+        print(
+            f"[warn] Cannot generate PI pairs for {directory}: "
+            "pi_dataset.json is missing"
+        )
+        return False
+
+    if not PI_PAIR_GENERATOR.exists():
+        print(
+            "[warn] PI pair generator script not found at "
+            f"{PI_PAIR_GENERATOR}. Skipping auto-generation."
+        )
+        return False
+
+    cmd = [
+        "node",
+        str(PI_PAIR_GENERATOR),
+        "--dataset-dir",
+        str(directory),
+    ]
+    if random_state is not None:
+        cmd.extend(["--seed", str(random_state)])
+
+    print(f"Generating PI pairs for {directory} ...")
+    try:
+        subprocess.run(cmd, check=True, cwd=str(REPO_ROOT))
+    except FileNotFoundError:
+        print("[warn] Node.js is not available; cannot auto-generate PI pairs")
+        return False
+    except subprocess.CalledProcessError as exc:
+        print(f"[warn] Failed to generate PI pairs for {directory}: {exc}")
+        return False
+
+    if pair_file.exists():
+        return True
+
+    print(f"[warn] Expected PI pairs at {pair_file} but file was not created")
+    return False
 
 
 def prepare_dataframe(
@@ -264,11 +375,10 @@ def evaluate_predictions(
 
 
 def run_pch_experiment(
-    dataset_path: Path,
+    records: Sequence[dict],
     test_size: float,
     random_state: int,
 ) -> Dict[str, object]:
-    records = load_json(dataset_path)
     rows: List[Dict[str, object]] = []
     dropped = 0
     for record in records:
@@ -321,11 +431,10 @@ def run_pch_experiment(
 
 
 def run_spp_experiment(
-    dataset_path: Path,
+    records: Sequence[dict],
     test_size: float,
     random_state: int,
 ) -> Dict[str, object]:
-    records = load_json(dataset_path)
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
     X = df[list(FEATURE_KEYS)].to_numpy()
     results: Dict[str, object] = {}
@@ -378,16 +487,6 @@ def run_spp_experiment(
         }
 
     return results
-
-
-def load_pi_pairs(path: Path) -> List[dict]:
-    data = load_json(path)
-    if isinstance(data, dict) and "pairs" in data:
-        return data["pairs"]
-    if isinstance(data, list):
-        return data
-    raise ValueError(f"Unrecognized PI pairs format at {path}")
-
 
 def build_pi_samples(pairs: List[dict]) -> List[dict]:
     samples: List[dict] = []
@@ -490,12 +589,11 @@ def evaluate_pi_scope(
 
 
 def run_pi_experiment(
-    pairs_path: Path,
+    pairs: Sequence[dict],
     test_size: float,
     random_state: int,
 ) -> Dict[str, object]:
-    pairs = load_pi_pairs(pairs_path)
-    samples = build_pi_samples(pairs)
+    samples = build_pi_samples(list(pairs))
     scopes = defaultdict(list)
     for sample in samples:
         scopes["overall"].append(sample)
@@ -521,37 +619,67 @@ def main() -> None:
     if not data_dir.exists():
         raise SystemExit(f"Data directory {data_dir} does not exist")
 
-    pi_pairs_path = args.pi_pairs or (data_dir / "pi_pairs.json")
-    if not pi_pairs_path.exists():
+    dataset_dirs = discover_dataset_dirs(data_dir)
+    if not dataset_dirs:
         raise SystemExit(
-            f"PI pairs file not found at {pi_pairs_path}. "
-            "Provide --pi-pairs to point at pi_pairs.json."
+            f"No dataset folders found under {data_dir}. "
+            "Ensure at least one directory contains pch_dataset.json."
+        )
+
+    print("Using dataset directories:")
+    for directory in dataset_dirs:
+        print(f" - {directory}")
+
+    if not args.pi_pairs and not args.skip_auto_pairs:
+        for directory in dataset_dirs:
+            auto_generate_pi_pairs(directory, args.random_state)
+    elif args.skip_auto_pairs:
+        print("[info] Automatic PI pair generation disabled by flag")
+
+    pch_records = aggregate_json_arrays(dataset_dirs, "pch_dataset.json")
+    if not pch_records:
+        raise SystemExit("No PCH records found across dataset directories")
+
+    spp_records = aggregate_json_arrays(dataset_dirs, "spp_dataset.json")
+    if not spp_records:
+        raise SystemExit("No SPP records found across dataset directories")
+
+    if args.pi_pairs:
+        pi_pairs = load_pi_pairs(args.pi_pairs)
+        pi_pair_sources = [str(args.pi_pairs)]
+    else:
+        pi_pairs, pi_pair_sources = aggregate_pi_pairs(dataset_dirs)
+    if not pi_pairs:
+        raise SystemExit(
+            "No PI pairs found. Provide --pi-pairs or add pi_pairs.json to "
+            "each dataset directory."
         )
 
     print("Running Policy Content Hiding experiment…")
     pch_results = run_pch_experiment(
-        data_dir / "pch_dataset.json",
+        pch_records,
         test_size=args.test_size,
         random_state=args.random_state,
     )
 
     print("Running Structure & Parameter Privacy experiment…")
     spp_results = run_spp_experiment(
-        data_dir / "spp_dataset.json",
+        spp_records,
         test_size=args.test_size,
         random_state=args.random_state,
     )
 
     print("Running Policy Indistinguishability experiment…")
     pi_results = run_pi_experiment(
-        pi_pairs_path,
+        pi_pairs,
         test_size=args.test_size,
         random_state=args.random_state,
     )
 
     report = {
-        "data_dir": str(data_dir),
-        "pi_pairs": str(pi_pairs_path),
+        "data_root": str(data_dir),
+        "data_sources": [str(path) for path in dataset_dirs],
+        "pi_pair_sources": pi_pair_sources,
         "test_size": args.test_size,
         "random_state": args.random_state,
         "thresholds": DEFAULT_THRESHOLDS,
