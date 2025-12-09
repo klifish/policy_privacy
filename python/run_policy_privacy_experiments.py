@@ -50,6 +50,7 @@ DEFAULT_THRESHOLDS = {
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
+NON_OBSERVABLE_FEATURES = {"proofGenerationTime"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -134,6 +135,34 @@ def extract_feature_row(feature_bag: Dict[str, object]) -> Optional[Dict[str, fl
     return row
 
 
+def strip_non_observable_features(feature_map: Optional[dict]) -> bool:
+    if not isinstance(feature_map, dict):
+        return False
+    removed = False
+    for key in NON_OBSERVABLE_FEATURES:
+        if key in feature_map:
+            feature_map.pop(key, None)
+            removed = True
+    return removed
+
+
+def sanitize_dataset_entry(entry: dict) -> bool:
+    return strip_non_observable_features(entry.get("features"))
+
+
+def sanitize_pi_pair(pair: dict) -> bool:
+    changed = False
+    policies = pair.get("policies") or []
+    for policy in policies:
+        feature_runs = policy.get("features") or []
+        for run in feature_runs:
+            changed |= strip_non_observable_features(run.get("features"))
+        raw_execs = policy.get("rawExecutions") or []
+        for exec_record in raw_execs:
+            changed |= strip_non_observable_features(exec_record.get("features"))
+    return changed
+
+
 def discover_dataset_dirs(base_dir: Path) -> List[Path]:
     if base_dir.is_file():
         raise ValueError(f"{base_dir} is a file; expected directory")
@@ -155,20 +184,44 @@ def aggregate_json_arrays(dataset_dirs: Sequence[Path], filename: str) -> List[d
             print(f"[warn] {file_path} missing; skipping")
             continue
         data = load_json(file_path)
+        changed = False
         if isinstance(data, list):
-            combined.extend(data)
+            for entry in data:
+                if isinstance(entry, dict):
+                    if sanitize_dataset_entry(entry):
+                        changed = True
+                    combined.append(entry)
+                else:
+                    combined.append(entry)
         else:
             print(f"[warn] {file_path} is not a JSON array; skipping")
+            continue
+        if changed:
+            file_path.write_text(json.dumps(data, indent=2))
     return combined
 
 
 def load_pi_pairs(path: Path) -> List[dict]:
     data = load_json(path)
+    changed = False
     if isinstance(data, dict) and "pairs" in data:
-        return list(data["pairs"])
-    if isinstance(data, list):
+        raw_pairs = list(data["pairs"])
+        for pair in raw_pairs:
+            if isinstance(pair, dict) and sanitize_pi_pair(pair):
+                changed = True
+        if changed:
+            data["pairs"] = raw_pairs
+            path.write_text(json.dumps(data, indent=2))
+        return raw_pairs
+    elif isinstance(data, list):
+        for pair in data:
+            if isinstance(pair, dict) and sanitize_pi_pair(pair):
+                changed = True
+        if changed:
+            path.write_text(json.dumps(data, indent=2))
         return data
-    raise ValueError(f"Unrecognized PI pairs format at {path}")
+    else:
+        raise ValueError(f"Unrecognized PI pairs format at {path}")
 
 
 def aggregate_pi_pairs(dataset_dirs: Sequence[Path]) -> Tuple[List[dict], List[str]]:
@@ -457,8 +510,23 @@ def run_spp_experiment(
         mask = df_target["label"].notna()
         df_target = df_target.loc[mask]
 
-        y = df_target["label"].to_numpy()
-        X_target = df_target[list(FEATURE_KEYS)].to_numpy()
+        label_counts = Counter(df_target["label"])
+        min_count = min(label_counts.values())
+        target_seed_base = random_state or 0
+        balanced_groups = []
+        for label_value, group in df_target.groupby("label"):
+            if len(group) > min_count:
+                seed = (target_seed_base + abs(hash((target, label_value)))) % (2**32 - 1)
+                balanced_groups.append(group.sample(
+                    n=min_count,
+                    random_state=seed
+                ))
+            else:
+                balanced_groups.append(group)
+        df_target_balanced = pd.concat(balanced_groups, ignore_index=True)
+
+        y = df_target_balanced["label"].to_numpy()
+        X_target = df_target_balanced[list(FEATURE_KEYS)].to_numpy()
         X_train, X_test, y_train, y_test = build_stratified_split(
             X_target,
             y,
@@ -481,8 +549,8 @@ def run_spp_experiment(
         ]
 
         results[target] = {
-            "samples": len(df_target),
-            "class_distribution": dict(Counter(df_target["label"])),
+            "samples": len(df_target_balanced),
+            "class_distribution": dict(Counter(df_target_balanced["label"])),
             "evaluations": evaluations,
         }
 
