@@ -57,6 +57,7 @@
     "experiment:policy:spp:phase1": "node experiments/structure_and_parameter_privacy/run_experiment.js --phase 1",
     "experiment:policy:spp:phase2": "node experiments/structure_and_parameter_privacy/run_experiment.js --phase 2 --execution-results experiments/structure_and_parameter_privacy/results/execution_results.json",
     "experiment:policy:spp:test": "node experiments/structure_and_parameter_privacy/run_experiment.js --policies-per-family 3 --executions-per-policy 2 --output experiments/structure_and_parameter_privacy/results/test",
+    "experiment:policy:python": "cd python && .venv/bin/python run_policy_privacy_experiments.py",
     "test:experiments:spp": "PATH=$PWD/node_modules/.bin:$PATH npx mocha test/experiments/structure_parameter_privacy_test.js --timeout 100000",
     "unified": "UNIFIED_CONFIG_PATH=experiments/unified/configs/unified_dataset_config_optimized.json npx hardhat run experiments/unified/run.js --network localhost",
     "unified:testnet": "UNIFIED_CONFIG_PATH=experiments/unified/configs/unified_dataset_config_optimized.json npx hardhat run experiments/unified/run.js --network polygonAmoy",
