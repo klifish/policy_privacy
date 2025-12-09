@@ -10,12 +10,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -43,10 +48,21 @@ FEATURE_KEYS: Sequence[str] = (
     "blockDifference",
 )
 
+GAS_FEATURE_KEYS: Sequence[str] = tuple(
+    key for key in FEATURE_KEYS if "gas" in key.lower()
+)
+
 DEFAULT_THRESHOLDS = {
     "auc_max": 0.55,
     "advantage_max": 0.05,
 }
+
+DEFAULT_VISUALIZATION_DIR = (
+    Path(__file__).resolve().parent / "results" / "visualizations"
+)
+
+SCATTER_MATRIX_MAX_SAMPLES = 1000
+SCATTER_PLOT_MAX_SAMPLES = 3000
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
@@ -94,6 +110,17 @@ def parse_args() -> argparse.Namespace:
         "--skip-auto-pairs",
         action="store_true",
         help="Disable automatic PI pair generation when pi_pairs.json is missing",
+    )
+    parser.add_argument(
+        "--visualizations-dir",
+        type=Path,
+        default=DEFAULT_VISUALIZATION_DIR,
+        help="Directory where dataset visualizations are stored",
+    )
+    parser.add_argument(
+        "--skip-visualizations",
+        action="store_true",
+        help="Disable dataset visualization rendering",
     )
     return parser.parse_args()
 
@@ -583,6 +610,424 @@ def build_pi_samples(pairs: List[dict]) -> List[dict]:
     return samples
 
 
+def ensure_dir(path: Path) -> Path:
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def auto_bins(count: int) -> int:
+    if count <= 0:
+        return 1
+    return min(60, max(5, int(math.sqrt(count))))
+
+
+def plot_bar_chart(
+    counter: Counter,
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    output_path: Path,
+    rotation: int = 45,
+) -> None:
+    if not counter:
+        return
+    labels_counts = sorted(
+        ((str(label), value) for label, value in counter.items()),
+        key=lambda item: (-item[1], item[0]),
+    )
+    labels = [item[0] for item in labels_counts]
+    counts = [item[1] for item in labels_counts]
+    fig_width = max(6.0, min(16.0, 0.6 * len(labels)))
+    fig, ax = plt.subplots(figsize=(fig_width, 4.5))
+    ax.bar(range(len(labels)), counts, color="#2563eb")
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=rotation, ha="right")
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+    print(f"[viz] Saved {output_path}")
+
+
+def plot_histogram(
+    values: Sequence[float],
+    title: str,
+    xlabel: str,
+    output_path: Path,
+) -> None:
+    if not values:
+        return
+    bins = auto_bins(len(values))
+    fig, ax = plt.subplots(figsize=(6.5, 4.5))
+    ax.hist(values, bins=bins, color="#0f766e",
+            edgecolor="black", alpha=0.8)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Count")
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+    print(f"[viz] Saved {output_path}")
+
+
+def collect_feature_values(
+    records: Sequence[dict],
+    feature_names: Sequence[str] = FEATURE_KEYS,
+) -> Dict[str, List[float]]:
+    feature_values: Dict[str, List[float]] = {key: [] for key in feature_names}
+    for record in records:
+        features = extract_feature_row(record.get("features", {}))
+        if features is None:
+            continue
+        for key in feature_names:
+            value = features.get(key)
+            if value is not None:
+                feature_values[key].append(value)
+    return feature_values
+
+
+def build_feature_dataframe(
+    records: Sequence[dict],
+    label_extractor,
+) -> Optional[pd.DataFrame]:
+    rows: List[Dict[str, object]] = []
+    for record in records:
+        features = extract_feature_row(record.get("features", {}))
+        if features is None:
+            continue
+        labels = label_extractor(record)
+        if labels is None:
+            continue
+        if isinstance(labels, Iterable) and not isinstance(labels, (str, bytes, dict)):
+            label_values = list(labels)
+        else:
+            label_values = [labels]
+        for label in label_values:
+            if label is None:
+                continue
+            row = dict(features)
+            row["label"] = label
+            rows.append(row)
+    if not rows:
+        return None
+    return pd.DataFrame(rows)
+
+
+def visualize_feature_histograms(
+    records: Sequence[dict],
+    output_dir: Path,
+    prefix: str,
+    feature_names: Sequence[str] = FEATURE_KEYS,
+) -> None:
+    if not feature_names:
+        return
+    values_map = collect_feature_values(records, feature_names=feature_names)
+    for feature_name, values in values_map.items():
+        if len(values) < 2:
+            continue
+        plot_histogram(
+            values,
+            title=f"{prefix.upper()} {feature_name} distribution",
+            xlabel=feature_name,
+            output_path=output_dir / f"{prefix}_{feature_name}_hist.png",
+        )
+
+
+def plot_feature_scatter_matrix(
+    df: Optional[pd.DataFrame],
+    title: str,
+    output_path: Path,
+    feature_names: Sequence[str] = FEATURE_KEYS,
+) -> None:
+    if df is None or df.empty or not feature_names:
+        return
+    selected_features = [
+        column for column in feature_names if column in df.columns
+    ]
+    if len(selected_features) < 2:
+        return
+    if len(df) > SCATTER_MATRIX_MAX_SAMPLES:
+        df = df.sample(
+            n=SCATTER_MATRIX_MAX_SAMPLES,
+            random_state=0,
+        ).reset_index(drop=True)
+    unique_labels = sorted(df["label"].unique(), key=lambda value: str(value))
+    if not unique_labels:
+        return
+    cmap = plt.get_cmap("tab20")
+    color_positions = np.linspace(
+        0,
+        1,
+        num=max(2, len(unique_labels)),
+        endpoint=True,
+    )
+    label_to_color = {
+        label: cmap(color_positions[idx])
+        for idx, label in enumerate(unique_labels)
+    }
+    colors = [label_to_color.get(label, (0.5, 0.5, 0.5, 0.5))
+              for label in df["label"]]
+    hist_bins = auto_bins(len(df))
+    axes = pd.plotting.scatter_matrix(
+        df[selected_features],
+        figsize=(10, 10),
+        alpha=0.6,
+        diagonal="hist",
+        hist_kwds={
+            "bins": hist_bins,
+            "color": "#94a3b8",
+        },
+        c=colors,
+        range_padding=0.05,
+    )
+    fig = axes[0, 0].figure
+    fig.suptitle(title, y=0.99, fontsize=14)
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=str(label),
+            markerfacecolor=label_to_color[label],
+            markersize=6,
+        )
+        for label in unique_labels
+    ]
+    fig.legend(
+        handles=legend_elements,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.04),
+        ncol=min(4, len(legend_elements)),
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=[0, 0.06, 1, 1])
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+    print(f"[viz] Saved {output_path}")
+
+
+def plot_commit_access_scatter(
+    df: Optional[pd.DataFrame],
+    title: str,
+    output_path: Path,
+) -> None:
+    if df is None or df.empty:
+        return
+    required = {"commitGasUsed", "accessGasUsed"}
+    if not required.issubset(df.columns):
+        return
+    if len(df) > SCATTER_PLOT_MAX_SAMPLES:
+        df = df.sample(
+            n=SCATTER_PLOT_MAX_SAMPLES,
+            random_state=1,
+        ).reset_index(drop=True)
+    unique_labels = sorted(df["label"].unique(), key=lambda value: str(value))
+    if not unique_labels:
+        return
+    cmap = plt.get_cmap("tab20")
+    label_to_color = {
+        label: cmap(float(idx) / max(1, len(unique_labels) - 1))
+        for idx, label in enumerate(unique_labels)
+    }
+    colors = [label_to_color.get(label, (0.4, 0.4, 0.4, 0.6))
+              for label in df["label"]]
+    fig, ax = plt.subplots(figsize=(6.5, 5.5))
+    ax.scatter(
+        df["commitGasUsed"],
+        df["accessGasUsed"],
+        c=colors,
+        s=12,
+        alpha=0.7,
+        edgecolors="none",
+    )
+    ax.set_title(title)
+    ax.set_xlabel("commitGasUsed")
+    ax.set_ylabel("accessGasUsed")
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=str(label),
+            markerfacecolor=label_to_color[label],
+            markersize=6,
+        )
+        for label in unique_labels
+    ]
+    ax.legend(
+        handles=legend_elements,
+        loc="upper right",
+        fontsize=8,
+        frameon=True,
+    )
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
+    print(f"[viz] Saved {output_path}")
+
+
+def visualize_pch_data(records: Sequence[dict], output_dir: Path) -> None:
+    ensure_dir(output_dir)
+    duo_counter: Counter = Counter()
+    for record in records:
+        duo_codes = record.get("duoTermCodes") or []
+        for code in duo_codes:
+            duo_counter[str(code)] += 1
+    if duo_counter:
+        plot_bar_chart(
+            duo_counter,
+            title="PCH Duo term distribution",
+            xlabel="DUO term",
+            ylabel="Occurrences",
+            output_path=output_dir / "pch_duo_terms.png",
+        )
+    visualize_feature_histograms(
+        records,
+        output_dir,
+        prefix="pch",
+        feature_names=GAS_FEATURE_KEYS,
+    )
+    df = build_feature_dataframe(
+        records,
+        label_extractor=lambda entry: entry.get("duoTermCodes") or [],
+    )
+    plot_feature_scatter_matrix(
+        df,
+        title="PCH gas feature scatter matrix",
+        output_path=output_dir / "pch_gas_feature_scatter.png",
+        feature_names=GAS_FEATURE_KEYS,
+    )
+    plot_commit_access_scatter(
+        df,
+        title="PCH commit vs access gas",
+        output_path=output_dir / "pch_commit_vs_access.png",
+    )
+
+
+def is_numeric_value(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def visualize_spp_data(records: Sequence[dict], output_dir: Path) -> None:
+    ensure_dir(output_dir)
+    targets = ["logicStructure", "nestingDepth",
+               "predicateCount", "setSize", "rangeWidth"]
+    for target in targets:
+        values = [record.get(target) for record in records if record.get(target) is not None]
+        if not values:
+            continue
+        output_path = output_dir / f"spp_{target}_distribution.png"
+        if all(is_numeric_value(value) for value in values):
+            numeric_values = [float(value) for value in values]
+            plot_histogram(
+                numeric_values,
+                title=f"SPP {target} distribution",
+                xlabel=target,
+                output_path=output_path,
+            )
+        else:
+            counter = Counter(str(value) for value in values)
+            plot_bar_chart(
+                counter,
+                title=f"SPP {target} distribution",
+                xlabel=target,
+                ylabel="Occurrences",
+                output_path=output_path,
+                rotation=30,
+            )
+        df_target = build_feature_dataframe(
+            records,
+            label_extractor=lambda entry, key=target: entry.get(key),
+        )
+        plot_feature_scatter_matrix(
+            df_target,
+            title=f"SPP {target} gas feature scatter matrix",
+            output_path=output_dir / f"spp_{target}_gas_feature_scatter.png",
+            feature_names=GAS_FEATURE_KEYS,
+        )
+        plot_commit_access_scatter(
+            df_target,
+            title=f"SPP {target} commit vs access gas",
+            output_path=output_dir / f"spp_{target}_commit_vs_access.png",
+        )
+    visualize_feature_histograms(
+        records,
+        output_dir,
+        prefix="spp",
+        feature_names=GAS_FEATURE_KEYS,
+    )
+
+
+def visualize_pi_data(pairs: Sequence[dict], output_dir: Path) -> None:
+    ensure_dir(output_dir)
+    pair_type_counter: Counter = Counter()
+    for pair in pairs:
+        pair_type = pair.get("pairType") or "unspecified"
+        pair_type_counter[str(pair_type)] += 1
+    if pair_type_counter:
+        plot_bar_chart(
+            pair_type_counter,
+            title="PI pair type distribution",
+            xlabel="Pair type",
+            ylabel="Pairs",
+            output_path=output_dir / "pi_pair_types.png",
+        )
+
+    samples = build_pi_samples(list(pairs))
+    label_counter = Counter(str(sample["label"]) for sample in samples)
+    if label_counter:
+        plot_bar_chart(
+            label_counter,
+            title="PI policy label distribution",
+            xlabel="Policy label",
+            ylabel="Samples",
+            output_path=output_dir / "pi_policy_labels.png",
+        )
+    visualize_feature_histograms(
+        samples,
+        output_dir,
+        prefix="pi",
+        feature_names=GAS_FEATURE_KEYS,
+    )
+    df = build_feature_dataframe(
+        samples,
+        label_extractor=lambda row: row.get("label"),
+    )
+    plot_feature_scatter_matrix(
+        df,
+        title="PI gas feature scatter matrix",
+        output_path=output_dir / "pi_gas_feature_scatter.png",
+        feature_names=GAS_FEATURE_KEYS,
+    )
+    plot_commit_access_scatter(
+        df,
+        title="PI commit vs access gas",
+        output_path=output_dir / "pi_commit_vs_access.png",
+    )
+
+
+def generate_dataset_visualizations(
+    pch_records: Sequence[dict],
+    spp_records: Sequence[dict],
+    pi_pairs: Sequence[dict],
+    output_dir: Path,
+) -> None:
+    base_dir = ensure_dir(output_dir)
+    print(f"[viz] Writing visualizations to {base_dir}")
+    visualize_pch_data(pch_records, base_dir / "pch")
+    visualize_spp_data(spp_records, base_dir / "spp")
+    visualize_pi_data(pi_pairs, base_dir / "pi")
+
+
 def split_pi_samples(
     samples: Sequence[dict],
     test_size: float,
@@ -721,6 +1166,16 @@ def main() -> None:
         raise SystemExit(
             "No PI pairs found. Provide --pi-pairs or add pi_pairs.json to "
             "each dataset directory."
+        )
+
+    if args.skip_visualizations:
+        print("[info] Dataset visualization generation skipped via flag")
+    else:
+        generate_dataset_visualizations(
+            pch_records,
+            spp_records,
+            pi_pairs,
+            args.visualizations_dir,
         )
 
     print("Running Policy Content Hiding experiment…")
