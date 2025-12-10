@@ -112,16 +112,16 @@ contract PolicyPrivacy {
      * @dev Pads gas consumption to reach a target total transaction gas
      * @param startGas Gas available at the start of the function
      * @param targetGas Target total transaction gas (including calldata, base, and execution)
-     * 
+     *
      * This improved implementation:
      * 1. Calculates actual calldata costs dynamically (zero vs non-zero bytes)
      * 2. Compensates for calldata differences to normalize total gas
      * 3. Accounts for storage and loop overhead
-     * 
+     *
      * Note: Perfect gas equalization is theoretically impossible due to EVM limitations
      * (storage state differences, memory expansion, etc.). This achieves ~3-5% variance,
      * which is acceptable for practical privacy preservation.
-     * 
+     *
      * See docs/GAS_PADDING_IMPROVEMENTS.md for detailed explanation.
      */
     function _padGasToTarget(uint256 startGas, uint256 targetGas) internal {
@@ -140,7 +140,7 @@ contract PolicyPrivacy {
         // Total TX gas = 21000 (base) + calldata_gas + execution_gas
         //
         // Calldata gas calculation (EIP-2028):
-        // - Zero bytes: 4 gas each  
+        // - Zero bytes: 4 gas each
         // - Non-zero bytes: 16 gas each
         //
         // Strategy: Calculate actual calldata costs and compensate with padding
@@ -149,24 +149,25 @@ contract PolicyPrivacy {
         // Calculate actual calldata costs dynamically
         uint256 calldataLength = msg.data.length;
         uint256 calldataZeroBytes = 0;
-        
+
         // Count zero bytes in calldata
         for (uint256 i = 0; i < calldataLength; i++) {
             if (msg.data[i] == 0) {
                 calldataZeroBytes++;
             }
         }
-        
+
         uint256 calldataNonZeroBytes = calldataLength - calldataZeroBytes;
-        uint256 actualCalldataGas = (calldataZeroBytes * 4) + (calldataNonZeroBytes * 16);
-        
+        uint256 actualCalldataGas = (calldataZeroBytes * 4) +
+            (calldataNonZeroBytes * 16);
+
         // Calculate maximum possible calldata gas for this function
         // (assuming all bytes are non-zero for worst case)
         uint256 maxCalldataGas = calldataLength * 16;
-        
+
         // Base transaction cost
         uint256 BASE_TX_GAS = 21000;
-        
+
         // Total overhead with MAXIMUM calldata cost (worst case)
         uint256 maxTxOverhead = BASE_TX_GAS + maxCalldataGas;
 
@@ -178,7 +179,7 @@ contract PolicyPrivacy {
         // Calculate target execution gas based on MAXIMUM overhead
         // This ensures all transactions reach the same total gas
         uint256 targetExecutionGas = targetGas - maxTxOverhead;
-        
+
         // Calculate additional padding needed to compensate for lower actual calldata cost
         // Transactions with more zero bytes (lower calldata cost) need more execution padding
         uint256 calldataCompensation = maxCalldataGas - actualCalldataGas;
@@ -211,8 +212,10 @@ contract PolicyPrivacy {
         if (paddingNeeded <= finalOperationsCost) {
             return; // Too small to pad accurately
         }
-        
-        uint256 targetGasLeft = currentGas - paddingNeeded + finalOperationsCost;
+
+        uint256 targetGasLeft = currentGas -
+            paddingNeeded +
+            finalOperationsCost;
 
         // Burn gas through computation until we reach target
         // Use simple, predictable operations with consistent gas cost

@@ -52,6 +52,11 @@ GAS_FEATURE_KEYS: Sequence[str] = tuple(
     key for key in FEATURE_KEYS if "gas" in key.lower()
 )
 
+RAW_DISTRIBUTION_FEATURES: Sequence[str] = (
+    "accessGasUsed",
+    "commitGasUsed",
+)
+
 DEFAULT_THRESHOLDS = {
     "auc_max": 0.55,
     "advantage_max": 0.05,
@@ -63,6 +68,8 @@ DEFAULT_VISUALIZATION_DIR = (
 
 SCATTER_MATRIX_MAX_SAMPLES = 1000
 SCATTER_PLOT_MAX_SAMPLES = 3000
+OUTLIER_FEATURE_KEYS = GAS_FEATURE_KEYS
+OUTLIER_THRESHOLD_MULTIPLIER = 1.5
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
@@ -324,7 +331,7 @@ def prepare_dataframe(
 ) -> pd.DataFrame:
     rows: List[Dict[str, object]] = []
     dropped = 0
-    for record in records:
+    for idx, record in enumerate(records):
         features = extract_feature_row(record.get("features", {}))
         if features is None:
             dropped += 1
@@ -333,7 +340,10 @@ def prepare_dataframe(
         if label is None:
             dropped += 1
             continue
-        row = {"label": label}
+        row = {
+            "label": label,
+            "_record_index": idx,
+        }
         row.update(features)
         rows.append(row)
 
@@ -479,6 +489,13 @@ def run_pch_experiment(
             f"[warn] Dropped {dropped} PCH records due to missing features/duo terms")
 
     df = pd.DataFrame(rows)
+    df, removed_outliers = remove_outliers_from_df(
+        df,
+        OUTLIER_FEATURE_KEYS,
+        "PCH",
+    )
+    if df.empty:
+        raise ValueError("All PCH samples removed during outlier filtering")
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
     X_train, X_test, y_train, y_test = build_stratified_split(
@@ -516,13 +533,20 @@ def run_spp_experiment(
     random_state: int,
 ) -> Dict[str, object]:
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
+    df, _ = remove_outliers_from_df(df, OUTLIER_FEATURE_KEYS, "SPP")
+    if df.empty:
+        raise ValueError("All SPP samples removed during outlier filtering")
+    df["_record_index"] = df["_record_index"].astype(int)
     X = df[list(FEATURE_KEYS)].to_numpy()
     results: Dict[str, object] = {}
     targets = ["logicStructure", "nestingDepth",
                "predicateCount", "setSize", "rangeWidth"]
 
     for target in targets:
-        labels = [item.get(target) for item in records]
+        labels = [
+            records[idx].get(target)
+            for idx in df["_record_index"].tolist()
+        ]
         unique = {label for label in labels if label is not None}
         if len(unique) < 2:
             results[target] = {
@@ -583,7 +607,11 @@ def run_spp_experiment(
 
     return results
 
-def build_pi_samples(pairs: List[dict]) -> List[dict]:
+
+def build_pi_samples(
+    pairs: List[dict],
+    drop_outliers: bool = True,
+) -> List[dict]:
     samples: List[dict] = []
     for pair in pairs:
         pair_id = pair.get("pairId")
@@ -607,6 +635,8 @@ def build_pi_samples(pairs: List[dict]) -> List[dict]:
                         "features": features,
                     }
                 )
+    if drop_outliers:
+        samples = drop_outlier_samples(samples, "PI")
     return samples
 
 
@@ -619,6 +649,87 @@ def auto_bins(count: int) -> int:
     if count <= 0:
         return 1
     return min(60, max(5, int(math.sqrt(count))))
+
+
+def compute_iqr_bounds(values: np.ndarray) -> Tuple[float, float]:
+    if values.size == 0:
+        return 0.0, 0.0
+    if values.size < 4:
+        lower = float(np.min(values))
+        upper = float(np.max(values))
+        return lower, upper
+    q1 = float(np.percentile(values, 25))
+    q3 = float(np.percentile(values, 75))
+    iqr = q3 - q1
+    if iqr == 0.0:
+        padding = max(1.0, abs(q1) * 0.05)
+        return q1 - padding, q3 + padding
+    spread = iqr * OUTLIER_THRESHOLD_MULTIPLIER
+    return q1 - spread, q3 + spread
+
+
+def remove_outliers_from_df(
+    df: pd.DataFrame,
+    feature_names: Sequence[str],
+    context: str,
+) -> Tuple[pd.DataFrame, int]:
+    if df.empty:
+        return df, 0
+    mask = pd.Series(True, index=df.index)
+    for feature in feature_names:
+        if feature not in df.columns:
+            continue
+        series = pd.to_numeric(df[feature], errors="coerce")
+        series = series.replace([np.inf, -np.inf], np.nan)
+        valid = series.dropna()
+        if valid.empty:
+            continue
+        lower, upper = compute_iqr_bounds(valid.to_numpy())
+        mask &= series.between(lower, upper, inclusive="both")
+    mask = mask.fillna(False)
+    kept = df.loc[mask]
+    dropped = len(df) - len(kept)
+    if dropped and kept.empty:
+        return df, 0
+    if dropped:
+        print(
+            f"[info] Removed {dropped} {context} samples due to gas outliers")
+    return kept.reset_index(drop=True), dropped
+
+
+def drop_outlier_samples(
+    samples: List[dict],
+    context: str,
+) -> List[dict]:
+    rows: List[Dict[str, object]] = []
+    for idx, sample in enumerate(samples):
+        features = sample.get("features", {})
+        if not isinstance(features, dict):
+            continue
+        row = {"__row_id": idx}
+        for key in OUTLIER_FEATURE_KEYS:
+            if key in features:
+                row[key] = features[key]
+        rows.append(row)
+    if not rows:
+        return samples
+    df = pd.DataFrame(rows)
+    filtered, dropped = remove_outliers_from_df(
+        df,
+        OUTLIER_FEATURE_KEYS,
+        context,
+    )
+    if not dropped:
+        return samples
+    keep_ids = set(filtered["__row_id"].astype(int).tolist())
+    filtered_samples = [
+        sample for idx, sample in enumerate(samples) if idx in keep_ids
+    ]
+    print(
+        f"[info] Retained {len(filtered_samples)} {context} samples "
+        "after outlier removal"
+    )
+    return filtered_samples
 
 
 def plot_bar_chart(
@@ -674,20 +785,63 @@ def plot_histogram(
     print(f"[viz] Saved {output_path}")
 
 
-def collect_feature_values(
+def collect_raw_feature_values(
     records: Sequence[dict],
-    feature_names: Sequence[str] = FEATURE_KEYS,
+    feature_names: Sequence[str],
 ) -> Dict[str, List[float]]:
-    feature_values: Dict[str, List[float]] = {key: [] for key in feature_names}
+    values: Dict[str, List[float]] = defaultdict(list)
     for record in records:
         features = extract_feature_row(record.get("features", {}))
         if features is None:
             continue
-        for key in feature_names:
-            value = features.get(key)
-            if value is not None:
-                feature_values[key].append(value)
-    return feature_values
+        for feature in feature_names:
+            if feature in features:
+                values[feature].append(features[feature])
+    return {key: vals for key, vals in values.items() if vals}
+
+
+def visualize_raw_feature_histograms(
+    records: Sequence[dict],
+    output_dir: Path,
+    prefix: str,
+    feature_names: Sequence[str],
+) -> None:
+    if not feature_names:
+        return
+    values_map = collect_raw_feature_values(records, feature_names)
+    if not values_map:
+        return
+    for feature_name, values in values_map.items():
+        if len(values) < 2:
+            continue
+        plot_histogram(
+            values,
+            title=f"{prefix.upper()} {feature_name} raw distribution",
+            xlabel=feature_name,
+            output_path=output_dir / f"{prefix}_{feature_name}_raw_hist.png",
+        )
+
+
+def collect_feature_values(
+    records: Sequence[dict],
+    feature_names: Sequence[str],
+    context: str,
+) -> Dict[str, List[float]]:
+    rows: List[Dict[str, object]] = []
+    for record in records:
+        features = extract_feature_row(record.get("features", {}))
+        if features is None:
+            continue
+        rows.append(features)
+    if not rows:
+        return {}
+    df = pd.DataFrame(rows)
+    df, _ = remove_outliers_from_df(df, feature_names, context)
+    values: Dict[str, List[float]] = {}
+    for feature in feature_names:
+        if feature in df.columns:
+            values[feature] = df[feature].tolist()
+    return values
 
 
 def build_feature_dataframe(
@@ -725,7 +879,12 @@ def visualize_feature_histograms(
 ) -> None:
     if not feature_names:
         return
-    values_map = collect_feature_values(records, feature_names=feature_names)
+    values_map = collect_feature_values(
+        records,
+        feature_names=feature_names,
+        context=f"{prefix.upper()} histogram",
+    )
+
     for feature_name, values in values_map.items():
         if len(values) < 2:
             continue
@@ -828,6 +987,7 @@ def plot_commit_access_scatter(
             n=SCATTER_PLOT_MAX_SAMPLES,
             random_state=1,
         ).reset_index(drop=True)
+
     unique_labels = sorted(df["label"].unique(), key=lambda value: str(value))
     if not unique_labels:
         return
@@ -890,22 +1050,38 @@ def visualize_pch_data(records: Sequence[dict], output_dir: Path) -> None:
             ylabel="Occurrences",
             output_path=output_dir / "pch_duo_terms.png",
         )
+
+    visualize_raw_feature_histograms(
+        records,
+        output_dir,
+        prefix="pch",
+        feature_names=RAW_DISTRIBUTION_FEATURES,
+    )
+
     visualize_feature_histograms(
         records,
         output_dir,
         prefix="pch",
         feature_names=GAS_FEATURE_KEYS,
     )
+
     df = build_feature_dataframe(
         records,
         label_extractor=lambda entry: entry.get("duoTermCodes") or [],
     )
-    plot_feature_scatter_matrix(
-        df,
-        title="PCH gas feature scatter matrix",
-        output_path=output_dir / "pch_gas_feature_scatter.png",
-        feature_names=GAS_FEATURE_KEYS,
-    )
+    if df is not None:
+        df, _ = remove_outliers_from_df(
+            df,
+            OUTLIER_FEATURE_KEYS,
+            "PCH visualization",
+        )
+    # plot_feature_scatter_matrix(
+    #     df,
+    #     title="PCH gas feature scatter matrix",
+    #     output_path=output_dir / "pch_gas_feature_scatter.png",
+    #     feature_names=GAS_FEATURE_KEYS,
+    # )
+
     plot_commit_access_scatter(
         df,
         title="PCH commit vs access gas",
@@ -919,10 +1095,17 @@ def is_numeric_value(value) -> bool:
 
 def visualize_spp_data(records: Sequence[dict], output_dir: Path) -> None:
     ensure_dir(output_dir)
+    visualize_raw_feature_histograms(
+        records,
+        output_dir,
+        prefix="spp",
+        feature_names=RAW_DISTRIBUTION_FEATURES,
+    )
     targets = ["logicStructure", "nestingDepth",
                "predicateCount", "setSize", "rangeWidth"]
     for target in targets:
-        values = [record.get(target) for record in records if record.get(target) is not None]
+        values = [record.get(target)
+                  for record in records if record.get(target) is not None]
         if not values:
             continue
         output_path = output_dir / f"spp_{target}_distribution.png"
@@ -948,6 +1131,12 @@ def visualize_spp_data(records: Sequence[dict], output_dir: Path) -> None:
             records,
             label_extractor=lambda entry, key=target: entry.get(key),
         )
+        if df_target is not None:
+            df_target, _ = remove_outliers_from_df(
+                df_target,
+                OUTLIER_FEATURE_KEYS,
+                f"SPP {target} visualization",
+            )
         plot_feature_scatter_matrix(
             df_target,
             title=f"SPP {target} gas feature scatter matrix",
@@ -982,7 +1171,14 @@ def visualize_pi_data(pairs: Sequence[dict], output_dir: Path) -> None:
             output_path=output_dir / "pi_pair_types.png",
         )
 
-    samples = build_pi_samples(list(pairs))
+    raw_samples = build_pi_samples(list(pairs), drop_outliers=False)
+    visualize_raw_feature_histograms(
+        raw_samples,
+        output_dir,
+        prefix="pi",
+        feature_names=RAW_DISTRIBUTION_FEATURES,
+    )
+    samples = drop_outlier_samples(list(raw_samples), "PI")
     label_counter = Counter(str(sample["label"]) for sample in samples)
     if label_counter:
         plot_bar_chart(
@@ -1002,6 +1198,12 @@ def visualize_pi_data(pairs: Sequence[dict], output_dir: Path) -> None:
         samples,
         label_extractor=lambda row: row.get("label"),
     )
+    if df is not None:
+        df, _ = remove_outliers_from_df(
+            df,
+            OUTLIER_FEATURE_KEYS,
+            "PI visualization",
+        )
     plot_feature_scatter_matrix(
         df,
         title="PI gas feature scatter matrix",
