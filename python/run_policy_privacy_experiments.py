@@ -7,6 +7,20 @@ The script performs attack modeling with Logistic Regression and
 Random Forest classifiers and emits privacy metrics for each experiment.
 """
 from __future__ import annotations
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    roc_auc_score,
+)
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+import numpy as np
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
 
 import argparse
 import json
@@ -19,33 +33,11 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    roc_auc_score,
-)
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
 # Observable on-chain features shared across the experiments.
 FEATURE_KEYS: Sequence[str] = (
     "commitGasUsed",
-    "commitCalldataLength",
     "accessGasUsed",
-    "accessCalldataLength",
-    "proofSize",
-    "commitLogsCount",
-    "commitLogsSize",
-    "accessLogsCount",
-    "accessLogsSize",
-    "blockDifference",
 )
 
 GAS_FEATURE_KEYS: Sequence[str] = tuple(
@@ -193,7 +185,8 @@ def sanitize_pi_pair(pair: dict) -> bool:
             changed |= strip_non_observable_features(run.get("features"))
         raw_execs = policy.get("rawExecutions") or []
         for exec_record in raw_execs:
-            changed |= strip_non_observable_features(exec_record.get("features"))
+            changed |= strip_non_observable_features(
+                exec_record.get("features"))
     return changed
 
 
@@ -393,7 +386,10 @@ def build_models(num_classes: int) -> Dict[str, Pipeline]:
             (
                 "clf",
                 RandomForestClassifier(
-                    n_estimators=400,
+                    n_estimators=50,
+                    max_depth=3,
+                    min_samples_split=10,
+                    min_samples_leaf=5,
                     class_weight="balanced",
                     random_state=0,
                 ),
@@ -567,7 +563,8 @@ def run_spp_experiment(
         balanced_groups = []
         for label_value, group in df_target.groupby("label"):
             if len(group) > min_count:
-                seed = (target_seed_base + abs(hash((target, label_value)))) % (2**32 - 1)
+                seed = (target_seed_base +
+                        abs(hash((target, label_value)))) % (2**32 - 1)
                 balanced_groups.append(group.sample(
                     n=min_count,
                     random_state=seed
