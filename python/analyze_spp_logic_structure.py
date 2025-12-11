@@ -94,6 +94,65 @@ def analyze_feature_distribution(df):
         print(f"  commitGasUsed: mean={label_df['commitGasUsed'].mean():,.0f}, "
               f"std={label_df['commitGasUsed'].std():,.0f}")
 
+def visualize_pre_split_features(df, output_dir):
+    """可视化训练/测试集划分前的Gas特征"""
+    if df is None or df.empty:
+        return
+    viz_dir = output_dir / "pre_split"
+    viz_dir.mkdir(parents=True, exist_ok=True)
+
+    bins = min(60, max(10, int(np.sqrt(len(df)))))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    for idx, feature in enumerate(FEATURE_KEYS):
+        axes[idx].hist(
+            df[feature],
+            bins=bins,
+            color="#0ea5e9",
+            alpha=0.75,
+            edgecolor="black",
+            linewidth=0.5,
+        )
+        axes[idx].set_title(f"{feature} distribution (pre-split)")
+        axes[idx].set_xlabel(feature)
+        axes[idx].set_ylabel("Count")
+        axes[idx].grid(alpha=0.2, linestyle="--")
+    fig.suptitle("Gas usage distribution before train/test split",
+                 fontsize=14, fontweight="bold")
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    hist_path = viz_dir / "pre_split_gas_hist.png"
+    fig.savefig(hist_path, dpi=200)
+    plt.close(fig)
+    print(f"[viz] Saved: {hist_path}")
+
+    labels = sorted(df["label"].unique())
+    if not labels:
+        return
+    colors = plt.get_cmap("tab20")(np.linspace(0, 1, len(labels)))
+    fig, ax = plt.subplots(figsize=(7, 6))
+    for color, label in zip(colors, labels):
+        group = df[df["label"] == label]
+        if group.empty:
+            continue
+        ax.scatter(
+            group["commitGasUsed"],
+            group["accessGasUsed"],
+            s=18,
+            alpha=0.75,
+            label=label,
+            edgecolors="none",
+            color=color,
+        )
+    ax.set_title("commitGasUsed vs accessGasUsed (pre-split)")
+    ax.set_xlabel("commitGasUsed")
+    ax.set_ylabel("accessGasUsed")
+    ax.grid(alpha=0.3, linestyle="--")
+    ax.legend(loc="upper right", fontsize=8, frameon=True)
+    plt.tight_layout()
+    scatter_path = viz_dir / "pre_split_commit_vs_access.png"
+    plt.savefig(scatter_path, dpi=200)
+    plt.close()
+    print(f"[viz] Saved: {scatter_path}")
+
 def test_configurations(X_train, X_test, y_train, y_test):
     """测试不同配置"""
     configs = [
@@ -264,6 +323,9 @@ def main():
 
     # 分析类别可分性
     analyze_class_separability(df)
+
+    # 可视化训练/测试集划分前的Gas特征
+    visualize_pre_split_features(df, OUTPUT_DIR)
 
     # 准备训练/测试集
     X = df[["commitGasUsed", "accessGasUsed"]].to_numpy()

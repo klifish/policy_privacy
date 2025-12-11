@@ -464,6 +464,7 @@ def run_pch_experiment(
     records: Sequence[dict],
     test_size: float,
     random_state: int,
+    visualization_dir: Optional[Path] = None,
 ) -> Dict[str, object]:
     rows: List[Dict[str, object]] = []
     dropped = 0
@@ -492,6 +493,11 @@ def run_pch_experiment(
     )
     if df.empty:
         raise ValueError("All PCH samples removed during outlier filtering")
+    visualize_pre_split_gas_features(
+        df,
+        visualization_dir,
+        prefix="PCH Gas usage",
+    )
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
     X_train, X_test, y_train, y_test = build_stratified_split(
@@ -527,12 +533,18 @@ def run_spp_experiment(
     records: Sequence[dict],
     test_size: float,
     random_state: int,
+    visualization_dir: Optional[Path] = None,
 ) -> Dict[str, object]:
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
     df, _ = remove_outliers_from_df(df, OUTLIER_FEATURE_KEYS, "SPP")
     if df.empty:
         raise ValueError("All SPP samples removed during outlier filtering")
     df["_record_index"] = df["_record_index"].astype(int)
+    visualize_pre_split_gas_features(
+        df,
+        visualization_dir,
+        prefix="SPP overall gas",
+    )
     X = df[list(FEATURE_KEYS)].to_numpy()
     results: Dict[str, object] = {}
     targets = ["logicStructure", "nestingDepth",
@@ -574,6 +586,11 @@ def run_spp_experiment(
         df_target_balanced = pd.concat(balanced_groups, ignore_index=True)
 
         y = df_target_balanced["label"].to_numpy()
+        visualize_pre_split_gas_features(
+            df_target_balanced,
+            visualization_dir / target if visualization_dir else None,
+            prefix=f"SPP {target} gas",
+        )
         X_target = df_target_balanced[list(FEATURE_KEYS)].to_numpy()
         X_train, X_test, y_train, y_test = build_stratified_split(
             X_target,
@@ -866,6 +883,43 @@ def build_feature_dataframe(
     if not rows:
         return None
     return pd.DataFrame(rows)
+
+
+def visualize_pre_split_gas_features(
+    df: Optional[pd.DataFrame],
+    output_dir: Optional[Path],
+    prefix: str,
+    feature_names: Sequence[str] = GAS_FEATURE_KEYS,
+) -> None:
+    if output_dir is None or df is None or df.empty:
+        return
+    required = {"commitGasUsed", "accessGasUsed"}
+    ensure_dir(output_dir)
+    safe_prefix = prefix.replace(" ", "_")
+    for feature in feature_names:
+        if feature not in df.columns:
+            continue
+        values = df[feature].dropna().tolist()
+        if len(values) < 2:
+            continue
+        plot_histogram(
+            values,
+            title=f"{prefix} {feature} (pre-split)",
+            xlabel=feature,
+            output_path=output_dir /
+            f"{safe_prefix}_{feature}_pre_split_hist.png",
+        )
+    if not required.issubset(df.columns):
+        return
+    scatter_df = df.copy()
+    if "label" not in scatter_df.columns:
+        scatter_df["label"] = "all"
+    plot_commit_access_scatter(
+        scatter_df,
+        title=f"{prefix} commit vs access (pre-split)",
+        output_path=output_dir /
+        f"{safe_prefix}_pre_split_commit_vs_access.png",
+    )
 
 
 def visualize_feature_histograms(
@@ -1263,9 +1317,26 @@ def evaluate_pi_scope(
     samples: List[dict],
     test_size: float,
     random_state: int,
+    visualization_dir: Optional[Path] = None,
+    scope_name: str = "overall",
 ) -> Optional[Dict[str, object]]:
     if not samples:
         return None
+    df_rows = []
+    for sample in samples:
+        features = sample.get("features", {})
+        row = {"label": sample.get("label")}
+        for feature in FEATURE_KEYS:
+            if feature in features:
+                row[feature] = features[feature]
+        df_rows.append(row)
+    if df_rows:
+        df = pd.DataFrame(df_rows)
+        visualize_pre_split_gas_features(
+            df,
+            visualization_dir,
+            prefix=f"PI {scope_name} gas",
+        )
     train_df, test_df = split_pi_samples(samples, test_size, random_state)
     if train_df.empty or test_df.empty:
         return None
@@ -1304,6 +1375,7 @@ def run_pi_experiment(
     pairs: Sequence[dict],
     test_size: float,
     random_state: int,
+    visualization_dir: Optional[Path] = None,
 ) -> Dict[str, object]:
     samples = build_pi_samples(list(pairs))
     scopes = defaultdict(list)
@@ -1313,7 +1385,13 @@ def run_pi_experiment(
 
     results: Dict[str, object] = {}
     for scope, scoped_samples in scopes.items():
-        evaluation = evaluate_pi_scope(scoped_samples, test_size, random_state)
+        evaluation = evaluate_pi_scope(
+            scoped_samples,
+            test_size,
+            random_state,
+            visualization_dir / scope if visualization_dir else None,
+            scope_name=str(scope),
+        )
         if evaluation is None:
             results[scope] = {
                 "samples": len(scoped_samples),
@@ -1367,6 +1445,7 @@ def main() -> None:
             "each dataset directory."
         )
 
+    experiment_viz_dir: Optional[Path] = None
     if args.skip_visualizations:
         print("[info] Dataset visualization generation skipped via flag")
     else:
@@ -1376,12 +1455,14 @@ def main() -> None:
             pi_pairs,
             args.visualizations_dir,
         )
+        experiment_viz_dir = args.visualizations_dir / "experiments"
 
     print("Running Policy Content Hiding experiment…")
     pch_results = run_pch_experiment(
         pch_records,
         test_size=args.test_size,
         random_state=args.random_state,
+        visualization_dir=experiment_viz_dir / "pch" if experiment_viz_dir else None,
     )
 
     print("Running Structure & Parameter Privacy experiment…")
@@ -1389,6 +1470,7 @@ def main() -> None:
         spp_records,
         test_size=args.test_size,
         random_state=args.random_state,
+        visualization_dir=experiment_viz_dir / "spp" if experiment_viz_dir else None,
     )
 
     print("Running Policy Indistinguishability experiment…")
@@ -1396,6 +1478,7 @@ def main() -> None:
         pi_pairs,
         test_size=args.test_size,
         random_state=args.random_state,
+        visualization_dir=experiment_viz_dir / "pi" if experiment_viz_dir else None,
     )
 
     report = {
