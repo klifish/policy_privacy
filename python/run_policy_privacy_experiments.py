@@ -61,7 +61,7 @@ DEFAULT_VISUALIZATION_DIR = (
 SCATTER_MATRIX_MAX_SAMPLES = 1000
 SCATTER_PLOT_MAX_SAMPLES = 3000
 OUTLIER_FEATURE_KEYS = GAS_FEATURE_KEYS
-OUTLIER_THRESHOLD_MULTIPLIER = 1.5
+OUTLIER_THRESHOLD_MULTIPLIER = 3.0
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
@@ -386,7 +386,7 @@ def build_models(num_classes: int) -> Dict[str, Pipeline]:
             (
                 "clf",
                 RandomForestClassifier(
-                    n_estimators=50,
+                    n_estimators=100,
                     max_depth=3,
                     min_samples_split=10,
                     min_samples_leaf=5,
