@@ -35,7 +35,7 @@ const PI_DEFAULT_CONFIG = Object.freeze({
 // Pair type thresholds (kept from original for compatibility)
 const PAIR_TYPE_THRESHOLDS = Object.freeze({
   semantic_equivalent: { similarity: 0.999, structureMustDiffer: true, executionMustDiffer: false },
-  structural_variant: { similarity: 0.999, structureMustDiffer: true, executionMustDiffer: true },
+  structural_variant: { similarity: 0.999, structureMustDiffer: true, executionMustDiffer: false },
   weak_equivalent: { similarity: 0.95, structureMustDiffer: false, executionMustDiffer: false },
   controlled_difference: { similarity: 0.0, structureMustDiffer: false, executionMustDiffer: false }
 });
