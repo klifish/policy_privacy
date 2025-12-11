@@ -61,7 +61,7 @@ DEFAULT_VISUALIZATION_DIR = (
 SCATTER_MATRIX_MAX_SAMPLES = 1000
 SCATTER_PLOT_MAX_SAMPLES = 3000
 OUTLIER_FEATURE_KEYS = GAS_FEATURE_KEYS
-OUTLIER_THRESHOLD_MULTIPLIER = 3.0
+OUTLIER_THRESHOLD_MULTIPLIER = 1.5
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
@@ -774,7 +774,7 @@ def plot_bar_chart(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-    print(f"[viz] Saved {output_path}")
+    # print(f"[viz] Saved {output_path}")
 
 
 def plot_histogram(
@@ -796,7 +796,7 @@ def plot_histogram(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-    print(f"[viz] Saved {output_path}")
+    # print(f"[viz] Saved {output_path}")
 
 
 def collect_raw_feature_values(
@@ -1020,7 +1020,7 @@ def plot_feature_scatter_matrix(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-    print(f"[viz] Saved {output_path}")
+    # print(f"[viz] Saved {output_path}")
 
 
 def plot_commit_access_scatter(
@@ -1083,7 +1083,7 @@ def plot_commit_access_scatter(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=200)
     plt.close(fig)
-    print(f"[viz] Saved {output_path}")
+    # print(f"[viz] Saved {output_path}")
 
 
 def visualize_pch_data(records: Sequence[dict], output_dir: Path) -> None:
