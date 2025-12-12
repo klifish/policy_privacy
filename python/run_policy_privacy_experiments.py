@@ -61,7 +61,7 @@ DEFAULT_VISUALIZATION_DIR = (
 SCATTER_MATRIX_MAX_SAMPLES = 1000
 SCATTER_PLOT_MAX_SAMPLES = 3000
 OUTLIER_FEATURE_KEYS = GAS_FEATURE_KEYS
-OUTLIER_THRESHOLD_MULTIPLIER = 1.5
+OUTLIER_THRESHOLD_MULTIPLIER = 1.0
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PI_PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
@@ -387,7 +387,7 @@ def build_models(num_classes: int) -> Dict[str, Pipeline]:
                 "clf",
                 RandomForestClassifier(
                     n_estimators=100,
-                    max_depth=3,
+                    max_depth=2,
                     min_samples_split=10,
                     min_samples_leaf=5,
                     class_weight="balanced",
@@ -426,15 +426,25 @@ def evaluate_predictions(
     num_classes: int,
 ) -> Dict[str, object]:
     estimator.fit(X_train, y_train)
+
+    # Evaluate on test set
     predictions = estimator.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
     macro_f1 = f1_score(y_test, predictions, average="macro")
     advantages = compute_advantages(accuracy, y_train, num_classes)
 
+    # Evaluate on training set to detect overfitting
+    train_predictions = estimator.predict(X_train)
+    train_accuracy = accuracy_score(y_train, train_predictions)
+    train_macro_f1 = f1_score(y_train, train_predictions, average="macro")
+
     result: Dict[str, object] = {
         "model": model_name,
         "accuracy": accuracy,
         "macro_f1": macro_f1,
+        "train_accuracy": train_accuracy,
+        "train_macro_f1": train_macro_f1,
+        "overfitting_gap": train_accuracy - accuracy,
         "advantage_vs_random": advantages["vs_random"],
         "advantage_vs_majority": advantages["vs_majority"],
         "passed": advantages["vs_random"] <= DEFAULT_THRESHOLDS["advantage_max"],
@@ -443,19 +453,30 @@ def evaluate_predictions(
     # Try to compute ROC-AUC when probabilistic output is available.
     try:
         probabilities = estimator.predict_proba(X_test)
+        train_probabilities = estimator.predict_proba(X_train)
+
         if num_classes == 2:
             auc = roc_auc_score(y_test, probabilities[:, 1])
+            train_auc = roc_auc_score(y_train, train_probabilities[:, 1])
         else:
             auc = roc_auc_score(
                 y_test,
                 probabilities,
                 multi_class="ovr",
             )
+            train_auc = roc_auc_score(
+                y_train,
+                train_probabilities,
+                multi_class="ovr",
+            )
         result["auc"] = auc
+        result["train_auc"] = train_auc
+        result["auc_overfitting_gap"] = train_auc - auc
         result["auc_passed"] = auc <= DEFAULT_THRESHOLDS["auc_max"]
         result["passed"] = result["passed"] and result["auc_passed"]
     except Exception:
         result["auc"] = None
+        result["train_auc"] = None
 
     return result
 
@@ -535,20 +556,40 @@ def run_spp_experiment(
     random_state: int,
     visualization_dir: Optional[Path] = None,
 ) -> Dict[str, object]:
+
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
+
+    # if "commitGasUsed" in df.columns:
+    #     print(f"[info] SPP commitGasUsed statistics:")
+    #     print(f"  count: {df['commitGasUsed'].count()}")
+    #     print(f"  mean:  {df['commitGasUsed'].mean():.2f}")
+    #     print(f"  std:   {df['commitGasUsed'].std():.2f}")
+    #     print(f"  min:   {df['commitGasUsed'].min():.2f}")
+    #     print(f"  max:   {df['commitGasUsed'].max():.2f}")
+
     df, _ = remove_outliers_from_df(df, OUTLIER_FEATURE_KEYS, "SPP")
+
+    # if "commitGasUsed" in df.columns:
+    #     print(f"[info] SPP commitGasUsed statistics after removing outliers:")
+    #     print(f"  count: {df['commitGasUsed'].count()}")
+    #     print(f"  mean:  {df['commitGasUsed'].mean():.2f}")
+    #     print(f"  std:   {df['commitGasUsed'].std():.2f}")
+    #     print(f"  min:   {df['commitGasUsed'].min():.2f}")
+    #     print(f"  max:   {df['commitGasUsed'].max():.2f}")
     if df.empty:
         raise ValueError("All SPP samples removed during outlier filtering")
+
     df["_record_index"] = df["_record_index"].astype(int)
+
     visualize_pre_split_gas_features(
         df,
         visualization_dir,
-        prefix="SPP overall gas",
+        prefix="SPP Overall Gas",
     )
-    X = df[list(FEATURE_KEYS)].to_numpy()
+
     results: Dict[str, object] = {}
     targets = ["logicStructure", "nestingDepth",
-               "predicateCount", "setSize", "rangeWidth"]
+               "predicateCount", "setSize"]
 
     for target in targets:
         labels = [
@@ -556,6 +597,7 @@ def run_spp_experiment(
             for idx in df["_record_index"].tolist()
         ]
         unique = {label for label in labels if label is not None}
+        print(f"SPP target '{target}' unique labels: {unique}")
         if len(unique) < 2:
             results[target] = {
                 "samples": 0,
@@ -598,6 +640,7 @@ def run_spp_experiment(
             test_size,
             random_state,
         )
+
         num_classes = len(np.unique(y_train))
         models = build_models(num_classes)
         evaluations = [
@@ -701,6 +744,11 @@ def remove_outliers_from_df(
         lower, upper = compute_iqr_bounds(valid.to_numpy())
         mask &= series.between(lower, upper, inclusive="both")
     mask = mask.fillna(False)
+
+    removed_rows = df.loc[~mask]
+    # print(f"[debug] Outliers in {context}:")
+    # print(removed_rows)
+
     kept = df.loc[mask]
     dropped = len(df) - len(kept)
     if dropped and kept.empty:
@@ -1061,6 +1109,7 @@ def plot_commit_access_scatter(
     ax.set_title(title)
     ax.set_xlabel("commitGasUsed")
     ax.set_ylabel("accessGasUsed")
+    ax.set_xlim(301300, 301450)
     legend_elements = [
         Line2D(
             [0],

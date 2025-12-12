@@ -1,18 +1,10 @@
 {
   "data_root": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data",
   "data_sources": [
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 01",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 02",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 03",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 04",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 05"
+    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet random"
   ],
   "pi_pair_sources": [
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 01/pi_pairs.json",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 02/pi_pairs.json",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 03/pi_pairs.json",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 04/pi_pairs.json",
-    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet 05/pi_pairs.json"
+    "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/python/data/artifacts_data testnet random/pi_pairs.json"
   ],
   "test_size": 0.3,
   "random_state": 42,
@@ -21,300 +13,395 @@
     "advantage_max": 0.05
   },
   "pch": {
-    "samples": 1765,
+    "samples": 1092,
     "class_distribution": {
-      "GR": 215,
-      "DS": 378,
-      "RS": 365,
-      "POA": 266,
-      "GS": 246,
-      "CC": 295
+      "GR": 132,
+      "DS": 234,
+      "RS": 225,
+      "POA": 165,
+      "GS": 153,
+      "CC": 183
     },
     "evaluations": [
       {
         "model": "logistic_regression",
-        "accuracy": 0.16037735849056603,
-        "macro_f1": 0.1076462033551977,
-        "advantage_vs_random": -0.0062893081761006275,
-        "advantage_vs_majority": -0.05419754029485907,
+        "accuracy": 0.1676829268292683,
+        "macro_f1": 0.12448452421034122,
+        "train_accuracy": 0.16753926701570682,
+        "train_macro_f1": 0.12346548045117901,
+        "overfitting_gap": -0.00014365981356148638,
+        "advantage_vs_random": 0.0010162601626016454,
+        "advantage_vs_majority": -0.04697675903460605,
         "passed": true,
-        "auc": 0.5198989615659638,
+        "auc": 0.5165299521700161,
+        "train_auc": 0.5302689832435931,
+        "auc_overfitting_gap": 0.01373903107357699,
         "auc_passed": true
       },
       {
         "model": "random_forest",
-        "accuracy": 0.2037735849056604,
-        "macro_f1": 0.19635393854178315,
-        "advantage_vs_random": 0.03710691823899373,
-        "advantage_vs_majority": -0.010801313879764712,
-        "passed": false,
-        "auc": 0.5766728387331441,
-        "auc_passed": false
+        "accuracy": 0.14634146341463414,
+        "macro_f1": 0.13955908919444335,
+        "train_accuracy": 0.2696335078534031,
+        "train_macro_f1": 0.2569014895042088,
+        "overfitting_gap": 0.12329204443876898,
+        "advantage_vs_random": -0.02032520325203252,
+        "advantage_vs_majority": -0.06831822244924021,
+        "passed": true,
+        "auc": 0.4669848955941693,
+        "train_auc": 0.6465264554496352,
+        "auc_overfitting_gap": 0.17954155985546588,
+        "auc_passed": true
       }
     ]
   },
   "spp": {
     "logicStructure": {
-      "samples": 570,
+      "samples": 351,
       "class_distribution": {
-        "and_only": 190,
-        "and_or_mixed": 190,
-        "negation_heavy": 190
+        "and_only": 117,
+        "and_or_mixed": 117,
+        "negation_heavy": 117
       },
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.3391812865497076,
-          "macro_f1": 0.290667459023471,
-          "advantage_vs_random": 0.005847953216374269,
-          "advantage_vs_majority": 0.005847953216374269,
-          "passed": false,
-          "auc": 0.5550938750384734,
-          "auc_passed": false
-        },
-        {
-          "model": "random_forest",
-          "accuracy": 0.45614035087719296,
-          "macro_f1": 0.4484156143689097,
-          "advantage_vs_random": 0.12280701754385964,
-          "advantage_vs_majority": 0.12280701754385964,
-          "passed": false,
-          "auc": 0.6477890633015287,
-          "auc_passed": false
-        }
-      ]
-    },
-    "nestingDepth": {
-      "samples": 400,
-      "class_distribution": {
-        "deep": 100,
-        "flat": 100,
-        "medium": 100,
-        "shallow": 100
-      },
-      "evaluations": [
-        {
-          "model": "logistic_regression",
-          "accuracy": 0.275,
-          "macro_f1": 0.25203421449551483,
-          "advantage_vs_random": 0.025000000000000022,
-          "advantage_vs_majority": 0.025000000000000022,
+          "accuracy": 0.3490566037735849,
+          "macro_f1": 0.3430362740707569,
+          "train_accuracy": 0.3836734693877551,
+          "train_macro_f1": 0.37799487665368287,
+          "overfitting_gap": 0.03461686561417021,
+          "advantage_vs_random": 0.01572327044025157,
+          "advantage_vs_majority": 0.01436272622256446,
           "passed": true,
-          "auc": 0.5070370370370371,
+          "auc": 0.519464937774797,
+          "train_auc": 0.5724721346281857,
+          "auc_overfitting_gap": 0.05300719685338873,
           "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.5,
-          "macro_f1": 0.4630284208545078,
-          "advantage_vs_random": 0.25,
-          "advantage_vs_majority": 0.25,
+          "accuracy": 0.3867924528301887,
+          "macro_f1": 0.37948198817611384,
+          "train_accuracy": 0.46938775510204084,
+          "train_macro_f1": 0.46992939379284976,
+          "overfitting_gap": 0.08259530227185213,
+          "advantage_vs_random": 0.05345911949685539,
+          "advantage_vs_majority": 0.05209857527916828,
           "passed": false,
-          "auc": 0.7325,
+          "auc": 0.5274964602429392,
+          "train_auc": 0.7126473781211341,
+          "auc_overfitting_gap": 0.18515091787819493,
+          "auc_passed": true
+        }
+      ]
+    },
+    "nestingDepth": {
+      "samples": 240,
+      "class_distribution": {
+        "deep": 60,
+        "flat": 60,
+        "medium": 60,
+        "shallow": 60
+      },
+      "evaluations": [
+        {
+          "model": "logistic_regression",
+          "accuracy": 0.3472222222222222,
+          "macro_f1": 0.34652255639097745,
+          "train_accuracy": 0.31547619047619047,
+          "train_macro_f1": 0.3086610495971891,
+          "overfitting_gap": -0.031746031746031744,
+          "advantage_vs_random": 0.09722222222222221,
+          "advantage_vs_majority": 0.09722222222222221,
+          "passed": false,
+          "auc": 0.6021090534979424,
+          "train_auc": 0.5771447467876039,
+          "auc_overfitting_gap": -0.024964306710338557,
+          "auc_passed": false
+        },
+        {
+          "model": "random_forest",
+          "accuracy": 0.3472222222222222,
+          "macro_f1": 0.3457500171785886,
+          "train_accuracy": 0.49404761904761907,
+          "train_macro_f1": 0.4900793741696065,
+          "overfitting_gap": 0.14682539682539686,
+          "advantage_vs_random": 0.09722222222222221,
+          "advantage_vs_majority": 0.09722222222222221,
+          "passed": false,
+          "auc": 0.6592078189300412,
+          "train_auc": 0.7602985638699924,
+          "auc_overfitting_gap": 0.10109074493995118,
           "auc_passed": false
         }
       ]
     },
     "predicateCount": {
-      "samples": 436,
+      "samples": 288,
       "class_distribution": {
-        "few": 109,
-        "many": 109,
-        "none": 109,
-        "single": 109
+        "few": 72,
+        "many": 72,
+        "none": 72,
+        "single": 72
       },
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.42748091603053434,
-          "macro_f1": 0.3429354256180335,
-          "advantage_vs_random": 0.17748091603053434,
-          "advantage_vs_majority": 0.1750218996370917,
+          "accuracy": 0.367816091954023,
+          "macro_f1": 0.35081676429337516,
+          "train_accuracy": 0.29850746268656714,
+          "train_macro_f1": 0.28030271315319744,
+          "overfitting_gap": -0.06930862926745585,
+          "advantage_vs_random": 0.11781609195402298,
+          "advantage_vs_majority": 0.11408474867044088,
           "passed": false,
-          "auc": 0.6059543135435993,
-          "auc_passed": false
+          "auc": 0.5457431457431456,
+          "train_auc": 0.5905144353547158,
+          "auc_overfitting_gap": 0.044771289611570175,
+          "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.6030534351145038,
-          "macro_f1": 0.5911027568922306,
-          "advantage_vs_random": 0.3530534351145038,
-          "advantage_vs_majority": 0.3505944187210612,
+          "accuracy": 0.367816091954023,
+          "macro_f1": 0.3557475638586173,
+          "train_accuracy": 0.5074626865671642,
+          "train_macro_f1": 0.503826873204483,
+          "overfitting_gap": 0.13964659461314122,
+          "advantage_vs_random": 0.11781609195402298,
+          "advantage_vs_majority": 0.11408474867044088,
           "passed": false,
-          "auc": 0.8616755887961246,
+          "auc": 0.6032717282717281,
+          "train_auc": 0.7550850538891053,
+          "auc_overfitting_gap": 0.15181332561737715,
           "auc_passed": false
         }
       ]
     },
     "setSize": {
-      "samples": 460,
+      "samples": 288,
       "class_distribution": {
-        "large": 115,
-        "medium": 115,
-        "none": 115,
-        "small": 115
+        "large": 72,
+        "medium": 72,
+        "none": 72,
+        "small": 72
       },
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.3333333333333333,
-          "macro_f1": 0.2640701452377075,
-          "advantage_vs_random": 0.08333333333333331,
-          "advantage_vs_majority": 0.08178053830227744,
-          "passed": false,
-          "auc": 0.5186373877407573,
+          "accuracy": 0.20689655172413793,
+          "macro_f1": 0.17228748263231022,
+          "train_accuracy": 0.27860696517412936,
+          "train_macro_f1": 0.2384587454395786,
+          "overfitting_gap": 0.07171041344999143,
+          "advantage_vs_random": -0.04310344827586207,
+          "advantage_vs_majority": -0.04683479155944417,
+          "passed": true,
+          "auc": 0.5081002331002331,
+          "train_auc": 0.5387075271609748,
+          "auc_overfitting_gap": 0.030607294060741697,
           "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.42028985507246375,
-          "macro_f1": 0.4196855757802565,
-          "advantage_vs_random": 0.17028985507246375,
-          "advantage_vs_majority": 0.16873706004140787,
+          "accuracy": 0.2988505747126437,
+          "macro_f1": 0.29075180139009926,
+          "train_accuracy": 0.4626865671641791,
+          "train_macro_f1": 0.4549293316468399,
+          "overfitting_gap": 0.1638359924515354,
+          "advantage_vs_random": 0.0488505747126437,
+          "advantage_vs_majority": 0.0451192314290616,
           "passed": false,
-          "auc": 0.7260628345811813,
+          "auc": 0.6000915750915752,
+          "train_auc": 0.7550251049647232,
+          "auc_overfitting_gap": 0.154933529873148,
           "auc_passed": false
         }
       ]
-    },
-    "rangeWidth": {
-      "samples": 0,
-      "skipped": true,
-      "reason": "insufficient label diversity"
     }
   },
   "pi": {
     "overall": {
-      "samples": 2574,
-      "train_pairs": 930,
-      "test_pairs": 357,
+      "samples": 1560,
+      "train_pairs": 546,
+      "test_pairs": 234,
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.5084033613445378,
-          "macro_f1": 0.5052502531847982,
-          "advantage_vs_random": 0.008403361344537785,
-          "advantage_vs_majority": 0.004102286075720607,
+          "accuracy": 0.48504273504273504,
+          "macro_f1": 0.48504038388662374,
+          "train_accuracy": 0.5018315018315018,
+          "train_macro_f1": 0.5012275192691978,
+          "overfitting_gap": 0.016788766788766785,
+          "advantage_vs_random": -0.01495726495726496,
+          "advantage_vs_majority": -0.01495726495726496,
           "passed": true,
-          "auc": 0.5079576845806127,
+          "auc": 0.47256921615895975,
+          "train_auc": 0.5144323015202136,
+          "auc_overfitting_gap": 0.04186308536125383,
           "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.542016806722689,
-          "macro_f1": 0.5396681749622926,
-          "advantage_vs_random": 0.04201680672268904,
-          "advantage_vs_majority": 0.03771573145387186,
+          "accuracy": 0.5491452991452992,
+          "macro_f1": 0.5489785012537509,
+          "train_accuracy": 0.6163003663003663,
+          "train_macro_f1": 0.6160991543320868,
+          "overfitting_gap": 0.06715506715506714,
+          "advantage_vs_random": 0.04914529914529919,
+          "advantage_vs_majority": 0.04914529914529919,
           "passed": false,
-          "auc": 0.5740676795580111,
+          "auc": 0.5769596026006283,
+          "train_auc": 0.6837841645533954,
+          "auc_overfitting_gap": 0.10682456195276713,
           "auc_passed": false
         }
       ]
     },
     "semantic_equivalent": {
-      "samples": 490,
-      "train_pairs": 171,
-      "test_pairs": 74,
+      "samples": 300,
+      "train_pairs": 105,
+      "test_pairs": 45,
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.4797297297297297,
-          "macro_f1": 0.4785632578357355,
-          "advantage_vs_random": -0.020270270270270285,
-          "advantage_vs_majority": -0.020270270270270285,
+          "accuracy": 0.4111111111111111,
+          "macro_f1": 0.40928792569659445,
+          "train_accuracy": 0.5285714285714286,
+          "train_macro_f1": 0.5267578702966015,
+          "overfitting_gap": 0.11746031746031749,
+          "advantage_vs_random": -0.0888888888888889,
+          "advantage_vs_majority": -0.0888888888888889,
           "passed": true,
-          "auc": 0.4428545221060356,
+          "auc": 0.4162962962962963,
+          "train_auc": 0.5650340136054421,
+          "auc_overfitting_gap": 0.14873771730914587,
           "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.47297297297297297,
-          "macro_f1": 0.4721053594293031,
-          "advantage_vs_random": -0.02702702702702703,
-          "advantage_vs_majority": -0.02702702702702703,
-          "passed": true,
-          "auc": 0.5001834525775086,
-          "auc_passed": true
+          "accuracy": 0.5333333333333333,
+          "macro_f1": 0.513888888888889,
+          "train_accuracy": 0.6619047619047619,
+          "train_macro_f1": 0.6584896584896585,
+          "overfitting_gap": 0.12857142857142856,
+          "advantage_vs_random": 0.033333333333333326,
+          "advantage_vs_majority": 0.033333333333333326,
+          "passed": false,
+          "auc": 0.5792592592592593,
+          "train_auc": 0.7360997732426304,
+          "auc_overfitting_gap": 0.15684051398337118,
+          "auc_passed": false
         }
       ]
     },
     "structural_variant": {
-      "samples": 988,
-      "train_pairs": 341,
-      "test_pairs": 152,
+      "samples": 600,
+      "train_pairs": 210,
+      "test_pairs": 90,
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.5639344262295082,
-          "macro_f1": 0.5637656066846617,
-          "advantage_vs_random": 0.06393442622950818,
-          "advantage_vs_majority": 0.06320236180783911,
+          "accuracy": 0.5611111111111111,
+          "macro_f1": 0.5607722007722008,
+          "train_accuracy": 0.5357142857142857,
+          "train_macro_f1": 0.53550099535501,
+          "overfitting_gap": -0.025396825396825418,
+          "advantage_vs_random": 0.061111111111111116,
+          "advantage_vs_majority": 0.061111111111111116,
           "passed": false,
-          "auc": 0.5856152587617326,
+          "auc": 0.5540740740740742,
+          "train_auc": 0.5529251700680272,
+          "auc_overfitting_gap": -0.0011489040060469469,
           "auc_passed": false
         },
         {
           "model": "random_forest",
-          "accuracy": 0.5442622950819672,
-          "macro_f1": 0.5391897914153106,
-          "advantage_vs_random": 0.04426229508196722,
-          "advantage_vs_majority": 0.04353023066029815,
+          "accuracy": 0.55,
+          "macro_f1": 0.5468531468531468,
+          "train_accuracy": 0.6523809523809524,
+          "train_macro_f1": 0.6488696488696488,
+          "overfitting_gap": 0.10238095238095235,
+          "advantage_vs_random": 0.050000000000000044,
+          "advantage_vs_majority": 0.050000000000000044,
           "passed": false,
-          "auc": 0.5861103935244983,
+          "auc": 0.6362962962962964,
+          "train_auc": 0.7561224489795919,
+          "auc_overfitting_gap": 0.11982615268329555,
           "auc_passed": false
         }
       ]
     },
     "weak_equivalent": {
-      "samples": 100,
-      "train_pairs": 35,
-      "test_pairs": 15,
+      "samples": 60,
+      "train_pairs": 21,
+      "test_pairs": 9,
       "evaluations": [
         {
           "model": "logistic_regression",
-          "accuracy": 0.5666666666666667,
-          "macro_f1": 0.4993581514762516,
-          "advantage_vs_random": 0.06666666666666665,
-          "advantage_vs_majority": 0.06666666666666665,
-          "passed": false,
-          "auc": 0.6133333333333332,
-          "auc_passed": false
-        },
-        {
-          "model": "random_forest",
-          "accuracy": 0.6333333333333333,
-          "macro_f1": 0.6122209165687427,
-          "advantage_vs_random": 0.1333333333333333,
-          "advantage_vs_majority": 0.1333333333333333,
-          "passed": false,
-          "auc": 0.6622222222222222,
-          "auc_passed": false
-        }
-      ]
-    },
-    "controlled_difference": {
-      "samples": 996,
-      "train_pairs": 348,
-      "test_pairs": 150,
-      "evaluations": [
-        {
-          "model": "logistic_regression",
-          "accuracy": 0.4866666666666667,
-          "macro_f1": 0.4860956618464961,
-          "advantage_vs_random": -0.013333333333333308,
-          "advantage_vs_majority": -0.016206896551724137,
+          "accuracy": 0.5,
+          "macro_f1": 0.4857142857142857,
+          "train_accuracy": 0.6904761904761905,
+          "train_macro_f1": 0.690300623936472,
+          "overfitting_gap": 0.19047619047619047,
+          "advantage_vs_random": 0.0,
+          "advantage_vs_majority": 0.0,
           "passed": true,
-          "auc": 0.48686666666666667,
+          "auc": 0.4444444444444445,
+          "train_auc": 0.6938775510204082,
+          "auc_overfitting_gap": 0.24943310657596368,
           "auc_passed": true
         },
         {
           "model": "random_forest",
-          "accuracy": 0.55,
-          "macro_f1": 0.5437904815544916,
-          "advantage_vs_random": 0.050000000000000044,
-          "advantage_vs_majority": 0.047126436781609216,
+          "accuracy": 0.5,
+          "macro_f1": 0.4984520123839009,
+          "train_accuracy": 0.7619047619047619,
+          "train_macro_f1": 0.7619047619047619,
+          "overfitting_gap": 0.26190476190476186,
+          "advantage_vs_random": 0.0,
+          "advantage_vs_majority": 0.0,
+          "passed": true,
+          "auc": 0.4876543209876544,
+          "train_auc": 0.8639455782312926,
+          "auc_overfitting_gap": 0.3762912572436382,
+          "auc_passed": true
+        }
+      ]
+    },
+    "controlled_difference": {
+      "samples": 600,
+      "train_pairs": 210,
+      "test_pairs": 90,
+      "evaluations": [
+        {
+          "model": "logistic_regression",
+          "accuracy": 0.45555555555555555,
+          "macro_f1": 0.4549499443826474,
+          "train_accuracy": 0.5166666666666667,
+          "train_macro_f1": 0.5162031651639042,
+          "overfitting_gap": 0.06111111111111117,
+          "advantage_vs_random": -0.04444444444444445,
+          "advantage_vs_majority": -0.04444444444444445,
+          "passed": true,
+          "auc": 0.495,
+          "train_auc": 0.5273356009070295,
+          "auc_overfitting_gap": 0.03233560090702947,
+          "auc_passed": true
+        },
+        {
+          "model": "random_forest",
+          "accuracy": 0.6,
+          "macro_f1": 0.5999506111865662,
+          "train_accuracy": 0.6523809523809524,
+          "train_macro_f1": 0.6517412935323383,
+          "overfitting_gap": 0.05238095238095242,
+          "advantage_vs_random": 0.09999999999999998,
+          "advantage_vs_majority": 0.09999999999999998,
           "passed": false,
-          "auc": 0.6370666666666666,
+          "auc": 0.586358024691358,
+          "train_auc": 0.7073469387755102,
+          "auc_overfitting_gap": 0.12098891408415224,
           "auc_passed": false
         }
       ]
