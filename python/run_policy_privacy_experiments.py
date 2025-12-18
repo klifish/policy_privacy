@@ -387,7 +387,7 @@ def build_models(num_classes: int) -> Dict[str, Pipeline]:
                 "clf",
                 RandomForestClassifier(
                     n_estimators=100,
-                    max_depth=2,
+                    max_depth=3,
                     min_samples_split=10,
                     min_samples_leaf=5,
                     class_weight="balanced",
