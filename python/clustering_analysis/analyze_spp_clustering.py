@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
@@ -174,6 +174,7 @@ def analyze_target(target_name: str, data: Dict):
     kmeans = KMeans(n_clusters=n_classes, random_state=42, n_init=10)
     y_pred_km = kmeans.fit_predict(X_scaled)
     results["kmeans_ari"] = adjusted_rand_score(y, y_pred_km)
+    results["kmeans_nmi"] = normalized_mutual_info_score(y, y_pred_km)
 
     return results, X, y_pred_km
 
@@ -235,12 +236,12 @@ def main():
         all_results.append(res)
 
         print(
-            f"  Target: {target:15} | Classes: {res['n_classes']} | K-Means ARI: {res['kmeans_ari']:.4f}")
+            f"  Target: {target:15} | Classes: {res['n_classes']} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
         if args.plot:
             plot_path = args.output_dir / f"{target}_kmeans.png"
             plot_cluster_result(X_df, data["y"], y_pred,
-                                f"Target: {target}\nARI: {res['kmeans_ari']:.4f}",
+                                f"Target: {target}\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                 plot_path)
 
     if all_results:

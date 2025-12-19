@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
@@ -119,12 +119,14 @@ def analyze_pair(X: pd.DataFrame, y: np.ndarray, policy_names: List[str], pair_i
     y_pred_km = kmeans.fit_predict(X_scaled)
 
     ari_km = adjusted_rand_score(y, y_pred_km)
+    nmi_km = normalized_mutual_info_score(y, y_pred_km)
     try:
         sil_km = silhouette_score(X_scaled, y_pred_km)
     except:
         sil_km = -1.0  # Error if only 1 cluster found (unlikely for K=2)
 
     results["kmeans_ari"] = ari_km
+    results["kmeans_nmi"] = nmi_km
     results["kmeans_silhouette"] = sil_km
 
     # --- 2. DBSCAN ---
@@ -214,12 +216,12 @@ def main():
                 all_results.append(res)
 
                 print(
-                    f"  Pair {i} [{pair_type}] ({names[0]} vs {names[1]}): K-Means ARI = {res['kmeans_ari']:.4f}")
+                    f"  Pair {i} [{pair_type}] ({names[0]} vs {names[1]}): K-Means ARI = {res['kmeans_ari']:.4f}, NMI = {res['kmeans_nmi']:.4f}")
 
                 if args.plot:
                     plot_path = args.output_dir / f"{pair_id}_kmeans.png"
                     plot_cluster_result(X_df, y, y_pred_km,
-                                        f"Pair {i} [{pair_type}]: {names[0]} vs {names[1]}\nARI: {res['kmeans_ari']:.4f}",
+                                        f"Pair {i} [{pair_type}]: {names[0]} vs {names[1]}\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                         plot_path)
 
         except Exception as e:
@@ -232,18 +234,20 @@ def main():
         df_res.to_csv(csv_path, index=False)
         print(f"\nAnalysis complete. Summary saved to {csv_path}")
 
-        # Print Average ARI
         avg_ari = df_res['kmeans_ari'].mean()
+        avg_nmi = df_res['kmeans_nmi'].mean()
         print(f"Average K-Means ARI across all pairs: {avg_ari:.4f}")
+        print(f"Average K-Means NMI across all pairs: {avg_nmi:.4f}")
 
         print("\n=== Results by Pair Type ===")
         grouped = df_res.groupby("pair_type")
         for name, group in grouped:
             mean_ari = group['kmeans_ari'].mean()
+            mean_nmi = group['kmeans_nmi'].mean()
             max_ari = group['kmeans_ari'].max()
             count = len(group)
             print(
-                f"Type: {name:25} | Count: {count:3} | Avg ARI: {mean_ari:.4f} | Max ARI: {max_ari:.4f}")
+                f"Type: {name:25} | Count: {count:3} | Avg ARI: {mean_ari:.4f} | Avg NMI: {mean_nmi:.4f} | Max ARI: {max_ari:.4f}")
 
         print("\n  (0.0 = Perfect Privacy, 1.0 = No Privacy)")
 

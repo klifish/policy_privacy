@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
@@ -160,13 +160,16 @@ def analyze_layer(layer_name: str, data: Dict):
     # If n_classes < 2, clustering is meaningless (ARI = 1.0 trivially or 0.0)
     if n_classes < 2:
         results["kmeans_ari"] = 0.0
+        results["kmeans_nmi"] = 0.0
         return results, X, np.zeros(len(X))
 
     kmeans = KMeans(n_clusters=n_classes, random_state=42, n_init=10)
     y_pred_km = kmeans.fit_predict(X_scaled)
 
     ari_km = adjusted_rand_score(y, y_pred_km)
+    nmi_km = normalized_mutual_info_score(y, y_pred_km)
     results["kmeans_ari"] = ari_km
+    results["kmeans_nmi"] = nmi_km
 
     # --- 2. DBSCAN ---
     dbscan = DBSCAN(eps=0.5, min_samples=5)
@@ -294,12 +297,12 @@ def main():
         if data:
             res, X_df, y_pred = analyze_layer("Global_All_Terms", data)
             print(
-                f"Global Analysis | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f}")
+                f"Global Analysis | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
             if args.plot:
                 plot_path = args.output_dir / "global_kmeans.png"
                 plot_cluster_result(X_df, data["y"], y_pred,
-                                    f"Global Analysis (All Terms)\nARI: {res['kmeans_ari']:.4f}",
+                                    f"Global Analysis (All Terms)\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                     plot_path)
 
             # Save single result
@@ -319,12 +322,12 @@ def main():
         all_results.append(res)
 
         print(
-            f"Layer: {layer:25} | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f}")
+            f"Layer: {layer:25} | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
         if args.plot and res['n_classes'] > 1:
             plot_path = args.output_dir / f"{layer}_kmeans.png"
             plot_cluster_result(X_df, data["y"], y_pred,
-                                f"Layer: {layer}\nARI: {res['kmeans_ari']:.4f}",
+                                f"Layer: {layer}\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                 plot_path)
 
     # Save Summary
@@ -335,7 +338,9 @@ def main():
         print(f"\nAnalysis complete. Summary saved to {csv_path}")
 
         avg_ari = df_res['kmeans_ari'].mean()
+        avg_nmi = df_res['kmeans_nmi'].mean()
         print(f"Average K-Means ARI across all layers: {avg_ari:.4f}")
+        print(f"Average K-Means NMI across all layers: {avg_nmi:.4f}")
 
 
 if __name__ == "__main__":
