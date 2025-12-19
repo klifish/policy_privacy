@@ -487,18 +487,26 @@ def run_pch_experiment(
     random_state: int,
     visualization_dir: Optional[Path] = None,
 ) -> Dict[str, object]:
+    """
+    Policy Content Hiding (PCH) Experiment - DUO Term Multi-class Classification.
+
+    Tests if an adversary can infer the primary DUO term from observable features.
+    Uses the primaryDuoTerm from semantics to avoid data duplication issues.
+    """
     rows: List[Dict[str, object]] = []
     dropped = 0
     for record in records:
         features = extract_feature_row(record.get("features", {}))
-        duo_terms = record.get("duoTermCodes") or []
-        if features is None or not duo_terms:
+        semantics = record.get("semantics", {})
+        primary_duo_term = semantics.get("primaryDuoTerm")
+
+        if features is None or not primary_duo_term:
             dropped += 1
             continue
-        for term in duo_terms:
-            row = {"label": term}
-            row.update(features)
-            rows.append(row)
+
+        row = {"label": primary_duo_term}
+        row.update(features)
+        rows.append(row)
 
     if not rows:
         raise ValueError("No usable PCH records found")
@@ -519,6 +527,113 @@ def run_pch_experiment(
         visualization_dir,
         prefix="PCH Gas usage",
     )
+    X = df[list(FEATURE_KEYS)].to_numpy()
+    y = df["label"].to_numpy()
+    X_train, X_test, y_train, y_test = build_stratified_split(
+        X,
+        y,
+        test_size,
+        random_state,
+    )
+
+    models = build_models(num_classes=len(np.unique(y_train)))
+    evaluations = [
+        evaluate_predictions(
+            name,
+            estimator,
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            num_classes=len(np.unique(y_train)),
+        )
+        for name, estimator in models.items()
+    ]
+
+    label_counts = Counter(df["label"])
+    return {
+        "samples": len(df),
+        "class_distribution": dict(label_counts),
+        "evaluations": evaluations,
+    }
+
+
+def run_icd10_experiment(
+    records: Sequence[dict],
+    test_size: float,
+    random_state: int,
+    visualization_dir: Optional[Path] = None,
+) -> Dict[str, object]:
+    """
+    ICD-10 Chapter Multi-class Classification Experiment.
+
+    Tests if an adversary can infer the ICD-10 chapter from observable features
+    when the policy includes a Disease-Specific (DS) DUO term with ICD-10 scope.
+    """
+    rows: List[Dict[str, object]] = []
+    dropped = 0
+
+    for record in records:
+        features = extract_feature_row(record.get("features", {}))
+        semantics = record.get("semantics", {})
+        icd10_scope = semantics.get("icd10Scope")
+
+        # Only include records with ICD-10 scope
+        if features is None or icd10_scope is None:
+            dropped += 1
+            continue
+
+        # Use ICD-10 chapter ID as label
+        icd10_chapter = icd10_scope.get("id")
+        if icd10_chapter is None:
+            dropped += 1
+            continue
+
+        row = {"label": icd10_chapter}
+        row.update(features)
+        rows.append(row)
+
+    if not rows:
+        print("[warn] No ICD-10 samples found. Skipping ICD-10 experiment.")
+        return {
+            "samples": 0,
+            "skipped": True,
+            "reason": "no ICD-10 samples",
+        }
+
+    if dropped:
+        print(
+            f"[info] Dropped {dropped} records without ICD-10 scope")
+
+    df = pd.DataFrame(rows)
+
+    # Check if we have enough classes for multi-class classification
+    unique_labels = df["label"].nunique()
+    if unique_labels < 2:
+        print(f"[warn] Only {unique_labels} ICD-10 chapter(s) found. Skipping.")
+        return {
+            "samples": len(df),
+            "skipped": True,
+            "reason": "insufficient label diversity",
+        }
+
+    print(f"[info] ICD-10 experiment: {len(df)} samples, {unique_labels} chapters")
+
+    df, removed_outliers = remove_outliers_from_df(
+        df,
+        OUTLIER_FEATURE_KEYS,
+        "ICD10",
+    )
+
+    if df.empty:
+        raise ValueError("All ICD-10 samples removed during outlier filtering")
+
+    visualize_pre_split_gas_features(
+        df,
+        visualization_dir,
+        prefix="ICD-10 Gas usage",
+    )
+
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
     X_train, X_test, y_train, y_test = build_stratified_split(
@@ -1514,6 +1629,14 @@ def main() -> None:
         visualization_dir=experiment_viz_dir / "pch" if experiment_viz_dir else None,
     )
 
+    print("Running ICD-10 Chapter Classification experiment…")
+    icd10_results = run_icd10_experiment(
+        pch_records,  # Use same records as PCH
+        test_size=args.test_size,
+        random_state=args.random_state,
+        visualization_dir=experiment_viz_dir / "icd10" if experiment_viz_dir else None,
+    )
+
     print("Running Structure & Parameter Privacy experiment…")
     spp_results = run_spp_experiment(
         spp_records,
@@ -1538,6 +1661,7 @@ def main() -> None:
         "random_state": args.random_state,
         "thresholds": DEFAULT_THRESHOLDS,
         "pch": pch_results,
+        "icd10": icd10_results,
         "spp": spp_results,
         "pi": pi_results,
     }
