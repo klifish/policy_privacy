@@ -13,6 +13,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
+    precision_score,
+    recall_score,
     roc_auc_score,
 )
 from sklearn.linear_model import LogisticRegression
@@ -430,19 +432,37 @@ def evaluate_predictions(
     # Evaluate on test set
     predictions = estimator.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
-    macro_f1 = f1_score(y_test, predictions, average="macro")
+
+    # Calculate Precision, Recall, and F1 with different averaging strategies
+    macro_precision = precision_score(y_test, predictions, average="macro", zero_division=0)
+    macro_recall = recall_score(y_test, predictions, average="macro", zero_division=0)
+    macro_f1 = f1_score(y_test, predictions, average="macro", zero_division=0)
+
+    weighted_precision = precision_score(y_test, predictions, average="weighted", zero_division=0)
+    weighted_recall = recall_score(y_test, predictions, average="weighted", zero_division=0)
+    weighted_f1 = f1_score(y_test, predictions, average="weighted", zero_division=0)
+
     advantages = compute_advantages(accuracy, y_train, num_classes)
 
     # Evaluate on training set to detect overfitting
     train_predictions = estimator.predict(X_train)
     train_accuracy = accuracy_score(y_train, train_predictions)
-    train_macro_f1 = f1_score(y_train, train_predictions, average="macro")
+    train_macro_precision = precision_score(y_train, train_predictions, average="macro", zero_division=0)
+    train_macro_recall = recall_score(y_train, train_predictions, average="macro", zero_division=0)
+    train_macro_f1 = f1_score(y_train, train_predictions, average="macro", zero_division=0)
 
     result: Dict[str, object] = {
         "model": model_name,
         "accuracy": accuracy,
+        "macro_precision": macro_precision,
+        "macro_recall": macro_recall,
         "macro_f1": macro_f1,
+        "weighted_precision": weighted_precision,
+        "weighted_recall": weighted_recall,
+        "weighted_f1": weighted_f1,
         "train_accuracy": train_accuracy,
+        "train_macro_precision": train_macro_precision,
+        "train_macro_recall": train_macro_recall,
         "train_macro_f1": train_macro_f1,
         "overfitting_gap": train_accuracy - accuracy,
         "advantage_vs_random": advantages["vs_random"],
