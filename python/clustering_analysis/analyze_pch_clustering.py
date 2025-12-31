@@ -3,11 +3,11 @@
 Analyze Policy Content Hiding (PCH) using Clustering Algorithms.
 
 Goal: Determine if an attacker can distinguish between different policy contents
-(specifically DUO Terms) within the same structural layer, purely based on Gas costs.
+(specifically DUO Terms or ICD10 scopes) within the same structural layer, purely based on Gas costs.
 
 Method:
 1. Group data by 'layer' (e.g., flat_singleton, structural_variants).
-2. Within each layer, treat 'duoTerm' as the hidden class label.
+2. Within each layer, treat 'duoTerm' or 'icd10Scope' as the hidden class label.
 3. Apply K-Means (K = number of unique terms) and DBSCAN.
 4. Calculate ARI to measure leakage.
 """
@@ -50,9 +50,14 @@ def find_pch_dataset(data_dir: Path) -> Optional[Path]:
     return None
 
 
-def extract_data_by_layer(dataset: List[dict]) -> Dict[str, Dict]:
+def extract_data_by_layer(dataset: List[dict], use_icd10: bool = False) -> Dict[str, Dict]:
     """
     Group dataset by layer.
+
+    Args:
+        dataset: List of data entries
+        use_icd10: If True, cluster by ICD10 scope instead of DUO terms
+
     Returns: {
         "layer_name": {
             "X": DataFrame,
@@ -97,19 +102,29 @@ def extract_data_by_layer(dataset: List[dict]) -> Dict[str, Dict]:
         if not valid:
             continue
 
-        # Extract Label (DUO Term)
-        # duoTerm can be an int or string.
-        # duoTermCodes is a list, usually we want the primary one.
-        term = entry.get("duoTerm")
-        if term is None:
-            # Try duoTerms list
-            terms = entry.get("duoTerms", [])
-            if terms:
-                term = terms[0]
-            else:
+        # Extract Label
+        if use_icd10:
+            # Extract ICD10 scope
+            semantics = entry.get("semantics", {})
+            icd10_scope = semantics.get("icd10Scope")
+            if icd10_scope is None:
                 continue
 
-        term_str = str(term)
+            # Use ICD10 scope ID as label
+            term_str = icd10_scope.get("id", "UNKNOWN")
+        else:
+            # Extract DUO Term
+            # duoTerm can be an int or string.
+            # duoTermCodes is a list, usually we want the primary one.
+            term = entry.get("duoTerm")
+            if term is None:
+                # Try duoTerms list
+                terms = entry.get("duoTerms", [])
+                if terms:
+                    term = terms[0]
+                else:
+                    continue
+            term_str = str(term)
 
         if layer not in grouped:
             grouped[layer] = {"rows": [], "labels": []}
@@ -206,10 +221,14 @@ def plot_cluster_result(X: pd.DataFrame, y_true: np.ndarray, y_pred: np.ndarray,
     plt.close()
 
 
-def extract_data_global(dataset: List[dict]) -> Dict:
+def extract_data_global(dataset: List[dict], use_icd10: bool = False) -> Dict:
     """
-    Extract all data for global clustering on DUO terms.
+    Extract all data for global clustering on DUO terms or ICD10 scopes.
     Ignores 'layer' structure.
+
+    Args:
+        dataset: List of data entries
+        use_icd10: If True, cluster by ICD10 scope instead of DUO terms
     """
     rows = []
     labels = []
@@ -241,16 +260,28 @@ def extract_data_global(dataset: List[dict]) -> Dict:
         if not valid:
             continue
 
-        # Extract Label (DUO Term)
-        term = entry.get("duoTerm")
-        if term is None:
-            terms = entry.get("duoTerms", [])
-            if terms:
-                term = terms[0]
-            else:
+        # Extract Label
+        if use_icd10:
+            # Extract ICD10 scope
+            semantics = entry.get("semantics", {})
+            icd10_scope = semantics.get("icd10Scope")
+            if icd10_scope is None:
                 continue
 
-        labels.append(str(term))
+            # Use ICD10 scope ID as label
+            term_str = icd10_scope.get("id", "UNKNOWN")
+        else:
+            # Extract DUO Term
+            term = entry.get("duoTerm")
+            if term is None:
+                terms = entry.get("duoTerms", [])
+                if terms:
+                    term = terms[0]
+                else:
+                    continue
+            term_str = str(term)
+
+        labels.append(term_str)
         rows.append(row)
 
     if len(rows) < 5:
@@ -279,6 +310,8 @@ def main():
     parser.add_argument("--plot", action="store_true", help="Generate plots")
     parser.add_argument("--global-analysis", action="store_true",
                         help="Run global analysis ignoring layers")
+    parser.add_argument("--icd10", action="store_true",
+                        help="Cluster by ICD10 scope instead of DUO terms")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -291,27 +324,33 @@ def main():
     print(f"Loading dataset from {dataset_path}...")
     dataset = load_json(dataset_path)
 
+    # Determine clustering target
+    target_label = "ICD10 Scopes" if args.icd10 else "DUO Terms"
+    file_suffix = "icd10" if args.icd10 else "duo"
+
     if args.global_analysis:
-        print("Running Global Analysis (Ignoring Layers)...")
-        data = extract_data_global(dataset)
+        print(f"Running Global Analysis on {target_label} (Ignoring Layers)...")
+        data = extract_data_global(dataset, use_icd10=args.icd10)
         if data:
-            res, X_df, y_pred = analyze_layer("Global_All_Terms", data)
+            res, X_df, y_pred = analyze_layer(f"Global_All_{file_suffix.upper()}", data)
             print(
                 f"Global Analysis | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
             if args.plot:
-                plot_path = args.output_dir / "global_kmeans.png"
+                plot_path = args.output_dir / f"global_{file_suffix}_kmeans.png"
                 plot_cluster_result(X_df, data["y"], y_pred,
-                                    f"Global Analysis (All Terms)\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
+                                    f"Global Analysis ({target_label})\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                     plot_path)
 
             # Save single result
             pd.DataFrame([res]).to_csv(args.output_dir /
-                                       "pch_global_clustering.csv", index=False)
+                                       f"pch_global_{file_suffix}_clustering.csv", index=False)
+        else:
+            print(f"No valid data found for {target_label} clustering.")
         return
 
-    print("Grouping data by layer...")
-    grouped_data = extract_data_by_layer(dataset)
+    print(f"Grouping data by layer (target: {target_label})...")
+    grouped_data = extract_data_by_layer(dataset, use_icd10=args.icd10)
 
     all_results = []
 
@@ -325,15 +364,15 @@ def main():
             f"Layer: {layer:25} | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
         if args.plot and res['n_classes'] > 1:
-            plot_path = args.output_dir / f"{layer}_kmeans.png"
+            plot_path = args.output_dir / f"{layer}_{file_suffix}_kmeans.png"
             plot_cluster_result(X_df, data["y"], y_pred,
-                                f"Layer: {layer}\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
+                                f"Layer: {layer} ({target_label})\nARI: {res['kmeans_ari']:.4f}, NMI: {res['kmeans_nmi']:.4f}",
                                 plot_path)
 
     # Save Summary
     if all_results:
         df_res = pd.DataFrame(all_results)
-        csv_path = args.output_dir / "pch_clustering_summary.csv"
+        csv_path = args.output_dir / f"pch_{file_suffix}_clustering_summary.csv"
         df_res.to_csv(csv_path, index=False)
         print(f"\nAnalysis complete. Summary saved to {csv_path}")
 
@@ -341,6 +380,8 @@ def main():
         avg_nmi = df_res['kmeans_nmi'].mean()
         print(f"Average K-Means ARI across all layers: {avg_ari:.4f}")
         print(f"Average K-Means NMI across all layers: {avg_nmi:.4f}")
+    else:
+        print(f"No valid data found for {target_label} clustering.")
 
 
 if __name__ == "__main__":
