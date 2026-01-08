@@ -91,7 +91,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).parent / "results" /
+        default=Path(__file__).parent /
         "policy_privacy_report.json",
         help="Where to store the aggregated metrics report",
     )
