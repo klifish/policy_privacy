@@ -206,6 +206,7 @@ def discover_dataset_dirs(base_dir: Path) -> List[Path]:
 
 
 def aggregate_json_arrays(dataset_dirs: Sequence[Path], filename: str) -> List[dict]:
+    print(f"[info] Aggregating {filename} from datasets...")
     combined: List[dict] = []
     for directory in dataset_dirs:
         file_path = directory / filename
@@ -254,6 +255,7 @@ def load_pi_pairs(path: Path) -> List[dict]:
 
 
 def aggregate_pi_pairs(dataset_dirs: Sequence[Path]) -> Tuple[List[dict], List[str]]:
+    print("[info] Aggregating PI pairs from datasets...")
     pairs: List[dict] = []
     sources: List[str] = []
     for directory in dataset_dirs:
@@ -434,22 +436,30 @@ def evaluate_predictions(
     accuracy = accuracy_score(y_test, predictions)
 
     # Calculate Precision, Recall, and F1 with different averaging strategies
-    macro_precision = precision_score(y_test, predictions, average="macro", zero_division=0)
-    macro_recall = recall_score(y_test, predictions, average="macro", zero_division=0)
+    macro_precision = precision_score(
+        y_test, predictions, average="macro", zero_division=0)
+    macro_recall = recall_score(
+        y_test, predictions, average="macro", zero_division=0)
     macro_f1 = f1_score(y_test, predictions, average="macro", zero_division=0)
 
-    weighted_precision = precision_score(y_test, predictions, average="weighted", zero_division=0)
-    weighted_recall = recall_score(y_test, predictions, average="weighted", zero_division=0)
-    weighted_f1 = f1_score(y_test, predictions, average="weighted", zero_division=0)
+    weighted_precision = precision_score(
+        y_test, predictions, average="weighted", zero_division=0)
+    weighted_recall = recall_score(
+        y_test, predictions, average="weighted", zero_division=0)
+    weighted_f1 = f1_score(y_test, predictions,
+                           average="weighted", zero_division=0)
 
     advantages = compute_advantages(accuracy, y_train, num_classes)
 
     # Evaluate on training set to detect overfitting
     train_predictions = estimator.predict(X_train)
     train_accuracy = accuracy_score(y_train, train_predictions)
-    train_macro_precision = precision_score(y_train, train_predictions, average="macro", zero_division=0)
-    train_macro_recall = recall_score(y_train, train_predictions, average="macro", zero_division=0)
-    train_macro_f1 = f1_score(y_train, train_predictions, average="macro", zero_division=0)
+    train_macro_precision = precision_score(
+        y_train, train_predictions, average="macro", zero_division=0)
+    train_macro_recall = recall_score(
+        y_train, train_predictions, average="macro", zero_division=0)
+    train_macro_f1 = f1_score(
+        y_train, train_predictions, average="macro", zero_division=0)
 
     result: Dict[str, object] = {
         "model": model_name,
@@ -630,14 +640,16 @@ def run_icd10_experiment(
     # Check if we have enough classes for multi-class classification
     unique_labels = df["label"].nunique()
     if unique_labels < 2:
-        print(f"[warn] Only {unique_labels} ICD-10 chapter(s) found. Skipping.")
+        print(
+            f"[warn] Only {unique_labels} ICD-10 chapter(s) found. Skipping.")
         return {
             "samples": len(df),
             "skipped": True,
             "reason": "insufficient label diversity",
         }
 
-    print(f"[info] ICD-10 experiment: {len(df)} samples, {unique_labels} chapters")
+    print(
+        f"[info] ICD-10 experiment: {len(df)} samples, {unique_labels} chapters")
 
     df, removed_outliers = remove_outliers_from_df(
         df,
