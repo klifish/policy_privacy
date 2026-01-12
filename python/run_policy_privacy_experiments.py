@@ -123,6 +123,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable dataset visualization rendering",
     )
+    parser.add_argument(
+        "--n-runs",
+        type=int,
+        default=1,
+        help="Number of runs with different random seeds to average results",
+    )
     return parser.parse_args()
 
 
@@ -511,11 +517,103 @@ def evaluate_predictions(
     return result
 
 
+def aggregate_evaluation_runs(
+    evaluation_runs: List[Dict[str, object]],
+) -> Dict[str, object]:
+    """
+    Aggregate multiple evaluation runs into a single result with mean and std.
+
+    Takes a list of evaluation dicts (one per run) and returns a single dict
+    with mean values and standard deviations for numeric metrics.
+    """
+    if not evaluation_runs:
+        return {}
+
+    if len(evaluation_runs) == 1:
+        return evaluation_runs[0]
+
+    # Get the model name from the first run
+    model_name = evaluation_runs[0].get("model", "unknown")
+
+    # Numeric keys to aggregate
+    numeric_keys = [
+        "accuracy", "macro_precision", "macro_recall", "macro_f1",
+        "weighted_precision", "weighted_recall", "weighted_f1",
+        "train_accuracy", "train_macro_precision", "train_macro_recall",
+        "train_macro_f1", "overfitting_gap", "advantage_vs_random",
+        "advantage_vs_majority", "auc", "train_auc", "auc_overfitting_gap",
+    ]
+
+    result: Dict[str, object] = {"model": model_name}
+
+    for key in numeric_keys:
+        values = [run.get(key) for run in evaluation_runs if run.get(key) is not None]
+        if values:
+            mean_val = float(np.mean(values))
+            std_val = float(np.std(values))
+            result[key] = mean_val
+            result[f"{key}_std"] = std_val
+
+    # Aggregate passed status - use mean AUC and advantage for determination
+    mean_auc = result.get("auc")
+    mean_advantage = result.get("advantage_vs_random")
+
+    auc_passed = mean_auc is not None and mean_auc <= DEFAULT_THRESHOLDS["auc_max"]
+    advantage_passed = mean_advantage is not None and mean_advantage <= DEFAULT_THRESHOLDS["advantage_max"]
+
+    result["passed"] = advantage_passed and (mean_auc is None or auc_passed)
+    result["auc_passed"] = auc_passed if mean_auc is not None else None
+    result["n_runs"] = len(evaluation_runs)
+
+    return result
+
+
+def aggregate_experiment_results(
+    results_list: List[Dict[str, object]],
+) -> Dict[str, object]:
+    """
+    Aggregate multiple experiment run results.
+
+    Handles the nested structure of experiment results, aggregating evaluations
+    for each model across runs.
+    """
+    if not results_list:
+        return {}
+
+    if len(results_list) == 1:
+        return results_list[0]
+
+    # Use the first result as a template for structure
+    template = results_list[0]
+    aggregated: Dict[str, object] = {}
+
+    # Copy non-evaluation fields from the first result
+    for key, value in template.items():
+        if key != "evaluations":
+            aggregated[key] = value
+
+    # Aggregate evaluations by model name
+    if "evaluations" in template:
+        model_runs: Dict[str, List[Dict[str, object]]] = defaultdict(list)
+        for result in results_list:
+            for eval_dict in result.get("evaluations", []):
+                model_name = eval_dict.get("model", "unknown")
+                model_runs[model_name].append(eval_dict)
+
+        aggregated["evaluations"] = [
+            aggregate_evaluation_runs(runs)
+            for runs in model_runs.values()
+        ]
+
+    return aggregated
+
+
 def run_pch_experiment(
     records: Sequence[dict],
     test_size: float,
     random_state: int,
     visualization_dir: Optional[Path] = None,
+    n_runs: int = 1,
 ) -> Dict[str, object]:
     """
     Policy Content Hiding (PCH) Experiment - DUO Term Multi-class Classification.
@@ -559,33 +657,40 @@ def run_pch_experiment(
     )
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
-    X_train, X_test, y_train, y_test = build_stratified_split(
-        X,
-        y,
-        test_size,
-        random_state,
-    )
-
-    models = build_models(num_classes=len(np.unique(y_train)))
-    evaluations = [
-        evaluate_predictions(
-            name,
-            estimator,
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            num_classes=len(np.unique(y_train)),
-        )
-        for name, estimator in models.items()
-    ]
-
     label_counts = Counter(df["label"])
-    return {
-        "samples": len(df),
-        "class_distribution": dict(label_counts),
-        "evaluations": evaluations,
-    }
+
+    # Run multiple times with different seeds
+    all_run_results: List[Dict[str, object]] = []
+    for run_idx in range(n_runs):
+        run_seed = random_state + run_idx
+        X_train, X_test, y_train, y_test = build_stratified_split(
+            X,
+            y,
+            test_size,
+            run_seed,
+        )
+
+        models = build_models(num_classes=len(np.unique(y_train)))
+        evaluations = [
+            evaluate_predictions(
+                name,
+                estimator,
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                num_classes=len(np.unique(y_train)),
+            )
+            for name, estimator in models.items()
+        ]
+
+        all_run_results.append({
+            "samples": len(df),
+            "class_distribution": dict(label_counts),
+            "evaluations": evaluations,
+        })
+
+    return aggregate_experiment_results(all_run_results)
 
 
 def run_icd10_experiment(
@@ -593,6 +698,7 @@ def run_icd10_experiment(
     test_size: float,
     random_state: int,
     visualization_dir: Optional[Path] = None,
+    n_runs: int = 1,
 ) -> Dict[str, object]:
     """
     ICD-10 Chapter Multi-class Classification Experiment.
@@ -668,33 +774,40 @@ def run_icd10_experiment(
 
     X = df[list(FEATURE_KEYS)].to_numpy()
     y = df["label"].to_numpy()
-    X_train, X_test, y_train, y_test = build_stratified_split(
-        X,
-        y,
-        test_size,
-        random_state,
-    )
-
-    models = build_models(num_classes=len(np.unique(y_train)))
-    evaluations = [
-        evaluate_predictions(
-            name,
-            estimator,
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            num_classes=len(np.unique(y_train)),
-        )
-        for name, estimator in models.items()
-    ]
-
     label_counts = Counter(df["label"])
-    return {
-        "samples": len(df),
-        "class_distribution": dict(label_counts),
-        "evaluations": evaluations,
-    }
+
+    # Run multiple times with different seeds
+    all_run_results: List[Dict[str, object]] = []
+    for run_idx in range(n_runs):
+        run_seed = random_state + run_idx
+        X_train, X_test, y_train, y_test = build_stratified_split(
+            X,
+            y,
+            test_size,
+            run_seed,
+        )
+
+        models = build_models(num_classes=len(np.unique(y_train)))
+        evaluations = [
+            evaluate_predictions(
+                name,
+                estimator,
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                num_classes=len(np.unique(y_train)),
+            )
+            for name, estimator in models.items()
+        ]
+
+        all_run_results.append({
+            "samples": len(df),
+            "class_distribution": dict(label_counts),
+            "evaluations": evaluations,
+        })
+
+    return aggregate_experiment_results(all_run_results)
 
 
 def run_spp_experiment(
@@ -702,6 +815,7 @@ def run_spp_experiment(
     test_size: float,
     random_state: int,
     visualization_dir: Optional[Path] = None,
+    n_runs: int = 1,
 ) -> Dict[str, object]:
 
     df = prepare_dataframe(records, label_getter=lambda _: "placeholder")
@@ -760,54 +874,65 @@ def run_spp_experiment(
 
         label_counts = Counter(df_target["label"])
         min_count = min(label_counts.values())
-        target_seed_base = random_state or 0
-        balanced_groups = []
-        for label_value, group in df_target.groupby("label"):
-            if len(group) > min_count:
-                seed = (target_seed_base +
-                        abs(hash((target, label_value)))) % (2**32 - 1)
-                balanced_groups.append(group.sample(
-                    n=min_count,
-                    random_state=seed
-                ))
-            else:
-                balanced_groups.append(group)
-        df_target_balanced = pd.concat(balanced_groups, ignore_index=True)
 
-        y = df_target_balanced["label"].to_numpy()
-        visualize_pre_split_gas_features(
-            df_target_balanced,
-            visualization_dir / target if visualization_dir else None,
-            prefix=f"SPP {target} gas",
-        )
-        X_target = df_target_balanced[list(FEATURE_KEYS)].to_numpy()
-        X_train, X_test, y_train, y_test = build_stratified_split(
-            X_target,
-            y,
-            test_size,
-            random_state,
-        )
+        # Run multiple times with different seeds
+        all_run_results: List[Dict[str, object]] = []
+        for run_idx in range(n_runs):
+            run_seed = random_state + run_idx
+            target_seed_base = run_seed or 0
 
-        num_classes = len(np.unique(y_train))
-        models = build_models(num_classes)
-        evaluations = [
-            evaluate_predictions(
-                name,
-                estimator,
-                X_train,
-                X_test,
-                y_train,
-                y_test,
-                num_classes=num_classes,
+            # Balance classes with run-specific seed
+            balanced_groups = []
+            for label_value, group in df_target.groupby("label"):
+                if len(group) > min_count:
+                    seed = (target_seed_base +
+                            abs(hash((target, label_value)))) % (2**32 - 1)
+                    balanced_groups.append(group.sample(
+                        n=min_count,
+                        random_state=seed
+                    ))
+                else:
+                    balanced_groups.append(group)
+            df_target_balanced = pd.concat(balanced_groups, ignore_index=True)
+
+            y = df_target_balanced["label"].to_numpy()
+            # Only visualize on first run
+            if run_idx == 0:
+                visualize_pre_split_gas_features(
+                    df_target_balanced,
+                    visualization_dir / target if visualization_dir else None,
+                    prefix=f"SPP {target} gas",
+                )
+            X_target = df_target_balanced[list(FEATURE_KEYS)].to_numpy()
+            X_train, X_test, y_train, y_test = build_stratified_split(
+                X_target,
+                y,
+                test_size,
+                run_seed,
             )
-            for name, estimator in models.items()
-        ]
 
-        results[target] = {
-            "samples": len(df_target_balanced),
-            "class_distribution": dict(Counter(df_target_balanced["label"])),
-            "evaluations": evaluations,
-        }
+            num_classes = len(np.unique(y_train))
+            models = build_models(num_classes)
+            evaluations = [
+                evaluate_predictions(
+                    name,
+                    estimator,
+                    X_train,
+                    X_test,
+                    y_train,
+                    y_test,
+                    num_classes=num_classes,
+                )
+                for name, estimator in models.items()
+            ]
+
+            all_run_results.append({
+                "samples": len(df_target_balanced),
+                "class_distribution": dict(Counter(df_target_balanced["label"])),
+                "evaluations": evaluations,
+            })
+
+        results[target] = aggregate_experiment_results(all_run_results)
 
     return results
 
@@ -1515,6 +1640,7 @@ def evaluate_pi_scope(
     random_state: int,
     visualization_dir: Optional[Path] = None,
     scope_name: str = "overall",
+    n_runs: int = 1,
 ) -> Optional[Dict[str, object]]:
     if not samples:
         return None
@@ -1533,38 +1659,48 @@ def evaluate_pi_scope(
             visualization_dir,
             prefix=f"PI {scope_name} gas",
         )
-    train_df, test_df = split_pi_samples(samples, test_size, random_state)
-    if train_df.empty or test_df.empty:
+
+    # Run multiple times with different seeds
+    all_run_results: List[Dict[str, object]] = []
+    for run_idx in range(n_runs):
+        run_seed = random_state + run_idx
+        train_df, test_df = split_pi_samples(samples, test_size, run_seed)
+        if train_df.empty or test_df.empty:
+            continue
+
+        y_train = train_df["label"].to_numpy()
+        y_test = test_df["label"].to_numpy()
+        X_train = train_df[list(FEATURE_KEYS)].to_numpy()
+        X_test = test_df[list(FEATURE_KEYS)].to_numpy()
+        num_classes = len(np.unique(y_train))
+        if num_classes < 2:
+            continue
+
+        models = build_models(num_classes=2)
+        evaluations = [
+            evaluate_predictions(
+                name,
+                estimator,
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                num_classes=2,
+            )
+            for name, estimator in models.items()
+        ]
+
+        all_run_results.append({
+            "samples": len(samples),
+            "train_pairs": len(train_df) // 2,
+            "test_pairs": len(test_df) // 2,
+            "evaluations": evaluations,
+        })
+
+    if not all_run_results:
         return None
 
-    y_train = train_df["label"].to_numpy()
-    y_test = test_df["label"].to_numpy()
-    X_train = train_df[list(FEATURE_KEYS)].to_numpy()
-    X_test = test_df[list(FEATURE_KEYS)].to_numpy()
-    num_classes = len(np.unique(y_train))
-    if num_classes < 2:
-        return None
-
-    models = build_models(num_classes=2)
-    evaluations = [
-        evaluate_predictions(
-            name,
-            estimator,
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            num_classes=2,
-        )
-        for name, estimator in models.items()
-    ]
-
-    return {
-        "samples": len(samples),
-        "train_pairs": len(train_df) // 2,
-        "test_pairs": len(test_df) // 2,
-        "evaluations": evaluations,
-    }
+    return aggregate_experiment_results(all_run_results)
 
 
 def run_pi_experiment(
@@ -1572,6 +1708,7 @@ def run_pi_experiment(
     test_size: float,
     random_state: int,
     visualization_dir: Optional[Path] = None,
+    n_runs: int = 1,
 ) -> Dict[str, object]:
     samples = build_pi_samples(list(pairs))
     scopes = defaultdict(list)
@@ -1587,6 +1724,7 @@ def run_pi_experiment(
             random_state,
             visualization_dir / scope if visualization_dir else None,
             scope_name=str(scope),
+            n_runs=n_runs,
         )
         if evaluation is None:
             results[scope] = {
@@ -1653,12 +1791,17 @@ def main() -> None:
         )
         experiment_viz_dir = args.visualizations_dir / "experiments"
 
+    n_runs = args.n_runs
+    if n_runs > 1:
+        print(f"[info] Running experiments with {n_runs} runs (averaging results)")
+
     print("Running Policy Content Hiding experiment…")
     pch_results = run_pch_experiment(
         pch_records,
         test_size=args.test_size,
         random_state=args.random_state,
         visualization_dir=experiment_viz_dir / "pch" if experiment_viz_dir else None,
+        n_runs=n_runs,
     )
 
     print("Running ICD-10 Chapter Classification experiment…")
@@ -1667,6 +1810,7 @@ def main() -> None:
         test_size=args.test_size,
         random_state=args.random_state,
         visualization_dir=experiment_viz_dir / "icd10" if experiment_viz_dir else None,
+        n_runs=n_runs,
     )
 
     print("Running Structure & Parameter Privacy experiment…")
@@ -1675,6 +1819,7 @@ def main() -> None:
         test_size=args.test_size,
         random_state=args.random_state,
         visualization_dir=experiment_viz_dir / "spp" if experiment_viz_dir else None,
+        n_runs=n_runs,
     )
 
     print("Running Policy Indistinguishability experiment…")
@@ -1683,6 +1828,7 @@ def main() -> None:
         test_size=args.test_size,
         random_state=args.random_state,
         visualization_dir=experiment_viz_dir / "pi" if experiment_viz_dir else None,
+        n_runs=n_runs,
     )
 
     report = {
@@ -1691,6 +1837,7 @@ def main() -> None:
         "pi_pair_sources": pi_pair_sources,
         "test_size": args.test_size,
         "random_state": args.random_state,
+        "n_runs": n_runs,
         "thresholds": DEFAULT_THRESHOLDS,
         "pch": pch_results,
         "icd10": icd10_results,
