@@ -377,7 +377,63 @@ def build_stratified_split(
     )
 
 
-def build_models(num_classes: int) -> Dict[str, Pipeline]:
+def get_rf_params(n_samples: int) -> Dict[str, object]:
+    """
+    Dynamically adjust Random Forest parameters based on sample size.
+
+    Smaller datasets are more prone to overfitting, so we use more conservative
+    parameters (fewer trees, shallower depth, larger min_samples_leaf).
+    """
+    if n_samples < 100:
+        # Extremely small sample: very conservative
+        return {
+            "n_estimators": 15,
+            "max_depth": 2,
+            "min_samples_split": 25,
+            "min_samples_leaf": 10,
+        }
+    elif n_samples < 200:
+        # Very small sample: extremely conservative
+        return {
+            "n_estimators": 50,
+            "max_depth": 2,
+            "min_samples_split": 20,
+            "min_samples_leaf": 10,
+        }
+    elif n_samples < 800:
+        # Small sample: conservative
+        return {
+            "n_estimators": 80,
+            "max_depth": 3,
+            "min_samples_split": 15,
+            "min_samples_leaf": 5,
+        }
+    elif n_samples < 1000:
+        # Medium sample: moderate constraints
+        return {
+            "n_estimators": 100,
+            "max_depth": 3,
+            "min_samples_split": 15,
+            "min_samples_leaf": 8,
+        }
+    else:
+        # Large sample: standard parameters
+        return {
+            "n_estimators": 100,
+            "max_depth": 4,
+            "min_samples_split": 10,
+            "min_samples_leaf": 5,
+        }
+
+
+def build_models(num_classes: int, n_samples: int = 1000) -> Dict[str, Pipeline]:
+    """
+    Build classification models with parameters adjusted for sample size.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+        n_samples: Number of samples in the dataset (used to adjust RF params).
+    """
     classifier_map: Dict[str, Pipeline] = {}
     logistic = Pipeline(
         steps=[
@@ -391,15 +447,17 @@ def build_models(num_classes: int) -> Dict[str, Pipeline]:
             ),
         ]
     )
+
+    rf_params = get_rf_params(n_samples)
     forest = Pipeline(
         steps=[
             (
                 "clf",
                 RandomForestClassifier(
-                    n_estimators=100,
-                    max_depth=3,
-                    min_samples_split=10,
-                    min_samples_leaf=5,
+                    n_estimators=rf_params["n_estimators"],
+                    max_depth=rf_params["max_depth"],
+                    min_samples_split=rf_params["min_samples_split"],
+                    min_samples_leaf=rf_params["min_samples_leaf"],
                     class_weight="balanced",
                     random_state=0,
                 ),
@@ -547,7 +605,8 @@ def aggregate_evaluation_runs(
     result: Dict[str, object] = {"model": model_name}
 
     for key in numeric_keys:
-        values = [run.get(key) for run in evaluation_runs if run.get(key) is not None]
+        values = [run.get(key)
+                  for run in evaluation_runs if run.get(key) is not None]
         if values:
             mean_val = float(np.mean(values))
             std_val = float(np.std(values))
@@ -559,7 +618,8 @@ def aggregate_evaluation_runs(
     mean_advantage = result.get("advantage_vs_random")
 
     auc_passed = mean_auc is not None and mean_auc <= DEFAULT_THRESHOLDS["auc_max"]
-    advantage_passed = mean_advantage is not None and mean_advantage <= DEFAULT_THRESHOLDS["advantage_max"]
+    advantage_passed = mean_advantage is not None and mean_advantage <= DEFAULT_THRESHOLDS[
+        "advantage_max"]
 
     result["passed"] = advantage_passed and (mean_auc is None or auc_passed)
     result["auc_passed"] = auc_passed if mean_auc is not None else None
@@ -670,7 +730,8 @@ def run_pch_experiment(
             run_seed,
         )
 
-        models = build_models(num_classes=len(np.unique(y_train)))
+        models = build_models(num_classes=len(
+            np.unique(y_train)), n_samples=len(df))
         evaluations = [
             evaluate_predictions(
                 name,
@@ -787,7 +848,8 @@ def run_icd10_experiment(
             run_seed,
         )
 
-        models = build_models(num_classes=len(np.unique(y_train)))
+        models = build_models(num_classes=len(
+            np.unique(y_train)), n_samples=len(df))
         evaluations = [
             evaluate_predictions(
                 name,
@@ -912,7 +974,14 @@ def run_spp_experiment(
             )
 
             num_classes = len(np.unique(y_train))
-            models = build_models(num_classes)
+            # console.log(f"SPP target '{target}' run {run_idx}: "
+            #             f"{len(df_target_balanced)} samples, "
+            #             f"{num_classes} classes")
+            print(f"[info] SPP target '{target}' run {run_idx}: "
+                  f"{len(df_target_balanced)} samples, "
+                  f"{num_classes} classes")
+            models = build_models(
+                num_classes, n_samples=len(df_target_balanced))
             evaluations = [
                 evaluate_predictions(
                     name,
@@ -1676,7 +1745,10 @@ def evaluate_pi_scope(
         if num_classes < 2:
             continue
 
-        models = build_models(num_classes=2)
+        print(f"[info] PI {scope_name} run {run_idx}: "
+              f"{len(samples)/2} samples, "
+              f"{num_classes} classes")
+        models = build_models(num_classes=2, n_samples=len(samples) / 2)
         evaluations = [
             evaluate_predictions(
                 name,
@@ -1793,7 +1865,8 @@ def main() -> None:
 
     n_runs = args.n_runs
     if n_runs > 1:
-        print(f"[info] Running experiments with {n_runs} runs (averaging results)")
+        print(
+            f"[info] Running experiments with {n_runs} runs (averaging results)")
 
     print("Running Policy Content Hiding experiment…")
     pch_results = run_pch_experiment(
