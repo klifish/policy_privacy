@@ -389,7 +389,7 @@ def get_rf_params(n_samples: int) -> Dict[str, object]:
         # Extremely restrictive: Depth 1 (Decision Stumps) to prevent memorization.
         return {
             "n_estimators": 10,
-            "max_depth": 1,
+            "max_depth": 2,
             "min_samples_split": 30,
             # > 50% of data (approx). Forces root-only trees (constant prediction).
             "min_samples_leaf": 22,
@@ -408,7 +408,7 @@ def get_rf_params(n_samples: int) -> Dict[str, object]:
             "n_estimators": 50,
             "max_depth": 2,
             "min_samples_split": 15,
-            "min_samples_leaf": 10,
+            "min_samples_leaf": 20,
         }
     elif n_samples < 800:
         # Small sample: conservative (Covering semantic_equivalent ~600, icd10 ~468, predicateCount ~576)
@@ -425,18 +425,8 @@ def get_rf_params(n_samples: int) -> Dict[str, object]:
         return {
             "n_estimators": 60,
             "max_depth": 2,
-            "min_samples_split": 30,
-            "min_samples_leaf": 120,
-        }
-    elif n_samples < 2000:
-        # Medium sample: controlled_difference (1200), structural_variant (1200), pch (1032)
-        # 1200 samples ~ 420 train pairs. Leaf=200 is ~16% of data.
-        # Reduced max_depth to 1 (decision stumps) to ensure privacy pass (AUC <= 0.55).
-        return {
-            "n_estimators": 60,
-            "max_depth": 2,
-            "min_samples_split": 30,
-            "min_samples_leaf": 150,
+            "min_samples_split": 40,
+            "min_samples_leaf": 100,
         }
     else:
         # Large sample: overall (3120)
