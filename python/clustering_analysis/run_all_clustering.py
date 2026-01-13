@@ -31,7 +31,10 @@ def main():
     # 3. PCH Clustering (Global)
     run_script("analyze_pch_clustering.py", ["--plot", "--global-analysis"])
 
-    # 4. SPP Clustering
+    # 4. PCH Clustering (ICD10)
+    run_script("analyze_pch_clustering.py", ["--plot", "--icd10"])
+
+    # 5. SPP Clustering
     run_script("analyze_spp_clustering.py", ["--plot"])
 
     print("\nAll clustering analyses completed successfully.")

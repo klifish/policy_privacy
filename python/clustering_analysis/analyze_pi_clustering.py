@@ -24,7 +24,7 @@ from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mu
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
 DEFAULT_DATA_DIR = Path(__file__).parents[1] / "data"
-OUTPUT_DIR = Path(__file__).parents[1] / "results" / "clustering_analysis"
+OUTPUT_DIR = Path(__file__).parents[1] / "results" / "pi_clustering_analysis"
 
 
 def ensure_numeric(value):

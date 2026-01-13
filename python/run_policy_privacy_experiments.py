@@ -422,6 +422,7 @@ def get_rf_params(n_samples: int) -> Dict[str, object]:
     elif n_samples < 1500:
         # Small to medium sample: ds_icd10 (1032), nestingDepth (792), controlled_difference (1200)
         # Using strict parameters to ensure privacy.
+        # train~test~validation
         return {
             "n_estimators": 60,
             "max_depth": 2,
