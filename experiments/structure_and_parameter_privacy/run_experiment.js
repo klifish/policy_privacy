@@ -28,149 +28,15 @@ const {
   executePolicy
 } = require('../policy_content_hiding/data_generator');
 
-// Progress tracking utilities
-class ProgressTracker {
-  constructor(totalSteps) {
-    this.totalSteps = totalSteps;
-    this.currentStep = 0;
-    this.startTime = Date.now();
-    this.stepStartTime = Date.now();
-    this.stepTimings = [];
-  }
+const {
+  getArtifactPaths
+} = require('../unified/artifacts');
 
-  startStep(stepName) {
-    this.currentStep++;
-    this.stepStartTime = Date.now();
-    this.currentStepName = stepName;
-    this._displayProgress();
-  }
-
-  completeStep() {
-    const stepDuration = Date.now() - this.stepStartTime;
-    this.stepTimings.push(stepDuration);
-    this._displayProgress(true);
-  }
-
-  updateSubProgress(current, total, extraInfo = '') {
-    process.stdout.write(`\r  [${current}/${total}] ${extraInfo}${' '.repeat(20)}`);
-  }
-
-  _displayProgress(completed = false) {
-    const elapsed = Date.now() - this.startTime;
-    const elapsedSeconds = Math.floor(elapsed / 1000);
-    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-    const elapsedSecondsRemainder = elapsedSeconds % 60;
-
-    const percentage = ((this.currentStep / this.totalSteps) * 100).toFixed(1);
-    const progressBar = this._generateProgressBar(this.currentStep, this.totalSteps);
-
-    const status = completed ? '✓' : '▶';
-    console.log(`\n${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
-    console.log(`   Time elapsed: ${elapsedMinutes}m ${elapsedSecondsRemainder}s`);
-  }
-
-  _generateProgressBar(current, total, width = 30) {
-    const filled = Math.floor((current / total) * width);
-    const empty = width - filled;
-    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
-  }
-
-  complete() {
-    const totalTime = Date.now() - this.startTime;
-    const totalMinutes = Math.floor(totalTime / 60000);
-    const totalSeconds = Math.floor((totalTime % 60000) / 1000);
-    console.log(`\n\n✓ All steps completed in ${totalMinutes}m ${totalSeconds}s`);
-  }
-}
-
-const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
-  1: 'ETH',
-  5: 'ETH',
-  11155111: 'ETH',
-  137: 'MATIC',
-  80001: 'MATIC',
-  80002: 'MATIC'
-});
-
-const GAS_ESTIMATES = Object.freeze({
-  deployment: 4_500_000n,
-  commit: 250_000n,
-  access: 650_000n,
-  bufferPercent: 25n
-});
-
-function getNativeTokenSymbol(chainId) {
-  return NATIVE_TOKEN_SYMBOL_BY_CHAIN[Number(chainId)] || 'ETH';
-}
-
-function estimateTotalGas(executionCount) {
-  const count = BigInt(executionCount);
-  if (count === 0n) {
-    return 0n;
-  }
-
-  const base = GAS_ESTIMATES.deployment + count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.access);
-  return base + (base * GAS_ESTIMATES.bufferPercent) / 100n;
-}
-
-async function ensureSufficientBalance({ provider, signer, executionCount }) {
-  if (executionCount <= 0) {
-    return;
-  }
-
-  const network = await provider.getNetwork();
-  const address = await signer.getAddress();
-  const feeData = await provider.getFeeData();
-  const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice;
-
-  if (!gasPrice) {
-    throw new Error('Unable to determine gas price for balance preflight check.');
-  }
-
-  const estimatedGasUnits = estimateTotalGas(executionCount);
-  const estimatedCostWei = estimatedGasUnits * gasPrice;
-  const balance = await provider.getBalance(address);
-  const nativeSymbol = getNativeTokenSymbol(network.chainId);
-
-  console.log('Balance Preflight Check');
-  console.log('-'.repeat(60));
-  console.log(`  Network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
-  console.log(`  Signer: ${address}`);
-  console.log(`  Current balance: ${ethers.formatEther(balance)} ${nativeSymbol}`);
-  console.log(`  Gas price used for estimate: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
-  console.log(`  Estimated gas required: ${estimatedGasUnits.toString()} units`);
-  console.log(`  Estimated cost: ${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}`);
-
-  if (balance < estimatedCostWei) {
-    const shortfall = estimatedCostWei - balance;
-    throw new Error(
-      `Insufficient balance to run experiment on ${network.name || 'network'}.\n` +
-      `Required ~${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}, short by ${ethers.formatEther(shortfall)} ${nativeSymbol}.`
-    );
-  }
-
-  console.log('  ✓ Balance check passed');
-  console.log();
-}
-
-async function deployPolicyPrivacyContracts() {
-  console.log('Deploying PolicyPrivacy + verifier contracts...');
-  const [signer] = await ethers.getSigners();
-
-  const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy', signer);
-  const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier', signer);
-
-  const verifier = await Verifier.deploy();
-  await verifier.waitForDeployment();
-  console.log('Verifier deployed at:', await verifier.getAddress());
-
-  const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
-  await policyPrivacy.waitForDeployment();
-  console.log('PolicyPrivacy deployed at:', await policyPrivacy.getAddress());
-  console.log();
-
-  return policyPrivacy;
-}
+const { ProgressTracker } = require('../core/progress');
+const {
+  ensureSufficientBalance,
+  deployPolicyPrivacyContracts
+} = require('../core/blockchain');
 
 async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker) {
   const results = [];
@@ -214,7 +80,8 @@ const DEFAULT_CONFIG = {
   testRatio: 0.3,
   permutationIterations: 500,
   kValues: [2, 3, 4, 5],
-  seed: 'spp-experiment'
+  seed: 'spp-experiment',
+  balanceMethod: 'both'  // 'oversample', 'undersample', 'both', 'none'
 };
 
 const DEFAULT_THRESHOLDS = {
@@ -265,12 +132,26 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--seed':
         config.seed = argv[++i];
         break;
+      case '--balance-method':
+        config.balanceMethod = argv[++i];
+        break;
+      case '--use-unified-dataset':
+      case '--unified':
+        config.useUnifiedDataset = true;
+        break;
+      case '--unified-dir':
+        config.unifiedDatasetDir = path.resolve(argv[++i]);
+        break;
       case '--help':
       case '-h':
         config.help = true;
         break;
       default:
-        console.warn(`Unknown argument ${arg} ignored`);
+        if (arg.startsWith('--unified-dir=')) {
+          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
+        } else {
+          console.warn(`Unknown argument ${arg} ignored`);
+        }
     }
   }
 
@@ -290,9 +171,12 @@ function printUsage() {
   console.log('  --satisfy-ratio <float>           Ratio of satisfying executions (default: 0.5)');
   console.log('  --test-ratio <float>              Train/test split ratio (default: 0.3)');
   console.log('  --permutation-iterations <n>      Permutation test iterations (default: 500)');
+  console.log('  --balance-method <method>         Dataset balancing: oversample|undersample|both|none (default: both)');
   console.log('  --phase <1|2|3>                   Resume from given phase');
   console.log('  --dataset <path>                  Use pre-generated dataset JSON (phase ≥2)');
   console.log('  --execution-results <path>        Path to cached execution results');
+  console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
+  console.log('  --unified-dir <path>              Override unified artifact directory');
   console.log('  --seed <value>                    Random seed for reproducibility');
   console.log('  --help, -h                        Show this help message');
 }
@@ -456,6 +340,7 @@ function generateMarkdownReport(report) {
   lines.push(`- **Executions per policy:** ${report.config.executionsPerPolicy}`);
   lines.push(`- **Satisfy ratio:** ${report.config.satisfyRatio.toFixed(2)}`);
   lines.push(`- **Test ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
+  lines.push(`- **Balance method:** ${report.config.balanceMethod || 'both'}`);
   if (report.dataset.meta?.families !== undefined) {
     lines.push(`- **Generated families:** ${report.dataset.meta.families}`);
   }
@@ -551,7 +436,10 @@ function generateMarkdownReport(report) {
  * Main experiment runner
  */
 async function runExperiment(config = {}) {
-  const startPhase = config.startPhase || 1;
+  const useUnifiedDataset = Boolean(config.useUnifiedDataset);
+  const startPhase = Number.isInteger(config.startPhase)
+    ? config.startPhase
+    : (useUnifiedDataset ? 2 : 1);
   const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
 
   if (!fs.existsSync(outputDir)) {
@@ -559,8 +447,33 @@ async function runExperiment(config = {}) {
   }
 
   const outputDatasetPath = path.join(outputDir, 'dataset.json');
-  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : outputDatasetPath;
-  const executionResultsPath = config.executionResultsPath || path.join(outputDir, 'execution_results.json');
+  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : null;
+  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
+
+  let unifiedPaths = null;
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.sppDataset}`);
+    console.log();
+
+    if (!datasetSourcePath) {
+      datasetSourcePath = unifiedPaths.policyDefinitions;
+    }
+    if (!executionResultsPath) {
+      executionResultsPath = unifiedPaths.sppDataset;
+    }
+  }
+
+  if (!datasetSourcePath) {
+    datasetSourcePath = outputDatasetPath;
+  }
+
+  if (!executionResultsPath) {
+    executionResultsPath = path.join(outputDir, 'execution_results.json');
+  }
   const reportJsonPath = path.join(outputDir, 'report.json');
   const reportMarkdownPath = path.join(outputDir, 'report.md');
 
@@ -645,19 +558,22 @@ async function runExperiment(config = {}) {
   const supervisedStructure = runSupervisedAttacks(executionResults, {
     targetAttribute: 'structureType',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
 
   const supervisedPredicate = runSupervisedAttacks(executionResults, {
     targetAttribute: 'predicateCombo',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
 
   const supervisedParam = runSupervisedAttacks(executionResults, {
     targetAttribute: 'paramType',
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    balanceMethod: config.balanceMethod
   });
   progress.completeStep();
 
@@ -731,7 +647,8 @@ async function runExperiment(config = {}) {
       executionsPerPolicy: config.executionsPerPolicy,
       satisfyRatio: config.satisfyRatio,
       testRatio: config.testRatio,
-      seed: config.seed
+      seed: config.seed,
+      balanceMethod: config.balanceMethod
     },
     dataset: {
       meta: datasetMeta,

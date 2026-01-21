@@ -142,22 +142,33 @@ function computeSemanticSimilarity(a, b) {
   const union = new Set([...duoA, ...duoB]);
   const duoScore = union.size === 0 ? 1 : intersection.size / union.size;
 
-  const icdScore = a.icd10Scope && b.icd10Scope
-    ? (a.icd10Scope.id === b.icd10Scope.id ? 1 : 0.75)
-    : 1;
+  function scopeSimilarity(scopeA, scopeB) {
+    if (!scopeA && !scopeB) {
+      return 0.6;
+    }
+    if (!scopeA || !scopeB) {
+      return 0.3;
+    }
+    return scopeA.id === scopeB.id ? 1 : 0.6;
+  }
 
-  const obiScore = a.obiScope && b.obiScope
-    ? (a.obiScope.id === b.obiScope.id ? 1 : 0.75)
-    : 1;
+  const icdScore = scopeSimilarity(a.icd10Scope, b.icd10Scope);
+  const obiScore = scopeSimilarity(a.obiScope, b.obiScope);
+  const populationScore = scopeSimilarity(a.populationScope, b.populationScope);
+  const geoScore = scopeSimilarity(a.geoScope, b.geoScope);
+  const clinicalScore = scopeSimilarity(a.clinicalScope, b.clinicalScope);
 
-  const predicateScore = a.predicateCount === b.predicateCount ? 1 : 0.8;
+  // Weight scores with more emphasis on ontology and scope diversity.
+  const layerVariantScore = (a.layer === b.layer && a.layerVariant === b.layerVariant) ? 1 : 0.5;
 
-  // Weight scores to bias towards DUO overlap.
   const weightedScore = (
-    0.55 * duoScore +
-    0.15 * icdScore +
-    0.15 * obiScore +
-    0.15 * predicateScore
+    0.25 * duoScore +
+    0.2 * icdScore +
+    0.2 * obiScore +
+    0.1 * populationScore +
+    0.1 * geoScore +
+    0.05 * clinicalScore +
+    0.1 * layerVariantScore
   );
 
   return Math.max(0, Math.min(1, weightedScore));

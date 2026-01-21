@@ -125,6 +125,7 @@ function analyzeLogicShape(logic = '') {
 
   let depth = 0;
   for (let i = 0; i < logic.length; i++) {
+
     const ch = logic[i];
     if (ch === '(') {
       depth += 1;

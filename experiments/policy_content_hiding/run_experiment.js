@@ -45,7 +45,6 @@ const {
 
 const {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 } = require('./classifiers');
 
@@ -54,75 +53,13 @@ const {
   checkPrivacyThresholds
 } = require('./evaluator');
 
-const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
-  1: 'ETH',
-  5: 'ETH',
-  11155111: 'ETH',
-  137: 'MATIC',
-  80001: 'MATIC',
-  80002: 'MATIC'
-});
+const {
+  ensureSufficientBalance
+} = require('../core/blockchain');
 
-const GAS_ESTIMATES = Object.freeze({
-  deployment: 4_500_000n,
-  commit: 250_000n,
-  access: 650_000n,
-  bufferPercent: 25n
-});
-
-function getNativeTokenSymbol(chainId) {
-  return NATIVE_TOKEN_SYMBOL_BY_CHAIN[Number(chainId)] || 'ETH';
-}
-
-function estimateTotalGas(executionCount) {
-  const count = BigInt(executionCount);
-  if (count === 0n) {
-    return 0n;
-  }
-
-  const base = GAS_ESTIMATES.deployment + count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.access);
-  return base + (base * GAS_ESTIMATES.bufferPercent) / 100n;
-}
-
-async function ensureSufficientBalance({ provider, signer, executionCount }) {
-  if (executionCount <= 0) {
-    return;
-  }
-
-  const network = await provider.getNetwork();
-  const address = await signer.getAddress();
-  const feeData = await provider.getFeeData();
-  const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice;
-
-  if (!gasPrice) {
-    throw new Error('Unable to determine gas price for balance preflight check.');
-  }
-
-  const estimatedGasUnits = estimateTotalGas(executionCount);
-  const estimatedCostWei = estimatedGasUnits * gasPrice;
-  const balance = await provider.getBalance(address);
-  const nativeSymbol = getNativeTokenSymbol(network.chainId);
-
-  console.log('Balance Preflight Check');
-  console.log('-'.repeat(60));
-  console.log(`  Network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
-  console.log(`  Signer: ${address}`);
-  console.log(`  Current balance: ${ethers.formatEther(balance)} ${nativeSymbol}`);
-  console.log(`  Gas price used for estimate: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
-  console.log(`  Estimated gas required: ${estimatedGasUnits.toString()} units`);
-  console.log(`  Estimated cost: ${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}`);
-
-  if (balance < estimatedCostWei) {
-    const shortfall = estimatedCostWei - balance;
-    throw new Error(
-      `Insufficient balance to run experiment on ${network.name || 'network'}.\n` +
-      `Required ~${ethers.formatEther(estimatedCostWei)} ${nativeSymbol}, short by ${ethers.formatEther(shortfall)} ${nativeSymbol}.`
-    );
-  }
-
-  console.log('  ✓ Balance check passed');
-  console.log();
-}
+const {
+  getArtifactPaths
+} = require('../unified/artifacts');
 
 function parseArgs(argv = process.argv.slice(2)) {
   const config = {};
@@ -167,6 +104,12 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
       config.datasetQualityOutput = path.resolve(argv[++i]);
+    } else if (arg === '--use-unified-dataset' || arg === '--unified') {
+      config.useUnifiedDataset = true;
+    } else if (arg === '--unified-dir') {
+      config.unifiedDatasetDir = path.resolve(argv[++i]);
+    } else if (arg.startsWith('--unified-dir=')) {
+      config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
     } else if (arg === '--help' || arg === '-h') {
       config.help = true;
     } else {
@@ -187,6 +130,8 @@ function printUsage() {
   console.log('  --execution-results <path>  Path to execution results from phase 1 (for resuming at phase 2)');
   console.log('  --executions <value>        Executions per policy (number) or execution results path (legacy)');
   console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
+  console.log('  --use-unified-dataset       Reuse dataset/executions from unified pipeline');
+  console.log('  --unified-dir <path>        Override unified artifact directory');
   console.log('  --output <dir>              Output directory for generated artifacts');
   console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
   console.log('  --policy-count <n>          Number of base policies to generate (default 200)');
@@ -200,23 +145,29 @@ function printUsage() {
 
 async function runExperiment(config = {}) {
   const {
-    numDuoTerms = 3,
-    executionsPerPolicy = 3,
+    numDuoTerms = 6,
+    executionsPerPolicy = 2,
     policyCount = undefined,
     outputDir = path.join(__dirname, 'results'),
     testRatio = 0.3,
     aucThreshold = 0.55,
     advantageThreshold = 0.05,
-    startPhase = 1,
-    datasetPath = null,
-    executionResultsPath = null,
+    startPhase: startPhaseOverride = undefined,
+    datasetPath: initialDatasetPath = null,
+    executionResultsPath: initialExecutionResultsPath = null,
     featuresPath = null,
     evaluateDataset = false,
     datasetQualityOutput = null,
-    phase: phaseAlias = undefined
+    phase: phaseAlias = undefined,
+    useUnifiedDataset = false,
+    unifiedDatasetDir = null
   } = config;
 
-  const startAtPhase = Number.isInteger(phaseAlias) ? phaseAlias : startPhase;
+  const startAtPhase = Number.isInteger(phaseAlias)
+    ? phaseAlias
+    : Number.isInteger(startPhaseOverride)
+      ? startPhaseOverride
+      : (useUnifiedDataset ? 2 : 1);
 
   if (startAtPhase < 1 || startAtPhase > 3) {
     throw new Error('startPhase/phase must be between 1 and 3 when resuming the experiment.');
@@ -227,15 +178,41 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(resolvedOutputDir, { recursive: true });
   }
 
+  let datasetPath = initialDatasetPath;
+  let executionResultsPath = initialExecutionResultsPath;
+  let datasetPathOverride = datasetPath ? path.resolve(datasetPath) : null;
+  let executionResultsPathOverride = executionResultsPath ? path.resolve(executionResultsPath) : null;
+  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
+  let unifiedPaths = null;
+
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.pchDataset}`);
+    console.log();
+
+    if (!datasetPathOverride) {
+      datasetPathOverride = unifiedPaths.policyDefinitions;
+      datasetPath = datasetPathOverride;
+    }
+
+    if (!executionResultsPathOverride) {
+      executionResultsPathOverride = unifiedPaths.pchDataset;
+      executionResultsPath = executionResultsPathOverride;
+    }
+  }
+
   const timestamp = Date.now();
-  const datasetOutputPath = datasetPath
-    ? path.resolve(datasetPath)
+  const datasetOutputPath = datasetPathOverride
+    ? datasetPathOverride
     : path.join(resolvedOutputDir, `dataset_${timestamp}.json`);
-  const executionResultsOutputPath = executionResultsPath
-    ? path.resolve(executionResultsPath)
+  const executionResultsOutputPath = executionResultsPathOverride
+    ? executionResultsPathOverride
     : path.join(resolvedOutputDir, 'execution_results.json');
-  const featuresOutputPath = featuresPath
-    ? path.resolve(featuresPath)
+  const featuresOutputPath = featuresPathOverride
+    ? featuresPathOverride
     : path.join(resolvedOutputDir, 'features.json');
   const datasetQualityOutputPath = datasetQualityOutput
     ? path.resolve(datasetQualityOutput)
@@ -511,24 +488,11 @@ async function runExperiment(config = {}) {
   console.log();
 
   console.log('Task 2: ICD-10 Chapter Prediction (Multi-class)');
-  console.log('  Training Decision Tree classifier...');
+  console.log('  Training Random Forest classifier...');
 
   const icdTrain = prepareClassificationData(trainData, 'icd10Chapter');
   const icdTest = prepareClassificationData(testData, 'icd10Chapter');
 
-  const decisionTree = new SimpleDecisionTree(5);
-  decisionTree.train(icdTrain.X, icdTrain.y);
-  const decisionTreePredictions = decisionTree.predict(icdTest.X);
-
-  classificationResults.push({
-    type: 'multi-class',
-    taskName: 'ICD-10 Chapter Prediction (DecisionTree)',
-    classifier: 'DecisionTree',
-    yTrue: icdTest.y,
-    yPred: decisionTreePredictions
-  });
-
-  console.log('  Training Random Forest classifier...');
   const randomForest = new RandomForest(10, 5);
   randomForest.train(icdTrain.X, icdTrain.y);
   const randomForestPredictions = randomForest.predict(icdTest.X);
@@ -759,6 +723,8 @@ if (require.main === module) {
     printUsage();
     process.exit(0);
   }
+
+  console.log('Starting experiment with configuration:', cliConfig);
 
   runExperiment(cliConfig)
     .then(report => {

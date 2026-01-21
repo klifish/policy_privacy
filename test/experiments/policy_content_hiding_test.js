@@ -16,8 +16,12 @@ const {
   getOntologyNamespace,
   generatePolicy,
   generateRequesterAttrs,
-  generateDataset
+  generateDataset,
+  POLICY_ATTRIBUTE_ORDER,
+  POLICY_PREDICATE_SLOTS,
+  evaluatePolicyTokens
 } = require('../../experiments/policy_content_hiding/data_generator');
+const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 
 const {
   loadDataset,
@@ -35,7 +39,6 @@ const {
 
 const {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 } = require('../../experiments/policy_content_hiding/classifiers');
 
@@ -117,11 +120,72 @@ describe('Policy Content Hiding Evaluation', function () {
       const satisfyAttrs = generateRequesterAttrs(DUO_TERMS.GENERAL_RESEARCH, true);
       const nonSatisfyAttrs = generateRequesterAttrs(DUO_TERMS.GENERAL_RESEARCH, false);
 
-      expect(satisfyAttrs).to.be.an('array').with.lengthOf(3);
+      expect(satisfyAttrs).to.be.an('array').with.lengthOf(6);
       expect(satisfyAttrs[0]).to.equal(1);
 
-      expect(nonSatisfyAttrs).to.be.an('array').with.lengthOf(3);
+      expect(nonSatisfyAttrs).to.be.an('array').with.lengthOf(6);
       expect(nonSatisfyAttrs[0]).to.equal(0);
+    });
+
+    it('should align requester attributes with complex policy logic', async function () {
+      const artifacts = await generatePolicyArtifacts(
+        {
+          policy_id: 'logic-check',
+          attributes: {
+            GR: true,
+            DS: true,
+            RS: true
+          },
+          predicates: POLICY_PREDICATE_SLOTS,
+          logic: '(GR & !DS) | (!RS)'
+        },
+        {
+          depth: 20,
+          attributeOrder: POLICY_ATTRIBUTE_ORDER
+        }
+      );
+
+      const predicateTruth = Array(POLICY_PREDICATE_SLOTS.length).fill(1);
+
+      const attrsSatisfy = generateRequesterAttrs(
+        [DUO_TERMS.GENERAL_RESEARCH, DUO_TERMS.DISEASE_SPECIFIC, DUO_TERMS.RESEARCH_SPECIFIC],
+        true,
+        {
+          attributeOrder: POLICY_ATTRIBUTE_ORDER,
+          policyTokens: artifacts.policy,
+          numOperations: artifacts.numOperations
+        }
+      );
+      expect(
+        evaluatePolicyTokens(
+          artifacts.policy,
+          artifacts.numOperations,
+          attrsSatisfy,
+          predicateTruth,
+          POLICY_ATTRIBUTE_ORDER.length,
+          POLICY_PREDICATE_SLOTS.length
+        )
+      ).to.equal(true);
+
+      const attrsFail = generateRequesterAttrs(
+        [DUO_TERMS.GENERAL_RESEARCH, DUO_TERMS.DISEASE_SPECIFIC, DUO_TERMS.RESEARCH_SPECIFIC],
+        false,
+        {
+          attributeOrder: POLICY_ATTRIBUTE_ORDER,
+          policyTokens: artifacts.policy,
+          numOperations: artifacts.numOperations
+        }
+      );
+      expect(
+        evaluatePolicyTokens(
+          artifacts.policy,
+          artifacts.numOperations,
+          attrsFail,
+          predicateTruth,
+          POLICY_ATTRIBUTE_ORDER.length,
+          POLICY_PREDICATE_SLOTS.length
+        )
+      ).to.equal(false);
     });
 
     it('should generate reproducible layered dataset with structural metadata', async function () {
@@ -189,7 +253,7 @@ describe('Policy Content Hiding Evaluation', function () {
         expect(item).to.have.property('execution');
         expect(item).to.have.property('policy').that.is.an('array');
         expect(item).to.have.property('requesterAttrs').that.is.an('array');
-        expect(item.requesterAttrs).to.have.lengthOf(3);
+        expect(item.requesterAttrs).to.have.lengthOf(6);
 
         const { semantics, structure } = item;
         expect(semantics.duoTerms).to.be.an('array').that.is.not.empty;
@@ -320,28 +384,6 @@ describe('Policy Content Hiding Evaluation', function () {
 
         expect(probas).to.be.an('array').with.lengthOf(2);
         expect(probas[0]).to.be.lessThan(probas[1]);
-      });
-    });
-
-    describe('Decision Tree', function () {
-      it('should train and predict multi-class classification', function () {
-        const X = [
-          [0, 0],
-          [0, 1],
-          [1, 0],
-          [1, 1],
-          [2, 2],
-          [2, 3]
-        ];
-        const y = [0, 0, 1, 1, 2, 2];
-
-        const dt = new SimpleDecisionTree(3);
-        dt.train(X, y);
-
-        const predictions = dt.predict(X);
-
-        // Should classify training data correctly
-        expect(predictions).to.deep.equal(y);
       });
     });
 

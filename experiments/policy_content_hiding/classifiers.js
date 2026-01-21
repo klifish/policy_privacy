@@ -73,6 +73,7 @@ class LogisticRegression {
 
 /**
  * Simple Decision Tree for multi-class classification
+ * Used internally by the random forest ensemble.
  */
 class DecisionTreeNode {
   constructor() {
@@ -157,25 +158,29 @@ class SimpleDecisionTree {
   
   buildTree(X, y, depth = 0) {
     const node = new DecisionTreeNode();
-    
+
     // Check stopping criteria
     const uniqueLabels = [...new Set(y)];
     if (uniqueLabels.length === 1 || depth >= this.maxDepth || X.length < 2) {
       // Leaf node - assign majority class
       const counts = {};
       y.forEach(label => counts[label] = (counts[label] || 0) + 1);
-      node.label = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      const majorityLabel = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      // Convert back to original type (number if it's numeric)
+      node.label = isNaN(majorityLabel) ? majorityLabel : Number(majorityLabel);
       return node;
     }
-    
+
     // Find best split
     const { feature, threshold, gain } = this.findBestSplit(X, y);
-    
+
     if (gain === 0) {
       // Can't split further
       const counts = {};
       y.forEach(label => counts[label] = (counts[label] || 0) + 1);
-      node.label = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      const majorityLabel = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      // Convert back to original type (number if it's numeric)
+      node.label = isNaN(majorityLabel) ? majorityLabel : Number(majorityLabel);
       return node;
     }
     
@@ -251,17 +256,27 @@ class RandomForest {
     const predictions = this.trees.map(tree => tree.predict(X));
     
     return X.map((_, i) => {
-      const votes = {};
+      const votes = new Map();
       predictions.forEach(pred => {
-        votes[pred[i]] = (votes[pred[i]] || 0) + 1;
+        const label = pred[i];
+        votes.set(label, (votes.get(label) || 0) + 1);
       });
-      return Object.entries(votes).sort((a, b) => b[1] - a[1])[0][0];
+
+      let bestLabel = null;
+      let bestVotes = -1;
+      votes.forEach((count, label) => {
+        if (count > bestVotes) {
+          bestVotes = count;
+          bestLabel = label;
+        }
+      });
+
+      return bestLabel;
     });
   }
 }
 
 module.exports = {
   LogisticRegression,
-  SimpleDecisionTree,
   RandomForest
 };

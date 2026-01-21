@@ -10,101 +10,11 @@
 const fs = require('fs');
 const path = require('path');
 
-// Progress tracking utilities
-class ProgressTracker {
-  constructor(totalSteps) {
-    this.totalSteps = totalSteps;
-    this.currentStep = 0;
-    this.startTime = Date.now();
-    this.stepStartTime = Date.now();
-    this.stepTimings = [];
-    this.subStepMode = false;
-  }
+const {
+  getArtifactPaths
+} = require('../unified/artifacts');
 
-  startStep(stepName) {
-    this.currentStep++;
-    this.stepStartTime = Date.now();
-    this.currentStepName = stepName;
-    this.subStepMode = false;
-    this._displayProgress();
-  }
-
-  completeStep() {
-    const stepDuration = Date.now() - this.stepStartTime;
-    this.stepTimings.push(stepDuration);
-    this.subStepMode = false;
-    this._displayProgress(true);
-  }
-
-  // For fine-grained progress within a step (e.g., executing policies one by one)
-  updateSubProgress(current, total, extraInfo = '') {
-    this.subStepMode = true;
-    this.subStepCurrent = current;
-    this.subStepTotal = total;
-    this.subStepInfo = extraInfo;
-    this._displayProgress(false, true);
-  }
-
-  _displayProgress(completed = false, isSubStep = false) {
-    const elapsed = Date.now() - this.startTime;
-    const elapsedSeconds = Math.floor(elapsed / 1000);
-    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-    const elapsedSecondsRemainder = elapsedSeconds % 60;
-
-    const percentage = ((this.currentStep / this.totalSteps) * 100).toFixed(1);
-    const progressBar = this._generateProgressBar(this.currentStep, this.totalSteps);
-
-    let timeEstimate = '';
-    if (this.stepTimings.length > 0 && this.currentStep < this.totalSteps) {
-      const avgStepTime = this.stepTimings.reduce((a, b) => a + b, 0) / this.stepTimings.length;
-      const remainingSteps = this.totalSteps - this.currentStep;
-      const estimatedRemainingTime = avgStepTime * remainingSteps;
-      const estMinutes = Math.floor(estimatedRemainingTime / 60000);
-      const estSeconds = Math.floor((estimatedRemainingTime % 60000) / 1000);
-      timeEstimate = ` | ETA: ${estMinutes}m ${estSeconds}s`;
-    }
-
-    const status = completed ? '✓' : '▶';
-
-    if (isSubStep && this.subStepMode) {
-      // Display sub-step progress with fine-grained ETA
-      const subPercentage = ((this.subStepCurrent / this.subStepTotal) * 100).toFixed(1);
-      const subProgressBar = this._generateProgressBar(this.subStepCurrent, this.subStepTotal, 20);
-
-      // Calculate ETA based on current sub-step progress
-      const stepElapsed = Date.now() - this.stepStartTime;
-      let subTimeEstimate = '';
-      if (this.subStepCurrent > 0 && this.subStepCurrent < this.subStepTotal) {
-        const avgTimePerSubStep = stepElapsed / this.subStepCurrent;
-        const remainingSubSteps = this.subStepTotal - this.subStepCurrent;
-        const estRemainingTime = avgTimePerSubStep * remainingSubSteps;
-        const estMin = Math.floor(estRemainingTime / 60000);
-        const estSec = Math.floor((estRemainingTime % 60000) / 1000);
-        subTimeEstimate = ` | ETA: ${estMin}m ${estSec}s`;
-      }
-
-      // Use \r to overwrite the same line for sub-progress updates
-      process.stdout.write(`\r${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
-      process.stdout.write(`\n   └─ [${this.subStepCurrent}/${this.subStepTotal}] ${subProgressBar} ${subPercentage}%${this.subStepInfo}${subTimeEstimate}${' '.repeat(20)}`);
-    } else {
-      console.log(`\n${status} [${this.currentStep}/${this.totalSteps}] ${progressBar} ${percentage}% | ${this.currentStepName}`);
-      console.log(`   Time elapsed: ${elapsedMinutes}m ${elapsedSecondsRemainder}s${timeEstimate}`);
-    }
-  }
-
-  _generateProgressBar(current, total, width = 30) {
-    const filled = Math.floor((current / total) * width);
-    const empty = width - filled;
-    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
-  }
-
-  complete() {
-    const totalTime = Date.now() - this.startTime;
-    const totalMinutes = Math.floor(totalTime / 60000);
-    const totalSeconds = Math.floor((totalTime % 60000) / 1000);
-    console.log(`\n\n✓ All steps completed in ${totalMinutes}m ${totalSeconds}s`);
-  }
-}
+const { ProgressTracker } = require('../core/progress');
 
 // Use PI-specific data generator for optimal pairing
 const {
@@ -345,12 +255,23 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--checkpoint':
         config.checkpointPath = path.resolve(argv[++i]);
         break;
+      case '--use-unified-dataset':
+      case '--unified':
+        config.useUnifiedDataset = true;
+        break;
+      case '--unified-dir':
+        config.unifiedDatasetDir = path.resolve(argv[++i]);
+        break;
       case '--help':
       case '-h':
         config.help = true;
         break;
       default:
-        console.warn(`Unknown argument ${arg} ignored`);
+        if (arg.startsWith('--unified-dir=')) {
+          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
+        } else {
+          console.warn(`Unknown argument ${arg} ignored`);
+        }
     }
   }
 
@@ -370,6 +291,8 @@ function printUsage() {
   console.log('  --phase <1|2|3>                Resume pipeline from given phase');
   console.log('  --dataset <path>               Path to cached dataset JSON');
   console.log('  --execution-results <path>     Path to cached execution results JSON');
+  console.log('  --use-unified-dataset          Reuse artifacts from unified dataset pipeline');
+  console.log('  --unified-dir <path>           Override unified artifact directory');
   console.log('  --pairs <path>                 Path to cached policy pair JSON');
   console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
@@ -592,12 +515,16 @@ function renderMarkdownReport(report) {
 
   lines.push('## Two-sample Diagnostics');
   lines.push('');
-  report.statistics.aggregated.forEach((entry) => {
-    lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
-    Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
-      lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
+  if (report.statistics && report.statistics.aggregated && report.statistics.aggregated.length > 0) {
+    report.statistics.aggregated.forEach((entry) => {
+      lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
+      Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
+        lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
+      });
     });
-  });
+  } else {
+    lines.push('_No two-sample statistical tests performed._');
+  }
   lines.push('');
 
   lines.push('## Conclusion');
@@ -633,7 +560,10 @@ function inferMetaFromExecutionResults(executionResults) {
 }
 
 async function runExperiment(config = {}) {
-  const startPhase = Number.isInteger(config.startPhase) ? config.startPhase : 1;
+  const useUnifiedDataset = Boolean(config.useUnifiedDataset);
+  const startPhase = Number.isInteger(config.startPhase)
+    ? config.startPhase
+    : (useUnifiedDataset ? 2 : 1);
   if (startPhase < 1 || startPhase > 3) {
     throw new Error('startPhase/phase must be between 1 and 3.');
   }
@@ -643,11 +573,31 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const datasetOutputPath = config.datasetPath
-    ? path.resolve(config.datasetPath)
+  let datasetPath = config.datasetPath ? path.resolve(config.datasetPath) : null;
+  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
+  let unifiedPaths = null;
+
+  if (useUnifiedDataset) {
+    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
+    console.log('Using unified dataset artifacts:');
+    console.log(`  Base dir: ${unifiedPaths.dir}`);
+    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
+    console.log(`  Executions: ${unifiedPaths.piDataset}`);
+    console.log();
+
+    if (!datasetPath) {
+      datasetPath = unifiedPaths.policyDefinitions;
+    }
+    if (!executionResultsPath) {
+      executionResultsPath = unifiedPaths.piDataset;
+    }
+  }
+
+  const datasetOutputPath = datasetPath
+    ? datasetPath
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.dataset);
-  const executionResultsOutputPath = config.executionResultsPath
-    ? path.resolve(config.executionResultsPath)
+  const executionResultsOutputPath = executionResultsPath
+    ? executionResultsPath
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.executionResults);
   const pairsOutputPath = config.pairsPath
     ? path.resolve(config.pairsPath)
@@ -895,8 +845,9 @@ async function runExperiment(config = {}) {
     },
     pairTargets,
     pairCounts,
-    singleSample: singleSampleResults,
-    pairwise: pairwiseResults,
+    singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
+    multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
+    twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
     statistics: statisticsResults,
     privacySummary,
     conclusion: privacySummary.overallPassed

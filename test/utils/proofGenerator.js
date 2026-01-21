@@ -65,14 +65,39 @@ async function generateGroth16Proof(input) {
 
 /**
  * Calculate policy commitment using Poseidon hash (compatible with circuit)
+ * Supports policies up to any length using tree-based hashing for DEPTH > 16
  * @param {Array} policy - Array of policy tokens (RPN format)
  * @param {BigInt} randomizer - Random value for commitment
  * @returns {string} - Policy commitment as string
  */
 async function calculatePolicyCommitment(policy, randomizer) {
   const poseidon = await initPoseidon();
-  // Hash the policy first
-  const policyHash = poseidon(policy);
+
+  let policyHash;
+
+  // circomlib's Poseidon supports max 16 inputs
+  if (policy.length <= 16) {
+    // Direct hashing for small policies
+    policyHash = poseidon(policy);
+  } else {
+    // Tree-based hashing for large policies (DEPTH > 16)
+    // This matches the circuit's tree-based hashing in policy_commitment.circom
+    const chunkSize = 16;
+    const numChunks = Math.ceil(policy.length / chunkSize);
+    const chunkHashes = [];
+
+    for (let i = 0; i < numChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, policy.length);
+      const chunk = policy.slice(start, end);
+      const chunkHash = poseidon(chunk);
+      chunkHashes.push(chunkHash);
+    }
+
+    // Hash all chunk hashes together
+    policyHash = poseidon(chunkHashes);
+  }
+
   // Then create commitment: Com(P;r) = Poseidon(Poseidon(P), r)
   const commitment = poseidon([policyHash, randomizer]);
   return poseidon.F.toObject(commitment).toString();
@@ -233,15 +258,16 @@ async function calculateParamsCommitment({
 function createCircuitInput(policyCommitment, options = {}) {
   const {
     // Default policy: attr0 AND attr1
-    // RPN encoding: [0, 1, 11, 0, 0, 0, 0, 0, 0, 0]
+    // RPN encoding: [0, 1, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     // Translation: attr0 attr1 AND
     // where: 0=attr0, 1=attr1, 11=AND(N+M+0) = AND(6+5+0) = 11
-    policy = [0, 1, 11, 0, 0, 0, 0, 0, 0, 0],
+    // Padded to DEPTH=20 to match circuit parameter
+    policy = [0, 1, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     requesterAttrs = [1, 1, 0, 0, 0, 0], // attr0=1, attr1=1, others 0 => should pass
     randomizer = BigInt('12345'),
     predicateTypes = [4, 4, 4, 4, 4], // All predicates disabled by default
     merkleRoots = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
-    credPublicKeys = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings  
+    credPublicKeys = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
     rangeMin = ['0', '0', '0', '0', '0'],
     rangeMax = ['0', '0', '0', '0', '0'],
     ontologyPolicyIds = ['0', '0', '0', '0', '0'],
@@ -250,9 +276,16 @@ function createCircuitInput(policyCommitment, options = {}) {
     paramsCommitment = '0'
   } = options;
 
+  // Circuit is compiled with DEPTH=20, so policy array must be exactly 20 elements
+  // Pad the policy array to 20 elements if needed
+  const POLICY_DEPTH = 20;
+  const paddedPolicy = policy.length >= POLICY_DEPTH
+    ? policy.slice(0, POLICY_DEPTH)
+    : [...policy, ...Array(POLICY_DEPTH - policy.length).fill(0)];
+
   const input = {
     // Private inputs
-    policy: policy,
+    policy: paddedPolicy,
     requesterAttrs: requesterAttrs,
     predicateTypes: predicateTypes,
     merkleLeaves: ['0', '0', '0', '0', '0'],

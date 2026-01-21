@@ -23,7 +23,8 @@ const ATTRIBUTE_DEFINITIONS = [
   { code: 'RS', label: 'Research-specific restrictions', namespace: 'OBI', requiresPredicate: true },
   { code: 'POA', label: 'Population origins/ancestry', namespace: 'HANCESTRO', requiresPredicate: true },
   { code: 'GS', label: 'Geographical restriction', namespace: 'ISO3166', requiresPredicate: true },
-  { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true }
+  { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true },
+  { code: 'CU', label: 'Commercial use', namespace: null, requiresPredicate: false }
 ];
 
 // Flexible identifier mapping for DUO attributes.
@@ -60,7 +61,12 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   CC: 'CC',
   CLINICAL_CARE: 'CC',
   CLINICALCARE: 'CC',
-  DUO0000043: 'CC'
+  DUO0000043: 'CC',
+
+  CU: 'CU',
+  COMMERCIAL_USE: 'CU',
+  COMMERCIAL: 'CU',
+  DUO0000046: 'CU'
 });
 
 // Operator table used by shunting-yard during logic parsing.
@@ -640,7 +646,7 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx) {
  * Main entry point: normalize policy JSON and emit circuit artifacts.
  */
 async function generatePolicyArtifacts(config, options = {}) {
-  const { depth = 10, randomizer, attributeOrder } = options;
+  const { depth = 20, randomizer, attributeOrder } = options;
   if (!Number.isInteger(depth) || depth <= 0) {
     throw new Error('depth must be a positive integer');
   }
@@ -687,7 +693,31 @@ async function generatePolicyArtifacts(config, options = {}) {
 
   const poseidon = await buildPoseidon();
   const policyBigInts = policy.map((v) => BigInt(v));
-  const policyHash = poseidon(policyBigInts);
+
+  // Hash the policy using tree-based hashing for DEPTH > 16
+  // This matches the circuit's tree-based hashing in policy_commitment.circom
+  let policyHash;
+  if (policyBigInts.length <= 16) {
+    // Direct hashing for small policies
+    policyHash = poseidon(policyBigInts);
+  } else {
+    // Tree-based hashing for large policies (DEPTH > 16)
+    const chunkSize = 16;
+    const numChunks = Math.ceil(policyBigInts.length / chunkSize);
+    const chunkHashes = [];
+
+    for (let i = 0; i < numChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, policyBigInts.length);
+      const chunk = policyBigInts.slice(start, end);
+      const chunkHash = poseidon(chunk);
+      chunkHashes.push(chunkHash);
+    }
+
+    // Hash all chunk hashes together
+    policyHash = poseidon(chunkHashes);
+  }
+
   const policyHashBigInt = poseidonToBigInt(poseidon, policyHash);
 
   const chosenRandomizer = parseRandomizer(randomizer) ?? generateRandomizerBytes();
@@ -756,11 +786,11 @@ async function runCli() {
   const inputPath = argMap.get('in') ?? argMap.get('input');
   const outputPath = argMap.get('out') ?? argMap.get('output');
   if (!inputPath || !outputPath) {
-    console.error('Usage: node compiler/policy_generator.js --in <input.json> --out <output.json> [--depth 10]');
+    console.error('Usage: node compiler/policy_generator.js --in <input.json> --out <output.json> [--depth 20]');
     process.exit(1);
   }
 
-  const depth = argMap.has('depth') ? parseInt(argMap.get('depth'), 10) : 10;
+  const depth = argMap.has('depth') ? parseInt(argMap.get('depth'), 10) : 20;
   const randomizerArg = argMap.get('randomizer');
 
   const absoluteInput = path.resolve(process.cwd(), inputPath);
