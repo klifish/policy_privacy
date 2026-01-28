@@ -12,6 +12,15 @@ interface IVerifier {
     ) external view returns (bool);
 }
 
+interface IOwnershipVerifier {
+    function verifyProof(
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[2] calldata _pubSignals
+    ) external view returns (bool);
+}
+
 /**
  * @title PolicyPrivacy
  * @dev Main contract for privacy-preserving consent management using zero-knowledge proofs
@@ -48,9 +57,10 @@ contract PolicyPrivacy {
 
     // Struct for policy commitments
     struct PolicyCommitment {
-        address dataSubject; // Who owns the data/policy
+        address dataSubject; // Who owns the data/policy (for AA, this is the Runner address)
         uint256 commitment; // Poseidon hash of policy + randomness
         uint256 paramsCommitment; // Poseidon hash of external parameter configuration
+        uint256 ownershipCommitment; // Poseidon(ownershipSecret) - for ZK-based revocation
         bool isActive; // Whether policy is still valid
         uint256 timestamp; // When policy was committed
         string metadataURI; // Optional metadata (IPFS hash, etc.)
@@ -67,6 +77,7 @@ contract PolicyPrivacy {
 
     // Contract state
     IVerifier public immutable verifier;
+    IOwnershipVerifier public immutable ownershipVerifier;
     uint256 public nextPolicyId;
     uint256 public nextRequestId;
 
@@ -101,8 +112,9 @@ contract PolicyPrivacy {
         _;
     }
 
-    constructor(IVerifier _verifier) {
+    constructor(IVerifier _verifier, IOwnershipVerifier _ownershipVerifier) {
         verifier = _verifier;
+        ownershipVerifier = _ownershipVerifier;
         owner = msg.sender;
         nextPolicyId = 1;
         nextRequestId = 1;
@@ -236,14 +248,18 @@ contract PolicyPrivacy {
     function _commitPolicy(
         uint256 _commitment,
         uint256 _paramsCommitment,
+        uint256 _ownershipCommitment,
         string calldata _metadataURI
     ) internal returns (uint256) {
+        require(_ownershipCommitment != 0, "Ownership commitment required");
+
         uint256 policyId = nextPolicyId++;
 
         policies[policyId] = PolicyCommitment({
             dataSubject: msg.sender,
             commitment: _commitment,
             paramsCommitment: _paramsCommitment,
+            ownershipCommitment: _ownershipCommitment,
             isActive: true,
             timestamp: block.timestamp,
             metadataURI: _metadataURI
@@ -265,24 +281,28 @@ contract PolicyPrivacy {
      * @dev Commit a new policy without revealing its contents (full signature)
      * @param _commitment Poseidon hash of (policy || randomness)
      * @param _paramsCommitment Poseidon hash of external parameter configuration
+     * @param _ownershipCommitment Poseidon(ownershipSecret) for ZK-based revocation
      * @param _metadataURI Optional metadata URI (e.g., IPFS hash)
      */
     function commitPolicy(
         uint256 _commitment,
         uint256 _paramsCommitment,
+        uint256 _ownershipCommitment,
         string calldata _metadataURI
     ) public notPaused returns (uint256) {
-        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+        return _commitPolicy(_commitment, _paramsCommitment, _ownershipCommitment, _metadataURI);
     }
 
     /**
      * @dev Legacy helper preserving the previous signature (params commitment defaults to 0)
+     * @notice This version requires ownershipCommitment for security
      */
     function commitPolicy(
         uint256 _commitment,
+        uint256 _ownershipCommitment,
         string calldata _metadataURI
     ) external notPaused returns (uint256) {
-        return _commitPolicy(_commitment, 0, _metadataURI);
+        return _commitPolicy(_commitment, 0, _ownershipCommitment, _metadataURI);
     }
 
     /**
@@ -291,6 +311,7 @@ contract PolicyPrivacy {
     function commitPolicyWithGasPad(
         uint256 _commitment,
         uint256 _paramsCommitment,
+        uint256 _ownershipCommitment,
         string calldata _metadataURI,
         uint256 targetGas
     ) public notPaused returns (uint256) {
@@ -298,6 +319,7 @@ contract PolicyPrivacy {
         uint256 policyId = _commitPolicy(
             _commitment,
             _paramsCommitment,
+            _ownershipCommitment,
             _metadataURI
         );
         _padGasToTarget(startGas, targetGas);
@@ -306,11 +328,12 @@ contract PolicyPrivacy {
 
     function commitPolicyWithGasPad(
         uint256 _commitment,
+        uint256 _ownershipCommitment,
         string calldata _metadataURI,
         uint256 targetGas
     ) external notPaused returns (uint256) {
         uint256 startGas = gasleft();
-        uint256 policyId = _commitPolicy(_commitment, 0, _metadataURI);
+        uint256 policyId = _commitPolicy(_commitment, 0, _ownershipCommitment, _metadataURI);
         _padGasToTarget(startGas, targetGas);
         return policyId;
     }
@@ -402,10 +425,49 @@ contract PolicyPrivacy {
     }
 
     /**
-     * @dev Revoke a policy (data subject only)
+     * @dev Revoke a policy using ZK proof of ownership
      * @param _policyId The policy to revoke
+     * @param _pA Groth16 proof component A
+     * @param _pB Groth16 proof component B
+     * @param _pC Groth16 proof component C
+     * @param _pubSignals Public signals: [isValid, expectedOwnershipCommitment]
+     *
+     * This function requires the caller to prove they know the ownershipSecret
+     * that was used when committing the policy. This prevents unauthorized
+     * revocation in shared smart account (AA) scenarios.
      */
     function revokePolicy(
+        uint256 _policyId,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[2] calldata _pubSignals
+    ) external notPaused {
+        require(policies[_policyId].isActive, "Policy already inactive");
+
+        // Verify the ownership commitment matches
+        require(
+            _pubSignals[0] == policies[_policyId].ownershipCommitment,
+            "Ownership commitment mismatch"
+        );
+
+        // Verify the ZK proof that caller knows the ownership secret
+        bool isValidProof = ownershipVerifier.verifyProof(_pA, _pB, _pC, _pubSignals);
+        require(isValidProof, "Invalid ownership proof");
+
+        // The proof output (isValid) should be 1
+        require(_pubSignals[1] == 1, "Ownership proof failed");
+
+        policies[_policyId].isActive = false;
+
+        emit PolicyRevoked(policies[_policyId].dataSubject, _policyId);
+    }
+
+    /**
+     * @dev Legacy revoke function - only works if caller is the original data subject
+     * @notice This is kept for backwards compatibility but may not work in AA scenarios
+     */
+    function revokePolicyLegacy(
         uint256 _policyId
     ) external onlyDataSubject(_policyId) notPaused {
         require(policies[_policyId].isActive, "Policy already inactive");
@@ -436,6 +498,7 @@ contract PolicyPrivacy {
             address dataSubject,
             uint256 commitment,
             uint256 paramsCommitment,
+            uint256 ownershipCommitment,
             bool isActive,
             uint256 timestamp,
             string memory metadataURI
@@ -446,6 +509,7 @@ contract PolicyPrivacy {
             policy.dataSubject,
             policy.commitment,
             policy.paramsCommitment,
+            policy.ownershipCommitment,
             policy.isActive,
             policy.timestamp,
             policy.metadataURI
