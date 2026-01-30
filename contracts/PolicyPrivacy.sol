@@ -55,6 +55,19 @@ contract PolicyPrivacy {
     );
     event PolicyRevoked(address indexed dataSubject, uint256 indexed policyId);
 
+    // Events for encrypted policy exchange (3A-Simple scheme)
+    event PolicyInfoRequested(
+        uint256 indexed policyId,
+        address indexed requester,
+        uint256 requestId,
+        string requesterPublicKey  // Requester's encryption public key
+    );
+    event PolicyInfoProvided(
+        uint256 indexed policyId,
+        uint256 indexed requestId,
+        string encryptedPolicy  // Policy encrypted with requester's public key
+    );
+
     // Struct for policy commitments
     struct PolicyCommitment {
         address dataSubject; // Who owns the data/policy (for AA, this is the Runner address)
@@ -81,11 +94,26 @@ contract PolicyPrivacy {
     uint256 public nextPolicyId;
     uint256 public nextRequestId;
 
+    // Struct for policy info requests (3A-Simple)
+    struct PolicyInfoRequest {
+        address requester;
+        uint256 policyId;
+        string requesterPublicKey;
+        uint256 timestamp;
+        bool isResponded;
+        string encryptedResponse;
+    }
+
     // Mappings
     mapping(uint256 => PolicyCommitment) public policies;
     mapping(uint256 => AccessRequest) public accessRequests;
     mapping(address => uint256[]) public subjectPolicies;
     mapping(address => uint256[]) public requesterRequests;
+
+    // 3A-Simple: Policy info requests
+    uint256 public nextPolicyInfoRequestId;
+    mapping(uint256 => PolicyInfoRequest) public policyInfoRequests;
+    mapping(uint256 => uint256[]) public policyToInfoRequests; // policyId -> requestIds
 
     // Emergency controls
     address public immutable owner;
@@ -118,6 +146,7 @@ contract PolicyPrivacy {
         owner = msg.sender;
         nextPolicyId = 1;
         nextRequestId = 1;
+        nextPolicyInfoRequestId = 1;
     }
 
     /**
@@ -483,6 +512,105 @@ contract PolicyPrivacy {
      */
     function isAccessGranted(uint256 _requestId) external view returns (bool) {
         return accessRequests[_requestId].isGranted;
+    }
+
+    // =============================================
+    // 3A-Simple: Encrypted Policy Distribution
+    // =============================================
+
+    /**
+     * @dev Request policy information from a Data Owner
+     * @param _policyId The policy to request info about
+     * @param _requesterPublicKey Requester's public key for encryption (hex string)
+     * @return requestId The ID of this policy info request
+     *
+     * The Data Owner will see this request and can choose to respond
+     * with the policy encrypted using the requester's public key.
+     */
+    function requestPolicyInfo(
+        uint256 _policyId,
+        string calldata _requesterPublicKey
+    ) external notPaused returns (uint256) {
+        require(policies[_policyId].isActive, "Policy not active");
+        require(bytes(_requesterPublicKey).length > 0, "Public key required");
+
+        uint256 requestId = nextPolicyInfoRequestId++;
+
+        policyInfoRequests[requestId] = PolicyInfoRequest({
+            requester: msg.sender,
+            policyId: _policyId,
+            requesterPublicKey: _requesterPublicKey,
+            timestamp: block.timestamp,
+            isResponded: false,
+            encryptedResponse: ""
+        });
+
+        policyToInfoRequests[_policyId].push(requestId);
+
+        emit PolicyInfoRequested(_policyId, msg.sender, requestId, _requesterPublicKey);
+
+        return requestId;
+    }
+
+    /**
+     * @dev Respond to a policy info request with encrypted policy data
+     * @param _requestId The policy info request ID
+     * @param _encryptedPolicy The policy encrypted with requester's public key
+     *
+     * Only the data subject (policy owner) can respond to requests.
+     */
+    function respondToPolicyInfoRequest(
+        uint256 _requestId,
+        string calldata _encryptedPolicy
+    ) external notPaused {
+        PolicyInfoRequest storage request = policyInfoRequests[_requestId];
+        require(request.policyId != 0, "Request not found");
+        require(!request.isResponded, "Already responded");
+        require(
+            policies[request.policyId].dataSubject == msg.sender,
+            "Only policy owner can respond"
+        );
+        require(bytes(_encryptedPolicy).length > 0, "Encrypted policy required");
+
+        request.isResponded = true;
+        request.encryptedResponse = _encryptedPolicy;
+
+        emit PolicyInfoProvided(request.policyId, _requestId, _encryptedPolicy);
+    }
+
+    /**
+     * @dev Get policy info request details
+     * @param _requestId The request ID
+     */
+    function getPolicyInfoRequest(
+        uint256 _requestId
+    ) external view returns (
+        address requester,
+        uint256 policyId,
+        string memory requesterPublicKey,
+        uint256 timestamp,
+        bool isResponded,
+        string memory encryptedResponse
+    ) {
+        PolicyInfoRequest memory req = policyInfoRequests[_requestId];
+        return (
+            req.requester,
+            req.policyId,
+            req.requesterPublicKey,
+            req.timestamp,
+            req.isResponded,
+            req.encryptedResponse
+        );
+    }
+
+    /**
+     * @dev Get all policy info request IDs for a policy
+     * @param _policyId The policy ID
+     */
+    function getPolicyInfoRequestIds(
+        uint256 _policyId
+    ) external view returns (uint256[] memory) {
+        return policyToInfoRequests[_policyId];
     }
 
     /**
