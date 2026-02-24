@@ -1,7 +1,8 @@
 'use strict';
 
 const circomlibjs = require('circomlibjs');
-const crypto = require('crypto');
+
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 const NAMESPACE_IDS = Object.freeze({
   ICD10: 0,
@@ -69,10 +70,11 @@ function toBigInt(value, fieldName) {
     throw new Error(`Unsupported string format for ${fieldName || 'value'}: ${value}`);
   }
   if (value instanceof Uint8Array) {
-    let hex = Buffer.from(value).toString('hex');
-    if (!hex) {
-      hex = '0';
+    let hex = '';
+    for (let i = 0; i < value.length; i++) {
+      hex += value[i].toString(16).padStart(2, '0');
     }
+    if (!hex) hex = '0';
     return BigInt(`0x${hex}`);
   }
   throw new Error(`Cannot convert value to BigInt${fieldName ? ` for ${fieldName}` : ''}`);
@@ -86,10 +88,23 @@ function toHex(value) {
   return `0x${big.toString(16)}`;
 }
 
-function sha256BigInt(input) {
-  const buffer = typeof input === 'string' ? Buffer.from(input, 'utf8') : Buffer.from(String(input), 'utf8');
-  const digestHex = crypto.createHash('sha256').update(buffer).digest('hex');
-  return BigInt(`0x${digestHex}`);
+async function sha256BigInt(input) {
+  const data = typeof input === 'string' ? input : String(input);
+  if (isBrowser) {
+    const encoded = new TextEncoder().encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+    const hashArray = new Uint8Array(hashBuffer);
+    let hex = '';
+    for (let i = 0; i < hashArray.length; i++) {
+      hex += hashArray[i].toString(16).padStart(2, '0');
+    }
+    return BigInt(`0x${hex}`);
+  } else {
+    const nodeCrypto = require('crypto');
+    const encoded = new TextEncoder().encode(data);
+    const digestHex = nodeCrypto.createHash('sha256').update(encoded).digest('hex');
+    return BigInt(`0x${digestHex}`);
+  }
 }
 
 function canonicalNamespace(value) {
@@ -151,8 +166,8 @@ function normalizeTerm(raw, defaults, index) {
   return { namespace, namespaceId, termId, epoch };
 }
 
-function computeLeafComponents(term) {
-  const termHashFull = sha256BigInt(term.termId);
+async function computeLeafComponents(term) {
+  const termHashFull = await sha256BigInt(term.termId);
   const termHashTruncated = termHashFull & TERM_MASK;
   const namespaceBig = BigInt(term.namespaceId);
   if (namespaceBig < 0n || namespaceBig > ((1n << NAMESPACE_BITS) - 1n)) {
@@ -205,14 +220,14 @@ function buildProof(layers, index) {
   return { pathElements, pathIndices };
 }
 
-function computeConfigHash(entries) {
+async function computeConfigHash(entries) {
   const canonical = entries.map(entry => ({
     namespace: entry.namespace,
     termId: entry.termId,
     epoch: entry.epoch.toString()
   }));
   const canonicalJson = JSON.stringify(canonical);
-  return toHex(sha256BigInt(canonicalJson));
+  return toHex(await sha256BigInt(canonicalJson));
 }
 
 async function buildWhitelist(config) {
@@ -272,23 +287,24 @@ async function buildWhitelist(config) {
 
   const poseidon = await getPoseidon();
   const leaves = new Array(treeSize).fill(0n);
-  const entries = normalized.map((term, index) => {
-    const { termHashFull, termHashTruncated, packed } = computeLeafComponents(term);
+  const entries = [];
+  for (let i = 0; i < normalized.length; i++) {
+    const term = normalized[i];
+    const { termHashFull, termHashTruncated, packed } = await computeLeafComponents(term);
     const leaf = FtoBig(poseidon, poseidon([packed]));
-    leaves[index] = leaf;
-    const entry = {
+    leaves[i] = leaf;
+    entries.push({
       namespace: term.namespace,
       namespaceId: term.namespaceId,
       termId: term.termId,
       epoch: term.epoch,
-      index,
+      index: i,
       termHash: termHashTruncated,
       termHashFull,
       packed,
       leaf
-    };
-    return entry;
-  });
+    });
+  }
 
   const { layers, root } = buildLayers(poseidon, leaves);
   const rootHex = toHex(root);
@@ -307,7 +323,7 @@ async function buildWhitelist(config) {
       treeSize,
       leafCount: entries.length,
       fillerLeafHex: toHex(0n),
-      configHash: computeConfigHash(entries)
+      configHash: await computeConfigHash(entries)
     },
     entries
   };
