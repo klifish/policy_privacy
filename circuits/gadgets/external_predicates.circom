@@ -84,33 +84,39 @@ template MerkleProofVerifier(LEVELS) {
 // 2. EDDSA CREDENTIAL VERIFIER  
 // ═══════════════════════════════════════════════════════════════════════════
 
-template CredentialSignatureVerifier() {
-    // Private inputs - simplified for Phase 1
-    signal input message;                           // Single message value  
-    signal input signature;                         // Simplified signature value
-    
-    // Public inputs
-    signal input publicKey;                         // Simplified public key
-    
-    // Output  
-    signal output isValid;                          // Boolean: is signature valid?
-    
-    // For Phase 1, we'll use a simplified mock verification
-    // In production, this would integrate with a proper EdDSA verifier
-    // For now, just check that signature matches a simple hash relationship
-    component hasher;
-    component checker;
-    
-    hasher = Poseidon(2);
-    hasher.inputs[0] <== message;
-    hasher.inputs[1] <== publicKey;
-    
-    checker = IsEqual();
-    checker.in[0] <== hasher.out;
-    checker.in[1] <== signature;
-    
-    // Output verification result
-    isValid <== checker.out;
+template CredentialEdDSAVerifier() {
+    // Private inputs
+    signal input message;                           // Credential message: Poseidon(duoToken, pid, scopeHash, expiry)
+    signal input sigR8x;                            // EdDSA signature R8 x-coordinate
+    signal input sigR8y;                            // EdDSA signature R8 y-coordinate
+    signal input sigS;                              // EdDSA signature scalar S
+
+    // Public inputs — Baby Jubjub curve point
+    signal input pubKeyAx;                          // Issuer public key x-coordinate
+    signal input pubKeyAy;                          // Issuer public key y-coordinate
+
+    // Selector: 1 = enforce EdDSA constraints, 0 = skip (non-signature slot)
+    signal input isEnabled;
+
+    // Output
+    signal output isValid;                          // 1 if proof is satisfiable; circuit fails if invalid
+
+    // EdDSAPoseidonVerifier from circomlib uses ForceEqualIfEnabled internally:
+    // when enabled=1 and signature is invalid, proof generation (witness computation) fails.
+    // when enabled=0, all EdDSA constraints are bypassed (no-op for non-signature slots).
+    component eddsaVerifier = EdDSAPoseidonVerifier();
+    eddsaVerifier.enabled <== isEnabled;
+    eddsaVerifier.Ax <== pubKeyAx;
+    eddsaVerifier.Ay <== pubKeyAy;
+    eddsaVerifier.R8x <== sigR8x;
+    eddsaVerifier.R8y <== sigR8y;
+    eddsaVerifier.S <== sigS;
+    eddsaVerifier.M <== message;
+
+    // isValid is always 1: if enabled=1 and the EdDSA signature is invalid,
+    // the circuit has no satisfying witness and proof generation fails entirely.
+    // A successfully generated proof implies the signature was valid.
+    isValid <== 1;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -223,46 +229,67 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
-    // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked)
+    // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked, 4=disabled)
     signal input predicateType;
-    
+
     // Merkle proof inputs
     signal input merkleLeaf;
-    signal input merklePathElements[MERKLE_LEVELS]; 
+    signal input merklePathElements[MERKLE_LEVELS];
     signal input merklePathIndices[MERKLE_LEVELS];
     signal input merkleRoot;
-    
-    // Signature inputs  
-    signal input credMessage;                       // Single message value
-    signal input credSignature;                     // Single signature value
-    signal input credPublicKey;                     // Single public key
-    
-    // Range proof inputs  
+
+    // EdDSA credential signature inputs
+    signal input credMessage;                       // Poseidon(duoToken, pid, scopeHash, expiry)
+    signal input credSigR8x;                        // EdDSA signature R8 x-coordinate
+    signal input credSigR8y;                        // EdDSA signature R8 y-coordinate
+    signal input credSigS;                          // EdDSA signature scalar S
+    signal input credPubKeyAx;                      // Issuer public key x (Baby Jubjub)
+    signal input credPubKeyAy;                      // Issuer public key y (Baby Jubjub)
+
+    // Range proof inputs
     signal input rangeValue;
     signal input rangeMin;
     signal input rangeMax;
-    
+
     // Ontology-linked terms inputs
     signal input ontologyCode;                      // ICD code or other ontology term
     signal input ontologyPolicyId;                  // Policy ID for binding
     signal input ontologyEpoch;                     // Policy epoch/version
-    
+
     // Output
     signal output isValid;
-    
+
     // Components
     component merkleVerifier;
-    component signatureVerifier;  
+    component signatureVerifier;
     component rangeVerifier;
     component ontologyVerifier;
     component type0Check, type1Check, type2Check, type3Check;
-    
+
+    // Type selector checks
+    type0Check = IsEqual();
+    type1Check = IsEqual();
+    type2Check = IsEqual();
+    type3Check = IsEqual();
+
+    type0Check.in[0] <== predicateType;
+    type0Check.in[1] <== 0;
+
+    type1Check.in[0] <== predicateType;
+    type1Check.in[1] <== 1;
+
+    type2Check.in[0] <== predicateType;
+    type2Check.in[1] <== 2;
+
+    type3Check.in[0] <== predicateType;
+    type3Check.in[1] <== 3;
+
     // Instantiate all verifiers
     merkleVerifier = MerkleProofVerifier(MERKLE_LEVELS);
-    signatureVerifier = CredentialSignatureVerifier();
+    signatureVerifier = CredentialEdDSAVerifier();
     rangeVerifier = RangeProof(RANGE_BITS);
     ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
-    
+
     // Connect merkle verifier
     merkleVerifier.leaf <== merkleLeaf;
     for (var i = 0; i < MERKLE_LEVELS; i++) {
@@ -270,17 +297,21 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
         merkleVerifier.pathIndices[i] <== merklePathIndices[i];
     }
     merkleVerifier.root <== merkleRoot;
-    
-    // Connect signature verifier
+
+    // Connect EdDSA credential verifier
     signatureVerifier.message <== credMessage;
-    signatureVerifier.signature <== credSignature;
-    signatureVerifier.publicKey <== credPublicKey;
-    
+    signatureVerifier.sigR8x <== credSigR8x;
+    signatureVerifier.sigR8y <== credSigR8y;
+    signatureVerifier.sigS <== credSigS;
+    signatureVerifier.pubKeyAx <== credPubKeyAx;
+    signatureVerifier.pubKeyAy <== credPubKeyAy;
+    signatureVerifier.isEnabled <== type1Check.out;  // Only enforce EdDSA when type == SIGNATURE
+
     // Connect range verifier
     rangeVerifier.value <== rangeValue;
     rangeVerifier.minValue <== rangeMin;
     rangeVerifier.maxValue <== rangeMax;
-    
+
     // Connect ontology-linked terms verifier
     ontologyVerifier.icdCode <== ontologyCode;
     ontologyVerifier.allowedRoot <== merkleRoot;  // Reuse merkleRoot for ontology verification
@@ -290,38 +321,19 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
         ontologyVerifier.merklePathElements[i] <== merklePathElements[i];
         ontologyVerifier.merklePathIndices[i] <== merklePathIndices[i];
     }
-    
-    // Select result based on predicate type using manual selection
-    // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
-    type0Check = IsEqual();
-    type1Check = IsEqual();
-    type2Check = IsEqual();
-    type3Check = IsEqual();
-    
-    type0Check.in[0] <== predicateType;
-    type0Check.in[1] <== 0;
-    
-    type1Check.in[0] <== predicateType;
-    type1Check.in[1] <== 1;
-    
-    type2Check.in[0] <== predicateType;
-    type2Check.in[1] <== 2;
-    
-    type3Check.in[0] <== predicateType;
-    type3Check.in[1] <== 3;
-    
+
     // Multiply each result by its selector and sum (break into quadratic constraints)
     signal merkleSelected;
-    signal signatureSelected; 
+    signal signatureSelected;
     signal rangeSelected;
     signal ontologySelected;
     signal partialSum1, partialSum2;
-    
+
     merkleSelected <== type0Check.out * merkleVerifier.isValid;
     signatureSelected <== type1Check.out * signatureVerifier.isValid;
     rangeSelected <== type2Check.out * rangeVerifier.isValid;
     ontologySelected <== type3Check.out * ontologyVerifier.pred;
-    
+
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
     isValid <== partialSum2 + ontologySelected;

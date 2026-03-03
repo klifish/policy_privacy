@@ -8,7 +8,7 @@ interface IVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[41] calldata _pubSignals
     ) external view returns (bool);
 }
 
@@ -109,6 +109,10 @@ contract PolicyPrivacy {
     mapping(uint256 => AccessRequest) public accessRequests;
     mapping(address => uint256[]) public subjectPolicies;
     mapping(address => uint256[]) public requesterRequests;
+
+    // Nullifier tracking for replay prevention (Untrusted Data Requester model)
+    mapping(uint256 => bool) public usedNullifiers;
+    event NullifierUsed(uint256 indexed nullifier, uint256 indexed policyId);
 
     // 3A-Simple: Policy info requests
     uint256 public nextPolicyInfoRequestId;
@@ -372,18 +376,38 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[41] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
+        // pubSignals layout (41 signals):
+        // [0] = isAuthorized (output)
+        // [1] = nullifier (output)
+        // [2] = policyCommitment
+        // [3] = paramsCommitment
+        // [4..8] = merkleRoots[5]
+        // [9..13] = credPubKeyAx[5]
+        // [14..18] = credPubKeyAy[5]
+        // [19..23] = rangeMin[5]
+        // [24..28] = rangeMax[5]
+        // [29..33] = ontologyPolicyIds[5]
+        // [34..38] = ontologyEpochs[5]
+        // [39] = scopeHash
+        // [40] = currentTimestamp
         require(
-            _pubSignals[1] == policies[_policyId].commitment,
+            _pubSignals[2] == policies[_policyId].commitment,
             "Policy commitment mismatch"
         );
         require(
-            _pubSignals[2] == policies[_policyId].paramsCommitment,
+            _pubSignals[3] == policies[_policyId].paramsCommitment,
             "Parameter commitment mismatch"
         );
+
+        // Check nullifier uniqueness (replay prevention)
+        uint256 proofNullifier = _pubSignals[1];
+        require(!usedNullifiers[proofNullifier], "Nullifier already used");
+        usedNullifiers[proofNullifier] = true;
+        emit NullifierUsed(proofNullifier, _policyId);
 
         uint256 requestId = nextRequestId++;
 
@@ -425,7 +449,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[41] calldata _pubSignals
     ) external notPaused returns (uint256) {
         return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
     }
@@ -438,7 +462,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals,
+        uint[41] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256) {
         uint256 startGas = gasleft();
@@ -689,7 +713,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[41] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }
