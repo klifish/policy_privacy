@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Script as Experiment Script
+    participant Compiler as Policy Compiler
+    participant Prover as ZK Prover (SnarkJS)
+    participant Contract as PolicyPrivacy Contract
+    participant Verifier as Groth16 Verifier Contract
+
+    Note over Script: For each policy in dataset (200 total)
+
+    Script->>Compiler: calculatePolicyCommitment(policy, randomizer)
+    Compiler-->>Script: commitment = Poseidon(policy || rand)
+
+    Script->>Compiler: calculateParamsCommitment(params)
+    Compiler-->>Script: paramsCommitment = Poseidon(params)
+
+    Script->>Prover: generateGroth16Proof(circuitInput)
+    Note over Prover: ~2M constraints circuit
+    Prover-->>Script: {pA, pB, pC, pubSignals[41]}
+
+    Script->>Prover: verifyGroth16ProofOffline(proof)
+    Prover-->>Script: valid ✓
+
+    rect rgb(240, 253, 244)
+        Note over Script,Contract: TX1: Commit Policy
+        Script->>Contract: commitPolicyWithGasPad(commitment, paramsCommitment, metadataURI, ~300k)
+        Contract->>Contract: Store commitment in policies mapping
+        Contract->>Contract: Emit PolicyCommitted(subject, policyId, commitment)
+        Contract->>Contract: _padGasToTarget → burn gas to ~300k total
+        Contract-->>Script: commitReceipt {gasUsed, logs, blockNumber}
+    end
+
+    rect rgb(255, 247, 237)
+        Note over Script,Verifier: TX2: Request Access with ZK Proof
+        Script->>Contract: requestAccessWithGasPad(policyId, pA, pB, pC, pubSignals, ~1M)
+        Contract->>Contract: Verify commitment match
+        Contract->>Contract: Check nullifier uniqueness
+        Contract->>Verifier: verifyProof(pA, pB, pC, pubSignals)
+        Verifier-->>Contract: true/false
+        Contract->>Contract: isAuthorized = validProof && pubSignals[0]==1
+        alt Authorized
+            Contract->>Contract: Emit AccessGranted
+        else Denied
+            Contract->>Contract: Emit AccessDenied
+        end
+        Contract->>Contract: _padGasToTarget → burn gas to ~1M total
+        Contract-->>Script: accessReceipt {gasUsed, logs, blockNumber}
+    end
+
+    Script->>Script: Extract 10 observable features from receipts
+    Script->>Script: Append to results array

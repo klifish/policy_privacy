@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph CommitTX["Commit Transaction"]
+        C1["Base: 300,000 gas"] --> C2["±10% variance"]
+        C2 --> C3["Range: 270,000 ~ 330,000"]
+    end
+
+    subgraph AccessTX["Access Transaction"]
+        A1["Base: 1,000,000 gas"] --> A2["±10% variance"]
+        A2 --> A3["Range: 900,000 ~ 1,100,000"]
+    end
+
+    subgraph Method["Randomization Method"]
+        M1["crypto.randomBytes(4)"] --> M2["Uniform [0, 1]"]
+        M2 --> M3["factor = 1 + (rand - 0.5) × 2 × 0.1"]
+        M3 --> M4["target = floor(base × factor)"]
+    end
+
+    style CommitTX fill:#f0fdf4,stroke:#22c55e
+    style AccessTX fill:#fff7ed,stroke:#f97316
+    style Method fill:#f0f4ff,stroke:#3b82f6

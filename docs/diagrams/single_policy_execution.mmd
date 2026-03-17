@@ -1,0 +1,57 @@
+flowchart TD
+    subgraph OffChain["Off-Chain Preparation"]
+        A[Policy Data: tokens, requesterAttrs, predicateSlots] --> B["calculatePolicyCommitment(policy, randomizer)"]
+        B --> C["Poseidon Hash: H(policy || randomness) → commitment"]
+        C --> D[Build Circuit Input]
+        D --> D1["Policy Tokens (depth=20)"]
+        D --> D2["Requester Attributes (6: GR,DS,RS,POA,GS,CC)"]
+        D --> D3["External Predicates (5 slots: ICD10,OBI,HANCESTRO,ISO3166,SNOMED)"]
+        D --> D4["Merkle Roots, Ranges, Ontology IDs"]
+        D1 & D2 & D3 & D4 --> E["calculateParamsCommitment(merkleRoots, credKeys, ranges, ontologyParams)"]
+        E --> F["generateGroth16Proof(circuitInput)"]
+        F --> F1["⏱ Measure proofGenerationTime"]
+        F1 --> G["verifyGroth16ProofOffline(proof)"]
+        G --> H{Proof Valid?}
+        H -->|Yes| I[Proceed to On-Chain]
+        H -->|No| FAIL[Error: Invalid Proof]
+    end
+
+    subgraph TX1["On-Chain TX1: Commit Policy"]
+        I --> J["getRandomGasTarget(300000n ± 10%)"]
+        J --> K["commitPolicyWithGasPad(commitment, paramsCommitment, metadataURI, targetGas)"]
+        K --> K1["Store PolicyCommitment in mapping"]
+        K1 --> K2["Emit PolicyCommitted Event"]
+        K2 --> K3["_padGasToTarget(startGas, targetGas)"]
+        K3 --> K4["commitTx.wait() → commitReceipt"]
+        K4 --> K5["Extract policyId from PolicyCommitted Event"]
+    end
+
+    subgraph TX2["On-Chain TX2: Request Access"]
+        K5 --> L["getRandomGasTarget(1000000n ± 10%)"]
+        L --> M["requestAccessWithGasPad(policyId, pA, pB, pC, pubSignals, targetGas)"]
+        M --> M1["Verify commitment match (pubSignals[2] == stored commitment)"]
+        M1 --> M2["Verify paramsCommitment match"]
+        M2 --> M3["Check nullifier uniqueness (replay prevention)"]
+        M3 --> M4["verifier.verifyProof(pA, pB, pC, pubSignals)"]
+        M4 --> M5{"isAuthorized = validProof && pubSignals[0]==1"}
+        M5 -->|Yes| M6["Emit AccessGranted"]
+        M5 -->|No| M7["Emit AccessDenied"]
+        M6 & M7 --> M8["_padGasToTarget(startGas, targetGas)"]
+        M8 --> M9["accessTx.wait() → accessReceipt"]
+    end
+
+    subgraph Collect["Feature Collection"]
+        M9 --> N[Extract Observable Features]
+        N --> N1["commitGasUsed, commitCalldataLength"]
+        N --> N2["accessGasUsed, accessCalldataLength"]
+        N --> N3["proofSize, proofGenerationTime"]
+        N --> N4["commitLogsCount, commitLogsSize"]
+        N --> N5["accessLogsCount, accessLogsSize"]
+        N --> N6["blockDifference"]
+        N1 & N2 & N3 & N4 & N5 & N6 --> O["Return {policyData, features, transactions}"]
+    end
+
+    style OffChain fill:#f0f4ff,stroke:#3b82f6
+    style TX1 fill:#f0fdf4,stroke:#22c55e
+    style TX2 fill:#fff7ed,stroke:#f97316
+    style Collect fill:#fdf2f8,stroke:#ec4899

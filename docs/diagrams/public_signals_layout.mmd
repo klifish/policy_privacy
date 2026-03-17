@@ -1,0 +1,44 @@
+block-beta
+    columns 4
+
+    block:output["Outputs (2)"]:2
+        s0["[0] isAuthorized"]
+        s1["[1] nullifier"]
+    end
+
+    block:commitments["Commitments (2)"]:2
+        s2["[2] policyCommitment"]
+        s3["[3] paramsCommitment"]
+    end
+
+    block:merkle["Merkle Roots (5)"]:2
+        s4["[4-8] merkleRoots[0..4]"]
+    end
+
+    block:cred["Credential Keys (10)"]:2
+        s9["[9-13] credPubKeyAx[0..4]"]
+        s14["[14-18] credPubKeyAy[0..4]"]
+    end
+
+    block:range["Range Bounds (10)"]:2
+        s19["[19-23] rangeMin[0..4]"]
+        s24["[24-28] rangeMax[0..4]"]
+    end
+
+    block:ontology["Ontology Params (10)"]:2
+        s29["[29-33] ontologyPolicyIds[0..4]"]
+        s34["[34-38] ontologyEpochs[0..4]"]
+    end
+
+    block:misc["Misc (2)"]:2
+        s39["[39] scopeHash"]
+        s40["[40] currentTimestamp"]
+    end
+
+    style output fill:#fef3c7,stroke:#f59e0b
+    style commitments fill:#dbeafe,stroke:#3b82f6
+    style merkle fill:#f0fdf4,stroke:#22c55e
+    style cred fill:#fdf2f8,stroke:#ec4899
+    style range fill:#e0e7ff,stroke:#6366f1
+    style ontology fill:#fff7ed,stroke:#f97316
+    style misc fill:#f1f5f9,stroke:#64748b

@@ -1,0 +1,36 @@
+flowchart TD
+    subgraph Phase1["Phase 1: Unified Dataset Generation"]
+        A[unified/run.js] --> B[Load Config]
+        B --> C[validator.js: Validate PCH/SPP/PI Requirements]
+        C -->|All Passed| D[artifacts.js: Annotate Dataset for SPP 5-Dimensions]
+        C -->|Failed| ERR[Abort Pipeline]
+        D --> E[Write Policy Definitions to Artifact Dir]
+    end
+
+    subgraph Phase2["Phase 2: Blockchain Setup"]
+        E --> F[ensureSufficientBalance]
+        F --> G[deployPolicyPrivacyContracts]
+        G --> G1[Deploy PolicyPrivacyMainVerifier]
+        G1 --> G2[Deploy PolicyPrivacy with Verifier Address]
+    end
+
+    subgraph Phase3["Phase 3: Execute All Policies"]
+        G2 --> H["executeDataset(dataset, contract, outputPath)"]
+        H --> I["Loop: for each policy in dataset"]
+        I --> J["executePolicy(policyData, contract)"]
+        J --> K[Collect Results]
+        K --> I
+        I -->|All Done| L[Save executed_dataset.json]
+    end
+
+    subgraph Phase4["Phase 4: Slice & Distribute"]
+        L --> M[writeExecutionArtifacts]
+        M --> M1[pch_dataset.json]
+        M --> M2[spp_dataset.json]
+        M --> M3[pi_dataset.json]
+    end
+
+    style Phase1 fill:#f0f4ff,stroke:#3b82f6
+    style Phase2 fill:#f0fdf4,stroke:#22c55e
+    style Phase3 fill:#fff7ed,stroke:#f97316
+    style Phase4 fill:#fdf2f8,stroke:#ec4899

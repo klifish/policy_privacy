@@ -1,0 +1,29 @@
+flowchart TD
+    A["_padGasToTarget(startGas, targetGas)"] --> B{targetGas == 0?}
+    B -->|Yes| SKIP[Return: No Padding]
+    B -->|No| C{targetGas > 8M?}
+    C -->|Yes| REJECT["Revert: Gas pad target too large"]
+    C -->|No| D["currentGas = gasleft()"]
+    D --> E["executionGasUsed = startGas - currentGas"]
+
+    E --> F["Count calldata zero/non-zero bytes"]
+    F --> G["actualCalldataGas = zeros×4 + nonZeros×16"]
+    G --> H["maxCalldataGas = calldataLength × 16 (worst case)"]
+    H --> I["calldataCompensation = maxCalldataGas - actualCalldataGas"]
+
+    I --> J["targetExecutionGas = targetGas - 21000 - maxCalldataGas + calldataCompensation"]
+    J --> K{executionGasUsed >= targetExecutionGas?}
+    K -->|Yes| DONE1[Return: Already Exceeded Target]
+    K -->|No| L["paddingNeeded = targetExecutionGas - executionGasUsed"]
+    L --> M["targetGasLeft = currentGas - paddingNeeded + 5050"]
+
+    M --> N["Burn Gas Loop"]
+    N --> O{"gasleft() > targetGasLeft?"}
+    O -->|Yes| P["acc = (acc ^ 0x9e37...) * 0x1000003d"]
+    P --> Q["acc = (acc << 1) + (acc >> 1)"]
+    Q --> O
+    O -->|No| R["gasPadAccumulator = acc"]
+    R --> DONE2[Return: Gas Padded to Target]
+
+    style A fill:#fef3c7,stroke:#f59e0b
+    style N fill:#fee2e2,stroke:#ef4444

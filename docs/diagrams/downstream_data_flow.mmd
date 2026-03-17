@@ -1,0 +1,36 @@
+flowchart TD
+    A["executed_dataset.json<br/>(200 policies × features)"] --> S[writeExecutionArtifacts]
+
+    S --> PCH["pch_dataset.json"]
+    S --> SPP["spp_dataset.json<br/>(max 3 executions/policy)"]
+    S --> PI["pi_dataset.json"]
+
+    subgraph JSExperiments["JS Experiments (experiments/)"]
+        PCH --> PCH1["PCH: DUO Term Classification<br/>LR + RF → AUC ≤ 0.55?"]
+        SPP --> SPP1["SPP: 5-Dim Structure Classification<br/>Supervised + Statistical + Clustering"]
+        PI --> PI1["PI: Pair Distinguishability<br/>Level I/II/III Attacks"]
+    end
+
+    subgraph PyExperiments["Python Experiments (python/)"]
+        PCH --> PY1["PCH: scikit-learn LR + RF<br/>20 runs × mean ± std"]
+        PCH --> PY2["ICD-10: Chapter Classification"]
+        SPP --> PY3["SPP: 4 targets balanced classification"]
+        PI --> PY4["PI: Per-pairType binary classification"]
+    end
+
+    subgraph Clustering["Python Clustering Analysis"]
+        PCH --> CL1["K-Means + DBSCAN<br/>ARI, NMI, Silhouette"]
+        SPP --> CL2["SPP Clustering"]
+        PI --> CL3["PI Clustering<br/>(526 output files)"]
+    end
+
+    PCH1 & SPP1 & PI1 --> R1["JS Results"]
+    PY1 & PY2 & PY3 & PY4 --> R2["policy_privacy_report.json"]
+    CL1 & CL2 & CL3 --> R3["Clustering Results"]
+
+    R1 & R2 & R3 --> FINAL["Privacy Conclusion:<br/>Gas padding effective,<br/>classifiers ≈ random guessing"]
+
+    style JSExperiments fill:#f0f4ff,stroke:#3b82f6
+    style PyExperiments fill:#f0fdf4,stroke:#22c55e
+    style Clustering fill:#fff7ed,stroke:#f97316
+    style FINAL fill:#fef3c7,stroke:#f59e0b
