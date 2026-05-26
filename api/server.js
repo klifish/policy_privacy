@@ -12,6 +12,11 @@ const dataRequesterRoutes = require('./routes/dataRequester');
 const policyRoutes = require('./routes/policy');
 const proofRoutes = require('./routes/proof');
 
+// TPS-ZKPI route handlers (Section V)
+const providerRoutes = require('./routes/provider');
+const requesterRoutes = require('./routes/requester');
+const accessRoutes = require('./routes/access');
+
 // Import middleware
 const authMiddleware = require('./middleware/auth');
 const validationMiddleware = require('./middleware/validation');
@@ -97,6 +102,11 @@ class PolicyPrivacyAPI {
     this.app.use('/api/data-requester', dataRequesterRoutes);
     this.app.use('/api/policy', policyRoutes);
     this.app.use('/api/proof', proofRoutes);
+
+    // TPS-ZKPI routes (Section V workflow)
+    this.app.use('/api/provider', providerRoutes);
+    this.app.use('/api/requester', requesterRoutes);
+    this.app.use('/api/access', accessRoutes);
 
     // Health check
     this.app.get('/health', (req, res) => {
