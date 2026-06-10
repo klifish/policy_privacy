@@ -1,22 +1,24 @@
 'use strict';
 
 /**
- * TPS-ZKPI end-to-end workflow test (Section V, all 6 stages).
+ * TPS-ZKPI protocol stage unit tests (Section V, all 6 stages).
  *
- * This test exercises the full TPS-ZKPI protocol using the Hardhat in-process
- * blockchain and a locally-running TPS server (embedded in-process via require).
+ * Tests the correctness of each protocol component in isolation using
+ * direct in-process imports (tps/store, tps/proofGenerator) — no HTTP layer.
  *
  * Stages under test:
  *  1. Provider compiles policy → commits on-chain → registers resource
- *  2. Provider provisions policy material to TPS
+ *  2. Provider provisions policy material to TPS store
  *  3. Requester fetches resource metadata (policyId, commitment)
- *  4. Requester submits evidence to TPS → TPS generates proof
- *  5. Proof submitted to on-chain ACM → authorization recorded
- *  6. Authorization status queried; audit log retrieved
+ *  4. buildWitness + generateProof (Groth16 proof generation)
+ *  5. Proof verified on-chain via requestAccess() (requester submits)
+ *  6. Authorization status queried; audit log retrieved; nonce replay rejected
  *
- * NOTE: Stages 4–5 require a compiled circuit (npm run build:circuit:full).
+ * NOTE: Stages 4–6 require a compiled circuit (npm run build:circuit:full).
  * When the circuit artefacts are absent the proof step is skipped and the
  * test validates everything up to and including Stage 3 / contract setup.
+ *
+ * See tps-http-endpoint.test.js for HTTP-layer tests of the submitOnChain path.
  */
 
 const { expect } = require('chai');

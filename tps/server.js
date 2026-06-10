@@ -57,6 +57,8 @@ router.post('/provision', async (req, res) => {
 
 // ── POST /tps/prove ───────────────────────────────────────────────────────────
 // Stage 4: Requester submits evidence → TPS builds witness → generates proof.
+// Stage 5 (optional): if submitOnChain=true and a chain signer is configured,
+//   TPS calls requestAccessBound() directly, hiding the requester's address.
 router.post('/prove', async (req, res) => {
     try {
         const {
@@ -64,7 +66,8 @@ router.post('/prove', async (req, res) => {
             resourceId,
             nonce,
             policyCommitment,
-            evidence
+            evidence,
+            submitOnChain = false
         } = req.body;
 
         if (!policyId || !resourceId || !nonce || !policyCommitment) {
@@ -111,7 +114,49 @@ router.post('/prove', async (req, res) => {
         store.markNonceUsed(policyId, nonce);
         store.updateSession(sessionId, { status: 'proved' });
 
-        return res.json({ pA, pB, pC, pubSignals, sessionId });
+        // ── Stage 5 (optional): TPS submits proof on-chain ───────────────────
+        // When submitOnChain=true, TPS calls requestAccessBound() with its own
+        // chain account, so the requester's address never appears on-chain.
+        let chainResult = null;
+        if (submitOnChain) {
+            const tpsContract = req.app.locals.tpsContract;
+            if (!tpsContract) {
+                return res.status(500).json({
+                    error: 'TPS chain signer not configured – set TPS_PRIVATE_KEY and CONTRACT_ADDRESS'
+                });
+            }
+
+            const tx = await tpsContract.requestAccessBound(
+                BigInt(policyId),
+                BigInt(resourceId),
+                BigInt(nonce),
+                pA, pB, pC, pubSignals
+            );
+            const receipt = await tx.wait();
+
+            // Parse requestId and authorization outcome from events
+            let requestId = null;
+            let isGranted = false;
+            for (const log of receipt.logs) {
+                try {
+                    const parsed = tpsContract.interface.parseLog(log);
+                    if (parsed.name === 'AccessRequested') requestId = parsed.args.requestId.toString();
+                    if (parsed.name === 'AccessGranted') isGranted = true;
+                    if (parsed.name === 'AccessDenied') isGranted = false;
+                } catch (_) { /* skip unparseable logs */ }
+            }
+
+            store.updateSession(sessionId, { status: isGranted ? 'granted' : 'denied', requestId });
+
+            chainResult = {
+                transactionHash: tx.hash,
+                requestId,
+                isGranted,
+                gasUsed: receipt.gasUsed.toString()
+            };
+        }
+
+        return res.json({ pA, pB, pC, pubSignals, sessionId, chainResult });
     } catch (err) {
         console.error('[TPS prove] error:', err.message);
         return res.status(500).json({ error: err.message });

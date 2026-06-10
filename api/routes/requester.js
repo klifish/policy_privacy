@@ -4,18 +4,17 @@
  * Requester routes for TPS-ZKPI (Stages 3, 4, 5).
  *
  * Stage 3: Requester fetches resource metadata (policyId, commitment, pp).
- * Stage 4: Requester submits authorization evidence to TPS → TPS generates proof.
- * Stage 5: API submits proof to on-chain ACM → authorization recorded.
+ * Stage 4+5: Requester submits evidence to TPS; TPS generates proof and calls
+ *   requestAccessBound() with its own chain account (submitOnChain=true),
+ *   so the requester's address is never recorded on-chain.
  *
  * POST /api/requester/request-access
  * GET  /api/requester/resource/:resourceId  (Stage 3 resource metadata)
  */
 
 const express = require('express');
-const { ethers } = require('hardhat');
 const crypto = require('crypto');
 const { prove } = require('../../lib/tps-client');
-const { gasPadTarget, normaliseProof } = require('../utils/transcriptNormalization');
 
 const router = express.Router();
 
@@ -104,8 +103,9 @@ router.post('/request-access', async (req, res, next) => {
         policyId = policyId.toString();
         const policyCommitment = commitment.toString();
 
-        // ── Stage 4: submit evidence to TPS → proof ─────────────────────────
-        // Fresh nonce per session (prevents proof reuse)
+        // ── Stage 4+5: TPS generates proof and submits on-chain ─────────────
+        // submitOnChain=true: TPS calls requestAccessBound() with its own chain
+        // account, so the requester's address never appears in on-chain events.
         const nonce = BigInt('0x' + crypto.randomBytes(16).toString('hex')).toString();
 
         const tpsResult = await prove({
@@ -116,64 +116,18 @@ router.post('/request-access', async (req, res, next) => {
             evidence: {
                 ...evidence,
                 requesterId: requesterAddress
-            }
+            },
+            submitOnChain: true
         });
 
-        const { pA, pB, pC, pubSignals, sessionId } = tpsResult;
-
-        // Normalise proof components to fixed-width hex (transcript normalisation)
-        const normProof = normaliseProof({ pA, pB, pC, pubSignals });
-
-        // ── Stage 5: submit proof to on-chain ACM ────────────────────────────
-        const signer = new ethers.Wallet(
-            process.env.REQUESTER_PRIVATE_KEY || process.env.PRIVATE_KEY ||
-            '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-            req.provider
-        );
-        const contractWithSigner = req.contract.connect(signer);
-
-        let tx, receipt;
-        if (useGasPad) {
-            tx = await contractWithSigner.requestAccessWithGasPad(
-                BigInt(policyId),
-                normProof.pA,
-                normProof.pB,
-                normProof.pC,
-                normProof.pubSignals,
-                gasPadTarget()
-            );
-        } else {
-            tx = await contractWithSigner.requestAccessBound(
-                BigInt(policyId),
-                BigInt(resourceId),
-                BigInt(nonce),
-                normProof.pA,
-                normProof.pB,
-                normProof.pC,
-                normProof.pubSignals
-            );
-        }
-        receipt = await tx.wait();
-
-        // Extract requestId and authorization outcome from events
-        let requestId, isGranted;
-        for (const log of receipt.logs) {
-            try {
-                const parsed = req.contract.interface.parseLog(log);
-                if (parsed.name === 'AccessRequested') {
-                    requestId = parsed.args.requestId.toString();
-                }
-                if (parsed.name === 'AccessGranted') isGranted = true;
-                if (parsed.name === 'AccessDenied') isGranted = false;
-            } catch (_) { /* skip */ }
-        }
+        const { sessionId, chainResult } = tpsResult;
 
         return res.json({
-            requestId,
-            status: isGranted ? 'granted' : 'denied',
+            requestId: chainResult.requestId,
+            status: chainResult.isGranted ? 'granted' : 'denied',
             sessionId,
-            transactionHash: tx.hash,
-            gasUsed: receipt.gasUsed.toString()
+            transactionHash: chainResult.transactionHash,
+            gasUsed: chainResult.gasUsed
         });
     } catch (err) {
         if (err.message && err.message.includes('revert')) err.type = 'blockchain';

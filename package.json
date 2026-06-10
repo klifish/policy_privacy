@@ -47,7 +47,7 @@
     "build:circuit:full": "npm run build:circuit:compile && npm run build:circuit:info && npm run build:circuit:setup && npm run build:circuit:export:verificationkey && npm run build:circuit:export:solidityverifier",
     "tps:start": "node tps/index.js",
     "tps:dev": "nodemon tps/index.js",
-    "test:tps": "npx hardhat test test/tps/tps-workflow.test.js --timeout 120000",
+    "test:tps": "npx hardhat test test/tps/tps-protocol-stages.test.js test/tps/tps-http-endpoint.test.js",
     "hardhat:test": "npx hardhat test",
     "hardhat:test:verbose": "npx hardhat test --verbose",
     "api:start": "node api/server.js",

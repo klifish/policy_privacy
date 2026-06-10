@@ -2149,6 +2149,22 @@ async function providerCommitAndProvision(policyData, contract) {
   const parsedEvent = contract.interface.parseLog(policyCommittedEvent);
   const blockchainPolicyId = parsedEvent.args.policyId;
 
+  // Stage 1c: register protected resource (provider)
+  const resourceTx = await contractWithSigner.registerResource(blockchainPolicyId);
+  const resourceReceipt = await resourceTx.wait();
+  let resourceId;
+  for (const log of resourceReceipt.logs) {
+    try {
+      const parsed = contract.interface.parseLog(log);
+      if (parsed.name === 'ResourceRegistered') {
+        resourceId = parsed.args.resourceId;
+        break;
+      }
+    } catch (_) { /* skip */ }
+  }
+  if (!resourceId) throw new Error('ResourceRegistered event not found in receipt');
+  console.log(`[Provider] Registered resourceId=${resourceId} for policyId=${blockchainPolicyId}`);
+
   // Stage 2: provision policy material to TPS (provider)
   const material = {
     penc: policy,
@@ -2167,77 +2183,71 @@ async function providerCommitAndProvision(policyData, contract) {
 
   return {
     blockchainPolicyId,
+    resourceId,
     policyCommitment,
     paramsCommitment,
     commitReceipt,
     commitTx,
+    resourceReceipt,
+    resourceTx,
     gasPadEnabled,
     contractWithSigner
   };
 }
 
 /**
- * Requester behavior: submit evidence to TPS, receive proof, request access on-chain (Stage 4→5).
+ * Requester behavior: submit evidence to TPS; TPS generates proof and submits
+ * on-chain via requestAccessBound() (Stage 4+5).
+ * The requester's address is never recorded on-chain — only the TPS address appears.
  */
 async function requesterRequestAccess(policyData, commitResult) {
-  const { blockchainPolicyId, policyCommitment, gasPadEnabled, contractWithSigner } = commitResult;
+  const { blockchainPolicyId, resourceId, policyCommitment } = commitResult;
 
-  // Generate nonce for replay prevention
-  const nonce = '0x' + crypto.randomBytes(16).toString('hex');
+  // Generate nonce for replay prevention (both TPS-side and on-chain)
+  const nonce = BigInt('0x' + crypto.randomBytes(16).toString('hex')).toString();
 
   // Build evidence: only requester-controlled attributes
   const evidence = {
     attributes: policyData.requesterAttrs
   };
 
-  // Stage 4: request proof from TPS (requester)
+  // Stage 4+5: TPS generates proof and submits requestAccessBound() on-chain.
+  // submitOnChain=true hides the requester address — on-chain msg.sender = TPS.
   const proveStartTime = Date.now();
-  const { pA, pB, pC, pubSignals } = await tpsClient.prove({
+  const { pA, pB, pC, pubSignals, sessionId, chainResult } = await tpsClient.prove({
     policyId: blockchainPolicyId.toString(),
-    resourceId: blockchainPolicyId.toString(),
+    resourceId: resourceId.toString(),
     nonce,
     policyCommitment: policyCommitment.toString(),
-    evidence
+    evidence,
+    submitOnChain: true
   });
   const proofGenerationTime = Date.now() - proveStartTime;
-  console.log(`[Requester] Received proof from TPS for policyId=${blockchainPolicyId}`);
 
-  // Stage 5: submit proof on-chain (requester)
-  const accessPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.access) : 0n;
+  console.log(`[TPS] Submitted proof on-chain for policyId=${blockchainPolicyId}, requestId=${chainResult.requestId}`);
+  console.log(`access gasUsed: ${chainResult.gasUsed}`);
 
-  if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
-    throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
-  }
-
-  const accessTx = gasPadEnabled
-    ? await contractWithSigner.requestAccessWithGasPad(blockchainPolicyId, pA, pB, pC, pubSignals, accessPadTarget)
-    : await contractWithSigner.requestAccess(blockchainPolicyId, pA, pB, pC, pubSignals);
-  const accessReceipt = await accessTx.wait();
-  console.log('access gasUsed:', accessReceipt.gasUsed.toString());
-
-  accessReceipt.logs.forEach((log, idx) => {
-    const topic0 = log.topics[0];
-    let name = 'UNKNOWN';
-    if (topic0 === EVENT_SIGNATURES.ACCESS_REQUESTED) name = 'AccessRequested';
-    else if (topic0 === EVENT_SIGNATURES.ACCESS_GRANTED) name = 'AccessGranted';
-    else if (topic0 === EVENT_SIGNATURES.ACCESS_DENIED) name = 'AccessDenied';
-    else if (topic0 === EVENT_SIGNATURES.POLICY_COMMITTED) name = 'PolicyCommitted';
-    console.log(`access log[${idx}] event = ${name}`, { topic0 });
-  });
-
-  return { accessReceipt, accessTx, proof: { pA, pB, pC, pubSignals }, proofGenerationTime };
+  return {
+    accessReceipt: null,
+    accessTx: { hash: chainResult.transactionHash },
+    proof: { pA, pB, pC, pubSignals },
+    proofGenerationTime,
+    sessionId,
+    chainResult
+  };
 }
 
 /**
  * Execute a policy end-to-end via TPS workflow and collect observable features.
- * Provider: commitPolicy + provision → TPS. Requester: TPS prove → requestAccess.
+ * Provider: commitPolicy + registerResource + provision → TPS.
+ * Requester: TPS prove + requestAccessBound (TPS submits on-chain, not requester).
  */
 async function executePolicy(policyData, contract) {
   const commitResult = await providerCommitAndProvision(policyData, contract);
   const accessResult = await requesterRequestAccess(policyData, commitResult);
 
-  const { commitReceipt, commitTx, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
-  const { accessReceipt, accessTx, proof, proofGenerationTime } = accessResult;
+  const { commitReceipt, commitTx, resourceReceipt, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
+  const { accessTx, proof, proofGenerationTime, chainResult } = accessResult;
 
   const commitEventLogs = commitReceipt.logs.filter(
     (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
@@ -2247,7 +2257,11 @@ async function executePolicy(policyData, contract) {
     (total, log) => total + computeLogPayloadSizeBytes(log), 0
   );
 
-  const accessEventLogs = accessReceipt.logs.filter((log) =>
+  // Access receipt is from the TPS chain submission; fetch it via provider
+  const provider = contract.runner.provider;
+  const accessReceipt = await provider.getTransactionReceipt(chainResult.transactionHash);
+
+  const accessEventLogs = (accessReceipt ? accessReceipt.logs : []).filter((log) =>
     ACCESS_EVENT_TOPICS.has(log.topics[0])
   );
   const accessLogsCount = accessEventLogs.length;
@@ -2260,8 +2274,8 @@ async function executePolicy(policyData, contract) {
   const features = {
     commitGasUsed: commitReceipt.gasUsed.toString(),
     commitCalldataLength: commitTx.data.length,
-    accessGasUsed: accessReceipt.gasUsed.toString(),
-    accessCalldataLength: accessTx.data.length,
+    accessGasUsed: chainResult.gasUsed,
+    accessCalldataLength: null,
     proofSize,
     proofGenerationTime,
     commitLogsCount,
@@ -2269,8 +2283,8 @@ async function executePolicy(policyData, contract) {
     accessLogsCount,
     accessLogsSize: accessLogsSizeBytes,
     commitBlockNumber: commitReceipt.blockNumber,
-    accessBlockNumber: accessReceipt.blockNumber,
-    blockDifference: accessReceipt.blockNumber - commitReceipt.blockNumber,
+    accessBlockNumber: accessReceipt ? accessReceipt.blockNumber : null,
+    blockDifference: accessReceipt ? accessReceipt.blockNumber - commitReceipt.blockNumber : null,
   };
 
   return {
@@ -2286,7 +2300,7 @@ async function executePolicy(policyData, contract) {
       },
       access: {
         tx: serializeTransactionResponse(accessTx),
-        receipt: serializeReceipt(accessReceipt)
+        receipt: accessReceipt ? serializeReceipt(accessReceipt) : null
       }
     }
   };
