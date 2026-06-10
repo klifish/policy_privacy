@@ -14,6 +14,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 const { ethers } = require('hardhat');
 
 const {
@@ -35,6 +36,49 @@ const {
   ensureSufficientBalance,
   deployPolicyPrivacyContracts
 } = require('../core/blockchain');
+
+const tpsClient = require('../../lib/tps-client');
+
+const TPS_PORT = process.env.TPS_PORT || '3001';
+const TPS_STARTUP_TIMEOUT_MS = 15000;
+const TPS_POLL_INTERVAL_MS = 300;
+
+async function waitForTps() {
+  const deadline = Date.now() + TPS_STARTUP_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    try {
+      await tpsClient.health();
+      return;
+    } catch (_) {
+      await new Promise((resolve) => setTimeout(resolve, TPS_POLL_INTERVAL_MS));
+    }
+  }
+  throw new Error(`TPS server did not become ready within ${TPS_STARTUP_TIMEOUT_MS}ms`);
+}
+
+async function startTpsServer() {
+  const tpsIndexPath = path.resolve(__dirname, '../../tps/index.js');
+  const tps = spawn(process.execPath, [tpsIndexPath], {
+    env: { ...process.env, TPS_PORT },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  tps.stdout.on('data', (data) => process.stdout.write(`[TPS] ${data}`));
+  tps.stderr.on('data', (data) => process.stderr.write(`[TPS] ${data}`));
+  tps.on('error', (err) => { throw new Error(`Failed to start TPS server: ${err.message}`); });
+
+  console.log(`Starting TPS server (port ${TPS_PORT})...`);
+  await waitForTps();
+  console.log('TPS server ready.\n');
+  return tps;
+}
+
+function stopTpsServer(tps) {
+  if (tps && !tps.killed) {
+    tps.kill('SIGTERM');
+    console.log('\nTPS server stopped.');
+  }
+}
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
@@ -82,7 +126,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   }
 
   console.log('='.repeat(70));
-  console.log('Unified Dataset Pipeline');
+  console.log('Unified Dataset Pipeline (TPS Workflow)');
   console.log('='.repeat(70));
   if (options.configPath) {
     console.log(`Config: ${options.configPath}`);
@@ -119,7 +163,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
 
   console.log(`Policy definitions saved to: ${paths.policyDefinitions}`);
 
-  // Step 3: execute dataset on-chain once
+  // Step 3: execute dataset on-chain via TPS workflow
   const provider = ethers.provider;
   const [signer] = await ethers.getSigners();
 
@@ -130,13 +174,20 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   });
 
   const policyPrivacy = await deployPolicyPrivacyContracts();
-  console.log(`Executing ${annotatedDataset.length} policy instances...`);
 
-  const executionResults = await executeDataset(
-    annotatedDataset,
-    policyPrivacy,
-    paths.executedDataset
-  );
+  // Start TPS server for this experiment run
+  const tpsProcess = await startTpsServer();
+  let executionResults;
+  try {
+    console.log(`Executing ${annotatedDataset.length} policy instances via TPS...`);
+    executionResults = await executeDataset(
+      annotatedDataset,
+      policyPrivacy,
+      paths.executedDataset
+    );
+  } finally {
+    stopTpsServer(tpsProcess);
+  }
 
   writeExecutionArtifacts({
     executions: executionResults,

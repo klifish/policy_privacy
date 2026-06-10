@@ -9,13 +9,12 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const snarkjs = require('snarkjs');
 const { ethers } = require('hardhat');
 const { id, getBytes } = require('ethers');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
-const { generateGroth16Proof, calculatePolicyCommitment, calculateParamsCommitment, createCircuitInput } = require('../../test/utils/proofGenerator');
-const { json } = require('stream/consumers');
+const { calculatePolicyCommitment, calculateParamsCommitment } = require('../../test/utils/proofGenerator');
+const tpsClient = require('../../lib/tps-client');
 
 const EVENT_SIGNATURES = {
   POLICY_COMMITTED: id('PolicyCommitted(address,uint256,uint256,uint256)'),
@@ -31,11 +30,6 @@ const ACCESS_EVENT_TOPICS = new Set([
 ]);
 
 const LOG_ADDRESS_BYTES = 20;
-const VERIFICATION_KEY_PATH = path.join(
-  __dirname,
-  '../../build/circuits/policy_privacy_main_vk.json'
-);
-let verificationKeyPromise = null;
 
 function computeLogPayloadSizeBytes(log) {
   if (!log) {
@@ -934,48 +928,6 @@ function toBigInt(value) {
   throw new Error(`Unsupported value for BigInt conversion: ${value}`);
 }
 
-async function loadVerificationKey() {
-  if (!verificationKeyPromise) {
-    verificationKeyPromise = (async () => {
-      if (!fs.existsSync(VERIFICATION_KEY_PATH)) {
-        throw new Error(
-          `Verification key not found at ${VERIFICATION_KEY_PATH}. ` +
-          'Run `npm run build:circuit:export:verificationkey` to generate it.'
-        );
-      }
-      const raw = JSON.parse(fs.readFileSync(VERIFICATION_KEY_PATH, 'utf8'));
-      return raw;
-    })();
-  }
-  return verificationKeyPromise;
-}
-
-function formatProofForVerification(formattedProof) {
-  if (!formattedProof) {
-    throw new Error('Proof is required for verification');
-  }
-  const { pA, pB, pC } = formattedProof;
-  if (!Array.isArray(pA) || !Array.isArray(pB) || !Array.isArray(pC)) {
-    throw new Error('Malformed proof structure');
-  }
-  const pi_a = [toBigInt(pA[0]), toBigInt(pA[1])];
-  const pi_b = [
-    [toBigInt(pB[0][1]), toBigInt(pB[0][0])],
-    [toBigInt(pB[1][1]), toBigInt(pB[1][0])]
-  ];
-  const pi_c = [toBigInt(pC[0]), toBigInt(pC[1])];
-  return { pi_a, pi_b, pi_c };
-}
-
-async function verifyGroth16ProofOffline(formattedProof) {
-  const verificationKey = await loadVerificationKey();
-  const snarkProof = formatProofForVerification(formattedProof);
-  const publicSignals = formattedProof.pubSignals.map((value) => toBigInt(value));
-  const valid = await snarkjs.groth16.verify(verificationKey, publicSignals, snarkProof);
-  if (!valid) {
-    throw new Error('Offline Groth16 verification failed for generated proof.');
-  }
-}
 
 function findAssignmentForPolicy({
   targetTruth,
@@ -2118,46 +2070,23 @@ async function generateDataset(config = {}) {
 }
 
 /**
- * Execute a policy and collect observable features
+ * Provider behavior: commit policy on-chain, then provision material to TPS (Stage 1→2).
  */
-async function executePolicy(policyData, contract) {
+async function providerCommitAndProvision(policyData, contract) {
   const {
     policy,
-    requesterAttrs,
     numOperations,
     predicateSlots = [],
     predicateValuesBySlot = {},
     structure = {}
   } = policyData;
 
-  const randomizer = BigInt(Math.floor(Math.random() * 1000000));
-  const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
-
-  // Prepare circuit input
   const predicateCount = POLICY_PREDICATE_SLOTS.length;
-  const predicateTypes = Array.from({ length: predicateCount }, () => DISABLED_PREDICATE_TYPE); // Type 3 = ontology, 4 = disabled
-  const activePredicateSlots = predicateSlots.length > 0
-    ? predicateSlots
-    : Object.keys(predicateValuesBySlot).map((slot) => parseInt(slot, 10)).filter(Number.isInteger);
-  activePredicateSlots.forEach((slot) => {
-    if (slot >= 0 && slot < predicateCount) {
-      predicateTypes[slot] = 3;
-    }
-  });
-
   const zeroStringArray = (length) => Array.from({ length }, () => '0');
   const zeroNumberArray = (length, value = 0) => Array.from({ length }, () => value);
 
+  // Build merkle roots from policy structure (provider-side data)
   const merkleRoots = zeroStringArray(predicateCount);
-  const merkleLeaves = zeroStringArray(predicateCount);
-  const credPublicKeys = zeroStringArray(predicateCount);
-  const rangeMin = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const rangeMax = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const rangeValues = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const ontologyPolicyIds = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const ontologyEpochs = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const ontologyCodes = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-
   const predicateRoots = structure.predicateRoots || {};
   Object.entries(predicateRoots).forEach(([slotKey, root]) => {
     const slot = parseInt(slotKey, 10);
@@ -2166,75 +2095,35 @@ async function executePolicy(policyData, contract) {
     }
   });
 
-  activePredicateSlots.forEach((slot) => {
-    if (slot >= 0 && slot < predicateCount) {
-      const value = predicateValuesBySlot[slot] ?? policyData.ontologyValue ?? 0;
-      ontologyCodes[slot] = typeof value === 'number' ? value : Number(value) || 0;
-    }
-  });
+  const credPublicKeys = zeroStringArray(predicateCount);
+  const rangeMin = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const rangeMax = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const ontologyPolicyIds = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
+  const ontologyEpochs = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
 
-  const MERKLE_LEVELS = 8;
-  const merklePathElements = Array.from({ length: predicateCount }, () => zeroStringArray(MERKLE_LEVELS));
-  const merklePathIndices = Array.from({ length: predicateCount }, () => zeroNumberArray(MERKLE_LEVELS, 0));
-
-  const circuitInput = createCircuitInput(policyCommitment, {
-    policy,
-    requesterAttrs,
-    randomizer,
-    predicateTypes,
-    // Simplified external predicate setup
-    merkleRoots,
-    merkleLeaves,
-    credPublicKeys,
-    merklePathElements,
-    merklePathIndices,
-    rangeValues,
-    rangeMin,
-    rangeMax,
-    ontologyCodes,
-    ontologyPolicyIds,
-    ontologyEpochs,
-    numOperations: numOperations || 3  // Use numOperations from policy data, default to 3
-  });
+  // Use randomizer from policy artifacts (generated at dataset creation time)
+  const randomizer = policyData.randomizer !== undefined
+    ? BigInt(policyData.randomizer)
+    : BigInt(Math.floor(Math.random() * 1000000));
+  const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
 
   const paramsCommitment = await calculateParamsCommitment({
-    merkleRoots: circuitInput.merkleRoots,
-    credPublicKeys: circuitInput.credPublicKeys,
-    rangeMin: circuitInput.rangeMin,
-    rangeMax: circuitInput.rangeMax,
-    ontologyPolicyIds: circuitInput.ontologyPolicyIds,
-    ontologyEpochs: circuitInput.ontologyEpochs
+    merkleRoots,
+    credPublicKeys,
+    rangeMin,
+    rangeMax,
+    ontologyPolicyIds,
+    ontologyEpochs
   });
-  circuitInput.paramsCommitment = paramsCommitment;
+
   if (policyData.structure) {
     policyData.structure.paramsCommitment = paramsCommitment;
   }
 
-  // Measure proof generation time
-  const proofStartTime = Date.now();
-  const proof = await generateGroth16Proof(circuitInput);
-  await verifyGroth16ProofOffline(proof);
-  const proofGenerationTime = Date.now() - proofStartTime;
-
-  const baseProofLength = JSON.stringify(proof).length;
-  const proofPadEnabled = policyData.execution?.proof_pad === true;
-  const configuredPadTarget = policyData.execution?.proof_pad_target ?? DEFAULT_PROOF_PAD_TARGET_BYTES;
-  const proofPadTarget = proofPadEnabled ? Math.max(configuredPadTarget, baseProofLength) : baseProofLength;
-  const proofPadResult = proofPadEnabled
-    ? applyProofPadding(proof, proofPadTarget, baseProofLength)
-    : {
-      paddedProof: proof,
-      finalLength: baseProofLength,
-      padApplied: false,
-      padBytes: 0
-    };
-
-  // Commit policy to blockchain
+  // Stage 1: commit policy on-chain (provider)
   const [signer] = await ethers.getSigners();
-  // const gasPadEnabled = policyData.execution?.gas_pad === true;
-  const gasPadEnabled = true; // Always enable gas padding for experiment
+  const gasPadEnabled = true;
   const commitPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.commit) : 0n;
-
   const contractWithSigner = contract.connect(signer);
 
   const commitWithPadFn = contractWithSigner['commitPolicyWithGasPad(uint256,uint256,string,uint256)'];
@@ -2243,78 +2132,88 @@ async function executePolicy(policyData, contract) {
   if (gasPadEnabled && typeof commitWithPadFn !== 'function') {
     throw new Error('Gas padding requested but commitPolicyWithGasPad is not available on the deployed contract.');
   }
-
   if (!gasPadEnabled && typeof commitFn !== 'function') {
     throw new Error('commitPolicy(uint256,uint256,string) overload is not available on the deployed contract.');
   }
 
   const commitTx = gasPadEnabled
-    ? await commitWithPadFn(
-      policyCommitment,
-      paramsCommitment,
-      'ipfs://policy-metadata',
-      commitPadTarget
-    )
-    : await commitFn(
-      policyCommitment,
-      paramsCommitment,
-      'ipfs://policy-metadata'
-    );
+    ? await commitWithPadFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', commitPadTarget)
+    : await commitFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata');
   const commitReceipt = await commitTx.wait();
   console.log('commit gasUsed:', commitReceipt.gasUsed.toString());
 
-  // Extract policy ID from events
   const policyCommittedEvent = commitReceipt.logs.find(log => {
-    try {
-      const parsed = contract.interface.parseLog(log);
-      return parsed.name === 'PolicyCommitted';
-    } catch (e) {
-      return false;
-    }
+    try { return contract.interface.parseLog(log).name === 'PolicyCommitted'; }
+    catch (_) { return false; }
   });
-
   const parsedEvent = contract.interface.parseLog(policyCommittedEvent);
   const blockchainPolicyId = parsedEvent.args.policyId;
 
-  // Request access with proof
+  // Stage 2: provision policy material to TPS (provider)
+  const material = {
+    penc: policy,
+    randomizer: randomizer.toString(),
+    paramsCommitment: paramsCommitment.toString(),
+    merkleRoots,
+    credPublicKeys,
+    rangeMin: rangeMin.map(String),
+    rangeMax: rangeMax.map(String),
+    ontologyPolicyIds: ontologyPolicyIds.map(String),
+    ontologyEpochs: ontologyEpochs.map(String),
+    numOperations: numOperations || policy.filter(t => t !== 0).length
+  };
+  await tpsClient.provision(blockchainPolicyId.toString(), material);
+  console.log(`[Provider] Provisioned policyId=${blockchainPolicyId} to TPS`);
+
+  return {
+    blockchainPolicyId,
+    policyCommitment,
+    paramsCommitment,
+    commitReceipt,
+    commitTx,
+    gasPadEnabled,
+    contractWithSigner
+  };
+}
+
+/**
+ * Requester behavior: submit evidence to TPS, receive proof, request access on-chain (Stage 4→5).
+ */
+async function requesterRequestAccess(policyData, commitResult) {
+  const { blockchainPolicyId, policyCommitment, gasPadEnabled, contractWithSigner } = commitResult;
+
+  // Generate nonce for replay prevention
+  const nonce = '0x' + crypto.randomBytes(16).toString('hex');
+
+  // Build evidence: only requester-controlled attributes
+  const evidence = {
+    attributes: policyData.requesterAttrs
+  };
+
+  // Stage 4: request proof from TPS (requester)
+  const proveStartTime = Date.now();
+  const { pA, pB, pC, pubSignals } = await tpsClient.prove({
+    policyId: blockchainPolicyId.toString(),
+    resourceId: blockchainPolicyId.toString(),
+    nonce,
+    policyCommitment: policyCommitment.toString(),
+    evidence
+  });
+  const proofGenerationTime = Date.now() - proveStartTime;
+  console.log(`[Requester] Received proof from TPS for policyId=${blockchainPolicyId}`);
+
+  // Stage 5: submit proof on-chain (requester)
   const accessPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.access) : 0n;
+
   if (gasPadEnabled && typeof contractWithSigner.requestAccessWithGasPad !== 'function') {
     throw new Error('Gas padding requested but requestAccessWithGasPad is not available on the deployed contract.');
   }
 
-  // console.log("proof pubsignals:", proof.pubSignals);
-
   const accessTx = gasPadEnabled
-    ? await contractWithSigner.requestAccessWithGasPad(
-      blockchainPolicyId,
-      proof.pA,
-      proof.pB,
-      proof.pC,
-      proof.pubSignals,
-      accessPadTarget
-    )
-    : await contractWithSigner.requestAccess(
-      blockchainPolicyId,
-      proof.pA,
-      proof.pB,
-      proof.pC,
-      proof.pubSignals
-    );
+    ? await contractWithSigner.requestAccessWithGasPad(blockchainPolicyId, pA, pB, pC, pubSignals, accessPadTarget)
+    : await contractWithSigner.requestAccess(blockchainPolicyId, pA, pB, pC, pubSignals);
   const accessReceipt = await accessTx.wait();
   console.log('access gasUsed:', accessReceipt.gasUsed.toString());
-
-  const commitEventLogs = commitReceipt.logs.filter(
-    (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
-  );
-  const commitLogsCount = commitEventLogs.length;
-  const commitLogsSizeBytes = commitEventLogs.reduce(
-    (total, log) => total + computeLogPayloadSizeBytes(log),
-    0
-  );
-
-  const accessEventLogs = accessReceipt.logs.filter((log) =>
-    ACCESS_EVENT_TOPICS.has(log.topics[0])
-  );
 
   accessReceipt.logs.forEach((log, idx) => {
     const topic0 = log.topics[0];
@@ -2323,35 +2222,52 @@ async function executePolicy(policyData, contract) {
     else if (topic0 === EVENT_SIGNATURES.ACCESS_GRANTED) name = 'AccessGranted';
     else if (topic0 === EVENT_SIGNATURES.ACCESS_DENIED) name = 'AccessDenied';
     else if (topic0 === EVENT_SIGNATURES.POLICY_COMMITTED) name = 'PolicyCommitted';
-
     console.log(`access log[${idx}] event = ${name}`, { topic0 });
   });
 
-  const accessLogsCount = accessEventLogs.length;
-  const accessLogsSizeBytes = accessEventLogs.reduce(
-    (total, log) => total + computeLogPayloadSizeBytes(log),
-    0
+  return { accessReceipt, accessTx, proof: { pA, pB, pC, pubSignals }, proofGenerationTime };
+}
+
+/**
+ * Execute a policy end-to-end via TPS workflow and collect observable features.
+ * Provider: commitPolicy + provision → TPS. Requester: TPS prove → requestAccess.
+ */
+async function executePolicy(policyData, contract) {
+  const commitResult = await providerCommitAndProvision(policyData, contract);
+  const accessResult = await requesterRequestAccess(policyData, commitResult);
+
+  const { commitReceipt, commitTx, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
+  const { accessReceipt, accessTx, proof, proofGenerationTime } = accessResult;
+
+  const commitEventLogs = commitReceipt.logs.filter(
+    (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
+  );
+  const commitLogsCount = commitEventLogs.length;
+  const commitLogsSizeBytes = commitEventLogs.reduce(
+    (total, log) => total + computeLogPayloadSizeBytes(log), 0
   );
 
-  // Extract observable features
+  const accessEventLogs = accessReceipt.logs.filter((log) =>
+    ACCESS_EVENT_TOPICS.has(log.topics[0])
+  );
+  const accessLogsCount = accessEventLogs.length;
+  const accessLogsSizeBytes = accessEventLogs.reduce(
+    (total, log) => total + computeLogPayloadSizeBytes(log), 0
+  );
+
+  const proofSize = JSON.stringify({ pA: proof.pA, pB: proof.pB, pC: proof.pC, pubSignals: proof.pubSignals }).length;
+
   const features = {
-    // Transaction features
     commitGasUsed: commitReceipt.gasUsed.toString(),
     commitCalldataLength: commitTx.data.length,
     accessGasUsed: accessReceipt.gasUsed.toString(),
     accessCalldataLength: accessTx.data.length,
-
-    // Proof features
-    proofSize: proofPadResult.finalLength,
+    proofSize,
     proofGenerationTime,
-
-    // Event features
     commitLogsCount,
     commitLogsSize: commitLogsSizeBytes,
     accessLogsCount,
     accessLogsSize: accessLogsSizeBytes,
-
-    // Timing (block numbers can reveal information)
     commitBlockNumber: commitReceipt.blockNumber,
     accessBlockNumber: accessReceipt.blockNumber,
     blockDifference: accessReceipt.blockNumber - commitReceipt.blockNumber,

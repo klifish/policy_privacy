@@ -1,0 +1,37 @@
+{
+  "policyCount": 10,
+  "policyCountTarget": 10,
+  "executionsPerPolicy": 2,
+  "satisfyRatio": 0.5,
+  "seed": "smoke-test-2026",
+  "semanticLayers": [
+    {
+      "name": "smoke_singleton",
+      "combos": [["GR"], ["DS"], ["RS"], ["POA"], ["GS"], ["CC"]],
+      "minPolicies": 6,
+      "maxPolicies": 10,
+      "logicOptions": {
+        "operators": ["AND"],
+        "notProbability": 0.0,
+        "groupNotProbability": 0.0
+      },
+      "whitelistBuckets": [2, 4],
+      "merkleDepthOptions": [2, 3]
+    }
+  ],
+  "validation": {
+    "pch": {
+      "minPoliciesPerDUO": 1,
+      "minMaxRatio": 0.1
+    },
+    "spp": {
+      "minPoliciesPerCategory": 1,
+      "minMaxRatio": 0.1,
+      "maxCV": 1.5
+    },
+    "pi": {
+      "minPairsPerType": 0,
+      "minSemanticDiversity": 0.1
+    }
+  }
+}
