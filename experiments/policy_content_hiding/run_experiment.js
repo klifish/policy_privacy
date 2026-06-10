@@ -11,13 +11,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ethers } = require('hardhat');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const {
-  DUO_TERMS,
-  generateDataset,
-  executeDataset
-} = require('./data_generator');
+  DUO_TERMS
+} = require('../core/data_generator');
 
 // DUO term ID to attribute code mapping
 const DUO_TO_ATTRIBUTE_CODE = {
@@ -41,77 +40,47 @@ const {
   splitTrainTest,
   prepareClassificationData,
   calculateFeatureStats
-} = require('./feature_extractor');
+} = require('../core/feature_extractor');
 
 const {
   LogisticRegression,
   RandomForest
-} = require('./classifiers');
+} = require('../core/classifiers');
 
 const {
   evaluateClassificationTasks,
   checkPrivacyThresholds
-} = require('./evaluator');
+} = require('../core/evaluator');
 
-const {
-  ensureSufficientBalance
-} = require('../core/blockchain');
-
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
 
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = {};
+  const config = parseCommonArgs(argv.filter(a => a !== '--'));
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle PCH-specific args and special aliases from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
 
-    if (arg === '--') {
-      continue;
-    }
-
-    if (arg === '--phase' || arg === '--start-phase') {
-      config.startPhase = parseInt(argv[++i], 10);
-    } else if (arg === '--dataset') {
-      config.datasetPath = path.resolve(argv[++i]);
-    } else if (arg === '--execution-results') {
-      config.executionResultsPath = path.resolve(argv[++i]);
-    } else if (arg === '--executions') {
-      const value = argv[++i];
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
+    if (arg === '--executions') {
+      const value = unknown[++i];
       if (/^\d+$/.test(value)) {
         config.executionsPerPolicy = parseInt(value, 10);
       } else {
         config.executionResultsPath = path.resolve(value);
       }
     } else if (arg === '--features' || arg === '--results') {
-      config.featuresPath = path.resolve(argv[++i]);
-    } else if (arg === '--output') {
-      config.outputDir = path.resolve(argv[++i]);
+      config.featuresPath = path.resolve(unknown[++i]);
     } else if (arg === '--num-duo-terms') {
-      config.numDuoTerms = parseInt(argv[++i], 10);
-    } else if (arg === '--policy-count') {
-      config.policyCount = parseInt(argv[++i], 10);
-    } else if (arg === '--executions-per-policy') {
-      config.executionsPerPolicy = parseInt(argv[++i], 10);
-    } else if (arg === '--test-ratio') {
-      config.testRatio = parseFloat(argv[++i]);
+      config.numDuoTerms = parseInt(unknown[++i], 10);
     } else if (arg === '--auc-threshold') {
-      config.aucThreshold = parseFloat(argv[++i]);
+      config.aucThreshold = parseFloat(unknown[++i]);
     } else if (arg === '--advantage-threshold') {
-      config.advantageThreshold = parseFloat(argv[++i]);
+      config.advantageThreshold = parseFloat(unknown[++i]);
     } else if (arg === '--evaluate-dataset' || arg === '--dataset-quality') {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
-      config.datasetQualityOutput = path.resolve(argv[++i]);
-    } else if (arg === '--use-unified-dataset' || arg === '--unified') {
-      config.useUnifiedDataset = true;
-    } else if (arg === '--unified-dir') {
-      config.unifiedDatasetDir = path.resolve(argv[++i]);
-    } else if (arg.startsWith('--unified-dir=')) {
-      config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-    } else if (arg === '--help' || arg === '-h') {
-      config.help = true;
+      config.datasetQualityOutput = path.resolve(unknown[++i]);
     } else {
       console.warn(`Ignoring unknown argument: ${arg}`);
     }
@@ -121,25 +90,19 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function printUsage() {
+  console.log('Policy Content Hiding Experiment');
   console.log('Usage: node run_experiment.js [options]');
   console.log();
-  console.log('Options:');
-  console.log('  --phase <n>                 Start the pipeline from the given phase (1-3 supported)');
-  console.log('  --features <path>           Path to saved features from phase 2 (for resuming at phase 3)');
-  console.log('  --results <path>            Alias for --features');
-  console.log('  --execution-results <path>  Path to execution results from phase 1 (for resuming at phase 2)');
-  console.log('  --executions <value>        Executions per policy (number) or execution results path (legacy)');
-  console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
-  console.log('  --use-unified-dataset       Reuse dataset/executions from unified pipeline');
-  console.log('  --unified-dir <path>        Override unified artifact directory');
-  console.log('  --output <dir>              Output directory for generated artifacts');
-  console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
-  console.log('  --policy-count <n>          Number of base policies to generate (default 200)');
-  console.log('  --executions-per-policy <n> Executions per policy in phase 1');
-  console.log('  --test-ratio <float>        Train/test split ratio (default: 0.3)');
-  console.log('  --auc-threshold <float>     AUC threshold for privacy checks');
-  console.log('  --advantage-threshold <float> Advantage threshold for privacy checks');
-  console.log('  --evaluate-dataset          Evaluate dataset quality after generation or load');
+  printCommonHelp();
+  console.log();
+  console.log('PCH-specific options:');
+  console.log('  --features <path>               Path to saved features (for resuming at phase 3)');
+  console.log('  --results <path>                Alias for --features');
+  console.log('  --executions <value>            Executions per policy (number) or execution results path (legacy)');
+  console.log('  --num-duo-terms <n>             Number of DUO terms to include when generating data');
+  console.log('  --auc-threshold <float>         AUC threshold for privacy checks');
+  console.log('  --advantage-threshold <float>   Advantage threshold for privacy checks');
+  console.log('  --evaluate-dataset              Evaluate dataset quality after generation or load');
   console.log('  --dataset-quality-output <path> Override path for dataset quality JSON output');
 }
 
@@ -178,31 +141,14 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(resolvedOutputDir, { recursive: true });
   }
 
-  let datasetPath = initialDatasetPath;
-  let executionResultsPath = initialExecutionResultsPath;
+  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
+
+  const { datasetPath, executionResultsPath } = resolveDatasetPaths(
+    { useUnifiedDataset, unifiedDatasetDir, datasetPath: initialDatasetPath, executionResultsPath: initialExecutionResultsPath },
+    'pch'
+  );
   let datasetPathOverride = datasetPath ? path.resolve(datasetPath) : null;
   let executionResultsPathOverride = executionResultsPath ? path.resolve(executionResultsPath) : null;
-  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
-  let unifiedPaths = null;
-
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.pchDataset}`);
-    console.log();
-
-    if (!datasetPathOverride) {
-      datasetPathOverride = unifiedPaths.policyDefinitions;
-      datasetPath = datasetPathOverride;
-    }
-
-    if (!executionResultsPathOverride) {
-      executionResultsPathOverride = unifiedPaths.pchDataset;
-      executionResultsPath = executionResultsPathOverride;
-    }
-  }
 
   const timestamp = Date.now();
   const datasetOutputPath = datasetPathOverride
@@ -251,22 +197,6 @@ async function runExperiment(config = {}) {
   console.log('='.repeat(60));
   console.log();
 
-  const provider = ethers.provider;
-  const signers = await ethers.getSigners();
-
-  if (!signers || signers.length === 0) {
-    throw new Error(
-      'No signer available. Configure an account (e.g., AMOY_PRIVATE_KEY) for the selected network before running the experiment.'
-    );
-  }
-
-  const primarySigner = signers[0];
-  const network = await provider.getNetwork();
-
-  console.log(`Connected network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
-  console.log(`Primary signer: ${await primarySigner.getAddress()}`);
-  console.log();
-
   const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
   console.log(`Using DUO terms: ${duoTerms.join(', ')}`);
   console.log();
@@ -277,80 +207,19 @@ async function runExperiment(config = {}) {
   let normalizedFeatures;
   let featureStats;
 
-  // Phase 1: Data Generation and Execution
-  if (startAtPhase <= 1) {
-    console.log('Phase 1: Data Generation and Execution');
-    console.log('-'.repeat(60));
-
-    console.log('Generating dataset with:');
-    console.log(`  - DUO terms: ${numDuoTerms}`);
-    console.log(`  - Executions per policy: ${executionsPerPolicy}`);
-    if (Number.isInteger(policyCount) && policyCount > 0) {
-      console.log(`  - Policy count override: ${policyCount}`);
-    }
-    console.log();
-
-    const datasetConfig = {
-      duoTerms,
-      executionsPerPolicy
-    };
-    if (Number.isInteger(policyCount) && policyCount > 0) {
-      datasetConfig.policyCount = policyCount;
-    }
-
-    dataset = await generateDataset(datasetConfig);
-
-    fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-    console.log(`Dataset saved to: ${datasetOutputPath}`);
-    console.log(`Generated ${dataset.length} policy instances`);
-    console.log();
-
-    maybeEvaluateDataset(dataset, datasetOutputPath);
-
-    await ensureSufficientBalance({
-      provider,
-      signer: primarySigner,
-      executionCount: dataset.length
-    });
-
-    console.log('Deploying PolicyPrivacy contract...');
-    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
-
-    const verifier = await Verifier.deploy();
-    await verifier.waitForDeployment();
-    console.log('Verifier deployed at:', await verifier.getAddress());
-
-    const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
-    await policyPrivacy.waitForDeployment();
-    console.log('PolicyPrivacy deployed at:', await policyPrivacy.getAddress());
-
-    console.log('Contract deployed');
-    console.log();
-
-    console.log('Executing policies and collecting features...');
-    executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
-    console.log(`Completed ${executionResults.length} executions`);
-    console.log(`Execution results saved to: ${executionResultsOutputPath}`);
-    console.log();
-  } else {
-    console.log('Skipping Phase 1: Data Generation and Execution');
-    console.log();
-
-    if (evaluateDataset && !datasetQualityHandled) {
-      const candidatePath = datasetPath
-        ? path.resolve(datasetPath)
-        : datasetOutputPath;
-      if (fs.existsSync(candidatePath)) {
-        try {
-          dataset = loadDataset(candidatePath);
-          maybeEvaluateDataset(dataset, candidatePath);
-        } catch (error) {
-          console.error('Failed to evaluate dataset quality:', error.message);
-        }
-      } else {
-        console.warn('Dataset quality requested but dataset file not found. Provide --dataset <path>.');
+  if (evaluateDataset && !datasetQualityHandled) {
+    const candidatePath = datasetPath
+      ? path.resolve(datasetPath)
+      : datasetOutputPath;
+    if (fs.existsSync(candidatePath)) {
+      try {
+        dataset = loadDataset(candidatePath);
+        maybeEvaluateDataset(dataset, candidatePath);
+      } catch (error) {
+        console.error('Failed to evaluate dataset quality:', error.message);
       }
+    } else {
+      console.warn('Dataset quality requested but dataset file not found. Provide --dataset <path>.');
     }
   }
 
@@ -716,24 +585,11 @@ function generateReadableReport(report) {
   return lines.join('\n');
 }
 
-if (require.main === module) {
-  const cliConfig = parseArgs();
-
-  if (cliConfig.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log('Starting experiment with configuration:', cliConfig);
-
-  runExperiment(cliConfig)
-    .then(report => {
-      process.exit(report.privacyCheck.overallPassed ? 0 : 1);
-    })
-    .catch(error => {
-      console.error('Experiment failed:', error);
-      process.exit(1);
-    });
-}
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.privacyCheck.overallPassed
+});
 
 module.exports = { runExperiment };

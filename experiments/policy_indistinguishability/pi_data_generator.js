@@ -12,7 +12,7 @@
  */
 
 const crypto = require('crypto');
-const { executePolicy } = require('../policy_content_hiding/data_generator');
+const { executePolicy } = require('../core/data_generator');
 
 // Re-export constants from PCH generator for compatibility
 const {

@@ -2,7 +2,7 @@
  * Statistical utilities supporting PI experiment analysis.
  */
 
-const { calculateAUC } = require('../policy_content_hiding/evaluator');
+const { calculateAUC } = require('../core/evaluator');
 
 /**
  * Binary entropy of predicted probabilities (average -p log2 p - (1-p) log2 (1-p)).

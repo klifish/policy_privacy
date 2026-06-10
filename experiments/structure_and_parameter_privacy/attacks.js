@@ -7,7 +7,7 @@
  * 3. Unsupervised clustering (k-means, silhouette analysis)
  */
 
-const { LogisticRegression, RandomForest } = require('../policy_content_hiding/classifiers');
+const { LogisticRegression, RandomForest } = require('../core/classifiers');
 
 // Feature keys for side-channel analysis
 const FEATURE_KEYS = [

@@ -9,10 +9,8 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const { ProgressTracker } = require('../core/progress');
 
@@ -23,121 +21,11 @@ const {
   buildPairsFromExecutionResults
 } = require('./pi_data_generator');
 
-// Import dataset generation from original for compatibility
-const {
-  generateDataset
-} = require('./data_generator');
-
 const {
   runSingleSampleAttacks,
   runPairwiseAttacks,
   runTwoSampleTests
 } = require('./attacks');
-
-// Import executePolicy from the base data generator for fine-grained execution
-const { executePolicy } = require('../policy_content_hiding/data_generator');
-
-// Checkpoint utilities
-function saveCheckpoint(checkpointPath, phase, step, data) {
-  const checkpoint = {
-    timestamp: new Date().toISOString(),
-    phase,
-    step,
-    data
-  };
-  fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2));
-}
-
-function loadCheckpoint(checkpointPath) {
-  if (!fs.existsSync(checkpointPath)) {
-    return null;
-  }
-  try {
-    return JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
-  } catch (error) {
-    console.warn(`Failed to load checkpoint: ${error.message}`);
-    return null;
-  }
-}
-
-function clearCheckpoint(checkpointPath) {
-  if (fs.existsSync(checkpointPath)) {
-    fs.unlinkSync(checkpointPath);
-  }
-}
-
-// Execute dataset sequentially with real-time progress tracking and checkpoint support
-async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker, checkpointPath) {
-  let results = [];
-  let startIndex = 0;
-
-  // Try to resume from checkpoint
-  if (checkpointPath) {
-    const checkpoint = loadCheckpoint(checkpointPath);
-    if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data) {
-      results = checkpoint.data.results || [];
-      startIndex = checkpoint.data.lastIndex + 1;
-      console.log(`\n   Resuming from checkpoint: ${results.length} policies already executed`);
-    }
-  }
-
-  console.log(`Executing ${dataset.length - startIndex} policy instances sequentially (${startIndex} already done)...`);
-
-  for (let i = startIndex; i < dataset.length; i++) {
-    const policyData = dataset[i];
-
-    try {
-      const result = await executePolicy(policyData, contract);
-      results.push(result);
-
-      // Save checkpoint every 10 executions, including the dataset for full context recovery
-      if (checkpointPath && (i + 1) % 10 === 0) {
-        saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
-          lastIndex: i,
-          results,
-          dataset  // Save the dataset for complete context recovery
-        });
-      }
-
-      // Update progress after each execution
-      if (progressTracker) {
-        progressTracker.updateSubProgress(
-          i + 1,
-          dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies`
-        );
-      }
-    } catch (error) {
-      console.error(`\nError executing policy ${i}:`, error.message);
-
-      // Update progress even on failure
-      if (progressTracker) {
-        progressTracker.updateSubProgress(
-          i + 1,
-          dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`
-        );
-      }
-      // Continue with next policy instead of stopping
-    }
-  }
-
-  // Final sub-progress update
-  if (progressTracker) {
-    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
-  }
-
-  // Save results
-  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`\n   Saved ${results.length}/${dataset.length} successful results to ${outputPath}`);
-
-  // Clear checkpoint after successful completion
-  if (checkpointPath) {
-    clearCheckpoint(checkpointPath);
-  }
-
-  return results;
-}
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
@@ -153,8 +41,7 @@ const DEFAULT_OUTPUT_FILENAMES = Object.freeze({
   pairs: 'pi_pairs.json',
   analysis: 'pi_analysis.json',
   reportJson: 'pi_report.json',
-  reportMarkdown: 'pi_report.md',
-  checkpoint: 'pi_checkpoint.json'
+  reportMarkdown: 'pi_report.md'
 });
 
 function parsePairTargets(value) {
@@ -170,108 +57,65 @@ function parsePairTargets(value) {
 }
 
 function parseArgs(argv = process.argv.slice(2)) {
+  const common = parseCommonArgs(argv);
   const config = {
     policyCount: 100,
-    executionsPerPolicy: 2,  // Increased from 2 for better statistics
+    executionsPerPolicy: 2,
     satisfyRatio: 0.5,
     testRatio: 0.2,
     permutationIterations: 500,
     // PI-specific pairing configuration
     minPairsPerType: 30,
     targetPairsPerType: 50,
-    maxPairsPerType: 100
+    maxPairsPerType: 100,
+    ...common
   };
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle PI-specific args from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
+
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
     switch (arg) {
-      case '--output':
-        config.outputDir = path.resolve(argv[++i]);
-        break;
-      case '--policy-count':
-        config.policyCount = parseInt(argv[++i], 10);
-        break;
-      case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 10);
-        break;
-      case '--satisfy-ratio':
-        config.satisfyRatio = parseFloat(argv[++i]);
-        break;
-      case '--test-ratio':
-        config.testRatio = parseFloat(argv[++i]);
-        break;
       case '--pair-targets':
-        config.pairTargets = parsePairTargets(argv[++i]);
-        break;
-      case '--phase':
-      case '--start-phase':
-        config.startPhase = parseInt(argv[++i], 10);
-        break;
-      case '--dataset':
-        config.datasetPath = path.resolve(argv[++i]);
-        break;
-      case '--execution-results':
-        config.executionResultsPath = path.resolve(argv[++i]);
+        config.pairTargets = parsePairTargets(unknown[++i]);
         break;
       case '--pairs':
-        config.pairsPath = path.resolve(argv[++i]);
+        config.pairsPath = path.resolve(unknown[++i]);
         break;
       case '--analysis':
-        config.analysisPath = path.resolve(argv[++i]);
+        config.analysisPath = path.resolve(unknown[++i]);
         break;
       case '--auc-threshold':
-        config.aucThreshold = parseFloat(argv[++i]);
+        config.aucThreshold = parseFloat(unknown[++i]);
         break;
       case '--advantage-threshold':
-        config.advantageThreshold = parseFloat(argv[++i]);
+        config.advantageThreshold = parseFloat(unknown[++i]);
         break;
       case '--permutation-min':
-        config.permutationMin = parseFloat(argv[++i]);
+        config.permutationMin = parseFloat(unknown[++i]);
         break;
       case '--mmd-threshold':
-        config.mmdThreshold = parseFloat(argv[++i]);
+        config.mmdThreshold = parseFloat(unknown[++i]);
         break;
       case '--ks-min':
-        config.ksPValueMin = parseFloat(argv[++i]);
+        config.ksPValueMin = parseFloat(unknown[++i]);
         break;
       case '--permutation-iterations':
-        config.permutationIterations = parseInt(argv[++i], 10);
+        config.permutationIterations = parseInt(unknown[++i], 10);
         break;
       case '--min-pairs-per-type':
-        config.minPairsPerType = parseInt(argv[++i], 10);
+        config.minPairsPerType = parseInt(unknown[++i], 10);
         break;
       case '--target-pairs-per-type':
-        config.targetPairsPerType = parseInt(argv[++i], 10);
+        config.targetPairsPerType = parseInt(unknown[++i], 10);
         break;
       case '--max-pairs-per-type':
-        config.maxPairsPerType = parseInt(argv[++i], 10);
-        break;
-      case '--seed':
-        config.seed = argv[++i];
-        break;
-      case '--resume':
-        config.resume = true;
-        break;
-      case '--checkpoint':
-        config.checkpointPath = path.resolve(argv[++i]);
-        break;
-      case '--use-unified-dataset':
-      case '--unified':
-        config.useUnifiedDataset = true;
-        break;
-      case '--unified-dir':
-        config.unifiedDatasetDir = path.resolve(argv[++i]);
-        break;
-      case '--help':
-      case '-h':
-        config.help = true;
+        config.maxPairsPerType = parseInt(unknown[++i], 10);
         break;
       default:
-        if (arg.startsWith('--unified-dir=')) {
-          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-        } else {
-          console.warn(`Unknown argument ${arg} ignored`);
-        }
+        console.warn(`Unknown argument ${arg} ignored`);
     }
   }
 
@@ -281,18 +125,11 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printUsage() {
   console.log('Policy Indistinguishability Experiment');
   console.log('Usage: node run_experiment.js [options]');
-  console.log('Options:');
-  console.log('  --output <dir>                 Output directory (default: ./results)');
-  console.log('  --policy-count <n>             Number of base policies to generate');
-  console.log('  --executions-per-policy <n>    Number of executions per policy');
-  console.log('  --satisfy-ratio <float>        Ratio of satisfying executions (default 0.5)');
-  console.log('  --test-ratio <float>           Train/test split ratio (default 0.3)');
+  console.log();
+  printCommonHelp();
+  console.log();
+  console.log('PI-specific options:');
   console.log('  --pair-targets <json>          Target counts per pair type (JSON)');
-  console.log('  --phase <1|2|3>                Resume pipeline from given phase');
-  console.log('  --dataset <path>               Path to cached dataset JSON');
-  console.log('  --execution-results <path>     Path to cached execution results JSON');
-  console.log('  --use-unified-dataset          Reuse artifacts from unified dataset pipeline');
-  console.log('  --unified-dir <path>           Override unified artifact directory');
   console.log('  --pairs <path>                 Path to cached policy pair JSON');
   console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
@@ -304,9 +141,6 @@ function printUsage() {
   console.log('  --min-pairs-per-type <n>       Minimum pairs per type (default 30)');
   console.log('  --target-pairs-per-type <n>    Target pairs per type (default 50)');
   console.log('  --max-pairs-per-type <n>       Maximum pairs per type (default 100)');
-  console.log('  --seed <value>                 Deterministic dataset seed');
-  console.log('  --resume                       Resume from checkpoint if available');
-  console.log('  --checkpoint <path>            Custom checkpoint file path');
 }
 
 // Build PI config for pairing
@@ -573,25 +407,9 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  let datasetPath = config.datasetPath ? path.resolve(config.datasetPath) : null;
-  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
-  let unifiedPaths = null;
-
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.piDataset}`);
-    console.log();
-
-    if (!datasetPath) {
-      datasetPath = unifiedPaths.policyDefinitions;
-    }
-    if (!executionResultsPath) {
-      executionResultsPath = unifiedPaths.piDataset;
-    }
-  }
+  const { datasetPath: resolvedDatasetPath, executionResultsPath: resolvedExecPath } = resolveDatasetPaths(config, 'pi');
+  let datasetPath = resolvedDatasetPath;
+  let executionResultsPath = resolvedExecPath;
 
   const datasetOutputPath = datasetPath
     ? datasetPath
@@ -607,10 +425,6 @@ async function runExperiment(config = {}) {
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.analysis);
   const reportJsonPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportJson);
   const reportMarkdownPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportMarkdown);
-  const checkpointPath = config.checkpointPath
-    ? path.resolve(config.checkpointPath)
-    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.checkpoint);
-
   let datasetMeta = null;
   let executionResults = null;
   let pairsPayload = null;
@@ -636,101 +450,18 @@ async function runExperiment(config = {}) {
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
-  // Initialize progress tracker based on starting phase
   let totalSteps = 0;
-  if (startPhase <= 1) totalSteps += 3; // Dataset generation, contract deployment, execution
   if (startPhase <= 2) totalSteps += 1; // Policy pairing
   totalSteps += 4; // Single-sample attacks, pairwise attacks, two-sample tests, report generation
 
   const progress = new ProgressTracker(totalSteps);
 
-  // Phase 1 – dataset generation & execution
-  if (startPhase <= 1) {
-    console.log('Phase 1: Dataset Generation & Execution');
-    console.log('-'.repeat(60));
-
-    let dataset = null;
-
-    // Check if resuming from a checkpoint that contains the dataset
-    if (config.resume && checkpointPath) {
-      const checkpoint = loadCheckpoint(checkpointPath);
-      if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data && checkpoint.data.dataset) {
-        dataset = checkpoint.data.dataset;
-        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(checkpoint.data.results || []);
-        console.log(`Resuming with dataset from checkpoint (${dataset.length} entries)`);
-      }
-    }
-
-    // If no checkpoint dataset, check if dataset file exists
-    if (!dataset && fs.existsSync(datasetOutputPath)) {
-      try {
-        dataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
-        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-        console.log(`Loaded existing dataset from ${datasetOutputPath} (${dataset.length} entries)`);
-      } catch (err) {
-        console.warn(`Failed to load dataset from ${datasetOutputPath}: ${err.message}`);
-      }
-    }
-
-    // Only generate new dataset if none exists
-    if (!dataset) {
-      const datasetConfig = {
-        policyCount: config.policyCount,
-        executionsPerPolicy: config.executionsPerPolicy,
-        satisfyRatio: config.satisfyRatio,
-        seed: config.seed,
-        // Override semantic layers to respect policyCount instead of using high minPolicies defaults
-        semanticLayers: [
-          {
-            name: 'singleton',
-            combos: [['GR'], ['DS'], ['RS']],
-            minPolicies: 0  // Let policyCount control the total
-          },
-          {
-            name: 'pair',
-            combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
-            minPolicies: 0  // Let policyCount control the total
-          }
-        ]
-      };
-      progress.startStep('Generating dataset');
-      dataset = await generateDataset(datasetConfig);
-      datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-      fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-      console.log(`Dataset saved to: ${datasetOutputPath}`);
-      progress.completeStep();
-    } else {
-      progress.startStep('Using existing dataset');
-      progress.completeStep();
-    }
-
-    progress.startStep('Deploying contracts (Verifier & PolicyPrivacy)');
-    const { ethers } = require('hardhat');
-    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
-
-    const verifier = await Verifier.deploy();
-    await verifier.waitForDeployment();
-
-    const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
-    await policyPrivacy.waitForDeployment();
-    console.log(`Contracts deployed successfully`);
-    progress.completeStep();
-
-    progress.startStep(`Executing dataset on-chain (${dataset.length} executions)`);
-    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress, config.resume ? checkpointPath : null);
-    progress.completeStep();
-    console.log('');
-  } else {
-    console.log('Skipping Phase 1: Dataset Generation & Execution');
-    console.log('');
-    if (fs.existsSync(datasetOutputPath)) {
-      try {
-        const storedDataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
-        datasetMeta = storedDataset.__meta || datasetMeta;
-      } catch (err) {
-        console.warn(`Failed to load dataset at ${datasetOutputPath}: ${err.message}`);
-      }
+  if (fs.existsSync(datasetOutputPath)) {
+    try {
+      const storedDataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
+      datasetMeta = storedDataset.__meta || datasetMeta;
+    } catch (err) {
+      console.warn(`Failed to load dataset at ${datasetOutputPath}: ${err.message}`);
     }
   }
 
@@ -870,22 +601,11 @@ async function runExperiment(config = {}) {
   return report;
 }
 
-if (require.main === module) {
-  const config = parseArgs();
-  if (config.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log(config);
-  runExperiment(config)
-    .then((report) => {
-      process.exit(report.privacySummary.overallPassed ? 0 : 1);
-    })
-    .catch((error) => {
-      console.error('PI experiment failed:', error);
-      process.exit(1);
-    });
-}
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.privacySummary.overallPassed
+});
 
 module.exports = { runExperiment };

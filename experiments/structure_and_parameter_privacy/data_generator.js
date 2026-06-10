@@ -17,7 +17,7 @@
 
 const {
   generateDataset: generatePolicyDataset
-} = require('../policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const DEFAULT_DATASET_CONFIG = Object.freeze({
   policyCount: 120,

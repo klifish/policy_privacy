@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { extractFeatures, normalizeFeatures, prepareClassificationData } = require('./feature_extractor');
+const { extractFeatures, normalizeFeatures, prepareClassificationData } = require('../../core/feature_extractor');
 
 console.log('='.repeat(80));
 console.log('FEATURE EXTRACTION VERIFICATION');

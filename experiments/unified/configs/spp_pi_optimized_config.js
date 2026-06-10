@@ -15,7 +15,7 @@
 // Import necessary constants
 const {
   generateDataset: generatePCHDataset
-} = require('./policy_content_hiding/data_generator');
+} = require('../../core/data_generator');
 
 /**
  * Custom semantic layers optimized for SPP/PI

@@ -12,11 +12,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ethers } = require('hardhat');
-
-const {
-  generateDataset
-} = require('./data_generator');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const {
   runSupervisedAttacks,
@@ -24,51 +21,7 @@ const {
   runClusteringAttack
 } = require('./attacks');
 
-const {
-  executePolicy
-} = require('../policy_content_hiding/data_generator');
-
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
-
 const { ProgressTracker } = require('../core/progress');
-const {
-  ensureSufficientBalance,
-  deployPolicyPrivacyContracts
-} = require('../core/blockchain');
-
-async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker) {
-  const results = [];
-  console.log(`Executing ${dataset.length} policy instances sequentially...`);
-
-  for (let i = 0; i < dataset.length; i++) {
-    const policyData = dataset[i];
-    try {
-      const result = await executePolicy(policyData, contract);
-      results.push(result);
-      if (progressTracker) {
-        progressTracker.updateSubProgress(i + 1, dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies`);
-      }
-    } catch (error) {
-      console.error(`\nError executing policy ${i}:`, error.message);
-      if (progressTracker) {
-        progressTracker.updateSubProgress(i + 1, dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`);
-      }
-    }
-  }
-
-  if (progressTracker) {
-    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
-  }
-
-  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`\n   Saved ${results.length}/${dataset.length} execution results to ${outputPath}`);
-
-  return results;
-}
 
 /**
  * Default configuration
@@ -97,61 +50,24 @@ const DEFAULT_THRESHOLDS = {
  * Parse command line arguments
  */
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = { ...DEFAULT_CONFIG };
+  const common = parseCommonArgs(argv);
+  const config = { ...DEFAULT_CONFIG, ...common };
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle SPP-specific args from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
+
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
     switch (arg) {
-      case '--output':
-        config.outputDir = path.resolve(argv[++i]);
-        break;
-      case '--policy-count':
-        config.policyCount = parseInt(argv[++i], 10);
-        break;
-      case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 10);
-        break;
-      case '--satisfy-ratio':
-        config.satisfyRatio = parseFloat(argv[++i]);
-        break;
-      case '--test-ratio':
-        config.testRatio = parseFloat(argv[++i]);
-        break;
       case '--permutation-iterations':
-        config.permutationIterations = parseInt(argv[++i], 10);
-        break;
-      case '--phase':
-        config.startPhase = parseInt(argv[++i], 10);
-        break;
-      case '--dataset':
-        config.datasetPath = path.resolve(argv[++i]);
-        break;
-      case '--execution-results':
-        config.executionResultsPath = path.resolve(argv[++i]);
-        break;
-      case '--seed':
-        config.seed = argv[++i];
+        config.permutationIterations = parseInt(unknown[++i], 10);
         break;
       case '--balance-method':
-        config.balanceMethod = argv[++i];
-        break;
-      case '--use-unified-dataset':
-      case '--unified':
-        config.useUnifiedDataset = true;
-        break;
-      case '--unified-dir':
-        config.unifiedDatasetDir = path.resolve(argv[++i]);
-        break;
-      case '--help':
-      case '-h':
-        config.help = true;
+        config.balanceMethod = unknown[++i];
         break;
       default:
-        if (arg.startsWith('--unified-dir=')) {
-          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-        } else {
-          console.warn(`Unknown argument ${arg} ignored`);
-        }
+        console.warn(`Unknown argument ${arg} ignored`);
     }
   }
 
@@ -164,21 +80,12 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printUsage() {
   console.log('Structure & Parameter Privacy Experiment');
   console.log('Usage: node run_experiment.js [options]');
-  console.log('Options:');
-  console.log('  --output <dir>                    Output directory (default: ./results)');
-  console.log('  --policy-count <n>                Number of base policies to generate (default: 120)');
-  console.log('  --executions-per-policy <n>       Executions per policy (default: 3)');
-  console.log('  --satisfy-ratio <float>           Ratio of satisfying executions (default: 0.5)');
-  console.log('  --test-ratio <float>              Train/test split ratio (default: 0.3)');
+  console.log();
+  printCommonHelp();
+  console.log();
+  console.log('SPP-specific options:');
   console.log('  --permutation-iterations <n>      Permutation test iterations (default: 500)');
   console.log('  --balance-method <method>         Dataset balancing: oversample|undersample|both|none (default: both)');
-  console.log('  --phase <1|2|3>                   Resume from given phase');
-  console.log('  --dataset <path>                  Use pre-generated dataset JSON (phase ≥2)');
-  console.log('  --execution-results <path>        Path to cached execution results');
-  console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
-  console.log('  --unified-dir <path>              Override unified artifact directory');
-  console.log('  --seed <value>                    Random seed for reproducibility');
-  console.log('  --help, -h                        Show this help message');
 }
 
 /**
@@ -447,33 +354,10 @@ async function runExperiment(config = {}) {
   }
 
   const outputDatasetPath = path.join(outputDir, 'dataset.json');
-  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : null;
-  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
 
-  let unifiedPaths = null;
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.sppDataset}`);
-    console.log();
-
-    if (!datasetSourcePath) {
-      datasetSourcePath = unifiedPaths.policyDefinitions;
-    }
-    if (!executionResultsPath) {
-      executionResultsPath = unifiedPaths.sppDataset;
-    }
-  }
-
-  if (!datasetSourcePath) {
-    datasetSourcePath = outputDatasetPath;
-  }
-
-  if (!executionResultsPath) {
-    executionResultsPath = path.join(outputDir, 'execution_results.json');
-  }
+  const { datasetPath: resolvedDatasetPath, executionResultsPath: resolvedExecPath } = resolveDatasetPaths(config, 'spp');
+  let datasetSourcePath = resolvedDatasetPath || outputDatasetPath;
+  let executionResultsPath = resolvedExecPath || path.join(outputDir, 'execution_results.json');
   const reportJsonPath = path.join(outputDir, 'report.json');
   const reportMarkdownPath = path.join(outputDir, 'report.md');
 
@@ -487,68 +371,21 @@ async function runExperiment(config = {}) {
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
-  const totalSteps = (startPhase <= 1 ? 4 : 0) + 4;
-  const progress = new ProgressTracker(totalSteps);
+  const progress = new ProgressTracker(4);
 
-  // Phase 1: Dataset generation & on-chain execution
-  if (startPhase <= 1) {
-    progress.startStep('Generating dataset with structure annotations');
-    dataset = await generateDataset({
-      policyCount: config.policyCount,
-      executionsPerPolicy: config.executionsPerPolicy,
-      satisfyRatio: config.satisfyRatio,
-      seed: config.seed,
-      duoTerms: config.duoTerms,
-      semanticLayers: config.semanticLayers
-    });
+  if (fs.existsSync(datasetSourcePath)) {
+    dataset = JSON.parse(fs.readFileSync(datasetSourcePath, 'utf8'));
     datasetMeta = dataset.__meta;
-
-    fs.writeFileSync(outputDatasetPath, JSON.stringify(dataset, null, 2));
-    datasetSourcePath = outputDatasetPath;
-    console.log(`Dataset saved to: ${outputDatasetPath}`);
-    if (datasetMeta?.sppSummary) {
-      console.log('Structure coverage:', datasetMeta.sppSummary.structureTypes);
-      console.log('Parameter coverage:', datasetMeta.sppSummary.parameterTypes);
-      console.log('Predicate coverage:', datasetMeta.sppSummary.predicateCombos);
-    }
-    progress.completeStep();
-
-    const provider = ethers.provider;
-    const [signer] = await ethers.getSigners();
-    await ensureSufficientBalance({
-      provider,
-      signer,
-      executionCount: dataset.length
-    });
-
-    progress.startStep('Deploying PolicyPrivacy contracts');
-    const policyPrivacy = await deployPolicyPrivacyContracts();
-    progress.completeStep();
-
-    progress.startStep(`Executing ${dataset.length} policies on-chain`);
-    executionResults = await executeDatasetWithProgress(
-      dataset,
-      policyPrivacy,
-      executionResultsPath,
-      progress
-    );
-    progress.completeStep();
+    console.log(`Loaded dataset metadata from: ${datasetSourcePath}`);
   } else {
-    if (fs.existsSync(datasetSourcePath)) {
-      dataset = JSON.parse(fs.readFileSync(datasetSourcePath, 'utf8'));
-      datasetMeta = dataset.__meta;
-      console.log(`Loaded dataset metadata from: ${datasetSourcePath}`);
-    } else {
-      console.warn(`Dataset file not found at ${datasetSourcePath}. Provide --dataset <path> if needed.`);
-    }
-
-    const resolvedExecPath = config.executionResultsPath || executionResultsPath;
-    if (!fs.existsSync(resolvedExecPath)) {
-      throw new Error(`Execution results not found at ${resolvedExecPath}`);
-    }
-    executionResults = JSON.parse(fs.readFileSync(resolvedExecPath, 'utf8'));
-    console.log(`Loaded execution results from: ${resolvedExecPath}`);
+    console.warn(`Dataset file not found at ${datasetSourcePath}. Provide --dataset <path> if needed.`);
   }
+
+  if (!fs.existsSync(executionResultsPath)) {
+    throw new Error(`Execution results not found at ${executionResultsPath}`);
+  }
+  executionResults = JSON.parse(fs.readFileSync(executionResultsPath, 'utf8'));
+  console.log(`Loaded execution results from: ${executionResultsPath}`);
 
   // Phase 2: Attack modeling
   console.log('\nPhase 2: Attack Modeling');
@@ -682,25 +519,11 @@ async function runExperiment(config = {}) {
   return report;
 }
 
-// CLI entry point
-if (require.main === module) {
-  const config = parseArgs();
-
-  if (config.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log('Configuration:', config);
-
-  runExperiment(config)
-    .then((report) => {
-      process.exit(report.evaluation.overallPassed ? 0 : 1);
-    })
-    .catch((error) => {
-      console.error('Experiment failed:', error);
-      process.exit(1);
-    });
-}
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.evaluation.overallPassed
+});
 
 module.exports = { runExperiment };

@@ -28,9 +28,7 @@ const {
   writeExecutionArtifacts
 } = require('./artifacts');
 
-const {
-  executeDataset
-} = require('../policy_content_hiding/data_generator');
+const { executeDatasetWithProgress } = require('../core/execution');
 
 const {
   ensureSufficientBalance,
@@ -180,7 +178,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   let executionResults;
   try {
     console.log(`Executing ${annotatedDataset.length} policy instances via TPS...`);
-    executionResults = await executeDataset(
+    executionResults = await executeDatasetWithProgress(
       annotatedDataset,
       policyPrivacy,
       paths.executedDataset

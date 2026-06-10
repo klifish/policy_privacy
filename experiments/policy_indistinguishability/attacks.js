@@ -2,8 +2,8 @@
  * Attack orchestration across the three PI adversary levels.
  */
 
-const { LogisticRegression, RandomForest } = require('../policy_content_hiding/classifiers');
-const { evaluateBinaryClassification } = require('../policy_content_hiding/evaluator');
+const { LogisticRegression, RandomForest } = require('../core/classifiers');
+const { evaluateBinaryClassification } = require('../core/evaluator');
 const {
   FEATURE_KEYS,
   buildSingleSampleDataset,

@@ -13,7 +13,7 @@ const {
   generateDataset,
   executeDataset,
   DUO_TERMS
-} = require('../policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const DEFAULT_PAIR_TARGETS = Object.freeze({
   semantic_equivalent: 5,
