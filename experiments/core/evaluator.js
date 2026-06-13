@@ -75,6 +75,29 @@ function calculateAUC(yTrue, yProba) {
 }
 
 /**
+ * Permutation test for AUC significance. Shuffles the labels `iterations` times
+ * and counts how often a permuted AUC matches or beats the observed AUC; the
+ * resulting p-value answers "could this AUC arise by chance?". Used as the
+ * unified significance criterion across experiments.
+ */
+function permutationTestAUC(yTrue, probabilities, iterations = 500) {
+  if (!probabilities || probabilities.length === 0) {
+    return { auc: 0.5, pValue: 1 };
+  }
+  const actualAuc = calculateAUC(yTrue, probabilities);
+  const labels = yTrue.slice();
+  let count = 0;
+  for (let i = 0; i < iterations; i++) {
+    for (let j = labels.length - 1; j > 0; j--) {
+      const k = Math.floor(Math.random() * (j + 1));
+      [labels[j], labels[k]] = [labels[k], labels[j]];
+    }
+    if (calculateAUC(labels, probabilities) >= actualAuc) count += 1;
+  }
+  return { auc: actualAuc, pValue: (count + 1) / (iterations + 1) };
+}
+
+/**
  * Calculate advantage over random baseline
  */
 function calculateAdvantage(accuracy, numClasses) {
@@ -241,6 +264,7 @@ module.exports = {
   calculateConfusionMatrix,
   calculatePrecisionRecall,
   calculateAUC,
+  permutationTestAUC,
   calculateAdvantage,
   calculatePerClassMetrics,
   evaluateBinaryClassification,

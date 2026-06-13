@@ -49,8 +49,12 @@ const {
 
 const {
   evaluateClassificationTasks,
-  checkPrivacyThresholds
+  checkPrivacyThresholds,
+  calculateAUC,
+  permutationTestAUC
 } = require('../core/evaluator');
+
+const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
 
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -441,7 +445,45 @@ async function runExperiment(config = {}) {
     }
   }
   console.log();
-  console.log(`Overall: ${privacyCheck.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  console.log(`Single-split (diagnostic) Overall: ${privacyCheck.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  console.log();
+
+  // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
+  // The single split above is kept only as a diagnostic — its AUC has std ~0.05
+  // at ~3 executions/policy, and raw advantage is unstable on imbalanced test
+  // sets, so it is not the basis for PASS/FAIL.
+  const multiseedSeeds = config.multiseedSeeds || 30;
+  const permIterations = config.permutationIterations || 200;
+  const verdict = evaluateMultiseed((seedIndex) => {
+    const { train, test } = splitTrainTest(normalizedFeatures, testRatio);
+    const trX = prepareClassificationData(train, 'duoTerm').X;
+    const teX = prepareClassificationData(test, 'duoTerm').X;
+    const records = [];
+    for (const termId of observedDuoTermIds) {
+      const code = DUO_TO_ATTRIBUTE_CODE[termId];
+      const labelOf = f => (f.duoTerm === termId ||
+        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(code))) ? 1 : 0;
+      const trY = train.map(labelOf);
+      const teY = test.map(labelOf);
+      if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
+      const lr = new LogisticRegression(0.1, 500);
+      lr.train(trX, trY);
+      const proba = lr.predictProba(teX);
+      const auc = calculateAUC(teY, proba);
+      if (auc == null) continue;
+      const { pValue } = permutationTestAUC(teY, proba, permIterations);
+      records.push({
+        key: `DUO ${code}`,
+        auc,
+        advantage: Math.abs(auc - 0.5), // AUC-based advantage, matches multiseed_eval
+        permPValue: pValue,
+        n: teY.length
+      });
+    }
+    return records;
+  }, { seeds: multiseedSeeds, permutationIterations: permIterations });
+
+  printVerdict('Policy Content Hiding', verdict);
   console.log();
 
   // Phase 5: Reporting
@@ -467,11 +509,13 @@ async function runExperiment(config = {}) {
       testRatio
     },
     evaluation,
-    privacyCheck,
+    privacyCheck,              // single-split diagnostic only
+    multiseedVerdict: verdict, // authoritative
     featureStats,
-    conclusion: privacyCheck.overallPassed
-      ? 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing.'
-      : 'WARNING: System may leak policy content information. Some classifiers exceed privacy thresholds.'
+    overallPassed: verdict.overallPassed,
+    conclusion: verdict.overallPassed
+      ? 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant).'
+      : 'WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.'
   };
 
   const reportPath = path.join(resolvedOutputDir, 'evaluation_report.json');
@@ -567,8 +611,8 @@ function generateReadableReport(report) {
 
   lines.push('## Overall Result');
   lines.push('');
-  const overallStatus = report.privacyCheck.overallPassed ? '✓ **PASS**' : '✗ **FAIL**';
-  lines.push(`**Status:** ${overallStatus}`);
+  const overallStatus = report.overallPassed ? '✓ **PASS**' : '✗ **FAIL**';
+  lines.push(`**Status:** ${overallStatus} _(multi-seed, policy-disjoint; single split shown above is diagnostic)_`);
   lines.push('');
 
   lines.push('## Conclusion');
@@ -576,7 +620,7 @@ function generateReadableReport(report) {
   lines.push(report.conclusion);
   lines.push('');
 
-  if (report.privacyCheck.overallPassed) {
+  if (report.overallPassed) {
     lines.push('The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.');
   } else {
     lines.push('**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.');
@@ -590,7 +634,7 @@ runMain(module, {
   runExperiment,
   parseArgs,
   printUsage,
-  getPassedFlag: (r) => r.privacyCheck.overallPassed
+  getPassedFlag: (r) => r.overallPassed
 });
 
 module.exports = { runExperiment };

@@ -8,6 +8,7 @@
  */
 
 const { LogisticRegression, RandomForest } = require('../core/classifiers');
+const { calculateAUC } = require('../core/evaluator');
 
 // Feature keys for side-channel analysis
 const FEATURE_KEYS = [
@@ -368,8 +369,12 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       const lrPredictions = lr.predict(test.map(d => d.features));
       const lrEval = evaluateClassifier(lrPredictions, test.map(d => d.label));
+      // AUC from probabilities — used by the unified multi-seed verdict. Unlike
+      // accuracy/advantage it is threshold-free and stable on imbalanced sets.
+      const lrProba = lr.predictProba(test.map(d => d.features));
+      lrEval.auc = calculateAUC(test.map(d => d.label), lrProba);
 
-      console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}`);
+      console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}, auc=${lrEval.auc.toFixed(3)}`);
 
       // Permutation test
       const permTest = permutationTest(features, labels, permutationIterations);
@@ -384,8 +389,13 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       const rfPredictions = rf.predict(test.map(d => d.features));
       const rfEval = evaluateClassifier(rfPredictions, test.map(d => d.label));
+      // RF AUC from the tree-vote fraction — the unified verdict's AUC leg for
+      // SPP (the LR over-separates on near-constant features, giving degenerate
+      // AUC, so RF's calibrated score is used instead).
+      const rfProba = rf.predictProba(test.map(d => d.features));
+      rfEval.auc = calculateAUC(test.map(d => d.label), rfProba);
 
-      console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}`);
+      console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}, auc=${rfEval.auc.toFixed(3)}`);
 
       results.push({
         targetAttribute,

@@ -274,6 +274,20 @@ class RandomForest {
       return bestLabel;
     });
   }
+
+  // Fraction of trees voting class 1 — a continuous score for AUC. Unlike the
+  // logistic model's saturated sigmoid on near-constant features, this stays
+  // well-calibrated, so it is the basis for SPP's AUC in the unified verdict.
+  predictProba(X) {
+    const predictions = this.trees.map(tree => tree.predict(X));
+    return X.map((_, i) => {
+      let ones = 0;
+      for (const pred of predictions) {
+        if (Number(pred[i]) === 1) ones++;
+      }
+      return ones / predictions.length;
+    });
+  }
 }
 
 module.exports = {
