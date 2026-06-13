@@ -275,10 +275,13 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   const tpsGasPriceGwei = process.env.TPS_GAS_PRICE_GWEI ||
     (network.name === 'polygonAmoy' ? '30' : '');
   // Access-path gas padding base target (defense-in-depth on the commitment-only
-  // interface). Must exceed the bare access gas (~547k after the 3-signal fix,
-  // ~565k incl. cold start) so _padGasToTarget actually pads. Default 600k;
-  // override or disable (0) via TPS_ACCESS_GAS_PAD_TARGET.
-  const accessGasPadTarget = process.env.TPS_ACCESS_GAS_PAD_TARGET || '600000';
+  // interface). MUST exceed the bare access gas across ALL policies so the whole
+  // randomized ±10% band stays above real usage — otherwise a low target both
+  // defeats padding (_padGasToTarget early-returns) and risks out-of-gas reverts.
+  // Measured bare access on Amoy is ~650k–667k (constant: fixed-depth circuit,
+  // only proof zero-byte variance moves it). Base 750k → band 675k–825k, all
+  // above real usage. Default 750k; override or disable (0) via env.
+  const accessGasPadTarget = process.env.TPS_ACCESS_GAS_PAD_TARGET || '750000';
   const tpsProcess = await startTpsServer({
     TPS_PRIVATE_KEY: tpsPrivateKey,
     CONTRACT_ADDRESS: await policyPrivacy.getAddress(),
