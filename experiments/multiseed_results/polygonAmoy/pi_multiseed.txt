@@ -1,0 +1,13 @@
+
+Multi-seed PI single-sample evaluation (30 seeds, policy-disjoint split, testRatio=0.3, permIter=200)
+Thresholds: AUC ≤ 0.55, |advantage| ≤ 0.05, permutation p ≥ 0.05
+
+Scope               | LR AUC mean±std  | LR adv mean±std  | perm p mean±std  | %seeds sig | RF adv mean±std  | n
+--------------------+------------------+------------------+------------------+------------+------------------+----
+overall             | 0.525 ± 0.042    | -0.011 ± 0.040   | 0.324 ± 0.302    | 27%        | -0.008 ± 0.038   | 30
+controlled_difference | 0.514 ± 0.045    | -0.029 ± 0.052   | 0.407 ± 0.303    | 7%         | -0.011 ± 0.050   | 30
+semantic_equivalent | 0.427 ± 0.056    | -0.109 ± 0.055   | 0.800 ± 0.190    | 0%         | -0.100 ± 0.068   | 30
+structural_variant  | 0.541 ± 0.095    | -0.036 ± 0.072   | 0.348 ± 0.386    | 40%        | 0.053 ± 0.079    | 30
+weak_equivalent     | 0.418 ± 0.134    | -0.151 ± 0.111   | 0.683 ± 0.217    | 0%         | -0.116 ± 0.104   | 30
+--------------------+------------------+------------------+------------------+------------+------------------+----
+Reading: a privacy-preserving interface has AUC≈0.5, advantage≈0, perm p well above 0.05, and a LOW %seeds-significant.
