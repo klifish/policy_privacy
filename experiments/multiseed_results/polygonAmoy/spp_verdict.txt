@@ -1,0 +1,25 @@
+Structure & Parameter Privacy — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: AUC_mean ≤ 0.55 AND significant-seed fraction < 0.5 (perm α=0.05); advantage reported, not gating.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-----------------+-------------+------+------+--------
+structureType: and_only/or_only       | 0.475 ± 0.051   | 0.036 ± 0.029   | 0.547       | 10%  | 102  | ✓ PASS
+structureType: and_only/negation_heavy | 0.428 ± 0.058   | 0.060 ± 0.028   | 0.537       | 23%  | 90   | ✓ PASS
+structureType: and_only/and_or_mixed  | 0.521 ± 0.073   | 0.057 ± 0.041   | 0.432       | 27%  | 78   | ✓ PASS
+structureType: or_only/negation_heavy | 0.440 ± 0.061   | 0.049 ± 0.030   | 0.491       | 20%  | 81   | ✓ PASS
+structureType: or_only/and_or_mixed   | 0.504 ± 0.066   | 0.044 ± 0.037   | 0.520       | 17%  | 66   | ✓ PASS
+structureType: negation_heavy/and_or_mixed | 0.515 ± 0.076   | 0.049 ± 0.031   | 0.548       | 13%  | 57   | ✓ PASS
+predicateCombo: none/single           | 0.467 ± 0.073   | 0.041 ± 0.033   | 0.571       | 0%   | 54   | ✓ PASS
+predicateCombo: none/few              | 0.484 ± 0.061   | 0.032 ± 0.022   | 0.525       | 10%  | 102  | ✓ PASS
+predicateCombo: none/many             | 0.511 ± 0.080   | 0.067 ± 0.036   | 0.595       | 7%   | 42   | ✓ PASS
+predicateCombo: single/few            | 0.466 ± 0.053   | 0.039 ± 0.030   | 0.645       | 0%   | 117  | ✓ PASS
+predicateCombo: single/many           | 0.476 ± 0.064   | 0.049 ± 0.036   | 0.537       | 13%  | 54   | ✓ PASS
+predicateCombo: few/many              | 0.521 ± 0.059   | 0.043 ± 0.034   | 0.535       | 10%  | 102  | ✓ PASS
+paramType: none/small                 | 0.480 ± 0.074   | 0.050 ± 0.041   | 0.628       | 3%   | 54   | ✓ PASS
+paramType: none/medium                | 0.458 ± 0.074   | 0.056 ± 0.037   | 0.540       | 13%  | 96   | ✓ PASS
+paramType: none/large                 | 0.521 ± 0.062   | 0.055 ± 0.037   | 0.569       | 3%   | 48   | ✓ PASS
+paramType: small/medium               | 0.513 ± 0.052   | 0.030 ± 0.025   | 0.583       | 3%   | 108  | ✓ PASS
+paramType: small/large                | 0.486 ± 0.072   | 0.046 ± 0.031   | 0.573       | 10%  | 63   | ✓ PASS
+paramType: medium/large               | 0.493 ± 0.068   | 0.036 ± 0.028   | 0.531       | 20%  | 102  | ✓ PASS
+--------------------------------------+-----------------+-----------------+-------------+------+--------
+Overall: ✓ PASS

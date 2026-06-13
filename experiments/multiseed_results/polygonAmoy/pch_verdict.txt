@@ -1,0 +1,13 @@
+Policy Content Hiding — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: AUC_mean ≤ 0.55 AND significant-seed fraction < 0.5 (perm α=0.05); advantage reported, not gating.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-----------------+-------------+------+------+--------
+DUO GR                                | 0.500 ± 0.056   | 0.046 ± 0.031   | 0.511       | 7%   | 162  | ✓ PASS
+DUO DS                                | 0.464 ± 0.025   | 0.040 ± 0.017   | 0.758       | 0%   | 162  | ✓ PASS
+DUO RS                                | 0.536 ± 0.037   | 0.043 ± 0.028   | 0.260       | 10%  | 162  | ✓ PASS
+DUO POA                               | 0.462 ± 0.052   | 0.053 ± 0.035   | 0.702       | 0%   | 162  | ✓ PASS
+DUO GS                                | 0.478 ± 0.035   | 0.032 ± 0.027   | 0.639       | 0%   | 162  | ✓ PASS
+DUO CC                                | 0.440 ± 0.028   | 0.060 ± 0.027   | 0.865       | 0%   | 162  | ✓ PASS
+--------------------------------------+-----------------+-----------------+-------------+------+--------
+Overall: ✓ PASS

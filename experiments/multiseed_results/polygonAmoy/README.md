@@ -12,6 +12,32 @@ for significance. The honest headline metrics are AUC, |AUC−0.5|, and the
 permutation p-value — not raw "advantage", which is unstable on imbalanced test
 sets (see Methodology notes below).
 
+## Unified verdict (authoritative, now in the main pipeline)
+
+As of commit `335f603`, all three `run_experiment.js` scripts decide PASS/FAIL
+with one shared criterion (`experiments/core/multiseed_criterion.js`):
+
+> **PASS** iff `AUC_mean ≤ 0.55` **AND** significant-seed fraction `< 0.5`
+> (over 30 policy-disjoint seeds; advantage reported, not gating). Subclasses
+> with median test n `< 20` are **underpowered** — reported but excluded from
+> gating, so a tiny subclass's noise cannot decide the verdict.
+
+Verdict tables of record: `pch_verdict.txt`, `pi_verdict.txt`, `spp_verdict.txt`.
+
+| Experiment | Overall | Notes |
+|---|---|---|
+| PCH | ✓ PASS | 6 DUO terms, AUC 0.44–0.54, all medN 162 |
+| PI  | ✓ PASS | overall AUC 0.480 / 0% sig / medN 369; `weak_equivalent` (n=9) underpowered, excluded |
+| SPP | ✓ PASS | all 18 contrasts AUC 0.43–0.52 (RF-based; LR over-separates), %sig ≤ 27% |
+
+SPP's AUC uses RandomForest (tree-vote fraction): the logistic model
+over-separates on near-constant features and yields degenerate AUC (~0), so the
+calibrated RF score is used for SPP's AUC leg. PCH/PI use logistic-regression AUC.
+
+The standalone `*_multiseed.txt` tables below predate the unified pipeline and
+report the same numbers via the standalone wrappers (`multiseed_eval.js`); they
+are kept for quick re-analysis without rerunning phase 2.
+
 ## Provenance
 
 - Source datasets (committed): `experiments/unified/artifacts_data/polygonAmoy/`

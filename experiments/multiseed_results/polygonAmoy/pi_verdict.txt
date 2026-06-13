@@ -1,0 +1,12 @@
+Policy Indistinguishability — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: AUC_mean ≤ 0.55 AND significant-seed fraction < 0.5 (perm α=0.05); advantage reported, not gating.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-----------------+-------------+------+------+--------
+overall                               | 0.480 ± 0.042   | -0.059 ± 0.045  | 0.627       | 0%   | 369  | ✓ PASS
+semantic_equivalent                   | 0.410 ± 0.057   | -0.121 ± 0.069  | 0.811       | 0%   | 57   | ✓ PASS
+structural_variant                    | 0.535 ± 0.088   | -0.033 ± 0.092  | 0.346       | 20%  | 118.5 | ✓ PASS
+weak_equivalent                       | 0.443 ± 0.152   | -0.196 ± 0.128  | 0.667       | 0%   | 9    | — (underpowered)
+controlled_difference                 | 0.512 ± 0.051   | -0.051 ± 0.075  | 0.447       | 7%   | 126  | ✓ PASS
+--------------------------------------+-----------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
