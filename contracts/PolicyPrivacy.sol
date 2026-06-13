@@ -8,7 +8,7 @@ interface IVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[3] calldata _pubSignals
     ) external view returns (bool);
 }
 
@@ -337,7 +337,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[3] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
@@ -390,7 +390,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[3] calldata _pubSignals
     ) external notPaused returns (uint256) {
         return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
     }
@@ -403,7 +403,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals,
+        uint[3] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256) {
         uint256 startGas = gasleft();
@@ -560,8 +560,51 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[3] calldata _pubSignals
     ) external notPaused returns (uint256 requestId) {
+        requestId = _requestAccessBound(
+            _policyId, _resourceId, _nonce, _pA, _pB, _pC, _pubSignals
+        );
+    }
+
+    /**
+     * @dev requestAccessBound with gas padding so observable gas usage is
+     * normalized to a policy-independent target. Defense-in-depth on top of the
+     * commitment-only public interface: the verification path's gas already
+     * carries only a tiny residual from Groth16 proof-byte zero-byte variation,
+     * and _padGasToTarget compensates calldata zero bytes dynamically, so the
+     * total settles at the (randomized) target regardless of policy content.
+     */
+    function requestAccessBoundWithGasPad(
+        uint256 _policyId,
+        uint256 _resourceId,
+        uint256 _nonce,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[3] calldata _pubSignals,
+        uint256 targetGas
+    ) external notPaused returns (uint256 requestId) {
+        uint256 startGas = gasleft();
+        requestId = _requestAccessBound(
+            _policyId, _resourceId, _nonce, _pA, _pB, _pC, _pubSignals
+        );
+        _padGasToTarget(startGas, targetGas);
+    }
+
+    /**
+     * @dev Shared nonce/resource-bound verification logic for the two
+     * requestAccessBound entry points (padded and unpadded).
+     */
+    function _requestAccessBound(
+        uint256 _policyId,
+        uint256 _resourceId,
+        uint256 _nonce,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[3] calldata _pubSignals
+    ) internal returns (uint256 requestId) {
         require(policies[_policyId].isActive, "Policy not active");
         require(resources[_resourceId].isActive, "Resource not active");
         require(
@@ -589,7 +632,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[33] calldata _pubSignals
+        uint[3] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }

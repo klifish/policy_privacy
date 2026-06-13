@@ -1,6 +1,8 @@
 'use strict';
 
-const { getArtifactPaths } = require('../unified/artifacts');
+const path = require('path');
+
+const { getArtifactPaths, DEFAULT_ARTIFACT_DIR } = require('../unified/artifacts');
 
 const EXPERIMENT_DATASET_KEYS = {
   pch: 'pchDataset',
@@ -12,7 +14,8 @@ const EXPERIMENT_DATASET_KEYS = {
  * Resolve dataset and execution-results paths for an experiment.
  *
  * When config.useUnifiedDataset is true, paths are derived from the unified
- * artifacts directory (config.unifiedDatasetDir or the default).  Any paths
+ * artifacts directory (config.unifiedDatasetDir, or the network-scoped
+ * default `artifacts_data/<config.network || 'localhost'>`).  Any paths
  * already set on config take precedence and are left unchanged.
  *
  * @param {object} config - Experiment config (output of parseArgs).
@@ -30,7 +33,9 @@ function resolveDatasetPaths(config, experimentKey) {
   let unifiedPaths = null;
 
   if (config.useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
+    const unifiedDir = config.unifiedDatasetDir ||
+      path.join(DEFAULT_ARTIFACT_DIR, config.network || 'localhost');
+    unifiedPaths = getArtifactPaths(unifiedDir);
     console.log('Using unified dataset artifacts:');
     console.log(`  Base dir:   ${unifiedPaths.dir}`);
     console.log(`  Policies:   ${unifiedPaths.policyDefinitions}`);

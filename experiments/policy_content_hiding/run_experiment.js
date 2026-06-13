@@ -111,7 +111,8 @@ async function runExperiment(config = {}) {
     numDuoTerms = 6,
     executionsPerPolicy = 2,
     policyCount = undefined,
-    outputDir = path.join(__dirname, 'results'),
+    network = 'localhost',
+    outputDir = path.join(__dirname, 'results', network),
     testRatio = 0.3,
     aucThreshold = 0.55,
     advantageThreshold = 0.05,
@@ -144,7 +145,7 @@ async function runExperiment(config = {}) {
   let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
 
   const { datasetPath, executionResultsPath } = resolveDatasetPaths(
-    { useUnifiedDataset, unifiedDatasetDir, datasetPath: initialDatasetPath, executionResultsPath: initialExecutionResultsPath },
+    { useUnifiedDataset, unifiedDatasetDir, network, datasetPath: initialDatasetPath, executionResultsPath: initialExecutionResultsPath },
     'pch'
   );
   let datasetPathOverride = datasetPath ? path.resolve(datasetPath) : null;

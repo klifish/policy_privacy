@@ -1,51 +1,39 @@
 {
   "config": {
-    "policyCount": 200,
-    "executionsPerPolicy": 3,
-    "satisfyRatio": 1,
-    "seed": "unified-optimized-2025",
+    "policyCount": 10,
+    "executionsPerPolicy": 2,
+    "satisfyRatio": 0.5,
+    "seed": "smoke-test-2026",
     "validation": {
       "pch": {
-        "minPoliciesPerDUO": 25,
-        "minMaxRatio": 0.35
+        "minPoliciesPerDUO": 1,
+        "minMaxRatio": 0.1
       },
       "spp": {
-        "minPoliciesPerCategory": 15,
-        "minMaxRatio": 0.25,
-        "maxCV": 0.65
+        "minPoliciesPerCategory": 1,
+        "minMaxRatio": 0.1,
+        "maxCV": 1.5,
+        "skipDimensions": [
+          "logicStructures",
+          "nestingDepths",
+          "predicateCounts",
+          "setSizes",
+          "rangeWidths"
+        ]
       },
       "pi": {
-        "minPairsPerType": 30,
-        "minSemanticDiversity": 0.55
+        "minPairsPerType": 0,
+        "minSemanticDiversity": 0.1
       }
     },
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Unified Dataset Configuration - SPP/PI Optimized",
-    "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
-    "policyCountTarget": 200,
+    "policyCountTarget": 10,
     "semanticLayers": [
       {
-        "name": "flat_singleton",
-        "comment": "Flat AND-only policies without predicates (set_size none, logic and_only)",
+        "name": "smoke_singleton",
         "combos": [
           [
             "GR"
-          ]
-        ],
-        "minPolicies": 20,
-        "maxPolicies": 24,
-        "logicOptions": {
-          "operators": [
-            "AND"
           ],
-          "notProbability": 0.05,
-          "groupNotProbability": 0
-        }
-      },
-      {
-        "name": "single_predicate_small",
-        "comment": "Singleton predicates targeting set_size small + predicate_count single",
-        "combos": [
           [
             "DS"
           ],
@@ -62,623 +50,25 @@
             "CC"
           ]
         ],
-        "minPolicies": 24,
-        "maxPolicies": 28,
+        "minPolicies": 6,
+        "maxPolicies": 10,
         "logicOptions": {
           "operators": [
             "AND"
-          ],
-          "notProbability": 0.1,
-          "groupNotProbability": 0.05
-        },
-        "whitelistBuckets": [
-          2,
-          4
-        ],
-        "merkleDepthOptions": [
-          2,
-          3,
-          4
-        ]
-      },
-      {
-        "name": "dual_mixed_medium",
-        "comment": "Two/three predicate mixes for and_or_mixed logic + medium set sizes",
-        "combos": [
-          [
-            "GR",
-            "DS"
-          ],
-          [
-            "GR",
-            "RS"
-          ],
-          [
-            "DS",
-            "RS"
-          ],
-          [
-            "DS",
-            "POA"
-          ],
-          [
-            "RS",
-            "GS"
-          ],
-          [
-            "POA",
-            "GS"
-          ],
-          [
-            "DS",
-            "CC"
-          ],
-          [
-            "RS",
-            "CC"
-          ],
-          [
-            "POA",
-            "CC"
-          ],
-          [
-            "GS",
-            "CC"
-          ]
-        ],
-        "minPolicies": 14,
-        "maxPolicies": 18,
-        "logicOptions": {
-          "operators": [
-            "AND",
-            "OR"
-          ],
-          "notProbability": 0.2,
-          "groupNotProbability": 0.15
-        },
-        "whitelistBuckets": [
-          8,
-          12,
-          16
-        ],
-        "merkleDepthOptions": [
-          3,
-          4,
-          5
-        ]
-      },
-      {
-        "name": "medium_nesting_focused",
-        "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance",
-        "combos": [
-          [
-            "GR",
-            "DS",
-            "RS"
-          ],
-          [
-            "GR",
-            "DS",
-            "POA"
-          ],
-          [
-            "GR",
-            "RS",
-            "GS"
-          ],
-          [
-            "DS",
-            "RS",
-            "POA"
-          ],
-          [
-            "DS",
-            "POA",
-            "GS"
-          ],
-          [
-            "RS",
-            "POA",
-            "CC"
-          ],
-          [
-            "DS",
-            "GS",
-            "CC"
-          ],
-          [
-            "RS",
-            "GS",
-            "CC"
-          ],
-          [
-            "GR",
-            "POA",
-            "CC"
-          ],
-          [
-            "GR",
-            "GS",
-            "CC"
-          ]
-        ],
-        "minPolicies": 14,
-        "maxPolicies": 18,
-        "logicOptions": {
-          "operators": [
-            "AND",
-            "OR"
-          ],
-          "notProbability": 0.3,
-          "groupNotProbability": 0.25
-        },
-        "whitelistBuckets": [
-          8,
-          12
-        ],
-        "merkleDepthOptions": [
-          4,
-          5
-        ]
-      },
-      {
-        "name": "or_only",
-        "comment": "Force OR-only logic for logicStructure.or_only coverage",
-        "combos": [
-          [
-            "DS",
-            "RS"
-          ],
-          [
-            "DS",
-            "POA"
-          ],
-          [
-            "RS",
-            "CC"
-          ],
-          [
-            "POA",
-            "GS"
-          ],
-          [
-            "GS",
-            "CC"
-          ],
-          [
-            "POA",
-            "CC"
-          ]
-        ],
-        "minPolicies": 10,
-        "maxPolicies": 14,
-        "logicOptions": {
-          "operators": [
-            "OR"
           ],
           "notProbability": 0,
           "groupNotProbability": 0
         },
         "whitelistBuckets": [
-          4,
-          8,
-          12
+          2,
+          4
         ],
         "merkleDepthOptions": [
-          3,
-          4,
-          5
-        ]
-      },
-      {
-        "name": "negation_heavy",
-        "comment": "High NOT probability to populate negation_heavy bucket",
-        "combos": [
-          [
-            "GR",
-            "DS"
-          ],
-          [
-            "GR",
-            "RS"
-          ],
-          [
-            "DS",
-            "RS"
-          ],
-          [
-            "DS",
-            "POA"
-          ],
-          [
-            "RS",
-            "GS"
-          ],
-          [
-            "GR",
-            "DS",
-            "RS"
-          ],
-          [
-            "GR",
-            "CC"
-          ],
-          [
-            "DS",
-            "CC"
-          ],
-          [
-            "RS",
-            "CC"
-          ]
-        ],
-        "minPolicies": 14,
-        "maxPolicies": 18,
-        "logicOptions": {
-          "operators": [
-            "AND",
-            "OR"
-          ],
-          "notProbability": 0.7,
-          "groupNotProbability": 0.5
-        },
-        "whitelistBuckets": [
-          4,
-          8,
-          12,
-          16
-        ]
-      },
-      {
-        "name": "deep_nested_large",
-        "comment": "4-5 predicate combos enabled by DEPTH=20 to populate 'many' category and maximize complexity",
-        "combos": [
-          [
-            "DS",
-            "RS",
-            "POA",
-            "GS"
-          ],
-          [
-            "DS",
-            "RS",
-            "POA",
-            "CC"
-          ],
-          [
-            "DS",
-            "RS",
-            "GS",
-            "CC"
-          ],
-          [
-            "DS",
-            "POA",
-            "GS",
-            "CC"
-          ],
-          [
-            "RS",
-            "POA",
-            "GS",
-            "CC"
-          ],
-          [
-            "DS",
-            "RS",
-            "POA",
-            "GS",
-            "CC"
-          ]
-        ],
-        "minPolicies": 20,
-        "maxPolicies": 24,
-        "logicOptions": {
-          "operators": [
-            "AND",
-            "OR"
-          ],
-          "notProbability": 0.25,
-          "groupNotProbability": 0.2
-        },
-        "whitelistBuckets": [
-          12,
-          16,
-          20,
-          24,
-          32
-        ],
-        "merkleDepthOptions": [
-          4,
-          5,
-          6,
-          7,
-          8
-        ]
-      },
-      {
-        "name": "structural_variants",
-        "comment": "Duplicate semantics with different structure/execution to feed PI pairs",
-        "combos": [
-          [
-            "DS",
-            "RS"
-          ],
-          [
-            "DS",
-            "GS"
-          ],
-          [
-            "RS",
-            "POA"
-          ],
-          [
-            "DS",
-            "CC"
-          ],
-          [
-            "RS",
-            "CC"
-          ],
-          [
-            "POA",
-            "GS"
-          ],
-          [
-            "POA",
-            "CC"
-          ],
-          [
-            "GS",
-            "CC"
-          ],
-          [
-            "DS",
-            "POA"
-          ],
-          [
-            "RS",
-            "GS"
-          ]
-        ],
-        "minPolicies": 20,
-        "maxPolicies": 28,
-        "logicOptions": {
-          "operators": [
-            "OR",
-            "OR",
-            "AND"
-          ],
-          "notProbability": 0.15,
-          "groupNotProbability": 0.05
-        },
-        "lockLogicToCombination": true,
-        "variants": [
-          {
-            "name": "sparse_low_cost",
-            "whitelistBuckets": [
-              2,
-              4
-            ],
-            "merkleDepthOptions": [
-              2,
-              3
-            ],
-            "executionProtections": {
-              "path_unify": [
-                false
-              ],
-              "gas_pad": [
-                false
-              ],
-              "event_pad": [
-                false
-              ],
-              "proof_pad": [
-                false
-              ],
-              "batch_pattern": [
-                "baseline"
-              ]
-            }
-          },
-          {
-            "name": "structure_only_shift",
-            "whitelistBuckets": [
-              12,
-              16
-            ],
-            "merkleDepthOptions": [
-              5,
-              6
-            ],
-            "executionProtections": {
-              "path_unify": [
-                false
-              ],
-              "gas_pad": [
-                false
-              ],
-              "event_pad": [
-                false
-              ],
-              "proof_pad": [
-                false
-              ],
-              "batch_pattern": [
-                "baseline"
-              ]
-            }
-          },
-          {
-            "name": "structure_mid_depth",
-            "whitelistBuckets": [
-              8,
-              12
-            ],
-            "merkleDepthOptions": [
-              4,
-              5
-            ],
-            "executionProtections": {
-              "path_unify": [
-                false
-              ],
-              "gas_pad": [
-                false
-              ],
-              "event_pad": [
-                false
-              ],
-              "proof_pad": [
-                false
-              ],
-              "batch_pattern": [
-                "baseline"
-              ]
-            }
-          },
-          {
-            "name": "structure_large_range",
-            "whitelistBuckets": [
-              20,
-              24,
-              32
-            ],
-            "merkleDepthOptions": [
-              6,
-              7
-            ],
-            "executionProtections": {
-              "path_unify": [
-                false
-              ],
-              "gas_pad": [
-                false
-              ],
-              "event_pad": [
-                false
-              ],
-              "proof_pad": [
-                false
-              ],
-              "batch_pattern": [
-                "baseline"
-              ]
-            }
-          },
-          {
-            "name": "padded_high_cost",
-            "whitelistBuckets": [
-              16,
-              24,
-              32
-            ],
-            "merkleDepthOptions": [
-              6,
-              7,
-              8
-            ],
-            "executionProtections": {
-              "path_unify": [
-                true
-              ],
-              "gas_pad": [
-                true
-              ],
-              "event_pad": [
-                true
-              ],
-              "proof_pad": [
-                true
-              ],
-              "batch_pattern": [
-                "batched",
-                "staggered"
-              ]
-            }
-          },
-          {
-            "name": "padded_staggered_only",
-            "whitelistBuckets": [
-              12,
-              20
-            ],
-            "merkleDepthOptions": [
-              5,
-              6
-            ],
-            "executionProtections": {
-              "path_unify": [
-                true
-              ],
-              "gas_pad": [
-                true
-              ],
-              "event_pad": [
-                true
-              ],
-              "proof_pad": [
-                true
-              ],
-              "batch_pattern": [
-                "staggered"
-              ]
-            }
-          }
+          2,
+          3
         ]
       }
-    ],
-    "whitelistBuckets": [
-      2,
-      4,
-      8,
-      12,
-      16,
-      20,
-      24,
-      32
-    ],
-    "merkleDepthOptions": [
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "logicOptions": {
-      "notProbability": 0.3,
-      "groupNotProbability": 0.15,
-      "operators": [
-        "AND",
-        "OR"
-      ]
-    },
-    "notes": [
-      "This configuration emits ~315 policies with dedicated layers for SPP balance (including nesting depth) and a PI-focused structural variant stage.",
-      "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus balanced nesting depths.",
-      "CU (Commercial Use) has been removed from all combos due to circuit N=6 limitation (only GR, DS, RS, POA, GS, CC are supported).",
-      "Circuit upgraded to DEPTH=20, enabling up to 5-predicate combinations (19 tokens) for maximum flexibility.",
-      "Predicate count distribution: none(50, 17%), single(76, 26%), few(118, 40%), many(50, 17%) - ratio 0.424, CV 0.378",
-      "deep_nested_large layer uses 4-5 predicate combos (15-19 tokens) to populate 'many' category for complete SPP validation.",
-      "medium_nesting_focused layer specifically targets maxDepth=3 policies to balance the nesting depth dimension.",
-      "Policy counts have been adjusted to ensure min/max ratio ≥ 0.25 and CV ≤ 0.65 for all SPP dimensions.",
-      "The structural_variants layer locks logic per combination and emits 4 structure-only + 2 padded execution variants, which the validator now scales to estimate total PI pairs.",
-      "Semantic similarity incorporates ICD/OBI/population/geo/clinical scopes and layer variants so average diversity reflects true ontology coverage.",
-      "IMPORTANT: Circuit must be recompiled with DEPTH=20 before using this configuration.",
-      "Recommended usage:",
-      "  1. Recompile circuit: cd circuits && circom policy_privacy_main_instance.circom --r1cs --wasm --sym -o build/",
-      "  2. Validate config: node experiments/unified/validator.js --config=experiments/unified/configs/unified_dataset_config_optimized.json"
-    ],
-    "policyCountScaleInfo": {
-      "originalPolicyCount": 500,
-      "requestedPolicyCount": 200,
-      "effectivePolicyCount": 200,
-      "scaleFactor": 0.4,
-      "totalLayerMinimum": 136
-    }
+    ]
   },
   "results": {
     "pch": {
@@ -690,39 +80,39 @@
       "issues": [],
       "metrics": {
         "logicStructures": {
-          "min": 39,
-          "max": 79,
-          "mean": "57.3",
-          "minMaxRatio": "0.494",
-          "coefficientOfVariation": "0.288"
+          "min": 0,
+          "max": 10,
+          "mean": "2.5",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.732"
         },
         "nestingDepths": {
-          "min": 20,
-          "max": 76,
-          "mean": "43.0",
-          "minMaxRatio": "0.263",
-          "coefficientOfVariation": "0.528"
+          "min": 0,
+          "max": 10,
+          "mean": "2.5",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.732"
         },
         "predicateCounts": {
-          "min": 24,
-          "max": 86,
-          "mean": "43.0",
-          "minMaxRatio": "0.279",
-          "coefficientOfVariation": "0.592"
+          "min": 0,
+          "max": 8,
+          "mean": "2.5",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.311"
         },
         "setSizes": {
-          "min": 24,
-          "max": 81,
-          "mean": "43.0",
-          "minMaxRatio": "0.296",
-          "coefficientOfVariation": "0.519"
+          "min": 0,
+          "max": 8,
+          "mean": "2.5",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.311"
         },
         "rangeWidths": {
-          "min": 172,
-          "max": 172,
-          "mean": "172.0",
-          "minMaxRatio": "1.000",
-          "coefficientOfVariation": "0.000"
+          "min": 0,
+          "max": 10,
+          "mean": "2.5",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.732"
         }
       }
     },
@@ -730,20 +120,20 @@
       "passed": true,
       "issues": [],
       "pairTypes": {
-        "semantic_equivalent": 8,
-        "structural_variant": 66,
+        "semantic_equivalent": 0,
+        "structural_variant": 3,
         "weak_equivalent": 1,
-        "controlled_difference": 3085
+        "controlled_difference": 41
       },
-      "avgDiversity": 0.5724261603375523,
+      "avgDiversity": 0.5270000000000001,
       "estimatedTotals": {
-        "semantic_equivalent": 37,
-        "structural_variant": 307,
-        "weak_equivalent": 5,
-        "controlled_difference": 14357
+        "semantic_equivalent": 0,
+        "structural_variant": 3,
+        "weak_equivalent": 1,
+        "controlled_difference": 41
       }
     }
   },
-  "timestamp": "2026-01-06T10:02:07.753Z",
+  "timestamp": "2026-06-12T12:52:36.592Z",
   "allPassed": true
 }

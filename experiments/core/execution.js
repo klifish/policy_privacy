@@ -43,7 +43,12 @@ function clearCheckpoint(checkpointPath) {
  * @returns {Promise<Array>} Resolved execution results (failures are skipped, not thrown).
  */
 async function executeDatasetWithProgress(dataset, contract, outputPath, options = {}) {
-  const { progressTracker, checkpointPath, clearCheckpointOnDone = false } = options;
+  const {
+    progressTracker,
+    checkpointPath,
+    clearCheckpointOnDone = false,
+    continueOnError = true
+  } = options;
 
   let results = [];
   let startIndex = 0;
@@ -52,7 +57,7 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, options
     const checkpoint = loadCheckpoint(checkpointPath);
     if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data) {
       results = checkpoint.data.results || [];
-      startIndex = checkpoint.data.lastIndex + 1;
+      startIndex = Math.min((checkpoint.data.lastIndex ?? -1) + 1, results.length);
       console.log(`\n   Resuming from checkpoint: ${results.length} policies already executed`);
     }
   }
@@ -65,14 +70,6 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, options
       const result = await executePolicy(policyData, contract);
       results.push(result);
 
-      if (checkpointPath && (i + 1) % 10 === 0) {
-        saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
-          lastIndex: i,
-          results,
-          dataset
-        });
-      }
-
       if (progressTracker) {
         progressTracker.updateSubProgress(i + 1, dataset.length,
           ` | Executed ${i + 1}/${dataset.length} policies`);
@@ -83,6 +80,24 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, options
         progressTracker.updateSubProgress(i + 1, dataset.length,
           ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`);
       }
+      if (!continueOnError) {
+        if (checkpointPath) {
+          saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
+            lastIndex: i - 1,
+            results,
+            dataset
+          });
+        }
+        throw error;
+      }
+    }
+
+    if (checkpointPath) {
+      saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
+        lastIndex: i,
+        results,
+        dataset
+      });
     }
   }
 

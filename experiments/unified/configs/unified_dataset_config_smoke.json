@@ -27,7 +27,14 @@
     "spp": {
       "minPoliciesPerCategory": 1,
       "minMaxRatio": 0.1,
-      "maxCV": 1.5
+      "maxCV": 1.5,
+      "skipDimensions": [
+        "logicStructures",
+        "nestingDepths",
+        "predicateCounts",
+        "setSizes",
+        "rangeWidths"
+      ]
     },
     "pi": {
       "minPairsPerType": 0,

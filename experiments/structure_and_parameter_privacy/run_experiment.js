@@ -347,7 +347,9 @@ async function runExperiment(config = {}) {
   const startPhase = Number.isInteger(config.startPhase)
     ? config.startPhase
     : (useUnifiedDataset ? 2 : 1);
-  const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
+  const outputDir = path.resolve(
+    config.outputDir || path.join(__dirname, 'results', config.network || 'localhost')
+  );
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });

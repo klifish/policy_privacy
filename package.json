@@ -67,7 +67,12 @@
     "exp:spp": "node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2 --balance-method undersample",
     "exp:pi": "node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2",
     "exp:all": "npm run exp:pch && npm run exp:spp && npm run exp:pi",
-    "exp:quick": "npm run unified && npm run exp:all"
+    "exp:pch:amoy": "node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2 --network polygonAmoy",
+    "exp:spp:amoy": "node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2 --balance-method undersample --network polygonAmoy",
+    "exp:pi:amoy": "node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2 --network polygonAmoy",
+    "exp:all:amoy": "npm run exp:pch:amoy && npm run exp:spp:amoy && npm run exp:pi:amoy",
+    "exp:quick": "npm run unified && npm run exp:all",
+    "exp:full": "npx hardhat node &>/tmp/hardhat-node.log & until curl -sf http://127.0.0.1:8545 -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' -H 'Content-Type:application/json' >/dev/null 2>&1; do sleep 1; done && npm run unified && npm run exp:all && kill $(lsof -ti:8545)"
   },
   "author": "",
   "license": "ISC",

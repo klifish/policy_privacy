@@ -318,9 +318,20 @@ function validateSPPRequirements(dataset, config) {
   const allBalanceMetrics = {};
   const issues = [];
 
+  // Dimensions listed here are reported but not validated (e.g. rangeWidths
+  // when the config exercises no range predicates).
+  const skipDimensions = config.validation.spp.skipDimensions ?? ['rangeWidths'];
+
   dimensions.forEach(dim => {
     console.log(`\n  ${dim.name}:`);
-    const distribution = summary[dim.key] || {};
+
+    // Zero-fill from the category enum so empty categories are visible and
+    // counted — a missing category must fail the min-count check.
+    const observed = summary[dim.key] || {};
+    const distribution = {};
+    Object.values(dim.values).forEach(category => {
+      distribution[category] = observed[category] || 0;
+    });
 
     Object.entries(distribution).forEach(([category, count]) => {
       const pct = ((count / policies.length) * 100).toFixed(1);
@@ -332,6 +343,11 @@ function validateSPPRequirements(dataset, config) {
     allBalanceMetrics[dim.key] = metrics;
 
     console.log(`    Balance: min/max=${metrics.minMaxRatio}, CV=${metrics.coefficientOfVariation}`);
+
+    if (skipDimensions.includes(dim.key)) {
+      console.log(`    (validation skipped for this dimension)`);
+      return;
+    }
 
     // Validation
     const minThreshold = config.validation.spp.minPoliciesPerCategory;

@@ -24,8 +24,38 @@ const express = require('express');
 const crypto = require('crypto');
 const store = require('./store');
 const { generateProof } = require('./proofGenerator');
+const {
+    getAlreadyKnownTransactionHash,
+    retryRpc,
+    waitForTransactionReceipt,
+    waitForTx
+} = require('../lib/rpc-retry');
 
 const router = express.Router();
+
+// Access-path gas padding (defense-in-depth on top of the commitment-only
+// public interface). When a positive base target is configured, the TPS submits
+// via requestAccessBoundWithGasPad() so observable access gas is normalized to a
+// randomized target independent of policy content. 0 (default) = no padding,
+// i.e. plain requestAccessBound(), preserving backward compatibility.
+// Base resolves from app.locals.accessGasPadTarget (runtime/injectable) first,
+// then the TPS_ACCESS_GAS_PAD_TARGET env var.
+const ACCESS_GAS_PAD_VARIANCE = 0.1; // ±10%
+
+function resolveAccessGasPadBase(app) {
+    const fromLocals = app && app.locals && app.locals.accessGasPadTarget;
+    const raw = fromLocals != null ? fromLocals : process.env.TPS_ACCESS_GAS_PAD_TARGET;
+    const n = parseInt(raw || '0', 10) || 0;
+    return BigInt(n);
+}
+
+function randomizedAccessGasTarget(base) {
+    if (base <= 0n) return 0n;
+    const b = Number(base);
+    const r = crypto.randomBytes(4).readUInt32BE(0) / 0xFFFFFFFF; // [0,1]
+    const factor = 1 + (r - 0.5) * 2 * ACCESS_GAS_PAD_VARIANCE;
+    return BigInt(Math.floor(b * factor));
+}
 
 // ── POST /tps/provision ───────────────────────────────────────────────────────
 // Stage 2: Provider provisions policy-bound proving material.
@@ -126,13 +156,64 @@ router.post('/prove', async (req, res) => {
                 });
             }
 
-            const tx = await tpsContract.requestAccessBound(
-                BigInt(policyId),
-                BigInt(resourceId),
-                BigInt(nonce),
-                pA, pB, pC, pubSignals
-            );
-            const receipt = await tx.wait();
+            // Optional fee cap (gwei): on Polygon Amoy the RPC-suggested tip is
+            // ~2x the enforced 25 gwei minimum; pinning the price halves cost.
+            const overrides = {};
+            const gasPriceGwei = parseInt(process.env.TPS_GAS_PRICE_GWEI || '', 10);
+            if (Number.isFinite(gasPriceGwei) && gasPriceGwei > 0) {
+                const price = BigInt(gasPriceGwei) * 1_000_000_000n;
+                overrides.maxFeePerGas = price;
+                overrides.maxPriorityFeePerGas = price;
+            }
+
+            const accessGasPadTarget = randomizedAccessGasTarget(resolveAccessGasPadBase(req.app));
+            if (accessGasPadTarget > 0n) {
+                console.log(`[TPS] access gas pad target = ${accessGasPadTarget}`);
+            }
+            // The padding loop burns gas up to the target, so the tx must be sent
+            // with an explicit gasLimit above the target — otherwise ethers'
+            // auto-estimated gasLimit caps the loop below the target and padding
+            // silently under-shoots. Headroom (+80k) covers post-loop fixed costs.
+            const padOverrides = accessGasPadTarget > 0n
+                ? { ...overrides, gasLimit: accessGasPadTarget + 80000n }
+                : overrides;
+            let txHash;
+            let receipt;
+            try {
+                const tx = await retryRpc(
+                    `TPS requestAccessBound send for policyId=${policyId}`,
+                    () => accessGasPadTarget > 0n
+                        ? tpsContract.requestAccessBoundWithGasPad(
+                            BigInt(policyId),
+                            BigInt(resourceId),
+                            BigInt(nonce),
+                            pA, pB, pC, pubSignals,
+                            accessGasPadTarget,
+                            padOverrides
+                        )
+                        : tpsContract.requestAccessBound(
+                            BigInt(policyId),
+                            BigInt(resourceId),
+                            BigInt(nonce),
+                            pA, pB, pC, pubSignals,
+                            overrides
+                        ),
+                    { initialDelayMs: 5000, maxAttempts: 8 }
+                );
+                txHash = tx.hash;
+                receipt = await waitForTx(tx, 1, { label: `TPS requestAccessBound tx ${tx.hash}` });
+            } catch (error) {
+                const knownTxHash = getAlreadyKnownTransactionHash(error);
+                if (!knownTxHash) {
+                    throw error;
+                }
+
+                txHash = knownTxHash;
+                console.warn(`[TPS] requestAccessBound tx already known by RPC; waiting for ${txHash}`);
+                receipt = await waitForTransactionReceipt(tpsContract.runner.provider, txHash, {
+                    label: `TPS already-known requestAccessBound receipt ${txHash}`
+                });
+            }
 
             // Parse requestId and authorization outcome from events
             let requestId = null;
@@ -149,7 +230,7 @@ router.post('/prove', async (req, res) => {
             store.updateSession(sessionId, { status: isGranted ? 'granted' : 'denied', requestId });
 
             chainResult = {
-                transactionHash: tx.hash,
+                transactionHash: txHash,
                 requestId,
                 isGranted,
                 gasUsed: receipt.gasUsed.toString()
@@ -164,6 +245,12 @@ router.post('/prove', async (req, res) => {
 });
 
 // ── GET /tps/health ───────────────────────────────────────────────────────────
-router.get('/health', (_req, res) => res.json({ status: 'ok' }));
+router.get('/health', (req, res) => res.json({
+    status: 'ok',
+    submitOnChain: Boolean(req.app.locals.tpsContract),
+    contractAddress: req.app.locals.contractAddress || null,
+    tpsSignerAddress: req.app.locals.tpsSignerAddress || null,
+    nodeUrl: req.app.locals.nodeUrl || null
+}));
 
 module.exports = router;

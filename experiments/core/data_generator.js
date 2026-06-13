@@ -15,6 +15,8 @@ const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
 const { calculatePolicyCommitment, calculateParamsCommitment } = require('../../test/utils/proofGenerator');
 const tpsClient = require('../../lib/tps-client');
+const { retryRpc, waitForTx, waitForTransactionReceipt } = require('../../lib/rpc-retry');
+const { getExperimentSigner } = require('./blockchain');
 
 const EVENT_SIGNATURES = {
   POLICY_COMMITTED: id('PolicyCommitted(address,uint256,uint256,uint256)'),
@@ -1157,7 +1159,8 @@ function buildLogicFromCombination(rng, combo, options = {}) {
     notProbability = 0.2,
     groupNotProbability = 0.1,
     operators = ['AND', 'OR'],
-    maxNotOperators = Infinity
+    maxNotOperators = Infinity,
+    ensureMixedOperators = false
   } = options;
 
   const notBudget = Number.isFinite(maxNotOperators)
@@ -1172,9 +1175,28 @@ function buildLogicFromCombination(rng, combo, options = {}) {
 
   shuffleInPlace(rng, tokens);
 
+  const junctionCount = tokens.length - 1;
+  let operatorSequence = null;
+  if (
+    ensureMixedOperators &&
+    junctionCount >= 2 &&
+    operators.includes('AND') &&
+    operators.includes('OR')
+  ) {
+    // Guarantee at least one AND and one OR junction so the author-level
+    // expression always classifies as and_or_mixed.
+    operatorSequence = ['AND', 'OR'];
+    while (operatorSequence.length < junctionCount) {
+      operatorSequence.push(randomChoice(rng, operators));
+    }
+    shuffleInPlace(rng, operatorSequence);
+  }
+
   let expr = maybeNegate(rng, tokens[0], notProbability, notBudget);
   for (let i = 1; i < tokens.length; i += 1) {
-    const operator = randomChoice(rng, operators);
+    const operator = operatorSequence
+      ? operatorSequence[i - 1]
+      : randomChoice(rng, operators);
     const right = maybeNegate(rng, tokens[i], notProbability, notBudget);
     const grouped = `(${expr} ${operator === 'AND' ? '&' : '|'} ${right})`;
     expr = maybeNegate(rng, grouped, groupNotProbability, notBudget);
@@ -2121,7 +2143,7 @@ async function providerCommitAndProvision(policyData, contract) {
   }
 
   // Stage 1: commit policy on-chain (provider)
-  const [signer] = await ethers.getSigners();
+  const signer = await getExperimentSigner(contract.runner.provider);
   const gasPadEnabled = true;
   const commitPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.commit) : 0n;
   const contractWithSigner = contract.connect(signer);
@@ -2136,10 +2158,14 @@ async function providerCommitAndProvision(policyData, contract) {
     throw new Error('commitPolicy(uint256,uint256,string) overload is not available on the deployed contract.');
   }
 
-  const commitTx = gasPadEnabled
-    ? await commitWithPadFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', commitPadTarget)
-    : await commitFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata');
-  const commitReceipt = await commitTx.wait();
+  const commitTx = await retryRpc(
+    'commitPolicy send',
+    () => gasPadEnabled
+      ? commitWithPadFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', commitPadTarget)
+      : commitFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata'),
+    { initialDelayMs: 5000, maxAttempts: 8 }
+  );
+  const commitReceipt = await waitForTx(commitTx, 1, { label: `commitPolicy tx ${commitTx.hash}` });
   console.log('commit gasUsed:', commitReceipt.gasUsed.toString());
 
   const policyCommittedEvent = commitReceipt.logs.find(log => {
@@ -2150,8 +2176,12 @@ async function providerCommitAndProvision(policyData, contract) {
   const blockchainPolicyId = parsedEvent.args.policyId;
 
   // Stage 1c: register protected resource (provider)
-  const resourceTx = await contractWithSigner.registerResource(blockchainPolicyId);
-  const resourceReceipt = await resourceTx.wait();
+  const resourceTx = await retryRpc(
+    `registerResource send for policyId=${blockchainPolicyId}`,
+    () => contractWithSigner.registerResource(blockchainPolicyId),
+    { initialDelayMs: 5000, maxAttempts: 8 }
+  );
+  const resourceReceipt = await waitForTx(resourceTx, 1, { label: `registerResource tx ${resourceTx.hash}` });
   let resourceId;
   for (const log of resourceReceipt.logs) {
     try {
@@ -2259,7 +2289,9 @@ async function executePolicy(policyData, contract) {
 
   // Access receipt is from the TPS chain submission; fetch it via provider
   const provider = contract.runner.provider;
-  const accessReceipt = await provider.getTransactionReceipt(chainResult.transactionHash);
+  const accessReceipt = await waitForTransactionReceipt(provider, chainResult.transactionHash, {
+    label: `requestAccessBound receipt ${chainResult.transactionHash}`
+  });
 
   const accessEventLogs = (accessReceipt ? accessReceipt.logs : []).filter((log) =>
     ACCESS_EVENT_TOPICS.has(log.topics[0])

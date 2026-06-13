@@ -402,7 +402,9 @@ async function runExperiment(config = {}) {
     throw new Error('startPhase/phase must be between 1 and 3.');
   }
 
-  const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
+  const outputDir = path.resolve(
+    config.outputDir || path.join(__dirname, 'results', config.network || 'localhost')
+  );
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }

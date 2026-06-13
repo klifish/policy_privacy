@@ -33,8 +33,9 @@ const FEATURE_KEYS = Object.freeze([
   'commitLogsCount',
   'commitLogsSize',
   'accessLogsCount',
-  'accessLogsSize',
-  'blockDifference'
+  'accessLogsSize'
+  // blockDifference EXCLUDED: confounded harness artifact (execution order ×
+  // network drift), not a real policy-content channel. See core/feature_extractor.js.
 ]);
 
 /**

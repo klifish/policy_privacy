@@ -54,6 +54,9 @@ function parseCommonArgs(argv) {
       case '--unified-dir':
         config.unifiedDatasetDir = path.resolve(argv[++i]);
         break;
+      case '--network':
+        config.network = argv[++i];
+        break;
       case '--help':
       case '-h':
         config.help = true;
@@ -61,6 +64,8 @@ function parseCommonArgs(argv) {
       default:
         if (arg.startsWith('--unified-dir=')) {
           config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
+        } else if (arg.startsWith('--network=')) {
+          config.network = arg.split('=')[1];
         } else {
           // Unknown args are returned so callers can handle them
           config._unknown = config._unknown || [];
@@ -89,6 +94,7 @@ function printCommonHelp() {
   console.log('  --seed <value>                    Random seed for reproducibility');
   console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
   console.log('  --unified-dir <path>              Override unified artifact directory');
+  console.log('  --network <name>                  Network scope for artifact/result dirs (default: localhost)');
   console.log('  --help, -h                        Show this help message');
 }
 

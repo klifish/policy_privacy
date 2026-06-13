@@ -43,11 +43,12 @@ function freshNonce() {
     return String(Date.now() * 1000 + nonceCounter);
 }
 
-function buildTestApp(tpsContract) {
+function buildTestApp(tpsContract, accessGasPadTarget) {
     const app = express();
     app.use(express.json({ limit: '10mb' }));
     app.use('/tps', tpsRouter);
     if (tpsContract) app.locals.tpsContract = tpsContract;
+    if (accessGasPadTarget != null) app.locals.accessGasPadTarget = accessGasPadTarget;
     return app;
 }
 
@@ -263,6 +264,32 @@ describe('TPS Chain Submission', function () {
             const { requestId } = res.body.chainResult;
             const granted = await contract.isAccessGranted(BigInt(requestId));
             expect(granted).to.be.true;
+        });
+
+        it('access gas padding pins observable gas to the configured target', async () => {
+            const PAD_TARGET = 600000;
+            const padApp = buildTestApp(contract.connect(tpsSigner), PAD_TARGET);
+            const nonce = freshNonce();
+            const res = await request(padApp)
+                .post('/tps/prove')
+                .send({
+                    policyId: sharedPolicyId.toString(),
+                    resourceId: sharedResourceId.toString(),
+                    nonce,
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    submitOnChain: true
+                });
+
+            expect(res.status).to.equal(200);
+            const receipt = await ethers.provider.getTransactionReceipt(
+                res.body.chainResult.transactionHash
+            );
+            const gasUsed = Number(receipt.gasUsed);
+            // Padded to a ±10% randomized target; gas should land at/above the
+            // low end of that band and not blow far past it.
+            expect(gasUsed).to.be.greaterThan(PAD_TARGET * 0.9 - 5000);
+            expect(gasUsed).to.be.lessThan(PAD_TARGET * 1.1 + 30000);
         });
 
         it('returns chainResult.isGranted=false when attributes do not satisfy policy', async () => {

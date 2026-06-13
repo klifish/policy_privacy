@@ -133,7 +133,7 @@
     },
     {
       "name": "medium_nesting_focused",
-      "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance",
+      "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance; ensureMixedOperators feeds the author-level and_or_mixed bucket",
       "combos": [
         [
           "GR",
@@ -186,15 +186,16 @@
           "CC"
         ]
       ],
-      "minPolicies": 35,
-      "maxPolicies": 45,
+      "minPolicies": 50,
+      "maxPolicies": 60,
       "logicOptions": {
         "operators": [
           "AND",
           "OR"
         ],
         "notProbability": 0.3,
-        "groupNotProbability": 0.25
+        "groupNotProbability": 0.25,
+        "ensureMixedOperators": true
       },
       "whitelistBuckets": [
         8,
@@ -363,7 +364,8 @@
           "OR"
         ],
         "notProbability": 0.25,
-        "groupNotProbability": 0.2
+        "groupNotProbability": 0.2,
+        "ensureMixedOperators": true
       },
       "whitelistBuckets": [
         12,
@@ -382,7 +384,7 @@
     },
     {
       "name": "structural_variants",
-      "comment": "Duplicate semantics with different structure/execution to feed PI pairs",
+      "comment": "Duplicate semantics with different structure/execution to feed PI pairs; OR-only operators make these policies a deterministic or_only contribution",
       "combos": [
         [
           "DS",
@@ -429,9 +431,7 @@
       "maxPolicies": 70,
       "logicOptions": {
         "operators": [
-          "OR",
-          "OR",
-          "AND"
+          "OR"
         ],
         "notProbability": 0.15,
         "groupNotProbability": 0.05
@@ -657,6 +657,8 @@
   },
   "notes": [
     "This configuration emits ~315 policies with dedicated layers for SPP balance (including nesting depth) and a PI-focused structural variant stage.",
+    "logicStructure is classified at the author level (logicOriginal): predicate bindings like (DS & P[ICD10]) are atomic units, so or_only policies remain or_only after normalization. nestingDepth stays execution-level (logicNormalized).",
+    "ensureMixedOperators (medium_nesting_focused, deep_nested_large) guarantees at least one AND and one OR junction in 3+ term combos, deterministically feeding the author-level and_or_mixed bucket.",
     "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus balanced nesting depths.",
     "CU (Commercial Use) has been removed from all combos due to circuit N=6 limitation (only GR, DS, RS, POA, GS, CC are supported).",
     "Circuit upgraded to DEPTH=20, enabling up to 5-predicate combinations (19 tokens) for maximum flexibility.",

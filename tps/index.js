@@ -51,6 +51,9 @@ app.use('/tps', tpsRouter);
     const provider = new ethers.JsonRpcProvider(nodeUrl);
     const tpsSigner = new ethers.Wallet(privateKey, provider);
     app.locals.tpsContract = new ethers.Contract(contractAddress, abi, tpsSigner);
+    app.locals.tpsSignerAddress = tpsSigner.address;
+    app.locals.contractAddress = contractAddress;
+    app.locals.nodeUrl = nodeUrl;
     console.log(`[TPS] Chain signer initialised: ${tpsSigner.address} → ${contractAddress}`);
 })();
 

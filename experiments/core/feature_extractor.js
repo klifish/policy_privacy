@@ -61,10 +61,18 @@ function extractFeatures(executionResults, options = {}) {
       accessLogsCount: features.accessLogsCount,
       accessLogsSize: features.accessLogsSize,
 
-      // Timing features
+      // Labels / metadata (NOT used as attack features)
+      // blockDifference (accessBlock - commitBlock) is EXCLUDED from modeling:
+      // it reflects network congestion at execution time, not policy content.
+      // Because the harness executes policies in layer order (simple policies
+      // first, complex later) while network state drifts, term count and
+      // blockDifference become spuriously correlated via execution time. No such
+      // channel exists in a real deployment where policies are not batched by
+      // complexity. Kept here only for diagnostics.
       blockDifference: features.blockDifference,
 
-      // Labels for classification (NOT used as features)
+      // Group key for policy-disjoint train/test split
+      policyIndex: result.policyIndex,
       duoTerm: result.duoTerm,
       duoTermCodes: result.duoTermCodes || [], // Array of all DUO terms in the policy
       ontologyNamespace: result.ontologyNamespace,
@@ -86,7 +94,7 @@ function normalizeFeatures(features) {
   // Include all observable features for adversary modeling
   // Note: Gas features may show ~360 gas difference due to padding limitations
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime'].includes(key)
+    key => !['policyIndex', 'duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime', 'blockDifference'].includes(key)
   );
   console.log('Normalizing features:', featureNames.join(', '));
   // const featureNames = ["commitGasUsed", "accessGasUsed"];
@@ -122,15 +130,34 @@ function normalizeFeatures(features) {
 }
 
 /**
- * Split data into train and test sets
+ * Split data into train and test sets.
+ *
+ * When rows carry a policyIndex, the split is policy-disjoint (group split):
+ * all executions of one policy land on the same side. Otherwise, repeated
+ * executions of the same policy leak per-policy fingerprints (e.g. the
+ * commitment's calldata byte pattern) from train to test, and the attack
+ * measures policy re-identification instead of content inference.
  */
 function splitTrainTest(data, testRatio = 0.3) {
-  const shuffled = [...data].sort(() => Math.random() - 0.5);
-  const splitIndex = Math.floor(shuffled.length * (1 - testRatio));
+  const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
+
+  if (!hasGroups) {
+    const shuffled = [...data].sort(() => Math.random() - 0.5);
+    const splitIndex = Math.floor(shuffled.length * (1 - testRatio));
+    return {
+      train: shuffled.slice(0, splitIndex),
+      test: shuffled.slice(splitIndex)
+    };
+  }
+
+  const groups = [...new Set(data.map(d => d.policyIndex))];
+  const shuffledGroups = groups.sort(() => Math.random() - 0.5);
+  const splitIndex = Math.floor(shuffledGroups.length * (1 - testRatio));
+  const trainGroups = new Set(shuffledGroups.slice(0, splitIndex));
 
   return {
-    train: shuffled.slice(0, splitIndex),
-    test: shuffled.slice(splitIndex)
+    train: data.filter(d => trainGroups.has(d.policyIndex)),
+    test: data.filter(d => !trainGroups.has(d.policyIndex))
   };
 }
 
@@ -140,12 +167,14 @@ function splitTrainTest(data, testRatio = 0.3) {
 function prepareClassificationData(features, labelKey) {
   const X = features.map(f => {
     const x = { ...f };
+    delete x.policyIndex;
     delete x.duoTerm;
     delete x.duoTermCodes;
     delete x.ontologyNamespace;
     delete x.ontologyValue;
     delete x.icd10Chapter;
     delete x.satisfy;
+    delete x.blockDifference; // confounded harness artifact, see extractFeatures
     return Object.values(x);
   });
 
@@ -159,7 +188,7 @@ function prepareClassificationData(features, labelKey) {
  */
 function calculateFeatureStats(features) {
   const featureNames = Object.keys(features[0]).filter(
-    key => !['duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy'].includes(key)
+    key => !['policyIndex', 'duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy'].includes(key)
   );
 
   const stats = {};

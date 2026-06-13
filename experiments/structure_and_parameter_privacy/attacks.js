@@ -19,8 +19,9 @@ const FEATURE_KEYS = [
   'commitLogsCount',
   'commitLogsSize',
   'accessLogsCount',
-  'accessLogsSize',
-  'blockDifference'
+  'accessLogsSize'
+  // blockDifference EXCLUDED: confounded harness artifact (execution order ×
+  // network drift), not a real policy-content channel. See core/feature_extractor.js.
 ];
 
 /**
@@ -152,14 +153,31 @@ function balanceDataset(class0Data, class1Data, method = 'both') {
 }
 
 /**
- * Split data into train/test sets
+ * Split data into train/test sets.
+ *
+ * When rows carry a policyIndex, the split is policy-disjoint (all executions of
+ * one policy land on the same side) so the attack measures structure inference
+ * on unseen policies rather than re-identifying policies seen in training.
+ * Falls back to a plain row-level split when no policyIndex is present.
  */
 function trainTestSplit(data, testRatio = 0.3) {
-  const shuffled = [...data].sort(() => Math.random() - 0.5);
-  const testSize = Math.floor(data.length * testRatio);
+  const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
+
+  if (!hasGroups) {
+    const shuffled = [...data].sort(() => Math.random() - 0.5);
+    const testSize = Math.floor(data.length * testRatio);
+    return {
+      train: shuffled.slice(testSize),
+      test: shuffled.slice(0, testSize)
+    };
+  }
+
+  const groups = [...new Set(data.map(d => d.policyIndex))].sort(() => Math.random() - 0.5);
+  const testGroupCount = Math.floor(groups.length * testRatio);
+  const testGroups = new Set(groups.slice(0, testGroupCount));
   return {
-    train: shuffled.slice(testSize),
-    test: shuffled.slice(0, testSize)
+    train: data.filter(d => !testGroups.has(d.policyIndex)),
+    test: data.filter(d => testGroups.has(d.policyIndex))
   };
 }
 
@@ -286,15 +304,17 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       console.log(`\nClassifying ${class0} vs ${class1} (${originalCount0} vs ${originalCount1} samples, ratio ${imbalanceRatio.toFixed(2)}:1)`);
 
-      // Prepare data for balancing
+      // Prepare data, carrying policyIndex so the split can be policy-disjoint.
       const class0Data = data0Raw.map(r => ({
         features: featuresToArray(extractFeatures(r)),
-        label: 0
+        label: 0,
+        policyIndex: r.policyIndex
       }));
 
       const class1Data = data1Raw.map(r => ({
         features: featuresToArray(extractFeatures(r)),
-        label: 1
+        label: 1,
+        policyIndex: r.policyIndex
       }));
 
       // Skip if insufficient data
@@ -313,26 +333,31 @@ function runSupervisedAttacks(executionResults, config = {}) {
         continue;
       }
 
-      // Apply balancing
-      const balanced = balanceDataset(class0Data, class1Data, balanceMethod);
-      const balancedData = [...balanced.class0, ...balanced.class1];
+      // Split FIRST (policy-disjoint), then balance ONLY the training set.
+      // Order matters: balancing before splitting would let oversampled copies
+      // of the same row land in both train and test, leaking the test set. We
+      // also keep the test set at its natural class distribution so reported
+      // metrics reflect real prevalence rather than an artificially balanced one.
+      const allData = [...class0Data, ...class1Data];
+      const { train: rawTrain, test } = trainTestSplit(allData, testRatio);
 
-      const balancedCount0 = balanced.class0.length;
-      const balancedCount1 = balanced.class1.length;
+      const trainByClass = balanceDataset(
+        rawTrain.filter(d => d.label === 0),
+        rawTrain.filter(d => d.label === 1),
+        balanceMethod
+      );
+      const train = [...trainByClass.class0, ...trainByClass.class1];
+
+      const balancedCount0 = trainByClass.class0.length;
+      const balancedCount1 = trainByClass.class1.length;
 
       if (balanceMethod !== 'none') {
-        console.log(`  Balanced: ${balancedCount0} vs ${balancedCount1} samples (from ${originalCount0} vs ${originalCount1})`);
+        console.log(`  Train balanced: ${balancedCount0} vs ${balancedCount1}; test left natural (${test.filter(d => d.label === 0).length} vs ${test.filter(d => d.label === 1).length})`);
       }
 
-      // Extract features and labels from balanced data
-      const features = balancedData.map(d => d.features);
-      const labels = balancedData.map(d => d.label);
-
-      // Train/test split
-      const { train, test } = trainTestSplit(
-        features.map((f, i) => ({ features: f, label: labels[i] })),
-        testRatio
-      );
+      // Permutation-test inputs use the (unbalanced) full pool for diagnostics.
+      const features = allData.map(d => d.features);
+      const labels = allData.map(d => d.label);
 
       // Logistic Regression
       const lr = new LogisticRegression();

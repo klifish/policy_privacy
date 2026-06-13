@@ -172,7 +172,11 @@ function analyzeLogicShape(logic = '') {
 // ============================================================================
 
 /**
- * Classify logic structure (independent of predicates)
+ * Classify logic structure (independent of predicates).
+ * Callers must pass stats computed from the author-level expression
+ * (logicOriginal): predicate normalization injects '&' for each
+ * (ATTR & P[namespace]) binding, which would misclassify pure-OR policies
+ * as and_or_mixed.
  */
 function classifyLogicStructure(stats) {
   const { hasAnd, hasOr, hasNot, notCount } = stats;
@@ -291,11 +295,17 @@ const classifyParameterType = classifySetSize;
  * Annotate a policy with all classification dimensions
  */
 function annotatePolicy(policy) {
-  const logic = policy?.semantics?.logicNormalized || policy?.semantics?.logicOriginal || '';
-  const stats = analyzeLogicShape(logic);
+  // Two-level classification scheme:
+  // - logicStructure: author-level (logicOriginal) — predicate bindings such as
+  //   (DS & P[ICD10]) are atomic units, so the injected '&' must not affect it
+  // - nestingDepth / predicateCount: execution-level (logicNormalized)
+  const normalized = policy?.semantics?.logicNormalized || policy?.semantics?.logicOriginal || '';
+  const original = policy?.semantics?.logicOriginal || normalized;
+  const stats = analyzeLogicShape(normalized);
+  const statsOriginal = analyzeLogicShape(original);
 
   // Apply all classifications
-  policy.logicStructure = classifyLogicStructure(stats);
+  policy.logicStructure = classifyLogicStructure(statsOriginal);
   policy.nestingDepth = classifyNestingDepth(stats);
   policy.predicateCount = classifyPredicateCount(stats);
   policy.setSize = classifySetSize(policy);
