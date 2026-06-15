@@ -585,7 +585,13 @@ async function runExperiment(config = {}) {
       });
     }
     return records;
-  }, { seeds: multiseedSeeds, permutationIterations: permIterations });
+  }, {
+    seeds: multiseedSeeds,
+    permutationIterations: permIterations,
+    // controlled_difference is a positive control (similarity 0, intentionally
+    // distinguishable): report it but do not gate the privacy verdict on it.
+    positiveControlKeys: ['controlled_difference']
+  });
   console.log = origLog;
   progress.completeStep();
   printVerdict('Policy Indistinguishability', verdict);

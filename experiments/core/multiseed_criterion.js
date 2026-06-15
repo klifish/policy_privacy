@@ -32,7 +32,13 @@ const DEFAULT_CRITERION = Object.freeze({
   // overall verdict, so a small subclass's sampling noise cannot decide PASS/
   // FAIL. The large pooled scope ('overall') and adequately-sized subclasses
   // still gate. 0 disables the rule.
-  minTestSamples: 20
+  minTestSamples: 20,
+  // Positive-control keys: tasks that are intentionally distinguishable (e.g.
+  // PI's controlled_difference pair, similarity 0), so a high AUC is the
+  // *expected* sanity-check signal, not leakage. Their metrics and `passed` are
+  // still computed and reported, but they do NOT gate overallPassed (mirrors
+  // `underpowered`). Empty by default, so PCH/SPP are unaffected.
+  positiveControlKeys: []
 });
 
 // Deterministic PRNG so each seed is reproducible. Patches Math.random for the
@@ -118,16 +124,25 @@ function evaluateMultiseed(runOnce, opts = {}) {
     const medianN = median(b.n);
     const underpowered = criterion.minTestSamples > 0 && medianN != null
       && medianN < criterion.minTestSamples;
+    // Positive controls are reported but do not gate (see DEFAULT_CRITERION).
+    const positiveControl = Array.isArray(criterion.positiveControlKeys)
+      && criterion.positiveControlKeys.includes(key);
 
     const aucOk = auc.n > 0 ? auc.mean <= criterion.aucMax : true;
     const sigOk = sigFraction != null ? sigFraction < criterion.sigFractionMax : true;
+    // `passed` stays the honest per-task verdict (a control reads as passed:false
+    // = "distinguishable", the desired sanity signal). Gating exclusion is carried
+    // separately by `nonGating` so the JSON shows both facts.
     const passed = (!judgeable || underpowered) ? null : (aucOk && sigOk);
+    const nonGating = underpowered || positiveControl;
 
     tasks.push({
       key,
       passed,
       skipped: !judgeable,
       underpowered,
+      positiveControl,
+      nonGating,
       medianTestN: medianN,
       auc,
       advantage: adv,
@@ -137,7 +152,7 @@ function evaluateMultiseed(runOnce, opts = {}) {
     });
   }
 
-  const judged = tasks.filter(t => t.passed !== null);
+  const judged = tasks.filter(t => t.passed !== null && !t.nonGating);
   const overallPassed = judged.length > 0 && judged.every(t => t.passed);
 
   return { overallPassed, criterion, tasks };
@@ -149,12 +164,16 @@ function printVerdict(title, verdict) {
   console.log(`\n${title} — multi-seed verdict (${c.seeds} seeds, policy-disjoint)`);
   console.log(`Criterion: AUC_mean ≤ ${c.aucMax} AND significant-seed fraction < ${c.sigFractionMax} (perm α=${c.permAlpha}); advantage reported, not gating.`);
   console.log(`Underpowered tasks (median test n < ${c.minTestSamples}) are reported but do not gate.`);
+  console.log(`Positive-control tasks are reported but do not gate (expected to be distinguishable).`);
   console.log('Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict');
   console.log('--------------------------------------+-----------------+-----------------+-------------+------+------+--------');
   for (const t of verdict.tasks) {
     const f = (ms) => Number.isNaN(ms.mean) ? '   n/a       ' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
     const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
-    const v = t.skipped ? 'SKIP' : (t.underpowered ? '— (underpowered)' : (t.passed ? '✓ PASS' : '✗ FAIL'));
+    const v = t.skipped ? 'SKIP'
+      : t.positiveControl ? '— (control)'
+      : t.underpowered ? '— (underpowered)'
+      : (t.passed ? '✓ PASS' : '✗ FAIL');
     const permMean = Number.isNaN(t.permPValue.mean) ? '  n/a  ' : t.permPValue.mean.toFixed(3);
     const medN = t.medianTestN == null ? ' n/a' : String(t.medianTestN);
     console.log(`${t.key.padEnd(37)} | ${f(t.auc).padEnd(15)} | ${f(t.advantage).padEnd(15)} | ${permMean.padEnd(11)} | ${pct.padEnd(4)} | ${medN.padEnd(4)} | ${v}`);
