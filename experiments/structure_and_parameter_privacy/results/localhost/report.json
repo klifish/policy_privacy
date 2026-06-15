@@ -1,0 +1,641 @@
+{
+  "experiment": "Structure & Parameter Privacy",
+  "timestamp": "2026-06-13T10:28:53.747Z",
+  "config": {
+    "policyCount": 120,
+    "executionsPerPolicy": 3,
+    "satisfyRatio": 0.5,
+    "testRatio": 0.3,
+    "seed": "spp-experiment",
+    "balanceMethod": "undersample"
+  },
+  "dataset": {
+    "datasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/localhost/policy_definitions.json",
+    "executionResultsPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/localhost/spp_dataset.json"
+  },
+  "thresholds": {
+    "maxAdvantage": 0.05,
+    "maxAUC": 0.55,
+    "minPermutationPValue": 0.05,
+    "maxMMD": 0.05,
+    "minKSPValue": 0.05,
+    "minSilhouette": 0.3
+  },
+  "attacks": {
+    "supervised": {
+      "structureType": {
+        "targetAttribute": "structureType",
+        "classCount": 1,
+        "classes": [
+          "and_only"
+        ],
+        "results": []
+      },
+      "predicateCombo": {
+        "targetAttribute": "predicateCombo",
+        "classCount": 2,
+        "classes": [
+          "none",
+          "single"
+        ],
+        "results": [
+          {
+            "targetAttribute": "predicateCombo",
+            "class0": "none",
+            "class1": "single",
+            "sampleCount": 20,
+            "originalCount0": 4,
+            "originalCount1": 16,
+            "balancedCount0": 2,
+            "balancedCount1": 2,
+            "imbalanceRatio": 4,
+            "balanceMethod": "undersample",
+            "trainSize": 4,
+            "testSize": 6,
+            "logisticRegression": {
+              "evaluation": {
+                "accuracy": 0.5,
+                "advantage": 0,
+                "precision": 1,
+                "recall": 0.25,
+                "f1": 0.4,
+                "confusion": {
+                  "tp": 1,
+                  "tn": 2,
+                  "fp": 0,
+                  "fn": 3
+                }
+              },
+              "weights": [
+                -19853.730000000065,
+                3.9400000000000004,
+                10592.028750000112,
+                0,
+                8,
+                0.009999999999999998,
+                1.8000000000000003,
+                0.019999999999999997,
+                2.96
+              ],
+              "permutationTest": {
+                "pValue": 0.742,
+                "actualAccuracy": 0.6666666666666666,
+                "iterations": 500
+              }
+            },
+            "randomForest": {
+              "evaluation": {
+                "accuracy": 0.3333333333333333,
+                "advantage": 0.16666666666666669,
+                "precision": 0,
+                "recall": 0,
+                "f1": 0,
+                "confusion": {
+                  "tp": 0,
+                  "tn": 2,
+                  "fp": 0,
+                  "fn": 4
+                }
+              },
+              "nTrees": 50
+            }
+          }
+        ]
+      },
+      "paramType": {
+        "targetAttribute": "paramType",
+        "classCount": 2,
+        "classes": [
+          "none",
+          "small"
+        ],
+        "results": [
+          {
+            "targetAttribute": "paramType",
+            "class0": "none",
+            "class1": "small",
+            "sampleCount": 20,
+            "originalCount0": 4,
+            "originalCount1": 16,
+            "balancedCount0": 2,
+            "balancedCount1": 2,
+            "imbalanceRatio": 4,
+            "balanceMethod": "undersample",
+            "trainSize": 4,
+            "testSize": 6,
+            "logisticRegression": {
+              "evaluation": {
+                "accuracy": 0.5,
+                "advantage": 0,
+                "precision": 0.6666666666666666,
+                "recall": 0.5,
+                "f1": 0.5714285714285715,
+                "confusion": {
+                  "tp": 2,
+                  "tn": 1,
+                  "fp": 1,
+                  "fn": 2
+                }
+              },
+              "weights": [
+                -3496.3425000000025,
+                -5.91,
+                1784.819999999998,
+                0,
+                -12,
+                -0.015,
+                -2.7,
+                -0.03,
+                -4.4399999999999995
+              ],
+              "permutationTest": {
+                "pValue": 0.722,
+                "actualAccuracy": 0.6666666666666666,
+                "iterations": 500
+              }
+            },
+            "randomForest": {
+              "evaluation": {
+                "accuracy": 0.3333333333333333,
+                "advantage": 0.16666666666666669,
+                "precision": 0.5,
+                "recall": 0.25,
+                "f1": 0.3333333333333333,
+                "confusion": {
+                  "tp": 1,
+                  "tn": 1,
+                  "fp": 1,
+                  "fn": 3
+                }
+              },
+              "nTrees": 50
+            }
+          }
+        ]
+      }
+    },
+    "statistical": {
+      "structureType": {
+        "targetAttribute": "structureType",
+        "classCount": 1,
+        "classes": [
+          "and_only"
+        ],
+        "results": []
+      },
+      "predicateCombo": {
+        "targetAttribute": "predicateCombo",
+        "classCount": 2,
+        "classes": [
+          "none",
+          "single"
+        ],
+        "results": [
+          {
+            "targetAttribute": "predicateCombo",
+            "class0": "none",
+            "class1": "single",
+            "n0": 4,
+            "n1": 16,
+            "mmd": {
+              "mmd": 0,
+              "n": 4,
+              "m": 16
+            },
+            "ksTests": {
+              "commitGasUsed": {
+                "statistic": 0.3125,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitCalldataLength": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessGasUsed": {
+                "statistic": 0.375,
+                "pValue": 0.8131393194811982,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessCalldataLength": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "proofSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitLogsCount": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitLogsSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessLogsCount": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessLogsSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              }
+            },
+            "avgKsPValue": 0.9792377021645776
+          }
+        ]
+      },
+      "paramType": {
+        "targetAttribute": "paramType",
+        "classCount": 2,
+        "classes": [
+          "none",
+          "small"
+        ],
+        "results": [
+          {
+            "targetAttribute": "paramType",
+            "class0": "none",
+            "class1": "small",
+            "n0": 4,
+            "n1": 16,
+            "mmd": {
+              "mmd": 0,
+              "n": 4,
+              "m": 16
+            },
+            "ksTests": {
+              "commitGasUsed": {
+                "statistic": 0.3125,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitCalldataLength": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessGasUsed": {
+                "statistic": 0.375,
+                "pValue": 0.8131393194811982,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessCalldataLength": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "proofSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitLogsCount": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "commitLogsSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessLogsCount": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              },
+              "accessLogsSize": {
+                "statistic": 0,
+                "pValue": 1,
+                "n1": 4,
+                "n2": 16
+              }
+            },
+            "avgKsPValue": 0.9792377021645776
+          }
+        ]
+      }
+    },
+    "clustering": {
+      "structureType": {
+        "targetAttribute": "structureType",
+        "trueClassCount": 1,
+        "results": [
+          {
+            "k": 2,
+            "silhouette": 0.571552268378264,
+            "ari": null,
+            "iterations": 1,
+            "clusterSizes": [
+              7,
+              13
+            ]
+          },
+          {
+            "k": 3,
+            "silhouette": 0.5389624676571522,
+            "ari": null,
+            "iterations": 2,
+            "clusterSizes": [
+              4,
+              9,
+              7
+            ]
+          },
+          {
+            "k": 4,
+            "silhouette": 0.5575586390473494,
+            "ari": null,
+            "iterations": 2,
+            "clusterSizes": [
+              5,
+              7,
+              5,
+              3
+            ]
+          },
+          {
+            "k": 5,
+            "silhouette": 0.5855739956074146,
+            "ari": null,
+            "iterations": 2,
+            "clusterSizes": [
+              5,
+              7,
+              1,
+              4,
+              3
+            ]
+          }
+        ]
+      },
+      "predicateCombo": {
+        "targetAttribute": "predicateCombo",
+        "trueClassCount": 2,
+        "results": [
+          {
+            "k": 2,
+            "silhouette": 0.571552268378264,
+            "ari": 0.028760813391753823,
+            "iterations": 1,
+            "clusterSizes": [
+              7,
+              13
+            ]
+          },
+          {
+            "k": 3,
+            "silhouette": 0.5426687257705699,
+            "ari": null,
+            "iterations": 2,
+            "clusterSizes": [
+              5,
+              2,
+              13
+            ]
+          },
+          {
+            "k": 4,
+            "silhouette": 0.4751864688445827,
+            "ari": null,
+            "iterations": 1,
+            "clusterSizes": [
+              13,
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "k": 5,
+            "silhouette": 0.5823360301105086,
+            "ari": null,
+            "iterations": 2,
+            "clusterSizes": [
+              3,
+              5,
+              2,
+              4,
+              6
+            ]
+          }
+        ]
+      },
+      "paramType": {
+        "targetAttribute": "paramType",
+        "trueClassCount": 2,
+        "results": [
+          {
+            "k": 2,
+            "silhouette": 0.571552268378264,
+            "ari": 0.028760813391753823,
+            "iterations": 2,
+            "clusterSizes": [
+              7,
+              13
+            ]
+          },
+          {
+            "k": 3,
+            "silhouette": 0.5426687257705699,
+            "ari": null,
+            "iterations": 3,
+            "clusterSizes": [
+              2,
+              5,
+              13
+            ]
+          },
+          {
+            "k": 4,
+            "silhouette": 0.520740572346875,
+            "ari": null,
+            "iterations": 1,
+            "clusterSizes": [
+              6,
+              7,
+              1,
+              6
+            ]
+          },
+          {
+            "k": 5,
+            "silhouette": 0.5814090725323997,
+            "ari": null,
+            "iterations": 5,
+            "clusterSizes": [
+              5,
+              3,
+              7,
+              1,
+              4
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "evaluation": {
+    "supervised": {
+      "structureType": {
+        "passed": true,
+        "failures": []
+      },
+      "predicateCombo": {
+        "passed": false,
+        "failures": [
+          {
+            "comparison": "none vs single",
+            "attack": "Random Forest",
+            "metric": "advantage",
+            "value": 0.16666666666666669,
+            "threshold": 0.05
+          }
+        ]
+      },
+      "paramType": {
+        "passed": false,
+        "failures": [
+          {
+            "comparison": "none vs small",
+            "attack": "Random Forest",
+            "metric": "advantage",
+            "value": 0.16666666666666669,
+            "threshold": 0.05
+          }
+        ]
+      }
+    },
+    "statistical": {
+      "structureType": {
+        "passed": true,
+        "failures": []
+      },
+      "predicateCombo": {
+        "passed": true,
+        "failures": []
+      },
+      "paramType": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    "clustering": {
+      "structureType": {
+        "passed": false,
+        "failures": [
+          {
+            "k": 2,
+            "metric": "silhouette",
+            "value": 0.571552268378264,
+            "threshold": 0.3
+          },
+          {
+            "k": 3,
+            "metric": "silhouette",
+            "value": 0.5389624676571522,
+            "threshold": 0.3
+          },
+          {
+            "k": 4,
+            "metric": "silhouette",
+            "value": 0.5575586390473494,
+            "threshold": 0.3
+          },
+          {
+            "k": 5,
+            "metric": "silhouette",
+            "value": 0.5855739956074146,
+            "threshold": 0.3
+          }
+        ]
+      },
+      "predicateCombo": {
+        "passed": false,
+        "failures": [
+          {
+            "k": 2,
+            "metric": "silhouette",
+            "value": 0.571552268378264,
+            "threshold": 0.3
+          },
+          {
+            "k": 3,
+            "metric": "silhouette",
+            "value": 0.5426687257705699,
+            "threshold": 0.3
+          },
+          {
+            "k": 4,
+            "metric": "silhouette",
+            "value": 0.4751864688445827,
+            "threshold": 0.3
+          },
+          {
+            "k": 5,
+            "metric": "silhouette",
+            "value": 0.5823360301105086,
+            "threshold": 0.3
+          }
+        ]
+      },
+      "paramType": {
+        "passed": false,
+        "failures": [
+          {
+            "k": 2,
+            "metric": "silhouette",
+            "value": 0.571552268378264,
+            "threshold": 0.3
+          },
+          {
+            "k": 3,
+            "metric": "silhouette",
+            "value": 0.5426687257705699,
+            "threshold": 0.3
+          },
+          {
+            "k": 4,
+            "metric": "silhouette",
+            "value": 0.520740572346875,
+            "threshold": 0.3
+          },
+          {
+            "k": 5,
+            "metric": "silhouette",
+            "value": 0.5814090725323997,
+            "threshold": 0.3
+          }
+        ]
+      }
+    },
+    "overallPassed": false
+  },
+  "conclusion": "Potential leakage detected in structure or parameters. Further hardening recommended."
+}

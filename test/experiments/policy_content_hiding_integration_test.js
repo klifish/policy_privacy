@@ -43,21 +43,28 @@ describe('Policy Content Hiding Integration (Minimal)', function () {
 
     // Verify report structure
     expect(report).to.have.property('experiment', 'Policy Content Hiding Evaluation');
-    expect(report).to.have.property('evaluation');
-    expect(report).to.have.property('privacyCheck');
+    expect(report).to.have.property('diagnostics');
+    expect(report.diagnostics).to.have.property('evaluation');
+    expect(report.diagnostics).to.have.property('privacyCheck');
+    expect(report).to.have.property('multiseedVerdict');
+    expect(report).to.have.property('overallPassed');
     expect(report).to.have.property('conclusion');
 
-    // Verify evaluation results
-    expect(report.evaluation.results).to.be.an('array');
-    expect(report.evaluation.results.length).to.be.greaterThan(0);
+    // Verify evaluation results (single-split diagnostic)
+    expect(report.diagnostics.evaluation.results).to.be.an('array');
+    expect(report.diagnostics.evaluation.results.length).to.be.greaterThan(0);
 
-    // Verify privacy check
-    expect(report.privacyCheck).to.have.property('overallPassed');
-    expect(report.privacyCheck.results).to.be.an('array');
+    // Verify privacy check (single-split diagnostic)
+    expect(report.diagnostics.privacyCheck).to.have.property('overallPassed');
+    expect(report.diagnostics.privacyCheck.results).to.be.an('array');
+
+    // Authoritative verdict drives the top-level result
+    expect(report.overallPassed).to.equal(report.multiseedVerdict.overallPassed);
 
     console.log('\nExperiment Summary:');
     console.log(`Total executions: ${report.config.totalExecutions}`);
-    console.log(`Privacy check: ${report.privacyCheck.overallPassed ? 'PASS' : 'FAIL'}`);
+    console.log(`Privacy check (diagnostic): ${report.diagnostics.privacyCheck.overallPassed ? 'PASS' : 'FAIL'}`);
+    console.log(`Verdict (multi-seed): ${report.overallPassed ? 'PASS' : 'FAIL'}`);
     console.log(`Conclusion: ${report.conclusion}`);
   });
 });

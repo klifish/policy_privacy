@@ -508,8 +508,11 @@ async function runExperiment(config = {}) {
       totalExecutions,
       testRatio
     },
-    evaluation,
-    privacyCheck,              // single-split diagnostic only
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      evaluation,
+      privacyCheck
+    },
     multiseedVerdict: verdict, // authoritative
     featureStats,
     overallPassed: verdict.overallPassed,
@@ -567,7 +570,7 @@ function generateReadableReport(report) {
   lines.push('> Accuracy metric removed: misleading for imbalanced datasets in privacy evaluation.');
   lines.push('');
 
-  for (const result of report.evaluation.results) {
+  for (const result of report.diagnostics.evaluation.results) {
     lines.push(`### ${result.task}`);
     lines.push('');
     lines.push(`- **Type:** ${result.type}`);
@@ -592,11 +595,11 @@ function generateReadableReport(report) {
 
   lines.push('## Privacy Threshold Check');
   lines.push('');
-  lines.push(`- **AUC Threshold:** ≤ ${report.privacyCheck.thresholds.aucMax}`);
-  lines.push(`- **Advantage Threshold:** ≤ ${report.privacyCheck.thresholds.advantageMax}`);
+  lines.push(`- **AUC Threshold:** ≤ ${report.diagnostics.privacyCheck.thresholds.aucMax}`);
+  lines.push(`- **Advantage Threshold:** ≤ ${report.diagnostics.privacyCheck.thresholds.advantageMax}`);
   lines.push('');
 
-  for (const result of report.privacyCheck.results) {
+  for (const result of report.diagnostics.privacyCheck.results) {
     const status = result.passed ? '✓ PASS' : '✗ FAIL';
     lines.push(`### ${result.task}: ${status}`);
     lines.push('');

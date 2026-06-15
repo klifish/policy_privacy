@@ -42,8 +42,9 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-# Experiment results
-experiments/**/results/
+# Experiment results are tracked in git for reproducibility.
+# Only the bulky, regenerable pi_pairs intermediate is excluded.
+experiments/**/results/**/pi_pairs.json
 experiments/**/test_results/
 experiments/unified_dataset_artifacts/
 # Local smoke-run dataset (transient; Amoy datasets are committed for reproducibility)

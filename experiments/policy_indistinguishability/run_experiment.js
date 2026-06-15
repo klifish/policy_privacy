@@ -329,7 +329,7 @@ function renderMarkdownReport(report) {
   ['Level I', 'Level II', 'Level III'].forEach((level) => {
     lines.push(`### ${level}`);
     lines.push('');
-    report.privacySummary.checks
+    report.diagnostics.privacySummary.checks
       .filter((check) => check.level === level)
       .forEach((check) => {
         if (check.skipped) {
@@ -351,8 +351,8 @@ function renderMarkdownReport(report) {
 
   lines.push('## Two-sample Diagnostics');
   lines.push('');
-  if (report.statistics && report.statistics.aggregated && report.statistics.aggregated.length > 0) {
-    report.statistics.aggregated.forEach((entry) => {
+  if (report.diagnostics.statistics && report.diagnostics.statistics.aggregated && report.diagnostics.statistics.aggregated.length > 0) {
+    report.diagnostics.statistics.aggregated.forEach((entry) => {
       lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
       Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
         lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
@@ -365,8 +365,8 @@ function renderMarkdownReport(report) {
 
   lines.push('## Conclusion');
   lines.push('');
-  const label = report.privacySummary.overallPassed ? '✓ PASS' : '✗ FAIL';
-  lines.push(`**Status:** ${label}`);
+  const label = report.overallPassed ? '✓ PASS' : '✗ FAIL';
+  lines.push(`**Status:** ${label} _(multi-seed, policy-disjoint; single split above is diagnostic)_`);
   lines.push('');
   lines.push(report.conclusion);
   lines.push('');
@@ -634,11 +634,14 @@ async function runExperiment(config = {}) {
     },
     pairTargets,
     pairCounts,
-    singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
-    multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
-    twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
-    statistics: statisticsResults,
-    privacySummary,            // single-split diagnostic
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      privacySummary,
+      singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
+      multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
+      twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
+      statistics: statisticsResults
+    },
     multiseedVerdict: verdict, // authoritative
     overallPassed: verdict.overallPassed,
     conclusion: verdict.overallPassed

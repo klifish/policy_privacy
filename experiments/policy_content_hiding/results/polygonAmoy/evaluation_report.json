@@ -1,0 +1,560 @@
+{
+  "experiment": "Policy Content Hiding Evaluation",
+  "timestamp": "2026-06-15T09:05:21.496Z",
+  "config": {
+    "numDuoTermsRequested": 6,
+    "numDuoTermsObserved": 6,
+    "numIcd10Chapters": 11,
+    "executionsPerPolicy": 2,
+    "totalExecutions": 2004,
+    "testRatio": 0.3
+  },
+  "diagnostics": {
+    "note": "Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.",
+    "evaluation": {
+      "timestamp": "2026-06-15T09:05:15.868Z",
+      "results": [
+        {
+          "task": "DUO Term 0 Presence",
+          "type": "binary",
+          "accuracy": 0.8144853875476493,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "auc": 0.5061013399440023,
+          "advantage": 0.3144853875476493,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 146,
+            "testTotal": 787,
+            "testRatio": 0.1855146124523507
+          }
+        },
+        {
+          "task": "DUO Term 1 Presence",
+          "type": "binary",
+          "accuracy": 0.47395171537484115,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "auc": 0.4986077113364698,
+          "advantage": -0.026048284625158846,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 414,
+            "testTotal": 787,
+            "testRatio": 0.5260482846251588
+          }
+        },
+        {
+          "task": "DUO Term 2 Presence",
+          "type": "binary",
+          "accuracy": 0.5463786531130876,
+          "precision": 0.6336448598130842,
+          "recall": 0.678,
+          "f1": 0.655072463768116,
+          "auc": 0.5160975609756077,
+          "advantage": 0.04637865311308764,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 500,
+            "testTotal": 787,
+            "testRatio": 0.6353240152477764
+          }
+        },
+        {
+          "task": "DUO Term 3 Presence",
+          "type": "binary",
+          "accuracy": 0.6073697585768743,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "auc": 0.4993568130424718,
+          "advantage": 0.10736975857687425,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 309,
+            "testTotal": 787,
+            "testRatio": 0.3926302414231258
+          }
+        },
+        {
+          "task": "DUO Term 4 Presence",
+          "type": "binary",
+          "accuracy": 0.5438373570520966,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "auc": 0.49127899409054443,
+          "advantage": 0.04383735705209657,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 359,
+            "testTotal": 787,
+            "testRatio": 0.45616264294790343
+          }
+        },
+        {
+          "task": "DUO Term 5 Presence",
+          "type": "binary",
+          "accuracy": 0.39898348157560354,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "auc": 0.5067262762419068,
+          "advantage": -0.10101651842439646,
+          "randomBaseline": 0.5,
+          "classDistribution": {
+            "testPositive": 473,
+            "testTotal": 787,
+            "testRatio": 0.6010165184243964
+          }
+        },
+        {
+          "task": "ICD-10 Chapter Prediction (RandomForest)",
+          "type": "multi-class",
+          "accuracy": 0,
+          "macroF1": 0,
+          "perClassMetrics": {
+            "0": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "1": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "2": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "3": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "4": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "5": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "6": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "7": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "8": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "9": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "undefined": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            }
+          },
+          "advantage": -0.09090909090909091,
+          "randomBaseline": 0.09090909090909091,
+          "numClasses": 11
+        }
+      ]
+    },
+    "privacyCheck": {
+      "overallPassed": false,
+      "results": [
+        {
+          "task": "DUO Term 0 Presence",
+          "passed": false,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.5061013399440023,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": 0.3144853875476493,
+              "threshold": 0.05,
+              "passed": false
+            }
+          ]
+        },
+        {
+          "task": "DUO Term 1 Presence",
+          "passed": true,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.4986077113364698,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": -0.026048284625158846,
+              "threshold": 0.05,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "task": "DUO Term 2 Presence",
+          "passed": true,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.5160975609756077,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": 0.04637865311308764,
+              "threshold": 0.05,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "task": "DUO Term 3 Presence",
+          "passed": false,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.4993568130424718,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": 0.10736975857687425,
+              "threshold": 0.05,
+              "passed": false
+            }
+          ]
+        },
+        {
+          "task": "DUO Term 4 Presence",
+          "passed": true,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.49127899409054443,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": 0.04383735705209657,
+              "threshold": 0.05,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "task": "DUO Term 5 Presence",
+          "passed": true,
+          "checks": [
+            {
+              "metric": "AUC",
+              "value": 0.5067262762419068,
+              "threshold": 0.55,
+              "passed": true
+            },
+            {
+              "metric": "Advantage",
+              "value": -0.10101651842439646,
+              "threshold": 0.05,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "task": "ICD-10 Chapter Prediction (RandomForest)",
+          "passed": true,
+          "checks": [
+            {
+              "metric": "Advantage",
+              "value": -0.09090909090909091,
+              "threshold": 0.05,
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "thresholds": {
+        "aucMax": 0.55,
+        "advantageMax": 0.05
+      }
+    }
+  },
+  "multiseedVerdict": {
+    "overallPassed": true,
+    "criterion": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20,
+      "permutationIterations": 200
+    },
+    "tasks": [
+      {
+        "key": "DUO GR",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.47926886320187123,
+          "std": 0.029130289300698994,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.026011989565616487,
+          "std": 0.024530189288372875,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.6626865671641793,
+          "std": 0.20654616981282875,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "DUO DS",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.49207016699027356,
+          "std": 0.021771332686862998,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.018832856493821677,
+          "std": 0.013498025589223576,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.5824212271973467,
+          "std": 0.27910679321776105,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "DUO RS",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.5044622944085994,
+          "std": 0.023070960623729455,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.019839831475765825,
+          "std": 0.012592155594015777,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.43731343283582086,
+          "std": 0.2979911233625888,
+          "n": 30
+        },
+        "sigFraction": 0.03333333333333333,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "DUO POA",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.4774906724426828,
+          "std": 0.017050164977609594,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.024828175359556823,
+          "std": 0.01345138138487635,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.7713101160862352,
+          "std": 0.19918103047099692,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "DUO GS",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.4799061089606696,
+          "std": 0.015141073138068695,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.02128419817519567,
+          "std": 0.013416387774353512,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.7562189054726367,
+          "std": 0.17707529334545344,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "DUO CC",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 584,
+        "auc": {
+          "mean": 0.49768419055318164,
+          "std": 0.024611574496619253,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.018757567313332942,
+          "std": 0.016101125460116012,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.5106135986733003,
+          "std": 0.2640833115413704,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      }
+    ]
+  },
+  "featureStats": {
+    "commitGasUsed": {
+      "min": 266149,
+      "max": 333844,
+      "mean": 303999.1636726547,
+      "median": 304107,
+      "std": 17495.061188922697
+    },
+    "commitCalldataLength": {
+      "min": 394,
+      "max": 394,
+      "mean": 394,
+      "median": 394,
+      "std": 0
+    },
+    "accessGasUsed": {
+      "min": 679491,
+      "max": 829214,
+      "mean": 754419.4710578843,
+      "median": 755271,
+      "std": 43697.99732508588
+    },
+    "accessCalldataLength": {
+      "min": 0,
+      "max": 0,
+      "mean": 0,
+      "median": null,
+      "std": 0
+    },
+    "proofSize": {
+      "min": 800,
+      "max": 800,
+      "mean": 800,
+      "median": 800,
+      "std": 0
+    },
+    "commitLogsCount": {
+      "min": 1,
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "std": 0
+    },
+    "commitLogsSize": {
+      "min": 180,
+      "max": 180,
+      "mean": 180,
+      "median": 180,
+      "std": 0
+    },
+    "accessLogsCount": {
+      "min": 2,
+      "max": 2,
+      "mean": 2,
+      "median": 2,
+      "std": 0
+    },
+    "accessLogsSize": {
+      "min": 296,
+      "max": 296,
+      "mean": 296,
+      "median": 296,
+      "std": 0
+    },
+    "blockDifference": {
+      "min": 4,
+      "max": 22,
+      "mean": 4.9126746506986025,
+      "median": 5,
+      "std": 0.6977716398746162
+    }
+  },
+  "overallPassed": true,
+  "conclusion": "System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant)."
+}

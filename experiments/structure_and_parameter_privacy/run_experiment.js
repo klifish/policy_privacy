@@ -273,17 +273,17 @@ function generateMarkdownReport(report) {
   // Supervised attacks
   lines.push('### Supervised Classification Attacks');
   lines.push('');
-  Object.entries(report.attacks.supervised).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.supervised).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.supervised[target].passed;
+    const passed = report.diagnostics.evaluation.supervised[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.supervised[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.supervised[target].failures.forEach(failure => {
         lines.push(`- ${failure.comparison} / ${failure.attack}: ${failure.metric}=${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
@@ -293,17 +293,17 @@ function generateMarkdownReport(report) {
   // Statistical tests
   lines.push('### Statistical Hypothesis Tests');
   lines.push('');
-  Object.entries(report.attacks.statistical).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.statistical).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.statistical[target].passed;
+    const passed = report.diagnostics.evaluation.statistical[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.statistical[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.statistical[target].failures.forEach(failure => {
         lines.push(`- ${failure.comparison} / ${failure.test}: ${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
@@ -313,17 +313,17 @@ function generateMarkdownReport(report) {
   // Clustering attacks
   lines.push('### Unsupervised Clustering Attacks');
   lines.push('');
-  Object.entries(report.attacks.clustering).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.clustering).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.clustering[target].passed;
+    const passed = report.diagnostics.evaluation.clustering[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.clustering[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.clustering[target].failures.forEach(failure => {
         lines.push(`- k=${failure.k} / ${failure.metric}: ${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
@@ -535,13 +535,16 @@ async function runExperiment(config = {}) {
       datasetPath: datasetSourcePath,
       executionResultsPath
     },
-    thresholds: DEFAULT_THRESHOLDS,
-    attacks: {
-      supervised: supervisedResults,
-      statistical: statisticalResults,
-      clustering: clusteringResults
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      thresholds: DEFAULT_THRESHOLDS,
+      attacks: {
+        supervised: supervisedResults,
+        statistical: statisticalResults,
+        clustering: clusteringResults
+      },
+      evaluation
     },
-    evaluation,                // single-split diagnostic
     multiseedVerdict: verdict, // authoritative
     overallPassed: verdict.overallPassed,
     conclusion: verdict.overallPassed

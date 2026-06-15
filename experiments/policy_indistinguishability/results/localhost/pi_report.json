@@ -1,0 +1,2314 @@
+{
+  "experiment": "Policy Indistinguishability",
+  "timestamp": "2026-06-14T12:33:53.240Z",
+  "config": {
+    "policyCount": 100,
+    "executionsPerPolicy": 2,
+    "satisfyRatio": 0.5,
+    "testRatio": 0.2,
+    "thresholds": {
+      "aucMax": 0.55,
+      "advantageMax": 0.05,
+      "permutationMin": 0.05,
+      "mmdMax": 0.05,
+      "ksPValueMin": 0.05
+    }
+  },
+  "dataset": {
+    "meta": {
+      "policyCount": 40,
+      "executionsPerPolicy": 2,
+      "satisfyRatio": 1
+    },
+    "datasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/localhost/policy_definitions.json",
+    "executionResultsPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/localhost/pi_dataset.json",
+    "pairsPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/policy_indistinguishability/results/localhost/pi_pairs.json",
+    "analysisPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/policy_indistinguishability/results/localhost/pi_analysis.json"
+  },
+  "pairTargets": null,
+  "pairCounts": {
+    "semantic_equivalent": 2,
+    "structural_variant": 22,
+    "weak_equivalent": 1,
+    "controlled_difference": 100
+  },
+  "singleSample": [
+    {
+      "level": "Level I",
+      "scope": "overall",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.4498480243161093,
+        "advantage": 0.07272727272727275,
+        "entropy": 0.9684762164940481,
+        "permutationPValue": 0.8323353293413174,
+        "accuracy": 0.5727272727272728
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.4498480243161093,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.07272727272727275,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.8323353293413174,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.6658329661611753,
+          "importance": 0.6658329661611753
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": -0.023371036808241964,
+          "importance": 0.023371036808241964
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "overall",
+      "classifier": "RandomForest",
+      "passed": true,
+      "metrics": {
+        "accuracy": 0.5181818181818182,
+        "advantage": 0.018181818181818188
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.018181818181818188,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "structural_variant",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.6,
+        "advantage": 0.05555555555555558,
+        "entropy": 0.9612997373388534,
+        "permutationPValue": 0.34530938123752497,
+        "accuracy": 0.5555555555555556
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.6,
+          "threshold": 0.55,
+          "passed": false
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.05555555555555558,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.34530938123752497,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "accessGasUsed",
+          "weight": 0.28256289399392037,
+          "importance": 0.28256289399392037
+        },
+        {
+          "feature": "commitGasUsed",
+          "weight": 0.22186578503563126,
+          "importance": 0.22186578503563126
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "structural_variant",
+      "classifier": "RandomForest",
+      "passed": false,
+      "metrics": {
+        "accuracy": 0.6666666666666666,
+        "advantage": 0.16666666666666663
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.16666666666666663,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "controlled_difference",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.8798076923076931,
+        "advantage": 0.3125,
+        "entropy": 0.9891430912750987,
+        "permutationPValue": 0.001996007984031936,
+        "accuracy": 0.8125
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.8798076923076931,
+          "threshold": 0.55,
+          "passed": false
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.3125,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.001996007984031936,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.4310680834848228,
+          "importance": 0.4310680834848228
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": -0.08099637782736203,
+          "importance": 0.08099637782736203
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "controlled_difference",
+      "classifier": "RandomForest",
+      "passed": false,
+      "metrics": {
+        "accuracy": 0.5625,
+        "advantage": 0.0625
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.0625,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "multiSample": [
+    {
+      "level": "Level II",
+      "scope": "overall",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.5,
+        "advantage": 0.5,
+        "entropy": 0.5649855023786967,
+        "permutationPValue": 1,
+        "accuracy": 1
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.5,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.5,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 1,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "accessGasUsed",
+          "weight": 0.637096200237744,
+          "importance": 0.637096200237744
+        },
+        {
+          "feature": "commitGasUsed",
+          "weight": 0.49295458527853825,
+          "importance": 0.49295458527853825
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level II",
+      "scope": "overall",
+      "classifier": "RandomForest",
+      "passed": false,
+      "metrics": {
+        "accuracy": 1,
+        "advantage": 0.5
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.5,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "twoSampleTests": [
+    {
+      "level": "Level III",
+      "scope": "controlled_difference",
+      "classifier": "Two-sample statistics",
+      "passed": true,
+      "metrics": {
+        "meanMmd": -0.1001905671525644,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.4785714285714286,
+            "pValueMean": 0.5932927020897981
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.35000000000000014,
+            "pValueMean": 0.8529510339029968
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      },
+      "checks": [
+        {
+          "metric": "MMD",
+          "value": -0.1001905671525644,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "KS p-value mean",
+          "value": 0.5932927020897981,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "perPair": [
+      {
+        "pairId": "smoke_negation_heavy-26::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.14814071307814003,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-25::smoke_and_or_mixed-37",
+        "pairType": "controlled_difference",
+        "mmd": -0.09678710313710481,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.14810244131784067,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-25::smoke_negation_heavy-26",
+        "pairType": "controlled_difference",
+        "mmd": -0.12366772907334234,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_negation_heavy-29",
+        "pairType": "controlled_difference",
+        "mmd": -0.13101565868207254,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.39999999999999997,
+            "pValue": 0.8186211744710058
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_or_mixed-37::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.16741870740119036,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_or_mixed-38::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.0997284421677922,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_or_only-16",
+        "pairType": "controlled_difference",
+        "mmd": -0.0725867787130341,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_negation_heavy-26",
+        "pairType": "controlled_difference",
+        "mmd": -0.16124129629070727,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-26::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.09477596025996338,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_negation_heavy-29",
+        "pairType": "controlled_difference",
+        "mmd": -0.051920857750586524,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.03383054644397121,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_negation_heavy-25",
+        "pairType": "controlled_difference",
+        "mmd": -0.058106440718532104,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_and_or_mixed-37",
+        "pairType": "controlled_difference",
+        "mmd": 0.015214435382841618,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-29::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.11779392126365207,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-29::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.07626804156282518,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6,
+            "pValue": 0.32910478909781504
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.6,
+            "pValue": 0.32910478909781504
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-26::smoke_negation_heavy-29",
+        "pairType": "controlled_difference",
+        "mmd": -0.13107250685679528,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-26::smoke_and_or_mixed-37",
+        "pairType": "controlled_difference",
+        "mmd": -0.05197771070827906,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-25::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.12427376079660868,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.13546934309424197,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-29::smoke_and_or_mixed-37",
+        "pairType": "controlled_difference",
+        "mmd": -0.05917229992665485,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-25::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.12437921922731121,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_negation_heavy-25::smoke_negation_heavy-29",
+        "pairType": "controlled_difference",
+        "mmd": -0.11833110566568172,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.9999652306546246
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_negation_heavy-26",
+        "pairType": "controlled_difference",
+        "mmd": -0.1234989443205643,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6,
+            "pValue": 0.32910478909781504
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_or_mixed-37::smoke_and_or_mixed-38",
+        "pairType": "controlled_difference",
+        "mmd": -0.08757391685914317,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6,
+            "pValue": 0.32910478909781504
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_and_or_mixed-39",
+        "pairType": "controlled_difference",
+        "mmd": -0.11083268244952493,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_and_only-8::smoke_and_or_mixed-37",
+        "pairType": "controlled_difference",
+        "mmd": -0.08294455088609021,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6,
+            "pValue": 0.32910478909781504
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "smoke_or_only-16::smoke_negation_heavy-25",
+        "pairType": "controlled_difference",
+        "mmd": -0.08963963700299526,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.6000000000000001,
+            "pValue": 0.3291047890978148
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.8186211744710057
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      }
+    ],
+    "aggregated": [
+      {
+        "pairType": "controlled_difference",
+        "meanMmd": -0.1001905671525644,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.4785714285714286,
+            "pValueMean": 0.5932927020897981
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.35000000000000014,
+            "pValueMean": 0.8529510339029968
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      }
+    ]
+  },
+  "privacySummary": {
+    "overallPassed": false,
+    "checks": [
+      {
+        "level": "Level I",
+        "scope": "overall",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.4498480243161093,
+          "advantage": 0.07272727272727275,
+          "entropy": 0.9684762164940481,
+          "permutationPValue": 0.8323353293413174,
+          "accuracy": 0.5727272727272728
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.4498480243161093,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.07272727272727275,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.8323353293413174,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.6658329661611753,
+            "importance": 0.6658329661611753
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": -0.023371036808241964,
+            "importance": 0.023371036808241964
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "overall",
+        "classifier": "RandomForest",
+        "passed": true,
+        "metrics": {
+          "accuracy": 0.5181818181818182,
+          "advantage": 0.018181818181818188
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.018181818181818188,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "semantic_equivalent",
+        "classifier": "LogisticRegression",
+        "skipped": true,
+        "reason": "Insufficient samples (<10)"
+      },
+      {
+        "level": "Level I",
+        "scope": "structural_variant",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.6,
+          "advantage": 0.05555555555555558,
+          "entropy": 0.9612997373388534,
+          "permutationPValue": 0.34530938123752497,
+          "accuracy": 0.5555555555555556
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.6,
+            "threshold": 0.55,
+            "passed": false
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.05555555555555558,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.34530938123752497,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "accessGasUsed",
+            "weight": 0.28256289399392037,
+            "importance": 0.28256289399392037
+          },
+          {
+            "feature": "commitGasUsed",
+            "weight": 0.22186578503563126,
+            "importance": 0.22186578503563126
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "structural_variant",
+        "classifier": "RandomForest",
+        "passed": false,
+        "metrics": {
+          "accuracy": 0.6666666666666666,
+          "advantage": 0.16666666666666663
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.16666666666666663,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "weak_equivalent",
+        "classifier": "LogisticRegression",
+        "skipped": true,
+        "reason": "Insufficient samples (<10)"
+      },
+      {
+        "level": "Level I",
+        "scope": "controlled_difference",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.8798076923076931,
+          "advantage": 0.3125,
+          "entropy": 0.9891430912750987,
+          "permutationPValue": 0.001996007984031936,
+          "accuracy": 0.8125
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.8798076923076931,
+            "threshold": 0.55,
+            "passed": false
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.3125,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.001996007984031936,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.4310680834848228,
+            "importance": 0.4310680834848228
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": -0.08099637782736203,
+            "importance": 0.08099637782736203
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "controlled_difference",
+        "classifier": "RandomForest",
+        "passed": false,
+        "metrics": {
+          "accuracy": 0.5625,
+          "advantage": 0.0625
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.0625,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ]
+      },
+      {
+        "level": "Level II",
+        "scope": "overall",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.5,
+          "advantage": 0.5,
+          "entropy": 0.5649855023786967,
+          "permutationPValue": 1,
+          "accuracy": 1
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.5,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 1,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "accessGasUsed",
+            "weight": 0.637096200237744,
+            "importance": 0.637096200237744
+          },
+          {
+            "feature": "commitGasUsed",
+            "weight": 0.49295458527853825,
+            "importance": 0.49295458527853825
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level II",
+        "scope": "overall",
+        "classifier": "RandomForest",
+        "passed": false,
+        "metrics": {
+          "accuracy": 1,
+          "advantage": 0.5
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.5,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ]
+      },
+      {
+        "level": "Level III",
+        "scope": "controlled_difference",
+        "classifier": "Two-sample statistics",
+        "passed": true,
+        "metrics": {
+          "meanMmd": -0.1001905671525644,
+          "ksSummary": {
+            "commitGasUsed": {
+              "statisticMean": 0.4785714285714286,
+              "pValueMean": 0.5932927020897981
+            },
+            "commitCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessGasUsed": {
+              "statisticMean": 0.35000000000000014,
+              "pValueMean": 0.8529510339029968
+            },
+            "accessCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "proofSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            }
+          }
+        },
+        "checks": [
+          {
+            "metric": "MMD",
+            "value": -0.1001905671525644,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "KS p-value mean",
+            "value": 0.5932927020897981,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      }
+    ]
+  },
+  "multiseedVerdict": {
+    "overallPassed": false,
+    "criterion": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20,
+      "permutationIterations": 500
+    },
+    "tasks": [
+      {
+        "key": "overall",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 83.5,
+        "auc": {
+          "mean": 0.558202993544354,
+          "std": 0.11879845248645954,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.09647440679116584,
+          "std": 0.12762762173218511,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.3635395874916832,
+          "std": 0.3318226384835647,
+          "n": 30
+        },
+        "sigFraction": 0.3,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "structural_variant",
+        "passed": null,
+        "skipped": false,
+        "underpowered": true,
+        "medianTestN": 8,
+        "auc": {
+          "mean": 0.446562049062049,
+          "std": 0.2557893773217767,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.029206782844890256,
+          "std": 0.19176832486812279,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.6104457751164338,
+          "std": 0.2962240309654678,
+          "n": 30
+        },
+        "sigFraction": 0.03333333333333333,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "controlled_difference",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 63,
+        "auc": {
+          "mean": 0.5574842192573829,
+          "std": 0.1111926742793158,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.07313481051773724,
+          "std": 0.11783706218235472,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.3374584165003327,
+          "std": 0.3126094889046701,
+          "n": 30
+        },
+        "sigFraction": 0.23333333333333334,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      }
+    ]
+  },
+  "overallPassed": false,
+  "conclusion": "Potential leakage detected. Further hardening is required."
+}

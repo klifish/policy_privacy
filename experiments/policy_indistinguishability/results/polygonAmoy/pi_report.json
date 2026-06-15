@@ -1,0 +1,6049 @@
+{
+  "experiment": "Policy Indistinguishability",
+  "timestamp": "2026-06-14T20:03:04.963Z",
+  "config": {
+    "policyCount": 100,
+    "executionsPerPolicy": 2,
+    "satisfyRatio": 0.5,
+    "testRatio": 0.2,
+    "thresholds": {
+      "aucMax": 0.55,
+      "advantageMax": 0.05,
+      "permutationMin": 0.05,
+      "mmdMax": 0.05,
+      "ksPValueMin": 0.05
+    }
+  },
+  "dataset": {
+    "meta": {
+      "policyCount": 1077,
+      "executionsPerPolicy": 2,
+      "satisfyRatio": 1
+    },
+    "datasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/polygonAmoy/policy_definitions.json",
+    "executionResultsPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/polygonAmoy/pi_dataset.json",
+    "pairsPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/policy_indistinguishability/results/polygonAmoy/pi_pairs.json",
+    "analysisPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/policy_indistinguishability/results/polygonAmoy/pi_analysis.json"
+  },
+  "pairTargets": null,
+  "pairCounts": {
+    "semantic_equivalent": 100,
+    "structural_variant": 100,
+    "weak_equivalent": 100,
+    "controlled_difference": 100
+  },
+  "singleSample": [
+    {
+      "level": "Level I",
+      "scope": "overall",
+      "classifier": "LogisticRegression",
+      "passed": true,
+      "metrics": {
+        "auc": 0.5114806246385197,
+        "advantage": 0.010752688172043001,
+        "entropy": 0.9645185977661473,
+        "permutationPValue": 0.3333333333333333,
+        "accuracy": 0.510752688172043
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.5114806246385197,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.010752688172043001,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.3333333333333333,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.1991787272503495,
+          "importance": 0.1991787272503495
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": -0.022032887241222168,
+          "importance": 0.022032887241222168
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "overall",
+      "classifier": "RandomForest",
+      "passed": true,
+      "metrics": {
+        "accuracy": 0.49193548387096775,
+        "advantage": -0.008064516129032251
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": -0.008064516129032251,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "semantic_equivalent",
+      "classifier": "LogisticRegression",
+      "passed": true,
+      "metrics": {
+        "auc": 0.47431611978988936,
+        "advantage": -0.0040983606557377095,
+        "entropy": 0.994100816683992,
+        "permutationPValue": 0.7345309381237525,
+        "accuracy": 0.4959016393442623
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.47431611978988936,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": -0.0040983606557377095,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.7345309381237525,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "accessGasUsed",
+          "weight": 0.592959690771182,
+          "importance": 0.592959690771182
+        },
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.3081891975376147,
+          "importance": 0.3081891975376147
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "semantic_equivalent",
+      "classifier": "RandomForest",
+      "passed": true,
+      "metrics": {
+        "accuracy": 0.46311475409836067,
+        "advantage": -0.03688524590163933
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": -0.03688524590163933,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "structural_variant",
+      "classifier": "LogisticRegression",
+      "passed": true,
+      "metrics": {
+        "auc": 0.5087719298245611,
+        "advantage": -0.025000000000000022,
+        "entropy": 0.9391659680587103,
+        "permutationPValue": 0.48502994011976047,
+        "accuracy": 0.475
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.5087719298245611,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": -0.025000000000000022,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.48502994011976047,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.24092661290772766,
+          "importance": 0.24092661290772766
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": 0.0961344675217422,
+          "importance": 0.0961344675217422
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "structural_variant",
+      "classifier": "RandomForest",
+      "passed": true,
+      "metrics": {
+        "accuracy": 0.4,
+        "advantage": -0.09999999999999998
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": -0.09999999999999998,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "weak_equivalent",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.6200980392156862,
+        "advantage": -0.0853658536585366,
+        "entropy": 0.8968850224162779,
+        "permutationPValue": 0.10578842315369262,
+        "accuracy": 0.4146341463414634
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.6200980392156862,
+          "threshold": 0.55,
+          "passed": false
+        },
+        {
+          "metric": "Advantage",
+          "value": -0.0853658536585366,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.10578842315369262,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "accessGasUsed",
+          "weight": -0.3598026284786188,
+          "importance": 0.3598026284786188
+        },
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.028367139929818496,
+          "importance": 0.028367139929818496
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "weak_equivalent",
+      "classifier": "RandomForest",
+      "passed": true,
+      "metrics": {
+        "accuracy": 0.4146341463414634,
+        "advantage": -0.0853658536585366
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": -0.0853658536585366,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "controlled_difference",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.5666666666666663,
+        "advantage": 0.1585365853658537,
+        "entropy": 0.9944581993618452,
+        "permutationPValue": 0.24750499001996007,
+        "accuracy": 0.6585365853658537
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.5666666666666663,
+          "threshold": 0.55,
+          "passed": false
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.1585365853658537,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 0.24750499001996007,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": -0.42055829239298675,
+          "importance": 0.42055829239298675
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": 0.19502445012729147,
+          "importance": 0.19502445012729147
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level I",
+      "scope": "controlled_difference",
+      "classifier": "RandomForest",
+      "passed": false,
+      "metrics": {
+        "accuracy": 0.6341463414634146,
+        "advantage": 0.13414634146341464
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.13414634146341464,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "multiSample": [
+    {
+      "level": "Level II",
+      "scope": "overall",
+      "classifier": "LogisticRegression",
+      "passed": false,
+      "metrics": {
+        "auc": 0.5,
+        "advantage": 0.5,
+        "entropy": 0.14301421061947853,
+        "permutationPValue": 1,
+        "accuracy": 1
+      },
+      "checks": [
+        {
+          "metric": "AUC",
+          "value": 0.5,
+          "threshold": 0.55,
+          "passed": true
+        },
+        {
+          "metric": "Advantage",
+          "value": 0.5,
+          "threshold": 0.05,
+          "passed": false
+        },
+        {
+          "metric": "Permutation p-value",
+          "value": 1,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ],
+      "featureImportance": [
+        {
+          "feature": "commitGasUsed",
+          "weight": 1.0267678746269615,
+          "importance": 1.0267678746269615
+        },
+        {
+          "feature": "accessGasUsed",
+          "weight": 1.0112732909284903,
+          "importance": 1.0112732909284903
+        },
+        {
+          "feature": "commitCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessCalldataLength",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "proofSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "commitLogsSize",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsCount",
+          "weight": 0,
+          "importance": 0
+        },
+        {
+          "feature": "accessLogsSize",
+          "weight": 0,
+          "importance": 0
+        }
+      ]
+    },
+    {
+      "level": "Level II",
+      "scope": "overall",
+      "classifier": "RandomForest",
+      "passed": false,
+      "metrics": {
+        "accuracy": 1,
+        "advantage": 0.5
+      },
+      "checks": [
+        {
+          "metric": "Advantage",
+          "value": 0.5,
+          "threshold": 0.05,
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "twoSampleTests": [
+    {
+      "level": "Level III",
+      "scope": "structural_variant",
+      "classifier": "Two-sample statistics",
+      "passed": true,
+      "metrics": {
+        "meanMmd": -0.024055145441498116,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.06666666666666668,
+            "pValueMean": 0.9999999108140708
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.13333333333333336,
+            "pValueMean": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      },
+      "checks": [
+        {
+          "metric": "MMD",
+          "value": -0.024055145441498116,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "KS p-value mean",
+          "value": 0.9524779093537681,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "level": "Level III",
+      "scope": "controlled_difference",
+      "classifier": "Two-sample statistics",
+      "passed": true,
+      "metrics": {
+        "meanMmd": 0.0011093722347543134,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.19733333333333317,
+            "pValueMean": 0.6058169006211083
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.21033333333333343,
+            "pValueMean": 0.5656912073387693
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      },
+      "checks": [
+        {
+          "metric": "MMD",
+          "value": 0.0011093722347543134,
+          "threshold": 0.05,
+          "passed": true
+        },
+        {
+          "metric": "KS p-value mean",
+          "value": 0.5656912073387693,
+          "threshold": 0.05,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "perPair": [
+      {
+        "pairId": "dual_mixed_medium-194::dual_mixed_medium-224",
+        "pairType": "structural_variant",
+        "mmd": -0.024055145441498116,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.06666666666666668,
+            "pValue": 0.9999999108140708
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-303::medium_nesting_focused-319",
+        "pairType": "controlled_difference",
+        "mmd": -0.010391563595577358,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-750::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.014973251345223204,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::medium_nesting_focused-396",
+        "pairType": "controlled_difference",
+        "mmd": -0.01054322882358072,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333341,
+            "pValue": 0.9524779093537679
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-181::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.012615374394937984,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::medium_nesting_focused-396",
+        "pairType": "controlled_difference",
+        "mmd": 0.0067304996645249915,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.26666666666666666,
+            "pValue": 0.23649007143707598
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-825::deep_nested_large-855",
+        "pairType": "controlled_difference",
+        "mmd": 0.006948098209445641,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::dual_mixed_medium-194",
+        "pairType": "controlled_difference",
+        "mmd": 0.007901450375594976,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::medium_nesting_focused-347",
+        "pairType": "controlled_difference",
+        "mmd": -0.014532253504961012,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-750::deep_nested_large-792",
+        "pairType": "controlled_difference",
+        "mmd": 0.057957655578518175,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.3666666666666667,
+            "pValue": 0.035430164672031694
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::single_predicate_small-41",
+        "pairType": "controlled_difference",
+        "mmd": 0.012202992273085078,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.004030315402041351,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-781::deep_nested_large-850",
+        "pairType": "controlled_difference",
+        "mmd": 0.00417355102942496,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::medium_nesting_focused-396",
+        "pairType": "controlled_difference",
+        "mmd": 0.017609511910485542,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-303::structural_variants-982",
+        "pairType": "controlled_difference",
+        "mmd": -0.005550035575812018,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "structural_variants-1045::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.01890371189259543,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::deep_nested_large-832",
+        "pairType": "controlled_difference",
+        "mmd": -0.003140635039284634,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-750::deep_nested_large-832",
+        "pairType": "controlled_difference",
+        "mmd": -0.02188830694951016,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-855::structural_variants-982",
+        "pairType": "controlled_difference",
+        "mmd": 0.0038477827754661575,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-396::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.023956900274166637,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-781::structural_variants-1045",
+        "pairType": "controlled_difference",
+        "mmd": -0.023481472493208866,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-194::negation_heavy-683",
+        "pairType": "controlled_difference",
+        "mmd": 0.011952771906869719,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.26666666666666666,
+            "pValue": 0.23649007143707598
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-750::structural_variants-982",
+        "pairType": "controlled_difference",
+        "mmd": -0.015856306435443113,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-790::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.021682428867179304,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1,
+            "pValue": 0.9982657353854179
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.018459826006463453,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-55::medium_nesting_focused-347",
+        "pairType": "controlled_difference",
+        "mmd": 0.012871148556366174,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-396::negation_heavy-683",
+        "pairType": "controlled_difference",
+        "mmd": 0.020711776553666184,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2333333333333333,
+            "pValue": 0.3876476503252249
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.26666666666666666,
+            "pValue": 0.23649007143707598
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::single_predicate_small-55",
+        "pairType": "controlled_difference",
+        "mmd": 0.0746716987326781,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.016459484923676552
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::dual_mixed_medium-303",
+        "pairType": "controlled_difference",
+        "mmd": 0.006440657263757199,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-778::deep_nested_large-850",
+        "pairType": "controlled_difference",
+        "mmd": 0.004834326487480167,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-181::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": -0.008744989203528952,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-825::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.007584473076674536,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333341,
+            "pValue": 0.9524779093537679
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-303::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": 0.0009813197331234313,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.33333333333333337,
+            "pValue": 0.07134474750110725
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-194::deep_nested_large-778",
+        "pairType": "controlled_difference",
+        "mmd": -0.018483436246652385,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1,
+            "pValue": 0.9982657353854179
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::deep_nested_large-855",
+        "pairType": "controlled_difference",
+        "mmd": 0.0007401043766530613,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": 0.03195297735518143,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-396::deep_nested_large-790",
+        "pairType": "controlled_difference",
+        "mmd": -0.018840148497821785,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-181::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.02676721539416782,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-640::structural_variants-1045",
+        "pairType": "controlled_difference",
+        "mmd": -0.017275954486124734,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "structural_variants-982::structural_variants-1045",
+        "pairType": "controlled_difference",
+        "mmd": -0.015156514844379299,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-55::negation_heavy-750",
+        "pairType": "controlled_difference",
+        "mmd": -0.013344789296801496,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": -0.0007931719268574611,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-360::deep_nested_large-778",
+        "pairType": "controlled_difference",
+        "mmd": -0.009623706918429509,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.3,
+            "pValue": 0.13437022652861091
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-778::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.01693973045991748,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::medium_nesting_focused-360",
+        "pairType": "controlled_difference",
+        "mmd": -0.013045250655667529,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-683::negation_heavy-750",
+        "pairType": "controlled_difference",
+        "mmd": 0.006873375404731652,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::deep_nested_large-820",
+        "pairType": "controlled_difference",
+        "mmd": 0.008424653489373046,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::negation_heavy-750",
+        "pairType": "controlled_difference",
+        "mmd": 0.020669453617862876,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.09999999999999998,
+            "pValue": 0.9982657353854177
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::deep_nested_large-850",
+        "pairType": "controlled_difference",
+        "mmd": 0.01401957989177216,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::single_predicate_small-41",
+        "pairType": "controlled_difference",
+        "mmd": 0.013188386317302347,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::single_predicate_small-55",
+        "pairType": "controlled_difference",
+        "mmd": 0.062226282787945175,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.33333333333333337,
+            "pValue": 0.07134474750110725
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-825::deep_nested_large-850",
+        "pairType": "controlled_difference",
+        "mmd": 0.005483533504168081,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-221::or_only-594",
+        "pairType": "controlled_difference",
+        "mmd": -0.012414591386124663,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333341,
+            "pValue": 0.9524779093537679
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-55::negation_heavy-640",
+        "pairType": "controlled_difference",
+        "mmd": -0.020603068393352464,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-181::deep_nested_large-825",
+        "pairType": "controlled_difference",
+        "mmd": -0.0068674514120048435,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-820::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": 0.009620293170180538,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666666,
+            "pValue": 0.23649007143707618
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::negation_heavy-750",
+        "pairType": "controlled_difference",
+        "mmd": -0.012433992307105735,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2333333333333333,
+            "pValue": 0.3876476503252249
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-303::negation_heavy-683",
+        "pairType": "controlled_difference",
+        "mmd": 0.0032942014101082773,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-750::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.018699049847121563,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-55::dual_mixed_medium-181",
+        "pairType": "controlled_difference",
+        "mmd": 0.003608118448016562,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666666,
+            "pValue": 0.23649007143707618
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-640::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.015417058010094076,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-781::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": -0.013446039970189672,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::negation_heavy-683",
+        "pairType": "controlled_difference",
+        "mmd": -0.01945681736552074,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333341,
+            "pValue": 0.9524779093537679
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::deep_nested_large-820",
+        "pairType": "controlled_difference",
+        "mmd": 0.021782119587647975,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2666666666666666,
+            "pValue": 0.23649007143707618
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.29999999999999993,
+            "pValue": 0.13437022652861103
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-396::deep_nested_large-792",
+        "pairType": "controlled_difference",
+        "mmd": 0.07249309559745054,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4000000000000001,
+            "pValue": 0.016459484923676538
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-213::deep_nested_large-792",
+        "pairType": "controlled_difference",
+        "mmd": 0.08092110706878675,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4000000000000001,
+            "pValue": 0.016459484923676538
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-224::medium_nesting_focused-347",
+        "pairType": "controlled_difference",
+        "mmd": -0.0097248737908886,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333341,
+            "pValue": 0.9524779093537679
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "or_only-594::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.021925485627632968,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-347::deep_nested_large-790",
+        "pairType": "controlled_difference",
+        "mmd": -0.015792394848332503,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::structural_variants-1052",
+        "pairType": "controlled_difference",
+        "mmd": 0.005783174752148401,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666667,
+            "pValue": 0.23649007143707576
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::dual_mixed_medium-224",
+        "pairType": "controlled_difference",
+        "mmd": 0.0021174514347277462,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333328,
+            "pValue": 0.38764765032522497
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::deep_nested_large-792",
+        "pairType": "controlled_difference",
+        "mmd": 0.08940197749147183,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.43333333333333335,
+            "pValue": 0.007153266320654845
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-221::dual_mixed_medium-303",
+        "pairType": "controlled_difference",
+        "mmd": -0.01683376017494842,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::or_only-594",
+        "pairType": "controlled_difference",
+        "mmd": 0.01727615179453279,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.29999999999999993,
+            "pValue": 0.13437022652861103
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-213::medium_nesting_focused-396",
+        "pairType": "controlled_difference",
+        "mmd": -0.027464124222660757,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.10000000000000003,
+            "pValue": 0.9982657353854179
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "negation_heavy-683::deep_nested_large-790",
+        "pairType": "controlled_difference",
+        "mmd": 0.0025041099618194895,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-820::deep_nested_large-825",
+        "pairType": "controlled_difference",
+        "mmd": 0.040248897948360174,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.3,
+            "pValue": 0.13437022652861091
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::medium_nesting_focused-360",
+        "pairType": "controlled_difference",
+        "mmd": 0.0001495646926512606,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::deep_nested_large-820",
+        "pairType": "controlled_difference",
+        "mmd": -0.017565393828086417,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.1333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-194::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": -0.000389261495808757,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "or_only-594::deep_nested_large-820",
+        "pairType": "controlled_difference",
+        "mmd": 0.02821563816417072,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.33333333333333326,
+            "pValue": 0.0713447475011074
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-213::structural_variants-1045",
+        "pairType": "controlled_difference",
+        "mmd": -0.016777921395365603,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "deep_nested_large-781::deep_nested_large-832",
+        "pairType": "controlled_difference",
+        "mmd": -0.013937010378761272,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.26666666666666666,
+            "pValue": 0.23649007143707598
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-319::deep_nested_large-792",
+        "pairType": "controlled_difference",
+        "mmd": 0.028982503188088815,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.4,
+            "pValue": 0.016459484923676552
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-360::deep_nested_large-781",
+        "pairType": "controlled_difference",
+        "mmd": -0.023840745329476,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333333,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-347::or_only-594",
+        "pairType": "controlled_difference",
+        "mmd": -0.007691452755062889,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-396::or_only-594",
+        "pairType": "controlled_difference",
+        "mmd": -0.019173424910557957,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-347::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": -0.0017792580417390624,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-319::structural_variants-1062",
+        "pairType": "controlled_difference",
+        "mmd": -0.017509367902926787,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::dual_mixed_medium-213",
+        "pairType": "controlled_difference",
+        "mmd": 0.010308187113736267,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.20000000000000007,
+            "pValue": 0.5859697195590097
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-13::dual_mixed_medium-224",
+        "pairType": "controlled_difference",
+        "mmd": 0.0059178347963788624,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.19999999999999998,
+            "pValue": 0.5859697195590103
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-347::structural_variants-1045",
+        "pairType": "controlled_difference",
+        "mmd": -0.01247381375911738,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666663,
+            "pValue": 0.7989513616577231
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-55::dual_mixed_medium-303",
+        "pairType": "controlled_difference",
+        "mmd": 0.007586299080723391,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333336,
+            "pValue": 0.3876476503252246
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666666,
+            "pValue": 0.23649007143707618
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-347::medium_nesting_focused-396",
+        "pairType": "controlled_difference",
+        "mmd": -0.019117369574340515,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.1,
+            "pValue": 0.9982657353854179
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666669,
+            "pValue": 0.7989513616577227
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::deep_nested_large-781",
+        "pairType": "controlled_difference",
+        "mmd": 0.020267840256258607,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.19999999999999996,
+            "pValue": 0.5859697195590104
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2333333333333334,
+            "pValue": 0.38764765032522447
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "single_predicate_small-41::deep_nested_large-790",
+        "pairType": "controlled_difference",
+        "mmd": -0.017076886750663434,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.10000000000000009,
+            "pValue": 0.9982657353854177
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "flat_singleton-2::deep_nested_large-778",
+        "pairType": "controlled_difference",
+        "mmd": 0.017564472330658276,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.2666666666666666,
+            "pValue": 0.23649007143707618
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-319::structural_variants-943",
+        "pairType": "controlled_difference",
+        "mmd": -0.01227654221969221,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.23333333333333336,
+            "pValue": 0.3876476503252246
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-194::deep_nested_large-850",
+        "pairType": "controlled_difference",
+        "mmd": 0.008564539644727365,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.13333333333333336,
+            "pValue": 0.9524779093537681
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.30000000000000004,
+            "pValue": 0.13437022652861078
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "dual_mixed_medium-303::negation_heavy-640",
+        "pairType": "controlled_difference",
+        "mmd": -0.006642476032003408,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.2,
+            "pValue": 0.58596971955901
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.16666666666666674,
+            "pValue": 0.7989513616577224
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      },
+      {
+        "pairId": "medium_nesting_focused-319::medium_nesting_focused-347",
+        "pairType": "controlled_difference",
+        "mmd": 0.004850681083897301,
+        "ks": {
+          "commitGasUsed": {
+            "statistic": 0.16666666666666666,
+            "pValue": 0.798951361657723
+          },
+          "commitCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessGasUsed": {
+            "statistic": 0.23333333333333334,
+            "pValue": 0.38764765032522475
+          },
+          "accessCalldataLength": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "proofSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "commitLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsCount": {
+            "statistic": 0,
+            "pValue": 1
+          },
+          "accessLogsSize": {
+            "statistic": 0,
+            "pValue": 1
+          }
+        }
+      }
+    ],
+    "aggregated": [
+      {
+        "pairType": "structural_variant",
+        "meanMmd": -0.024055145441498116,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.06666666666666668,
+            "pValueMean": 0.9999999108140708
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.13333333333333336,
+            "pValueMean": 0.9524779093537681
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      },
+      {
+        "pairType": "controlled_difference",
+        "meanMmd": 0.0011093722347543134,
+        "ksSummary": {
+          "commitGasUsed": {
+            "statisticMean": 0.19733333333333317,
+            "pValueMean": 0.6058169006211083
+          },
+          "commitCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessGasUsed": {
+            "statisticMean": 0.21033333333333343,
+            "pValueMean": 0.5656912073387693
+          },
+          "accessCalldataLength": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "proofSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "commitLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsCount": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          },
+          "accessLogsSize": {
+            "statisticMean": 0,
+            "pValueMean": 1
+          }
+        }
+      }
+    ]
+  },
+  "privacySummary": {
+    "overallPassed": false,
+    "checks": [
+      {
+        "level": "Level I",
+        "scope": "overall",
+        "classifier": "LogisticRegression",
+        "passed": true,
+        "metrics": {
+          "auc": 0.5114806246385197,
+          "advantage": 0.010752688172043001,
+          "entropy": 0.9645185977661473,
+          "permutationPValue": 0.3333333333333333,
+          "accuracy": 0.510752688172043
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5114806246385197,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.010752688172043001,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.3333333333333333,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.1991787272503495,
+            "importance": 0.1991787272503495
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": -0.022032887241222168,
+            "importance": 0.022032887241222168
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "overall",
+        "classifier": "RandomForest",
+        "passed": true,
+        "metrics": {
+          "accuracy": 0.49193548387096775,
+          "advantage": -0.008064516129032251
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.008064516129032251,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "semantic_equivalent",
+        "classifier": "LogisticRegression",
+        "passed": true,
+        "metrics": {
+          "auc": 0.47431611978988936,
+          "advantage": -0.0040983606557377095,
+          "entropy": 0.994100816683992,
+          "permutationPValue": 0.7345309381237525,
+          "accuracy": 0.4959016393442623
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.47431611978988936,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": -0.0040983606557377095,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.7345309381237525,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "accessGasUsed",
+            "weight": 0.592959690771182,
+            "importance": 0.592959690771182
+          },
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.3081891975376147,
+            "importance": 0.3081891975376147
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "semantic_equivalent",
+        "classifier": "RandomForest",
+        "passed": true,
+        "metrics": {
+          "accuracy": 0.46311475409836067,
+          "advantage": -0.03688524590163933
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.03688524590163933,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "structural_variant",
+        "classifier": "LogisticRegression",
+        "passed": true,
+        "metrics": {
+          "auc": 0.5087719298245611,
+          "advantage": -0.025000000000000022,
+          "entropy": 0.9391659680587103,
+          "permutationPValue": 0.48502994011976047,
+          "accuracy": 0.475
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5087719298245611,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": -0.025000000000000022,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.48502994011976047,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.24092661290772766,
+            "importance": 0.24092661290772766
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": 0.0961344675217422,
+            "importance": 0.0961344675217422
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "structural_variant",
+        "classifier": "RandomForest",
+        "passed": true,
+        "metrics": {
+          "accuracy": 0.4,
+          "advantage": -0.09999999999999998
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.09999999999999998,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "weak_equivalent",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.6200980392156862,
+          "advantage": -0.0853658536585366,
+          "entropy": 0.8968850224162779,
+          "permutationPValue": 0.10578842315369262,
+          "accuracy": 0.4146341463414634
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.6200980392156862,
+            "threshold": 0.55,
+            "passed": false
+          },
+          {
+            "metric": "Advantage",
+            "value": -0.0853658536585366,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.10578842315369262,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "accessGasUsed",
+            "weight": -0.3598026284786188,
+            "importance": 0.3598026284786188
+          },
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.028367139929818496,
+            "importance": 0.028367139929818496
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "weak_equivalent",
+        "classifier": "RandomForest",
+        "passed": true,
+        "metrics": {
+          "accuracy": 0.4146341463414634,
+          "advantage": -0.0853658536585366
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": -0.0853658536585366,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "controlled_difference",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.5666666666666663,
+          "advantage": 0.1585365853658537,
+          "entropy": 0.9944581993618452,
+          "permutationPValue": 0.24750499001996007,
+          "accuracy": 0.6585365853658537
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5666666666666663,
+            "threshold": 0.55,
+            "passed": false
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.1585365853658537,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 0.24750499001996007,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": -0.42055829239298675,
+            "importance": 0.42055829239298675
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": 0.19502445012729147,
+            "importance": 0.19502445012729147
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level I",
+        "scope": "controlled_difference",
+        "classifier": "RandomForest",
+        "passed": false,
+        "metrics": {
+          "accuracy": 0.6341463414634146,
+          "advantage": 0.13414634146341464
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.13414634146341464,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ]
+      },
+      {
+        "level": "Level II",
+        "scope": "overall",
+        "classifier": "LogisticRegression",
+        "passed": false,
+        "metrics": {
+          "auc": 0.5,
+          "advantage": 0.5,
+          "entropy": 0.14301421061947853,
+          "permutationPValue": 1,
+          "accuracy": 1
+        },
+        "checks": [
+          {
+            "metric": "AUC",
+            "value": 0.5,
+            "threshold": 0.55,
+            "passed": true
+          },
+          {
+            "metric": "Advantage",
+            "value": 0.5,
+            "threshold": 0.05,
+            "passed": false
+          },
+          {
+            "metric": "Permutation p-value",
+            "value": 1,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ],
+        "featureImportance": [
+          {
+            "feature": "commitGasUsed",
+            "weight": 1.0267678746269615,
+            "importance": 1.0267678746269615
+          },
+          {
+            "feature": "accessGasUsed",
+            "weight": 1.0112732909284903,
+            "importance": 1.0112732909284903
+          },
+          {
+            "feature": "commitCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessCalldataLength",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "proofSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "commitLogsSize",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsCount",
+            "weight": 0,
+            "importance": 0
+          },
+          {
+            "feature": "accessLogsSize",
+            "weight": 0,
+            "importance": 0
+          }
+        ]
+      },
+      {
+        "level": "Level II",
+        "scope": "overall",
+        "classifier": "RandomForest",
+        "passed": false,
+        "metrics": {
+          "accuracy": 1,
+          "advantage": 0.5
+        },
+        "checks": [
+          {
+            "metric": "Advantage",
+            "value": 0.5,
+            "threshold": 0.05,
+            "passed": false
+          }
+        ]
+      },
+      {
+        "level": "Level III",
+        "scope": "structural_variant",
+        "classifier": "Two-sample statistics",
+        "passed": true,
+        "metrics": {
+          "meanMmd": -0.024055145441498116,
+          "ksSummary": {
+            "commitGasUsed": {
+              "statisticMean": 0.06666666666666668,
+              "pValueMean": 0.9999999108140708
+            },
+            "commitCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessGasUsed": {
+              "statisticMean": 0.13333333333333336,
+              "pValueMean": 0.9524779093537681
+            },
+            "accessCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "proofSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            }
+          }
+        },
+        "checks": [
+          {
+            "metric": "MMD",
+            "value": -0.024055145441498116,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "KS p-value mean",
+            "value": 0.9524779093537681,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "level": "Level III",
+        "scope": "controlled_difference",
+        "classifier": "Two-sample statistics",
+        "passed": true,
+        "metrics": {
+          "meanMmd": 0.0011093722347543134,
+          "ksSummary": {
+            "commitGasUsed": {
+              "statisticMean": 0.19733333333333317,
+              "pValueMean": 0.6058169006211083
+            },
+            "commitCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessGasUsed": {
+              "statisticMean": 0.21033333333333343,
+              "pValueMean": 0.5656912073387693
+            },
+            "accessCalldataLength": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "proofSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "commitLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsCount": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            },
+            "accessLogsSize": {
+              "statisticMean": 0,
+              "pValueMean": 1
+            }
+          }
+        },
+        "checks": [
+          {
+            "metric": "MMD",
+            "value": 0.0011093722347543134,
+            "threshold": 0.05,
+            "passed": true
+          },
+          {
+            "metric": "KS p-value mean",
+            "value": 0.5656912073387693,
+            "threshold": 0.05,
+            "passed": true
+          }
+        ]
+      }
+    ]
+  },
+  "multiseedVerdict": {
+    "overallPassed": false,
+    "criterion": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20,
+      "permutationIterations": 500
+    },
+    "tasks": [
+      {
+        "key": "overall",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 290.5,
+        "auc": {
+          "mean": 0.5166945714730532,
+          "std": 0.04192348691938546,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.0688837313610965,
+          "std": 0.11567001463378428,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.4138389886892881,
+          "std": 0.2944727805610949,
+          "n": 30
+        },
+        "sigFraction": 0.16666666666666666,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "semantic_equivalent",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 83,
+        "auc": {
+          "mean": 0.5266348995745169,
+          "std": 0.06483875209267301,
+          "n": 30
+        },
+        "advantage": {
+          "mean": -0.07541883021121398,
+          "std": 0.13140484374404587,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.41596806387225543,
+          "std": 0.27141823916791663,
+          "n": 30
+        },
+        "sigFraction": 0.03333333333333333,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "structural_variant",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 68,
+        "auc": {
+          "mean": 0.5298327876725865,
+          "std": 0.07860316451769296,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.07421767683909755,
+          "std": 0.1727773521504814,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.40499001996007983,
+          "std": 0.27514632804620537,
+          "n": 30
+        },
+        "sigFraction": 0.06666666666666667,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "weak_equivalent",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 53.5,
+        "auc": {
+          "mean": 0.49941690962305835,
+          "std": 0.0874114732090131,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.10554351910618699,
+          "std": 0.135024908029954,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.5026613439787092,
+          "std": 0.2805235585722378,
+          "n": 30
+        },
+        "sigFraction": 0.06666666666666667,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      },
+      {
+        "key": "controlled_difference",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "medianTestN": 55.5,
+        "auc": {
+          "mean": 0.5570632143060508,
+          "std": 0.063394713143657,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.003709680279041307,
+          "std": 0.08690541547514294,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.30286094477711245,
+          "std": 0.2038483083270331,
+          "n": 30
+        },
+        "sigFraction": 0.1,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        }
+      }
+    ]
+  },
+  "overallPassed": false,
+  "conclusion": "Potential leakage detected. Further hardening is required."
+}
