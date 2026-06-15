@@ -352,6 +352,23 @@ function runSupervisedAttacks(executionResults, config = {}) {
       const balancedCount0 = trainByClass.class0.length;
       const balancedCount1 = trainByClass.class1.length;
 
+      // A policy-disjoint split can leave one class with no training (or test)
+      // rows for some seeds; training a classifier on that throws. Skip the pair
+      // for this seed (the multi-seed verdict tolerates missing records).
+      if (balancedCount0 === 0 || balancedCount1 === 0 ||
+          test.filter(d => d.label === 0).length === 0 ||
+          test.filter(d => d.label === 1).length === 0) {
+        console.log('  Skipping: empty train/test class after policy-disjoint split');
+        results.push({
+          targetAttribute,
+          class0,
+          class1,
+          skipped: true,
+          reason: 'Empty train/test class after split'
+        });
+        continue;
+      }
+
       if (balanceMethod !== 'none') {
         console.log(`  Train balanced: ${balancedCount0} vs ${balancedCount1}; test left natural (${test.filter(d => d.label === 0).length} vs ${test.filter(d => d.label === 1).length})`);
       }

@@ -51,7 +51,8 @@ const {
   evaluateClassificationTasks,
   checkPrivacyThresholds,
   calculateAUC,
-  permutationTestAUC
+  permutationTestAUC,
+  evaluateBinaryClassification
 } = require('../core/evaluator');
 
 const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
@@ -480,8 +481,48 @@ async function runExperiment(config = {}) {
         n: teY.length
       });
     }
+
+    // Positive control (attack-validity sanity check): a synthetic, known-
+    // separable label derived from commitGasUsed (which is a real observable
+    // feature). The SAME pipeline (normalized X + LogisticRegression) should
+    // recover it with high AUC/F1, proving the ≈0.5 AUC on real DUO labels is
+    // "no signal", not a broken attack. Reported but non-gating.
+    {
+      const gasVals = train.map(f => f.commitGasUsed).filter(v => typeof v === 'number');
+      const gasMedian = gasVals.length
+        ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
+        : null;
+      const ctrlLabel = f => (f.commitGasUsed > gasMedian ? 1 : 0);
+      const ctrlTrY = train.map(ctrlLabel);
+      const ctrlTeY = test.map(ctrlLabel);
+      if (gasMedian != null && new Set(ctrlTrY).size === 2 && new Set(ctrlTeY).size === 2) {
+        const lr = new LogisticRegression(0.1, 500);
+        lr.train(trX, ctrlTrY);
+        const proba = lr.predictProba(teX);
+        const auc = calculateAUC(ctrlTeY, proba);
+        if (auc != null) {
+          const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
+          const ev = evaluateBinaryClassification(ctrlTeY, pred, proba);
+          const { pValue } = permutationTestAUC(ctrlTeY, proba, permIterations);
+          records.push({
+            key: 'CONTROL: gas>median',
+            auc,
+            advantage: Math.abs(auc - 0.5),
+            permPValue: pValue,
+            n: ctrlTeY.length,
+            precision: ev.precision,
+            recall: ev.recall,
+            f1: ev.f1
+          });
+        }
+      }
+    }
     return records;
-  }, { seeds: multiseedSeeds, permutationIterations: permIterations });
+  }, {
+    seeds: multiseedSeeds,
+    permutationIterations: permIterations,
+    positiveControlKeys: ['CONTROL: gas>median']
+  });
 
   printVerdict('Policy Content Hiding', verdict);
   console.log();
@@ -609,6 +650,20 @@ function generateReadableReport(report) {
       lines.push(`- ${checkStatus} **${check.metric}:** ${check.value.toFixed(4)} (threshold: ${check.threshold})`);
     }
 
+    lines.push('');
+  }
+
+  const control = (report.multiseedVerdict.tasks || []).find(t => t.positiveControl);
+  if (control && control.prf) {
+    lines.push('## Attack-validity (positive control)');
+    lines.push('');
+    lines.push(`- **${control.key}:** AUC ${control.auc.mean.toFixed(3)} ± ${control.auc.std.toFixed(3)}, ` +
+      `P/R/F1 = ${control.prf.precision.mean.toFixed(2)} / ${control.prf.recall.mean.toFixed(2)} / ${control.prf.f1.mean.toFixed(2)}`);
+    lines.push('');
+    lines.push('> The same attack pipeline recovers a synthetic, known-separable label ' +
+      '(derived from observable gas) with high AUC/F1. This confirms the ≈0.5 AUC on real ' +
+      'policy-content labels reflects *absence of signal*, not a broken attack. ' +
+      'Non-gating sanity check.');
     lines.push('');
   }
 

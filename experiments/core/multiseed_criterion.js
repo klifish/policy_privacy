@@ -84,7 +84,7 @@ function evaluateMultiseed(runOnce, opts = {}) {
   // key -> { auc:[], adv:[], p:[] }, preserving first-seen order.
   const acc = new Map();
   const bucket = (key) => {
-    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [] });
+    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [], precision: [], recall: [], f1: [] });
     return acc.get(key);
   };
 
@@ -98,6 +98,12 @@ function evaluateMultiseed(runOnce, opts = {}) {
       if (typeof r.advantage === 'number' && !Number.isNaN(r.advantage)) b.adv.push(r.advantage);
       if (typeof r.permPValue === 'number' && !Number.isNaN(r.permPValue)) b.p.push(r.permPValue);
       if (typeof r.n === 'number' && !Number.isNaN(r.n)) b.n.push(r.n);
+      // Optional P/R/F1: only carried by tasks that report them (e.g. positive
+      // controls). Aggregated below only when present, so other tasks are
+      // unaffected.
+      if (typeof r.precision === 'number' && !Number.isNaN(r.precision)) b.precision.push(r.precision);
+      if (typeof r.recall === 'number' && !Number.isNaN(r.recall)) b.recall.push(r.recall);
+      if (typeof r.f1 === 'number' && !Number.isNaN(r.f1)) b.f1.push(r.f1);
     }
   }
 
@@ -136,7 +142,7 @@ function evaluateMultiseed(runOnce, opts = {}) {
     const passed = (!judgeable || underpowered) ? null : (aucOk && sigOk);
     const nonGating = underpowered || positiveControl;
 
-    tasks.push({
+    const task = {
       key,
       passed,
       skipped: !judgeable,
@@ -149,7 +155,17 @@ function evaluateMultiseed(runOnce, opts = {}) {
       permPValue: permP,
       sigFraction,
       seeds: { auc: auc.n, perm: b.p.length }
-    });
+    };
+    // Attach P/R/F1 (mean±std) only for tasks that reported them — keeps the
+    // shape unchanged for tasks that don't (PCH DUO, SPP attrs, PI scopes).
+    if (b.precision.length || b.recall.length || b.f1.length) {
+      task.prf = {
+        precision: meanStd(b.precision),
+        recall: meanStd(b.recall),
+        f1: meanStd(b.f1)
+      };
+    }
+    tasks.push(task);
   }
 
   const judged = tasks.filter(t => t.passed !== null && !t.nonGating);
@@ -177,6 +193,11 @@ function printVerdict(title, verdict) {
     const permMean = Number.isNaN(t.permPValue.mean) ? '  n/a  ' : t.permPValue.mean.toFixed(3);
     const medN = t.medianTestN == null ? ' n/a' : String(t.medianTestN);
     console.log(`${t.key.padEnd(37)} | ${f(t.auc).padEnd(15)} | ${f(t.advantage).padEnd(15)} | ${permMean.padEnd(11)} | ${pct.padEnd(4)} | ${medN.padEnd(4)} | ${v}`);
+    // For positive controls, also show P/R/F1 — the sanity-check evidence that
+    // the attack pipeline DOES detect a known-separable signal.
+    if (t.prf) {
+      console.log(`${' '.repeat(37)} |   P/R/F1: ${t.prf.precision.mean.toFixed(2)} / ${t.prf.recall.mean.toFixed(2)} / ${t.prf.f1.mean.toFixed(2)} (attack-validity)`);
+    }
   }
   console.log('--------------------------------------+-----------------+-----------------+-------------+------+--------');
   console.log(`Overall: ${verdict.overallPassed ? '✓ PASS' : '✗ FAIL'}`);

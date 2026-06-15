@@ -1,6 +1,6 @@
 # Policy Content Hiding Evaluation Report
 
-**Date:** 6/15/2026, 11:05:21 AM
+**Date:** 6/15/2026, 2:52:21 PM
 
 ## Objective
 
@@ -26,44 +26,44 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 ### DUO Term 0 Presence
 
 - **Type:** binary
-- **AUC:** 0.5061 (✓ PASS)
-- **Advantage:** 31.45% (✗ FAIL)
-  - *Interpretation: Adversary performs 31.45% better than random guessing*
+- **AUC:** 0.4840 (✓ PASS)
+- **Advantage:** 34.98% (✗ FAIL)
+  - *Interpretation: Adversary performs 34.98% better than random guessing*
 
 ### DUO Term 1 Presence
 
 - **Type:** binary
-- **AUC:** 0.4986 (✓ PASS)
-- **Advantage:** -2.60% (✓ PASS)
-  - *Interpretation: Adversary performs -2.60% better than random guessing*
+- **AUC:** 0.4965 (✓ PASS)
+- **Advantage:** 7.03% (✗ FAIL)
+  - *Interpretation: Adversary performs 7.03% better than random guessing*
 
 ### DUO Term 2 Presence
 
 - **Type:** binary
-- **AUC:** 0.5161 (✓ PASS)
-- **Advantage:** 4.64% (✓ PASS)
-  - *Interpretation: Adversary performs 4.64% better than random guessing*
+- **AUC:** 0.4965 (✓ PASS)
+- **Advantage:** -5.51% (✓ PASS)
+  - *Interpretation: Adversary performs -5.51% better than random guessing*
 
 ### DUO Term 3 Presence
 
 - **Type:** binary
-- **AUC:** 0.4994 (✓ PASS)
-- **Advantage:** 10.74% (✗ FAIL)
-  - *Interpretation: Adversary performs 10.74% better than random guessing*
+- **AUC:** 0.4719 (✓ PASS)
+- **Advantage:** 23.00% (✗ FAIL)
+  - *Interpretation: Adversary performs 23.00% better than random guessing*
 
 ### DUO Term 4 Presence
 
 - **Type:** binary
-- **AUC:** 0.4913 (✓ PASS)
-- **Advantage:** 4.38% (✓ PASS)
-  - *Interpretation: Adversary performs 4.38% better than random guessing*
+- **AUC:** 0.4753 (✓ PASS)
+- **Advantage:** 12.93% (✗ FAIL)
+  - *Interpretation: Adversary performs 12.93% better than random guessing*
 
 ### DUO Term 5 Presence
 
 - **Type:** binary
-- **AUC:** 0.5067 (✓ PASS)
-- **Advantage:** -10.10% (✓ PASS)
-  - *Interpretation: Adversary performs -10.10% better than random guessing*
+- **AUC:** 0.4936 (✓ PASS)
+- **Advantage:** -3.04% (✓ PASS)
+  - *Interpretation: Adversary performs -3.04% better than random guessing*
 
 ### ICD-10 Chapter Prediction (RandomForest)
 
@@ -79,37 +79,43 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 ### DUO Term 0 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.5061 (threshold: 0.55)
-- ✗ **Advantage:** 0.3145 (threshold: 0.05)
+- ✓ **AUC:** 0.4840 (threshold: 0.55)
+- ✗ **Advantage:** 0.3498 (threshold: 0.05)
 
-### DUO Term 1 Presence: ✓ PASS
+### DUO Term 1 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4986 (threshold: 0.55)
-- ✓ **Advantage:** -0.0260 (threshold: 0.05)
+- ✓ **AUC:** 0.4965 (threshold: 0.55)
+- ✗ **Advantage:** 0.0703 (threshold: 0.05)
 
 ### DUO Term 2 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5161 (threshold: 0.55)
-- ✓ **Advantage:** 0.0464 (threshold: 0.05)
+- ✓ **AUC:** 0.4965 (threshold: 0.55)
+- ✓ **Advantage:** -0.0551 (threshold: 0.05)
 
 ### DUO Term 3 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4994 (threshold: 0.55)
-- ✗ **Advantage:** 0.1074 (threshold: 0.05)
+- ✓ **AUC:** 0.4719 (threshold: 0.55)
+- ✗ **Advantage:** 0.2300 (threshold: 0.05)
 
-### DUO Term 4 Presence: ✓ PASS
+### DUO Term 4 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4913 (threshold: 0.55)
-- ✓ **Advantage:** 0.0438 (threshold: 0.05)
+- ✓ **AUC:** 0.4753 (threshold: 0.55)
+- ✗ **Advantage:** 0.1293 (threshold: 0.05)
 
 ### DUO Term 5 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5067 (threshold: 0.55)
-- ✓ **Advantage:** -0.1010 (threshold: 0.05)
+- ✓ **AUC:** 0.4936 (threshold: 0.55)
+- ✓ **Advantage:** -0.0304 (threshold: 0.05)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 
 - ✓ **Advantage:** -0.0909 (threshold: 0.05)
+
+## Attack-validity (positive control)
+
+- **CONTROL: gas>median:** AUC 0.994 ± 0.002, P/R/F1 = 0.92 / 0.98 / 0.95
+
+> The same attack pipeline recovers a synthetic, known-separable label (derived from observable gas) with high AUC/F1. This confirms the ≈0.5 AUC on real policy-content labels reflects *absence of signal*, not a broken attack. Non-gating sanity check.
 
 ## Overall Result
 

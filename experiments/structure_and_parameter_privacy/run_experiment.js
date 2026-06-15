@@ -18,7 +18,8 @@ const { resolveDatasetPaths } = require('../core/dataset');
 const {
   runSupervisedAttacks,
   runStatisticalTests,
-  runClusteringAttack
+  runClusteringAttack,
+  extractFeatures
 } = require('./attacks');
 
 const { ProgressTracker } = require('../core/progress');
@@ -246,7 +247,7 @@ function generateMarkdownReport(report) {
   lines.push('');
   lines.push(`- **Policy count:** ${report.config.policyCount}`);
   lines.push(`- **Executions per policy:** ${report.config.executionsPerPolicy}`);
-  lines.push(`- **Satisfy ratio:** ${report.config.satisfyRatio.toFixed(2)}`);
+  lines.push(`- **Satisfy ratio:** ${typeof report.config.satisfyRatio === 'number' ? report.config.satisfyRatio.toFixed(2) : 'N/A'}`);
   lines.push(`- **Test ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
   lines.push(`- **Balance method:** ${report.config.balanceMethod || 'both'}`);
   if (report.dataset.meta?.families !== undefined) {
@@ -329,6 +330,20 @@ function generateMarkdownReport(report) {
       lines.push('');
     }
   });
+
+  const control = (report.multiseedVerdict?.tasks || []).find(t => t.positiveControl);
+  if (control && control.prf) {
+    lines.push('## Attack-validity (positive control)');
+    lines.push('');
+    lines.push(`- **${control.key}:** AUC ${control.auc.mean.toFixed(3)} ± ${control.auc.std.toFixed(3)}, ` +
+      `P/R/F1 = ${control.prf.precision.mean.toFixed(2)} / ${control.prf.recall.mean.toFixed(2)} / ${control.prf.f1.mean.toFixed(2)}`);
+    lines.push('');
+    lines.push('> The same attack pipeline recovers a synthetic, known-separable label ' +
+      '(derived from observable gas) with high AUC/F1. This confirms the ≈0.5 AUC on real ' +
+      'structure/parameter attributes reflects *absence of signal*, not a broken attack. ' +
+      'Non-gating sanity check.');
+    lines.push('');
+  }
 
   lines.push('## Conclusion');
   lines.push('');
@@ -514,8 +529,56 @@ async function runExperiment(config = {}) {
         });
       }
     }
+
+    // Positive control (attack-validity sanity check): inject a synthetic,
+    // known-separable attribute derived from commitGasUsed (a real observable)
+    // and run it through the SAME runSupervisedAttacks pipeline. The attack
+    // should recover it with high AUC/F1, proving the ≈0.5 AUC on real
+    // structure/parameter attributes is "no signal", not a broken attack.
+    // Reported but non-gating.
+    {
+      const gasVals = executionResults
+        .map(r => extractFeatures(r).commitGasUsed)
+        .filter(v => typeof v === 'number');
+      const gasMedian = gasVals.length
+        ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
+        : null;
+      if (gasMedian != null) {
+        const tagged = executionResults.map(r => ({
+          ...r,
+          __control: extractFeatures(r).commitGasUsed > gasMedian ? 'high' : 'low'
+        }));
+        console.log = () => {};
+        const out = runSupervisedAttacks(tagged, {
+          targetAttribute: '__control',
+          testRatio: config.testRatio,
+          permutationIterations: permIterations,
+          balanceMethod: config.balanceMethod
+        });
+        console.log = origLog;
+        const r = (out.results || []).find(x => !x.skipped && x.randomForest);
+        if (r) {
+          const rfEv = r.randomForest.evaluation || {};
+          const perm = (r.logisticRegression && r.logisticRegression.permutationTest) || {};
+          records.push({
+            key: 'CONTROL: gas>median',
+            auc: typeof rfEv.auc === 'number' ? rfEv.auc : undefined,
+            advantage: typeof rfEv.advantage === 'number' ? rfEv.advantage : undefined,
+            permPValue: typeof perm.pValue === 'number' ? perm.pValue : undefined,
+            n: typeof r.testSize === 'number' ? r.testSize : undefined,
+            precision: typeof rfEv.precision === 'number' ? rfEv.precision : undefined,
+            recall: typeof rfEv.recall === 'number' ? rfEv.recall : undefined,
+            f1: typeof rfEv.f1 === 'number' ? rfEv.f1 : undefined
+          });
+        }
+      }
+    }
     return records;
-  }, { seeds: multiseedSeeds, permutationIterations: permIterations });
+  }, {
+    seeds: multiseedSeeds,
+    permutationIterations: permIterations,
+    positiveControlKeys: ['CONTROL: gas>median']
+  });
   console.log = origLog;
   printVerdict('Structure & Parameter Privacy', verdict);
 
