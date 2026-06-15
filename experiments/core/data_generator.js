@@ -1743,6 +1743,44 @@ function buildSatisfactionPlan(executionsPerPolicy, satisfyRatio, rng) {
 }
 
 /**
+ * Select the depth-layer subset for two-layer execution.
+ *
+ * Groups blueprints by author-level logicStructure (reusing the SPP classifier)
+ * and deterministically samples `perStructure` blueprints from each requested
+ * structure bucket. Returns a Set of policyId. The RNG is seeded so the same
+ * config + seed always selects the same subset (auditable, reproducible).
+ *
+ * Lazy-requires the SPP data_generator to avoid a module-load circular import
+ * (SPP data_generator requires this file); by call time the cycle is resolved.
+ */
+function selectDepthSubset(blueprints, { perStructure, structures, rng }) {
+  const { analyzeLogicShape, classifyLogicStructure } =
+    require('../structure_and_parameter_privacy/data_generator');
+
+  const byStructure = new Map();
+  for (const bp of blueprints) {
+    const ls = classifyLogicStructure(
+      analyzeLogicShape(bp.semantics.logicOriginal || bp.semantics.logicNormalized || '')
+    );
+    if (!byStructure.has(ls)) byStructure.set(ls, []);
+    byStructure.get(ls).push(bp);
+  }
+
+  const selected = new Set();
+  for (const structure of structures) {
+    const pool = byStructure.get(structure) || [];
+    const picked = sampleWithoutReplacement(rng, pool, perStructure);
+    if (picked.length < perStructure) {
+      console.warn(
+        `[depth-subset] structure ${structure}: only ${picked.length}/${perStructure} blueprints available`
+      );
+    }
+    picked.forEach((bp) => selected.add(bp.id));
+  }
+  return selected;
+}
+
+/**
  * Check if a DUO term is ontology-linked (requires external ontology)
  */
 function isOntologyLinked(duoTerm) {
@@ -1917,6 +1955,15 @@ async function generateDataset(config = {}) {
     seed = 'policy-dataset',
     policyCount = DEFAULT_POLICY_COUNT,
     executionsPerPolicy = DEFAULT_EXECUTIONS_PER_POLICY,
+    // Two-layer execution: when depthExecutions is set, a stratified subset of
+    // policies runs depthExecutions times (depth layer, for PI Level-III / TPS)
+    // while every other policy runs coverageExecutions times (coverage layer).
+    // When depthExecutions is null the global executionsPerPolicy is used for
+    // all policies (backward-compatible single-layer behaviour).
+    coverageExecutions = null,
+    depthExecutions = null,
+    depthSubsetPerStructure = 8,
+    depthStructures = ['and_only', 'or_only', 'negation_heavy', 'and_or_mixed'],
     satisfyRatio = DEFAULT_SATISFY_RATIO,
     semanticLayers = DEFAULT_SEMANTIC_LAYERS,
     duoTerms = null,
@@ -2018,9 +2065,27 @@ async function generateDataset(config = {}) {
     incrementCounter(coverage.proofTypes, blueprint.structure.proofType);
   });
 
+  // Two-layer execution: when depthExecutions is set, select a stratified
+  // depth-layer subset (depthExecutions reps each) and run every other policy
+  // coverageExecutions times. depthSubset is null in single-layer mode, in
+  // which case every policy uses the global executionsPerPolicy (unchanged).
+  const twoLayer = depthExecutions != null;
+  const depthSubset = twoLayer
+    ? selectDepthSubset(blueprints, {
+        perStructure: depthSubsetPerStructure,
+        structures: depthStructures,
+        rng
+      })
+    : null;
+  const effectiveCoverageExecutions = coverageExecutions != null ? coverageExecutions : 1;
+
   // TODO: need to be confirmed further, seems not consider ontology predicates when generate requester attributes
   blueprints.forEach((blueprint, blueprintIndex) => {
-    const plan = buildSatisfactionPlan(executionsPerPolicy, satisfyRatio, rng);
+    const isDepth = Boolean(depthSubset && depthSubset.has(blueprint.id));
+    const execCount = twoLayer
+      ? (isDepth ? depthExecutions : effectiveCoverageExecutions)
+      : executionsPerPolicy;
+    const plan = buildSatisfactionPlan(execCount, satisfyRatio, rng);
     plan.forEach((satisfy, execIndex) => {
       const requesterAttrs = generateRequesterAttrs(blueprint.duoTerms, satisfy, {
         attributeOrder,
@@ -2049,7 +2114,9 @@ async function generateDataset(config = {}) {
         requesterAttrs,
         satisfy,
         randomizer: blueprint.artifacts.randomizer,
-        policyCommitment: blueprint.artifacts.policyCommitment
+        policyCommitment: blueprint.artifacts.policyCommitment,
+        depthLayer: isDepth,
+        executionTier: twoLayer ? (isDepth ? 'depth' : 'coverage') : 'single'
       };
 
       if (datasetEntry.predicateSlots.length > 0) {
@@ -2076,6 +2143,15 @@ async function generateDataset(config = {}) {
     seed,
     policyCount: blueprints.length,
     executionsPerPolicy,
+    twoLayer: twoLayer ? {
+      coverageExecutions: effectiveCoverageExecutions,
+      depthExecutions,
+      depthSubsetPerStructure,
+      depthStructures,
+      depthPolicyIds: [...depthSubset],
+      depthPolicyCount: depthSubset.size,
+      totalExecutions: dataset.length
+    } : null,
     satisfyRatio,
     attributeOrder,
     coverage: {
@@ -2102,6 +2178,19 @@ async function providerCommitAndProvision(policyData, contract) {
     predicateValuesBySlot = {},
     structure = {}
   } = policyData;
+
+  // Explicit gas-price override for provider txs (commit / registerResource).
+  // On networks with an enforced minimum tip (e.g. Amoy's 25 gwei), an RPC
+  // timeout+retry can otherwise fall back to a default ~1 gwei EIP-1559 tip and
+  // get rejected ("gas tip cap below minimum"). Pinning a legacy gasPrice on the
+  // tx itself makes every send/retry use the same safe value. Empty disables it
+  // (local networks). Mirrors the TPS access-path pin (run.js TPS_GAS_PRICE_GWEI).
+  const providerGasGwei = process.env.PROVIDER_GAS_PRICE_GWEI
+    || process.env.TPS_GAS_PRICE_GWEI
+    || '';
+  const txOverrides = providerGasGwei
+    ? { gasPrice: BigInt(Math.round(parseFloat(providerGasGwei) * 1e9)) }
+    : {};
 
   const predicateCount = POLICY_PREDICATE_SLOTS.length;
   const zeroStringArray = (length) => Array.from({ length }, () => '0');
@@ -2161,8 +2250,8 @@ async function providerCommitAndProvision(policyData, contract) {
   const commitTx = await retryRpc(
     'commitPolicy send',
     () => gasPadEnabled
-      ? commitWithPadFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', commitPadTarget)
-      : commitFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata'),
+      ? commitWithPadFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', commitPadTarget, txOverrides)
+      : commitFn(policyCommitment, paramsCommitment, 'ipfs://policy-metadata', txOverrides),
     { initialDelayMs: 5000, maxAttempts: 8 }
   );
   const commitReceipt = await waitForTx(commitTx, 1, { label: `commitPolicy tx ${commitTx.hash}` });
@@ -2178,7 +2267,7 @@ async function providerCommitAndProvision(policyData, contract) {
   // Stage 1c: register protected resource (provider)
   const resourceTx = await retryRpc(
     `registerResource send for policyId=${blockchainPolicyId}`,
-    () => contractWithSigner.registerResource(blockchainPolicyId),
+    () => contractWithSigner.registerResource(blockchainPolicyId, txOverrides),
     { initialDelayMs: 5000, maxAttempts: 8 }
   );
   const resourceReceipt = await waitForTx(resourceTx, 1, { label: `registerResource tx ${resourceTx.hash}` });

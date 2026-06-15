@@ -230,7 +230,18 @@ function runPairwiseAttacks(pairs, options = {}) {
  * Two-sample statistical tests (Level III).
  */
 function runTwoSampleTests(pairs) {
-  const perPair = pairs.map((pair) => {
+  // MMD divides by len*(len-1); a policy with <2 executions yields a degenerate
+  // single-point "distribution" and a divide-by-zero -> NaN. Skip such pairs so
+  // any coverage-layer (1-execution) policy that slips through cannot poison the
+  // Level-III aggregates.
+  const eligiblePairs = pairs.filter((pair) =>
+    pair.policies[0].features.length >= 2 && pair.policies[1].features.length >= 2);
+  const skipped = pairs.length - eligiblePairs.length;
+  if (skipped > 0) {
+    console.warn(`runTwoSampleTests: skipped ${skipped}/${pairs.length} pairs with <2 executions per policy (would produce NaN MMD)`);
+  }
+
+  const perPair = eligiblePairs.map((pair) => {
     const policyA = pair.policies[0];
     const policyB = pair.policies[1];
     const vectorsA = policyA.features.map((sample) => FEATURE_KEYS.map((key) => sample.features[key]));

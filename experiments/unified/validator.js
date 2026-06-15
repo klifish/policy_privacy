@@ -390,11 +390,22 @@ function validatePIRequirements(dataset, config) {
   // Aggregate by policy
   const policies = aggregatePoliciesByDefinition(dataset);
 
-  // Sample subset of policies (without replacement) to estimate pair distribution
+  // Sample subset of policies (without replacement) to estimate pair distribution.
+  // Use a seeded RNG (derived from the config seed) so validation is deterministic
+  // — otherwise the pair-type estimate (and hence pass/fail) varies run to run.
   const sampleSize = Math.min(80, policies.length);
+  let piSeed = 0;
+  const seedStr = String(config.seed ?? 'pi-validation');
+  for (let k = 0; k < seedStr.length; k++) {
+    piSeed = (piSeed * 31 + seedStr.charCodeAt(k)) >>> 0;
+  }
+  const piRng = () => {
+    piSeed = (piSeed * 1103515245 + 12345) & 0x7fffffff;
+    return piSeed / 0x7fffffff;
+  };
   const shuffled = policies.slice();
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(piRng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   const sampledPolicies = shuffled.slice(0, sampleSize);
@@ -528,6 +539,10 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   const dataset = await generatePCHDataset({
     policyCount: normalizedConfig.policyCount,
     executionsPerPolicy: normalizedConfig.executionsPerPolicy,
+    coverageExecutions: normalizedConfig.coverageExecutions ?? null,
+    depthExecutions: normalizedConfig.depthExecutions ?? null,
+    depthSubsetPerStructure: normalizedConfig.depthSubsetPerStructure ?? 8,
+    depthStructures: normalizedConfig.depthStructures,
     satisfyRatio: normalizedConfig.satisfyRatio,
     seed: normalizedConfig.seed,
     semanticLayers: normalizedConfig.semanticLayers,

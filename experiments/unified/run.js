@@ -154,6 +154,12 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.artifactDir = path.resolve(arg.split('=')[1]);
     } else if (arg.startsWith('--spp-executions=')) {
       options.sppExecutionsPerPolicy = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--coverage-executions=')) {
+      options.coverageExecutions = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--depth-executions=')) {
+      options.depthExecutions = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--depth-per-structure=')) {
+      options.depthSubsetPerStructure = parseInt(arg.split('=')[1], 10);
     }
   });
 
@@ -166,6 +172,9 @@ function printUsage() {
   console.log('  --config=<path>            Path to unified dataset config (JSON)');
   console.log('  --artifact-dir=<path>      Output directory for shared artifacts');
   console.log('  --spp-executions=<n>       Executions per policy to expose to SPP experiment (default: 3)');
+  console.log('  --coverage-executions=<n>  Two-layer: executions for coverage-layer policies (default from config)');
+  console.log('  --depth-executions=<n>     Two-layer: executions for depth-layer subset; enables two-layer mode');
+  console.log('  --depth-per-structure=<n>  Two-layer: depth-subset policies per logicStructure (default: 8)');
   console.log('  --help                     Show this message');
 }
 
@@ -183,6 +192,13 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     const loaded = JSON.parse(fs.readFileSync(options.configPath, 'utf8'));
     config = { ...config, ...loaded };
   }
+
+  // CLI two-layer overrides win over the config file (only when provided).
+  ['coverageExecutions', 'depthExecutions', 'depthSubsetPerStructure'].forEach((key) => {
+    if (cliOptions[key] !== undefined) {
+      config[key] = cliOptions[key];
+    }
+  });
 
   console.log('='.repeat(70));
   console.log('Unified Dataset Pipeline (TPS Workflow)');
@@ -274,6 +290,13 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   // instead of the RPC-suggested ~59 gwei, halving the experiment cost.
   const tpsGasPriceGwei = process.env.TPS_GAS_PRICE_GWEI ||
     (network.name === 'polygonAmoy' ? '30' : '');
+  // Pin the provider-side commit/registerResource gas price in THIS process too
+  // (executePolicy runs here, not in the TPS subprocess). Without this, an RPC
+  // timeout+retry on a commit tx can fall back to a ~1 gwei tip and be rejected
+  // by Amoy's 25 gwei minimum — which aborted the first full run at policy 368.
+  if (tpsGasPriceGwei && !process.env.PROVIDER_GAS_PRICE_GWEI) {
+    process.env.PROVIDER_GAS_PRICE_GWEI = tpsGasPriceGwei;
+  }
   // Access-path gas padding base target (defense-in-depth on the commitment-only
   // interface). MUST exceed the bare access gas across ALL policies so the whole
   // randomized ±10% band stays above real usage — otherwise a low target both

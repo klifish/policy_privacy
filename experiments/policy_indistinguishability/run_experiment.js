@@ -514,6 +514,25 @@ async function runExperiment(config = {}) {
     throw new Error('No policy pairs available for attack modelling. Ensure phase 2 completed successfully.');
   }
 
+  // Level-III (two-sample MMD/KS) compares the within-policy execution
+  // distribution of two policies, so it needs >=2 executions per policy. Under
+  // two-layer execution only the depth layer has replicates; coverage-layer
+  // policies (1 execution) would make computeMMD divide by len*(len-1)=0 -> NaN.
+  // Build a separate depth-only pair set for Level-III; Level-I/II keep the full
+  // pairs. Falls back to all executions when no depthLayer tag is present
+  // (single-layer / legacy datasets), preserving prior behaviour.
+  const depthExecutions = executionResults.filter((r) => r.depthLayer === true);
+  let level3Pairs = pairs;
+  if (depthExecutions.length > 0) {
+    const depthPairData = buildPairsFromExecutionResults(depthExecutions, piConfig);
+    level3Pairs = depthPairData.pairs;
+    const depthPolicyCount = new Set(depthExecutions.map((r) => r.policyId)).size;
+    console.log(
+      `PI Level-III: using ${depthExecutions.length} depth-layer executions ` +
+      `(${depthPolicyCount} policies, ${level3Pairs.length} pairs) out of ${executionResults.length} total executions`
+    );
+  }
+
   // Phase 3 – attack modelling & reporting
   console.log('Phase 3: Attack Modelling & Reporting');
   console.log('-'.repeat(60));
@@ -533,7 +552,7 @@ async function runExperiment(config = {}) {
   progress.completeStep();
 
   progress.startStep('Running two-sample statistical tests');
-  const statisticsResults = runTwoSampleTests(pairs);
+  const statisticsResults = runTwoSampleTests(level3Pairs);
   progress.completeStep();
 
   progress.completeStep();

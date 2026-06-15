@@ -1,0 +1,58 @@
+{
+  "policyCount": 40,
+  "policyCountTarget": 40,
+  "executionsPerPolicy": 2,
+  "coverageExecutions": 1,
+  "depthExecutions": 5,
+  "depthSubsetPerStructure": 2,
+  "depthStructures": ["and_only", "or_only", "negation_heavy", "and_or_mixed"],
+  "satisfyRatio": 1,
+  "seed": "twolayer-smoke-2026",
+  "semanticLayers": [
+    {
+      "name": "smoke_and_only",
+      "combos": [["GR"], ["DS"], ["RS"]],
+      "minPolicies": 10,
+      "maxPolicies": 10,
+      "logicOptions": { "operators": ["AND"], "notProbability": 0.0, "groupNotProbability": 0.0 },
+      "whitelistBuckets": [2, 4],
+      "merkleDepthOptions": [2, 3]
+    },
+    {
+      "name": "smoke_or_only",
+      "combos": [["DS", "RS"], ["DS", "POA"], ["RS", "CC"]],
+      "minPolicies": 10,
+      "maxPolicies": 10,
+      "logicOptions": { "operators": ["OR"], "notProbability": 0.0, "groupNotProbability": 0.0 },
+      "whitelistBuckets": [4, 8],
+      "merkleDepthOptions": [3, 4]
+    },
+    {
+      "name": "smoke_negation_heavy",
+      "combos": [["GR", "DS"], ["DS", "RS"], ["RS", "POA"]],
+      "minPolicies": 10,
+      "maxPolicies": 10,
+      "logicOptions": { "operators": ["AND", "OR"], "notProbability": 0.7, "groupNotProbability": 0.5 },
+      "whitelistBuckets": [4, 8]
+    },
+    {
+      "name": "smoke_and_or_mixed",
+      "combos": [["GR", "DS", "RS"], ["DS", "POA", "GS"], ["RS", "POA", "CC"]],
+      "minPolicies": 10,
+      "maxPolicies": 10,
+      "logicOptions": { "operators": ["AND", "OR"], "notProbability": 0.3, "groupNotProbability": 0.25, "ensureMixedOperators": true },
+      "whitelistBuckets": [8, 12],
+      "merkleDepthOptions": [4, 5]
+    }
+  ],
+  "validation": {
+    "pch": { "minPoliciesPerDUO": 1, "minMaxRatio": 0.05 },
+    "spp": {
+      "minPoliciesPerCategory": 1,
+      "minMaxRatio": 0.05,
+      "maxCV": 2.0,
+      "skipDimensions": ["logicStructures", "nestingDepths", "predicateCounts", "setSizes", "rangeWidths"]
+    },
+    "pi": { "minPairsPerType": 0, "minSemanticDiversity": 0.05 }
+  }
+}
