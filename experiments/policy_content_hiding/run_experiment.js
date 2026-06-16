@@ -58,6 +58,51 @@ const {
 const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
 
 
+/**
+ * Run BOTH attackers (logistic regression and random forest) on one binary
+ * inference task and return the stronger one as the gating record. "Stronger" =
+ * higher AUC; the permutation p-value is taken from the SAME classifier whose
+ * AUC won, so the reported AUC and its significance test describe one model
+ * (taking max-AUC from one model and its p-value from another would be
+ * inconsistent). This upgrades the privacy claim from "logistic regression can't
+ * infer it" to "neither a linear nor a non-linear attacker can", and matches
+ * SPP, which already runs LR + RF (see structure_and_parameter_privacy/attacks.js).
+ *
+ * @returns {{key,auc,advantage,permPValue,n,classifier}|null} null on degenerate AUC.
+ */
+function strongestAttack(key, trX, trY, teX, teY, permIterations, rfOpts = {}) {
+  const { trees = 50, maxDepth = 10 } = rfOpts;
+  const lr = new LogisticRegression(0.1, 500);
+  lr.train(trX, trY);
+  const lrProba = lr.predictProba(teX);
+  const lrAuc = calculateAUC(teY, lrProba);
+
+  const rf = new RandomForest(trees, maxDepth);
+  rf.train(trX, trY);
+  const rfProba = rf.predictProba(teX);
+  const rfAuc = calculateAUC(teY, rfProba);
+
+  let auc, proba, classifier;
+  if (rfAuc != null && (lrAuc == null || rfAuc >= lrAuc)) {
+    auc = rfAuc; proba = rfProba; classifier = 'rf';
+  } else if (lrAuc != null) {
+    auc = lrAuc; proba = lrProba; classifier = 'lr';
+  } else {
+    return null; // both degenerate
+  }
+
+  const { pValue } = permutationTestAUC(teY, proba, permIterations);
+  return {
+    key,
+    auc,
+    advantage: Math.abs(auc - 0.5), // AUC-based advantage, matches multiseed_eval
+    permPValue: pValue,
+    n: teY.length,
+    classifier
+  };
+}
+
+
 function parseArgs(argv = process.argv.slice(2)) {
   const config = parseCommonArgs(argv.filter(a => a !== '--'));
 
@@ -459,6 +504,19 @@ async function runExperiment(config = {}) {
   // sets, so it is not the basis for PASS/FAIL.
   const multiseedSeeds = config.multiseedSeeds || 30;
   const permIterations = config.permutationIterations || 200;
+  // Random-forest hyperparameters for the second (non-linear) attacker, matching
+  // SPP's forest (50 trees, depth 10). A depth scan (3→10) confirmed RF's
+  // higher-than-LR AUC on some ICD chapters is NOT depth overfitting — the AUC
+  // is depth-invariant (~0.6 even at depth 3), i.e. RF is finding a genuine but
+  // weak non-linear structure in the gas features that the linear model can't.
+  // That weak signal is governed by the gas features' low ICC (<0.4: within-
+  // policy pad noise exceeds between-policy signal), so the permutation test is
+  // what decides whether it is a real channel. Hence the verdict's double
+  // criterion (AUC AND permutation) rather than depth tuning.
+  const rfOpts = {
+    trees: config.rfTrees || 50,
+    maxDepth: config.rfMaxDepth || 10
+  };
   const verdict = evaluateMultiseed((seedIndex) => {
     const { train, test } = splitTrainTest(normalizedFeatures, testRatio);
     const trX = prepareClassificationData(train, 'duoTerm').X;
@@ -471,19 +529,8 @@ async function runExperiment(config = {}) {
       const trY = train.map(labelOf);
       const teY = test.map(labelOf);
       if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-      const lr = new LogisticRegression(0.1, 500);
-      lr.train(trX, trY);
-      const proba = lr.predictProba(teX);
-      const auc = calculateAUC(teY, proba);
-      if (auc == null) continue;
-      const { pValue } = permutationTestAUC(teY, proba, permIterations);
-      records.push({
-        key: `DUO ${code}`,
-        auc,
-        advantage: Math.abs(auc - 0.5), // AUC-based advantage, matches multiseed_eval
-        permPValue: pValue,
-        n: teY.length
-      });
+      const rec = strongestAttack(`DUO ${code}`, trX, trY, teX, teY, permIterations, rfOpts);
+      if (rec) records.push(rec);
     }
 
     // ICD-10 chapter inference (one-vs-rest), included in the multi-seed verdict
@@ -505,19 +552,8 @@ async function runExperiment(config = {}) {
           const trY = icdTrain.map(labelOf);
           const teY = icdTest.map(labelOf);
           if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-          const lr = new LogisticRegression(0.1, 500);
-          lr.train(icdTrX, trY);
-          const proba = lr.predictProba(icdTeX);
-          const auc = calculateAUC(teY, proba);
-          if (auc == null) continue;
-          const { pValue } = permutationTestAUC(teY, proba, permIterations);
-          records.push({
-            key: `ICD ch${ch}`,
-            auc,
-            advantage: Math.abs(auc - 0.5),
-            permPValue: pValue,
-            n: teY.length
-          });
+          const rec = strongestAttack(`ICD ch${ch}`, icdTrX, trY, icdTeX, teY, permIterations, rfOpts);
+          if (rec) records.push(rec);
         }
       }
     }
@@ -704,19 +740,20 @@ function generateReadableReport(report) {
   if (mv && Array.isArray(mv.tasks)) {
     lines.push('## Multi-seed Verdict (authoritative)');
     lines.push('');
-    lines.push(`Criterion: AUC_mean ≤ ${mv.criterion.aucMax} AND significant-seed fraction < ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}), over ${mv.criterion.seeds} policy-disjoint seeds. Advantage reported, not gating.`);
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}); both required, otherwise PASS. Over ${mv.criterion.seeds} policy-disjoint seeds, each task attacked by **both** logistic regression and random forest with the stronger (higher-AUC) model reported. Advantage reported, not gating.`);
     lines.push('');
-    lines.push('| Task | AUC mean±std | perm p mean | %sig seeds | median test n | Verdict |');
-    lines.push('|---|---|---|---|---|---|');
+    lines.push('| Task | AUC mean±std | perm p mean | %sig seeds | RF-won seeds | median test n | Verdict |');
+    lines.push('|---|---|---|---|---|---|---|');
     for (const t of mv.tasks) {
       if (t.positiveControl) continue; // shown separately under Attack-validity
       const auc = Number.isNaN(t.auc.mean) ? 'n/a' : `${t.auc.mean.toFixed(3)} ± ${t.auc.std.toFixed(3)}`;
       const pm = Number.isNaN(t.permPValue.mean) ? 'n/a' : t.permPValue.mean.toFixed(3);
       const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
+      const rfw = t.rfWinFraction == null ? 'n/a' : `${(t.rfWinFraction * 100).toFixed(0)}%`;
       const verdict = t.skipped ? 'skipped'
         : t.underpowered ? '— (underpowered, non-gating)'
         : (t.passed ? '✓ PASS' : '✗ FAIL');
-      lines.push(`| ${t.key} | ${auc} | ${pm} | ${pct} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      lines.push(`| ${t.key} | ${auc} | ${pm} | ${pct} | ${rfw} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
     }
     lines.push('');
   }

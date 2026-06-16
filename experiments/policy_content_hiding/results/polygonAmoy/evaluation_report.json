@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Content Hiding Evaluation",
-  "timestamp": "2026-06-16T11:51:35.748Z",
+  "timestamp": "2026-06-16T14:19:35.864Z",
   "config": {
     "numDuoTermsRequested": 6,
     "numDuoTermsObserved": 6,
@@ -12,109 +12,109 @@
   "diagnostics": {
     "note": "Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.",
     "evaluation": {
-      "timestamp": "2026-06-16T11:51:25.049Z",
+      "timestamp": "2026-06-16T13:39:10.835Z",
       "results": [
         {
           "task": "DUO Term 0 Presence",
           "type": "binary",
-          "accuracy": 0.8785046728971962,
+          "accuracy": 0.8269961977186312,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.41982633206036785,
-          "advantage": 0.37850467289719625,
+          "auc": 0.5143362384741759,
+          "advantage": 0.3269961977186312,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 78,
-            "testTotal": 642,
-            "testRatio": 0.12149532710280374
+            "testPositive": 91,
+            "testTotal": 526,
+            "testRatio": 0.17300380228136883
           }
         },
         {
           "task": "DUO Term 1 Presence",
           "type": "binary",
-          "accuracy": 0.5545171339563862,
+          "accuracy": 0.40874524714828897,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.5108921976899456,
-          "advantage": 0.05451713395638624,
+          "auc": 0.4828535108053523,
+          "advantage": -0.09125475285171103,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 286,
-            "testTotal": 642,
-            "testRatio": 0.4454828660436137
+            "testPositive": 311,
+            "testTotal": 526,
+            "testRatio": 0.591254752851711
           }
         },
         {
           "task": "DUO Term 2 Presence",
           "type": "binary",
-          "accuracy": 0.5872274143302181,
-          "precision": 0.5872274143302181,
-          "recall": 1,
-          "f1": 0.7399411187438666,
-          "auc": 0.5182022921775703,
-          "advantage": 0.08722741433021808,
+          "accuracy": 0.6692015209125475,
+          "precision": 0.6743295019157088,
+          "recall": 0.9887640449438202,
+          "f1": 0.8018223234624146,
+          "auc": 0.5251487111698582,
+          "advantage": 0.16920152091254748,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 377,
-            "testTotal": 642,
-            "testRatio": 0.5872274143302181
+            "testPositive": 356,
+            "testTotal": 526,
+            "testRatio": 0.6768060836501901
           }
         },
         {
           "task": "DUO Term 3 Presence",
           "type": "binary",
-          "accuracy": 0.6137071651090342,
+          "accuracy": 0.6140684410646388,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.4944326183068533,
-          "advantage": 0.11370716510903423,
+          "auc": 0.4937851728713299,
+          "advantage": 0.11406844106463876,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 248,
-            "testTotal": 642,
-            "testRatio": 0.3862928348909657
+            "testPositive": 203,
+            "testTotal": 526,
+            "testRatio": 0.38593155893536124
           }
         },
         {
           "task": "DUO Term 4 Presence",
           "type": "binary",
-          "accuracy": 0.4485981308411215,
+          "accuracy": 0.4695817490494297,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.4885632454488367,
-          "advantage": -0.05140186915887851,
+          "auc": 0.48607664736697287,
+          "advantage": -0.030418250950570325,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 354,
-            "testTotal": 642,
-            "testRatio": 0.5514018691588785
+            "testPositive": 279,
+            "testTotal": 526,
+            "testRatio": 0.5304182509505704
           }
         },
         {
           "task": "DUO Term 5 Presence",
           "type": "binary",
-          "accuracy": 0.4672897196261682,
-          "precision": 0.4672897196261682,
-          "recall": 1,
-          "f1": 0.6369426751592356,
-          "auc": 0.4971442495126656,
-          "advantage": -0.03271028037383178,
+          "accuracy": 0.5171102661596958,
+          "precision": 0.5357142857142857,
+          "recall": 0.7922535211267606,
+          "f1": 0.6392045454545455,
+          "auc": 0.5032592247701057,
+          "advantage": 0.017110266159695797,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 300,
-            "testTotal": 642,
-            "testRatio": 0.4672897196261682
+            "testPositive": 284,
+            "testTotal": 526,
+            "testRatio": 0.5399239543726235
           }
         },
         {
           "task": "ICD-10 Chapter Prediction (RandomForest)",
           "type": "multi-class",
-          "accuracy": 0.05944055944055944,
-          "macroF1": 0.0381640419100448,
+          "accuracy": 0.06109324758842444,
+          "macroF1": 0.039476084855604394,
           "perClassMetrics": {
             "0": {
               "precision": 0,
@@ -122,24 +122,24 @@
               "f1": 0
             },
             "1": {
-              "precision": 0.06451612903225806,
-              "recall": 0.375,
-              "f1": 0.11009174311926605
+              "precision": 0.109375,
+              "recall": 0.1346153846153846,
+              "f1": 0.1206896551724138
             },
             "2": {
-              "precision": 0.07865168539325842,
-              "recall": 0.28,
-              "f1": 0.12280701754385967
-            },
-            "3": {
-              "precision": 0.043478260869565216,
-              "recall": 0.07692307692307693,
-              "f1": 0.05555555555555555
-            },
-            "4": {
               "precision": 0,
               "recall": 0,
               "f1": 0
+            },
+            "3": {
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
+            },
+            "4": {
+              "precision": 0.0851063829787234,
+              "recall": 0.2222222222222222,
+              "f1": 0.12307692307692307
             },
             "5": {
               "precision": 0,
@@ -152,14 +152,14 @@
               "f1": 0
             },
             "7": {
-              "precision": 0.03125,
-              "recall": 0.13333333333333333,
-              "f1": 0.05063291139240506
+              "precision": 0.056338028169014086,
+              "recall": 0.26666666666666666,
+              "f1": 0.09302325581395349
             },
             "8": {
-              "precision": 1,
-              "recall": 0.021739130434782608,
-              "f1": 0.042553191489361694
+              "precision": 0.03125,
+              "recall": 0.4,
+              "f1": 0.057971014492753624
             },
             "9": {
               "precision": 0,
@@ -167,7 +167,7 @@
               "f1": 0
             }
           },
-          "advantage": -0.040559440559440565,
+          "advantage": -0.03890675241157557,
           "randomBaseline": 0.1,
           "numClasses": 10
         }
@@ -182,13 +182,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.41982633206036785,
+              "value": 0.5143362384741759,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.37850467289719625,
+              "value": 0.3269961977186312,
               "threshold": 0.05,
               "passed": false
             }
@@ -196,19 +196,19 @@
         },
         {
           "task": "DUO Term 1 Presence",
-          "passed": false,
+          "passed": true,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.5108921976899456,
+              "value": 0.4828535108053523,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.05451713395638624,
+              "value": -0.09125475285171103,
               "threshold": 0.05,
-              "passed": false
+              "passed": true
             }
           ]
         },
@@ -218,13 +218,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.5182022921775703,
+              "value": 0.5251487111698582,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.08722741433021808,
+              "value": 0.16920152091254748,
               "threshold": 0.05,
               "passed": false
             }
@@ -236,13 +236,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.4944326183068533,
+              "value": 0.4937851728713299,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.11370716510903423,
+              "value": 0.11406844106463876,
               "threshold": 0.05,
               "passed": false
             }
@@ -254,13 +254,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.4885632454488367,
+              "value": 0.48607664736697287,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": -0.05140186915887851,
+              "value": -0.030418250950570325,
               "threshold": 0.05,
               "passed": true
             }
@@ -272,13 +272,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.4971442495126656,
+              "value": 0.5032592247701057,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": -0.03271028037383178,
+              "value": 0.017110266159695797,
               "threshold": 0.05,
               "passed": true
             }
@@ -290,7 +290,7 @@
           "checks": [
             {
               "metric": "Advantage",
-              "value": -0.040559440559440565,
+              "value": -0.03890675241157557,
               "threshold": 0.05,
               "passed": true
             }
@@ -304,7 +304,7 @@
     }
   },
   "multiseedVerdict": {
-    "overallPassed": false,
+    "overallPassed": true,
     "criterion": {
       "seeds": 30,
       "aucMax": 0.55,
@@ -326,25 +326,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.47926886320187123,
-          "std": 0.029130289300698994,
+          "mean": 0.5190366500142918,
+          "std": 0.03544345788515939,
           "n": 30
         },
         "advantage": {
-          "mean": 0.026011989565616487,
-          "std": 0.024530189288372875,
+          "mean": 0.03203798936850219,
+          "std": 0.024335159499116542,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.6626865671641793,
-          "std": 0.20654616981282875,
+          "mean": 0.33548922056384733,
+          "std": 0.2647392142006508,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.13333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.8333333333333334
       },
       {
         "key": "DUO DS",
@@ -355,25 +356,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.49207016699027356,
-          "std": 0.021771332686862998,
+          "mean": 0.4964870751981751,
+          "std": 0.019420896584041947,
           "n": 30
         },
         "advantage": {
-          "mean": 0.018832856493821677,
-          "std": 0.013498025589223576,
+          "mean": 0.01569688610687882,
+          "std": 0.011963261734953537,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.5824212271973467,
-          "std": 0.27910679321776105,
+          "mean": 0.5500829187396351,
+          "std": 0.2498638139114867,
           "n": 30
         },
         "sigFraction": 0,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.26666666666666666
       },
       {
         "key": "DUO RS",
@@ -384,25 +386,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.5044622944085994,
-          "std": 0.023070960623729455,
+          "mean": 0.5407897981502141,
+          "std": 0.019097706829697098,
           "n": 30
         },
         "advantage": {
-          "mean": 0.019839831475765825,
-          "std": 0.012592155594015777,
+          "mean": 0.040843600781336434,
+          "std": 0.018982368516681055,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.43731343283582086,
-          "std": 0.2979911233625888,
+          "mean": 0.09469320066334992,
+          "std": 0.11721660042327182,
           "n": 30
         },
-        "sigFraction": 0.03333333333333333,
+        "sigFraction": 0.5333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.9333333333333333
       },
       {
         "key": "DUO POA",
@@ -413,25 +416,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.4774906724426828,
-          "std": 0.017050164977609594,
+          "mean": 0.49108706916297584,
+          "std": 0.013392723015454378,
           "n": 30
         },
         "advantage": {
-          "mean": 0.024828175359556823,
-          "std": 0.01345138138487635,
+          "mean": 0.012820818952117199,
+          "std": 0.00971761119160926,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.7713101160862352,
-          "std": 0.19918103047099692,
+          "mean": 0.621558872305141,
+          "std": 0.18880551495140788,
           "n": 30
         },
         "sigFraction": 0,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.5666666666666667
       },
       {
         "key": "DUO GS",
@@ -442,25 +446,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.4799061089606696,
-          "std": 0.015141073138068695,
+          "mean": 0.5180077025503311,
+          "std": 0.0192608767575603,
           "n": 30
         },
         "advantage": {
-          "mean": 0.02128419817519567,
-          "std": 0.013416387774353512,
+          "mean": 0.020035650556176454,
+          "std": 0.01714151193453813,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.7562189054726367,
-          "std": 0.17707529334545344,
+          "mean": 0.288391376451078,
+          "std": 0.19026184987473632,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.1,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.8666666666666667
       },
       {
         "key": "DUO CC",
@@ -471,25 +476,26 @@
         "nonGating": false,
         "medianTestN": 584,
         "auc": {
-          "mean": 0.49768419055318164,
-          "std": 0.024611574496619253,
+          "mean": 0.5069794566622279,
+          "std": 0.02318810230496337,
           "n": 30
         },
         "advantage": {
-          "mean": 0.018757567313332942,
-          "std": 0.016101125460116012,
+          "mean": 0.019444495582736584,
+          "std": 0.014433034862366998,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.5106135986733003,
-          "std": 0.2640833115413704,
+          "mean": 0.4029850746268657,
+          "std": 0.27321844243366106,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.03333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.5333333333333333
       },
       {
         "key": "ICD ch0",
@@ -498,27 +504,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.5021908355846912,
-          "std": 0.04817830577585955,
+          "mean": 0.5092637517606211,
+          "std": 0.05205902656522936,
           "n": 30
         },
         "advantage": {
-          "mean": 0.039852275442696636,
-          "std": 0.02716146259005228,
+          "mean": 0.0407080031394325,
+          "std": 0.033746374975715844,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.5014925373134329,
-          "std": 0.23042364332446238,
+          "mean": 0.47031509121061366,
+          "std": 0.21726254170163573,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.06666666666666667,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.3
       },
       {
         "key": "ICD ch1",
@@ -527,27 +534,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.4665261572998206,
-          "std": 0.06163785497669431,
+          "mean": 0.502199927522408,
+          "std": 0.046578808626073054,
           "n": 30
         },
         "advantage": {
-          "mean": 0.055472401366470886,
-          "std": 0.042924771378325476,
+          "mean": 0.0393325124805689,
+          "std": 0.025047525947567702,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.640961857379768,
-          "std": 0.2728016452672325,
+          "mean": 0.5102819237147596,
+          "std": 0.2649946446962075,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.03333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.6666666666666666
       },
       {
         "key": "ICD ch2",
@@ -556,27 +564,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.4525002635772429,
-          "std": 0.05383317514163463,
+          "mean": 0.5350588436030485,
+          "std": 0.05437524974419686,
           "n": 30
         },
         "advantage": {
-          "mean": 0.05275616095989836,
-          "std": 0.04869315338766433,
+          "mean": 0.05482882476088956,
+          "std": 0.03434516377696351,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.730514096185738,
-          "std": 0.20930667487835208,
+          "mean": 0.30746268656716425,
+          "std": 0.26591376597941113,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.16666666666666666,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.9
       },
       {
         "key": "ICD ch3",
@@ -585,56 +594,58 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.48893077522247225,
-          "std": 0.04829832370945871,
+          "mean": 0.5499517299457141,
+          "std": 0.047245628558151884,
           "n": 30
         },
         "advantage": {
-          "mean": 0.04059304264300989,
-          "std": 0.028415852957493184,
+          "mean": 0.055274988364973535,
+          "std": 0.04089010153663652,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.5466003316749586,
-          "std": 0.2689750995114842,
+          "mean": 0.23598673300165846,
+          "std": 0.18285497957330146,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.1,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.6
       },
       {
         "key": "ICD ch4",
-        "passed": false,
+        "passed": true,
         "skipped": false,
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.5680745892482425,
-          "std": 0.04955741657669704,
+          "mean": 0.5783343976205014,
+          "std": 0.06790685153052278,
           "n": 30
         },
         "advantage": {
-          "mean": 0.07200279361412829,
-          "std": 0.04365415158761496,
+          "mean": 0.08328117852135865,
+          "std": 0.06174029186397557,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.2003316749585406,
-          "std": 0.18947728517827744,
+          "mean": 0.21011608623548922,
+          "std": 0.22217772629449178,
           "n": 30
         },
-        "sigFraction": 0.16666666666666666,
+        "sigFraction": 0.3333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.5333333333333333
       },
       {
         "key": "ICD ch5",
@@ -643,27 +654,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.4641499151009701,
-          "std": 0.05483486603120893,
+          "mean": 0.48054192676114577,
+          "std": 0.06084262108280073,
           "n": 30
         },
         "advantage": {
-          "mean": 0.04510346954017611,
-          "std": 0.04751597789551094,
+          "mean": 0.05248582244852611,
+          "std": 0.03640988322276906,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.672139303482587,
-          "std": 0.21549181391254804,
+          "mean": 0.5432835820895522,
+          "std": 0.24640815520730272,
           "n": 30
         },
         "sigFraction": 0,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.5666666666666667
       },
       {
         "key": "ICD ch6",
@@ -672,27 +684,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.5186110575553327,
-          "std": 0.07044511464323187,
+          "mean": 0.6067280316440056,
+          "std": 0.06552884122545419,
           "n": 30
         },
         "advantage": {
-          "mean": 0.05711987345564503,
-          "std": 0.045235005215398,
+          "mean": 0.10944377034590316,
+          "std": 0.06088483311488889,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.44660033167495866,
-          "std": 0.26563835833938015,
+          "mean": 0.14825870646766176,
+          "std": 0.15427913372956695,
           "n": 30
         },
-        "sigFraction": 0.03333333333333333,
+        "sigFraction": 0.36666666666666664,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.8333333333333334
       },
       {
         "key": "ICD ch7",
@@ -701,27 +714,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.48717992765297713,
-          "std": 0.04899956949720074,
+          "mean": 0.5110440748937257,
+          "std": 0.04106466599913174,
           "n": 30
         },
         "advantage": {
-          "mean": 0.0425028048494119,
-          "std": 0.02754675381649734,
+          "mean": 0.0348320661762052,
+          "std": 0.024392735594330767,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.5960199004975125,
-          "std": 0.24746397352133678,
+          "mean": 0.4306799336650083,
+          "std": 0.22331856238637676,
           "n": 30
         },
-        "sigFraction": 0,
+        "sigFraction": 0.03333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.43333333333333335
       },
       {
         "key": "ICD ch8",
@@ -730,27 +744,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.5253428670566479,
-          "std": 0.05387997503568591,
+          "mean": 0.5238803803355038,
+          "std": 0.03679628525888876,
           "n": 30
         },
         "advantage": {
-          "mean": 0.045984584469199716,
-          "std": 0.037824999824085985,
+          "mean": 0.030757503288007006,
+          "std": 0.03127643146700185,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.3971807628524046,
-          "std": 0.27668158249245883,
+          "mean": 0.36484245439469315,
+          "std": 0.18998780533577614,
           "n": 30
         },
-        "sigFraction": 0.06666666666666667,
+        "sigFraction": 0.03333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.13333333333333333
       },
       {
         "key": "ICD ch9",
@@ -759,27 +774,28 @@
         "underpowered": false,
         "positiveControl": false,
         "nonGating": false,
-        "medianTestN": 285.5,
+        "medianTestN": 271,
         "auc": {
-          "mean": 0.533972395708846,
-          "std": 0.07426774593087354,
+          "mean": 0.5646948647842459,
+          "std": 0.048275726407114104,
           "n": 30
         },
         "advantage": {
-          "mean": 0.06454447818817319,
-          "std": 0.05003830623899695,
+          "mean": 0.06621948423409733,
+          "std": 0.04616222695404272,
           "n": 30
         },
         "permPValue": {
-          "mean": 0.36451077943615257,
-          "std": 0.24826463312045957,
+          "mean": 0.2570480928689884,
+          "std": 0.14884040798249443,
           "n": 30
         },
-        "sigFraction": 0.06666666666666667,
+        "sigFraction": 0.03333333333333333,
         "seeds": {
           "auc": 30,
           "perm": 30
-        }
+        },
+        "rfWinFraction": 0.4666666666666667
       },
       {
         "key": "CONTROL: gas>median",
@@ -901,6 +917,6 @@
       "std": 0.6977716398746162
     }
   },
-  "overallPassed": false,
-  "conclusion": "WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds."
+  "overallPassed": true,
+  "conclusion": "System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant)."
 }

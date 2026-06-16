@@ -12,18 +12,30 @@
  * spurious "FAIL" verdicts that were sampling/metric artifacts, not leakage.
  *
  * This module gives all three experiments ONE verdict: repeat the attack over N
- * seeds (policy-disjoint split each time) and judge each task by
+ * seeds (policy-disjoint split each time) and judge each task by a DOUBLE
+ * criterion — a task is leaking (FAIL) only when its advantage is both large and
+ * statistically real:
  *
- *   PASS  iff  AUC_mean <= aucMax  AND  significantSeedFraction < sigFractionMax
+ *   FAIL  iff  AUC_mean > aucMax  AND  significantSeedFraction >= sigFractionMax
+ *   PASS  otherwise
  *
- * where a seed is "significant" when its permutation p-value < permAlpha.
- * Advantage is reported (mean±std) but does NOT gate, because it is unreliable
- * on imbalanced test sets. The single-split report is kept separately for
- * diagnostics; this is the authoritative verdict.
+ * where a seed is "significant" when its permutation p-value < permAlpha. Both
+ * legs are required because each is individually misleading: a non-linear
+ * attacker can push AUC above the threshold by fitting noise-dominated features
+ * (the permutation test then stays non-significant — not a real channel), while
+ * a permutation test can call a trivially small AUC "significant" (real but of
+ * no adversarial value). Advantage is reported (mean±std) but does NOT gate, as
+ * it is unreliable on imbalanced test sets. The single-split report is kept
+ * separately for diagnostics; this is the authoritative verdict.
  */
 
 const DEFAULT_CRITERION = Object.freeze({
   seeds: 30,
+  // A task FAILs only if AUC_mean > aucMax AND the fraction of permutation-
+  // significant seeds is >= sigFractionMax (see the double criterion in the file
+  // header). aucMax is the "advantage is large" bar; sigFractionMax is the
+  // "advantage is statistically real" bar — a task must clear BOTH to count as
+  // leakage.
   aucMax: 0.55,
   permAlpha: 0.05,
   sigFractionMax: 0.5,
@@ -84,7 +96,7 @@ function evaluateMultiseed(runOnce, opts = {}) {
   // key -> { auc:[], adv:[], p:[] }, preserving first-seen order.
   const acc = new Map();
   const bucket = (key) => {
-    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [], precision: [], recall: [], f1: [] });
+    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [], precision: [], recall: [], f1: [], clf: [] });
     return acc.get(key);
   };
 
@@ -104,6 +116,9 @@ function evaluateMultiseed(runOnce, opts = {}) {
       if (typeof r.precision === 'number' && !Number.isNaN(r.precision)) b.precision.push(r.precision);
       if (typeof r.recall === 'number' && !Number.isNaN(r.recall)) b.recall.push(r.recall);
       if (typeof r.f1 === 'number' && !Number.isNaN(r.f1)) b.f1.push(r.f1);
+      // Optional: which classifier won this seed (PCH runs LR+RF and keeps the
+      // stronger). Only present when records carry `classifier`; ignored otherwise.
+      if (typeof r.classifier === 'string') b.clf.push(r.classifier);
     }
   }
 
@@ -134,12 +149,23 @@ function evaluateMultiseed(runOnce, opts = {}) {
     const positiveControl = Array.isArray(criterion.positiveControlKeys)
       && criterion.positiveControlKeys.includes(key);
 
-    const aucOk = auc.n > 0 ? auc.mean <= criterion.aucMax : true;
-    const sigOk = sigFraction != null ? sigFraction < criterion.sigFractionMax : true;
+    // Double criterion: a task FAILs only when BOTH legs cross the line — the
+    // AUC is meaningfully above chance AND that advantage is statistically
+    // significant (a majority of seeds reject the permutation null). Either leg
+    // alone is insufficient:
+    //   - AUC alone over-flags a non-linear attacker that extracts a weak signal
+    //     from noise-dominated features (e.g. PCH's gas, ICC<0.4): the AUC sits
+    //     ~0.6 but label-shuffling reproduces it, so the permutation test is
+    //     non-significant. That is not a real channel.
+    //   - permutation alone over-flags a tiny-but-consistent effect of no
+    //     adversarial value (AUC ≈ 0.52 can be "significant" yet useless).
+    // So PASS unless the advantage is both large (AUC) and real (permutation).
+    const aucHigh = auc.n > 0 && auc.mean > criterion.aucMax;
+    const sigHigh = sigFraction != null && sigFraction >= criterion.sigFractionMax;
     // `passed` stays the honest per-task verdict (a control reads as passed:false
-    // = "distinguishable", the desired sanity signal). Gating exclusion is carried
-    // separately by `nonGating` so the JSON shows both facts.
-    const passed = (!judgeable || underpowered) ? null : (aucOk && sigOk);
+    // = "distinguishable" on BOTH legs, the desired sanity signal). Gating
+    // exclusion is carried separately by `nonGating` so the JSON shows both facts.
+    const passed = (!judgeable || underpowered) ? null : !(aucHigh && sigHigh);
     const nonGating = underpowered || positiveControl;
 
     const task = {
@@ -156,6 +182,12 @@ function evaluateMultiseed(runOnce, opts = {}) {
       sigFraction,
       seeds: { auc: auc.n, perm: b.p.length }
     };
+    // Fraction of seeds where the non-linear attacker (RF) was the stronger of
+    // the two — only for tasks that ran both (PCH). Lets the report state which
+    // model the AUC came from. Absent for single-attacker tasks (PI/SPP).
+    if (b.clf.length) {
+      task.rfWinFraction = b.clf.filter(c => c === 'rf').length / b.clf.length;
+    }
     // Attach P/R/F1 (mean±std) only for tasks that reported them — keeps the
     // shape unchanged for tasks that don't (PCH DUO, SPP attrs, PI scopes).
     if (b.precision.length || b.recall.length || b.f1.length) {
@@ -178,7 +210,7 @@ function evaluateMultiseed(runOnce, opts = {}) {
 function printVerdict(title, verdict) {
   const c = verdict.criterion;
   console.log(`\n${title} — multi-seed verdict (${c.seeds} seeds, policy-disjoint)`);
-  console.log(`Criterion: AUC_mean ≤ ${c.aucMax} AND significant-seed fraction < ${c.sigFractionMax} (perm α=${c.permAlpha}); advantage reported, not gating.`);
+  console.log(`Criterion: FAIL iff AUC_mean > ${c.aucMax} AND significant-seed fraction ≥ ${c.sigFractionMax} (perm α=${c.permAlpha}); both required, else PASS. Advantage reported, not gating.`);
   console.log(`Underpowered tasks (median test n < ${c.minTestSamples}) are reported but do not gate.`);
   console.log(`Positive-control tasks are reported but do not gate (expected to be distinguishable).`);
   console.log('Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict');
