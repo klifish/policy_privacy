@@ -365,8 +365,12 @@ async function runExperiment(config = {}) {
   console.log('Task 2: ICD-10 Chapter Prediction (Multi-class)');
   console.log('  Training Random Forest classifier...');
 
-  const icdTrain = prepareClassificationData(trainData, 'icd10Chapter');
-  const icdTest = prepareClassificationData(testData, 'icd10Chapter');
+  // Only rows that actually carry an ICD-10 chapter; otherwise the label set
+  // includes `undefined` (rows from other ontologies) and the task degenerates.
+  const icdTrainData = trainData.filter(f => f.icd10Chapter !== undefined && f.icd10Chapter !== null);
+  const icdTestData = testData.filter(f => f.icd10Chapter !== undefined && f.icd10Chapter !== null);
+  const icdTrain = prepareClassificationData(icdTrainData, 'icd10Chapter');
+  const icdTest = prepareClassificationData(icdTestData, 'icd10Chapter');
 
   const randomForest = new RandomForest(10, 5);
   randomForest.train(icdTrain.X, icdTrain.y);
@@ -482,6 +486,42 @@ async function runExperiment(config = {}) {
       });
     }
 
+    // ICD-10 chapter inference (one-vs-rest), included in the multi-seed verdict
+    // like the DUO tasks. Only rows that actually carry an ICD-10 chapter
+    // participate — other ontologies (OBI/HANCESTRO/...) have no ICD label and
+    // would inject an `undefined` class (the old single-split bug). AUC +
+    // permutation are binary-only, so each chapter is judged one-vs-rest.
+    {
+      const icdAll = normalizedFeatures.filter(
+        f => f.icd10Chapter !== undefined && f.icd10Chapter !== null
+      );
+      if (icdAll.length > 0) {
+        const icdChapters = [...new Set(icdAll.map(f => f.icd10Chapter))].sort((a, b) => a - b);
+        const { train: icdTrain, test: icdTest } = splitTrainTest(icdAll, testRatio);
+        const icdTrX = prepareClassificationData(icdTrain, 'icd10Chapter').X;
+        const icdTeX = prepareClassificationData(icdTest, 'icd10Chapter').X;
+        for (const ch of icdChapters) {
+          const labelOf = f => (f.icd10Chapter === ch ? 1 : 0);
+          const trY = icdTrain.map(labelOf);
+          const teY = icdTest.map(labelOf);
+          if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
+          const lr = new LogisticRegression(0.1, 500);
+          lr.train(icdTrX, trY);
+          const proba = lr.predictProba(icdTeX);
+          const auc = calculateAUC(teY, proba);
+          if (auc == null) continue;
+          const { pValue } = permutationTestAUC(teY, proba, permIterations);
+          records.push({
+            key: `ICD ch${ch}`,
+            auc,
+            advantage: Math.abs(auc - 0.5),
+            permPValue: pValue,
+            n: teY.length
+          });
+        }
+      }
+    }
+
     // Positive control (attack-validity sanity check): a synthetic, known-
     // separable label derived from commitGasUsed (which is a real observable
     // feature). The SAME pipeline (normalized X + LogisticRegression) should
@@ -531,7 +571,11 @@ async function runExperiment(config = {}) {
   console.log('Phase 5: Reporting');
   console.log('-'.repeat(60));
 
-  const icdChapterCount = new Set(normalizedFeatures.map(f => f.icd10Chapter)).size;
+  const icdChapterCount = new Set(
+    normalizedFeatures
+      .map(f => f.icd10Chapter)
+      .filter(v => v !== undefined && v !== null)
+  ).size;
   const totalExecutions = executionResults
     ? executionResults.length
     : features
@@ -650,6 +694,30 @@ function generateReadableReport(report) {
       lines.push(`- ${checkStatus} **${check.metric}:** ${check.value.toFixed(4)} (threshold: ${check.threshold})`);
     }
 
+    lines.push('');
+  }
+
+  // Authoritative multi-seed verdict table (the basis for PASS/FAIL). Lists
+  // every gating task (DUO terms + ICD-10 chapters one-vs-rest) so the report
+  // faithfully shows each task's verdict, including any boundary case.
+  const mv = report.multiseedVerdict;
+  if (mv && Array.isArray(mv.tasks)) {
+    lines.push('## Multi-seed Verdict (authoritative)');
+    lines.push('');
+    lines.push(`Criterion: AUC_mean ≤ ${mv.criterion.aucMax} AND significant-seed fraction < ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}), over ${mv.criterion.seeds} policy-disjoint seeds. Advantage reported, not gating.`);
+    lines.push('');
+    lines.push('| Task | AUC mean±std | perm p mean | %sig seeds | median test n | Verdict |');
+    lines.push('|---|---|---|---|---|---|');
+    for (const t of mv.tasks) {
+      if (t.positiveControl) continue; // shown separately under Attack-validity
+      const auc = Number.isNaN(t.auc.mean) ? 'n/a' : `${t.auc.mean.toFixed(3)} ± ${t.auc.std.toFixed(3)}`;
+      const pm = Number.isNaN(t.permPValue.mean) ? 'n/a' : t.permPValue.mean.toFixed(3);
+      const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
+      const verdict = t.skipped ? 'skipped'
+        : t.underpowered ? '— (underpowered, non-gating)'
+        : (t.passed ? '✓ PASS' : '✗ FAIL');
+      lines.push(`| ${t.key} | ${auc} | ${pm} | ${pct} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+    }
     lines.push('');
   }
 
