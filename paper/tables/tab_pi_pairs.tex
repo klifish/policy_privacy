@@ -1,0 +1,25 @@
+% Source of record: experiments/multiseed_results/polygonAmoy/pi_verdict.txt
+% Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
+% Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
+% weak_equivalent is underpowered (median test n=9 < 20): reported, excluded from gating.
+\begin{table}[t]
+  \centering
+  \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
+    policy-disjoint seeds, by policy-pair archetype. A negative advantage means the
+    attacker does worse than chance. \texttt{weak\_equivalent} has median test $n{=}9{<}20$
+    and is reported but excluded from the verdict (underpowered).}
+  \label{tab:pi-pairs}
+  \begin{tabular}{lcccccc}
+    \toprule
+    Pair archetype & AUC (mean\,$\pm$\,std) & adv (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ & verdict \\
+    \midrule
+    overall               & $0.480 \pm 0.042$ & $-0.059 \pm 0.045$ & $0.627$ & $0\%$  & $369$   & \checkmark \\
+    semantic\_equivalent  & $0.410 \pm 0.057$ & $-0.121 \pm 0.069$ & $0.811$ & $0\%$  & $57$    & \checkmark \\
+    structural\_variant   & $0.535 \pm 0.088$ & $-0.033 \pm 0.092$ & $0.346$ & $20\%$ & $118.5$ & \checkmark \\
+    weak\_equivalent      & $0.443 \pm 0.152$ & $-0.196 \pm 0.128$ & $0.667$ & $0\%$  & $9$     & --\,(underpwr.) \\
+    controlled\_difference& $0.512 \pm 0.051$ & $-0.051 \pm 0.075$ & $0.447$ & $7\%$  & $126$   & \checkmark \\
+    \midrule
+    \multicolumn{7}{l}{Overall: \checkmark\ PASS} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

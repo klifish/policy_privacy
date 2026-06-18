@@ -1,0 +1,31 @@
+% Structure & Parameter Privacy section body.
+\subsection{Structure \& Parameter Privacy (SPP)}
+\label{sec:eval-spp}
+
+\paragraph{Property.} SPP requires that neither the \emph{shape} of a policy (logical
+structure, nesting depth, predicate coverage) nor the \emph{magnitude} of its parameters
+(set sizes, range widths) leaks to the observer. We organize the test along three
+annotation axes---structure type, predicate combination, and parameter magnitude---and
+attack each pair of buckets within an axis.
+
+\paragraph{Supervised attack.} Table~\ref{tab:spp-contrasts} reports all 18 pairwise
+contrasts over 30 policy-disjoint seeds. AUC is the calibrated random-forest score, since
+logistic regression over-separates on the near-constant SPP features. Every contrast has
+$\mathrm{AUC}_{\text{mean}}\in[0.43,0.52]$ and a significant-seed fraction at or below
+$27\%$, so all 18 pass and SPP passes overall. The no-predicate (\texttt{none}$_{\text{pred}}$)
+contrasts illustrate why we gate on AUC rather than advantage: their single-split
+logistic-regression advantage looks large ($0.42$--$0.48$), but this is the
+majority-class artifact described in Section~\ref{sec:eval-method}---a near-constant
+predictor scoring high advantage on an imbalanced split without genuine separation---and
+the AUC-plus-permutation criterion correctly reads these as chance.
+
+\paragraph{Positive control.} The synthetic \texttt{gas\,>\,median} control reaches AUC
+$1.000\pm0.001$ and $F_1=1.00$ through the same pipeline, validating that the
+chance-level scores on real structure/parameter labels reflect the absence of signal.
+
+\paragraph{Clustering attack.} Unsupervised K-Means over the gas features recovers none
+of the four structural targets (Table~\ref{tab:clustering-summary}): \texttt{logicStructure}
+ARI $-0.0015$/NMI $0.0011$, \texttt{nestingDepth} $-0.0002$/$0.0018$,
+\texttt{predicateCount} $-0.0008$/$0.0015$, and \texttt{setSize} $-0.0013$/$0.0019$---all
+indistinguishable from random partitions. Structure and parameters are hidden under both
+the supervised and the unsupervised attacker.

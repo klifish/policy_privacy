@@ -37,6 +37,14 @@ debug/
 .DS_Store
 Thumbs.db
 
+# LaTeX build products (paper/ sources are tracked; compiled output is not)
+paper/_smoke_preview.pdf
+paper/*.aux
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/*.toc
+
 # Logs
 *.log
 npm-debug.log*
@@ -52,3 +60,4 @@ experiments/unified/artifacts_data/localhost/
 python/results/
 __pycache__/
 .claude/
+.rerun_logs/

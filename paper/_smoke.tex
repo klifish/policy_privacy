@@ -1,0 +1,14 @@
+% Standalone smoke-test wrapper to verify the Evaluation chapter compiles in isolation.
+% Build from the repo root so the \input{paper/...} paths resolve:
+%   latexmk -pdf -outdir=/tmp/papersmoke paper/_smoke.tex
+% or:
+%   pdflatex -output-directory=/tmp/papersmoke paper/_smoke.tex   (run twice for \ref)
+% This file is NOT part of the manuscript; it only checks LaTeX validity.
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\begin{document}
+\input{paper/evaluation.tex}
+\end{document}

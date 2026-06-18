@@ -1,0 +1,30 @@
+% Source of record: experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.md
+%   ("Multi-seed Verdict (authoritative)" table, ICD ch0-ch9 rows).
+% Multi-seed (30 policy-disjoint seeds), LR+RF stronger-of-two reported.
+% Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5; else PASS.
+\begin{table}[t]
+  \centering
+  \caption{Policy Content Hiding: per-chapter ICD-10 supervised attack over 30
+    policy-disjoint seeds (one-vs-rest, ICD-bearing rows only; median test $n=271$). Two
+    chapters reach AUC above $0.55$ (ch4, ch6) but neither is permutation-significant
+    (\%sig${}<50\%$), so all ten pass the dual criterion.}
+  \label{tab:pch-icd10}
+  \begin{tabular}{lcccc}
+    \toprule
+    Chapter & AUC (mean\,$\pm$\,std) & perm $p$ & \%sig & verdict \\
+    \midrule
+    ICD ch0 & $0.509 \pm 0.052$ & $0.470$ & $7\%$  & \checkmark \\
+    ICD ch1 & $0.502 \pm 0.047$ & $0.510$ & $3\%$  & \checkmark \\
+    ICD ch2 & $0.535 \pm 0.054$ & $0.307$ & $17\%$ & \checkmark \\
+    ICD ch3 & $0.550 \pm 0.047$ & $0.236$ & $10\%$ & \checkmark \\
+    ICD ch4 & $0.578 \pm 0.068$ & $0.210$ & $33\%$ & \checkmark \\
+    ICD ch5 & $0.481 \pm 0.061$ & $0.543$ & $0\%$  & \checkmark \\
+    ICD ch6 & $0.607 \pm 0.066$ & $0.148$ & $37\%$ & \checkmark \\
+    ICD ch7 & $0.511 \pm 0.041$ & $0.431$ & $3\%$  & \checkmark \\
+    ICD ch8 & $0.524 \pm 0.037$ & $0.365$ & $3\%$  & \checkmark \\
+    ICD ch9 & $0.565 \pm 0.048$ & $0.257$ & $3\%$  & \checkmark \\
+    \midrule
+    \multicolumn{5}{l}{Overall: \checkmark\ PASS (all 10 chapters)} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

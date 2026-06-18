@@ -45,6 +45,34 @@ function featuresToArray(features) {
 }
 
 /**
+ * Min-max standardize feature vectors for logistic regression, matching the
+ * PCH/PI pipelines (core/feature_extractor.normalizeFeatures): fit the per-column
+ * min/max on the TRAINING rows only, then map both train and test into [0, 1].
+ * Columns with zero training range map to 0. Without this, raw gas values
+ * (~1e5–1e6) saturate the logistic sigmoid and collapse its AUC to 0.5; RF is
+ * scale-invariant and does not need it.
+ */
+function standardizeForLR(trainVectors, testVectors) {
+  const n = trainVectors.length ? trainVectors[0].length : 0;
+  const mins = new Array(n).fill(Infinity);
+  const maxs = new Array(n).fill(-Infinity);
+  for (const v of trainVectors) {
+    for (let j = 0; j < n; j++) {
+      if (v[j] < mins[j]) mins[j] = v[j];
+      if (v[j] > maxs[j]) maxs[j] = v[j];
+    }
+  }
+  const scale = (v) => v.map((x, j) => {
+    const range = maxs[j] - mins[j];
+    return range > 0 ? (x - mins[j]) / range : 0;
+  });
+  return {
+    train: trainVectors.map(scale),
+    test: testVectors.map(scale)
+  };
+}
+
+/**
  * Aggregate executions by policy family
  */
 function aggregateByFamily(executionResults) {
@@ -220,14 +248,15 @@ function permutationTest(features, labels, iterations = 500) {
     0.3
   );
 
-  // Train on actual labels
-  const classifier = new LogisticRegression();
-  classifier.train(
+  // Train on actual labels (features standardized on train, matching the main LR)
+  const actualScaled = standardizeForLR(
     train.map(d => d.features),
-    train.map(d => d.label)
+    test.map(d => d.features)
   );
+  const classifier = new LogisticRegression();
+  classifier.train(actualScaled.train, train.map(d => d.label));
 
-  const actualPredictions = classifier.predict(test.map(d => d.features));
+  const actualPredictions = classifier.predict(actualScaled.test);
   const actualAccuracy = evaluateClassifier(actualPredictions, test.map(d => d.label)).accuracy;
 
   // Permutation tests
@@ -239,13 +268,14 @@ function permutationTest(features, labels, iterations = 500) {
       0.3
     );
 
-    const permClassifier = new LogisticRegression();
-    permClassifier.train(
+    const permScaled = standardizeForLR(
       permSplit.train.map(d => d.features),
-      permSplit.train.map(d => d.label)
+      permSplit.test.map(d => d.features)
     );
+    const permClassifier = new LogisticRegression();
+    permClassifier.train(permScaled.train, permSplit.train.map(d => d.label));
 
-    const permPredictions = permClassifier.predict(permSplit.test.map(d => d.features));
+    const permPredictions = permClassifier.predict(permScaled.test);
     const permAccuracy = evaluateClassifier(permPredictions, permSplit.test.map(d => d.label)).accuracy;
 
     if (permAccuracy >= actualAccuracy) {
@@ -377,18 +407,19 @@ function runSupervisedAttacks(executionResults, config = {}) {
       const features = allData.map(d => d.features);
       const labels = allData.map(d => d.label);
 
-      // Logistic Regression
-      const lr = new LogisticRegression();
-      lr.train(
+      // Logistic Regression (features min-max standardized on train, as in PCH/PI)
+      const lrScaled = standardizeForLR(
         train.map(d => d.features),
-        train.map(d => d.label)
+        test.map(d => d.features)
       );
+      const lr = new LogisticRegression();
+      lr.train(lrScaled.train, train.map(d => d.label));
 
-      const lrPredictions = lr.predict(test.map(d => d.features));
+      const lrPredictions = lr.predict(lrScaled.test);
       const lrEval = evaluateClassifier(lrPredictions, test.map(d => d.label));
       // AUC from probabilities — used by the unified multi-seed verdict. Unlike
       // accuracy/advantage it is threshold-free and stable on imbalanced sets.
-      const lrProba = lr.predictProba(test.map(d => d.features));
+      const lrProba = lr.predictProba(lrScaled.test);
       lrEval.auc = calculateAUC(test.map(d => d.label), lrProba);
 
       console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}, auc=${lrEval.auc.toFixed(3)}`);

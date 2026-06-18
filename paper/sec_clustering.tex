@@ -1,0 +1,46 @@
+% Cross-property unsupervised clustering section (consolidated view + PI rebalancing).
+% Figures live under the gitignored python/results/ tree. \graphicspath lets them resolve
+% whether you compile from the repo root or copy the PNGs next to these .tex files in Overleaf.
+\graphicspath{%
+  {python/results/pch_clustering_analysis/}%
+  {python/results/pi_clustering_analysis/}%
+  {python/results/spp_clustering_analysis/}%
+  {figures/}{./}%
+}
+\subsection{Unsupervised clustering: a label-free cross-check}
+\label{sec:eval-clustering}
+
+The supervised attacks (Sections~\ref{sec:eval-pch}--\ref{sec:eval-spp}) assume an
+adversary who can train on labeled executions. A weaker but assumption-free attacker
+simply asks whether the on-chain gas features \emph{cluster} along the hidden property
+with no supervision at all. Table~\ref{tab:clustering-summary} consolidates this attack
+across all three properties: K-Means recovers essentially nothing, with ARI and NMI
+within $\pm 0.02$ of zero for every DUO, PI, and SPP target. The unsupervised attacker
+agrees with the supervised verdict---privacy holds---as a second, label-free attack family
+on the same dataset (Figures~\ref{fig:clust-spp} and~\ref{fig:clust-pi}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{spp_detailed_analysis.png}
+  \caption{SPP unsupervised clustering: ARI and NMI by structural target. All four
+    targets sit at the zero line---gas clusters carry no structure or parameter
+    information.}
+  \label{fig:clust-spp}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{pi_analysis_by_type.png}
+  \caption{PI unsupervised clustering by pair archetype: per-pair ARI/NMI stay at chance
+    across all archetypes, matching the supervised distinguisher.}
+  \label{fig:clust-pi}
+\end{figure}
+
+\paragraph{Removing sample-size confounds.} The clustering inputs are constructed to
+avoid degenerate measurements. The naive PI pairs were severely imbalanced (executions in
+a $1{:}30$ ratio), under which K-Means trivially fails and a low ARI/NMI would be
+meaningless. We rebuild the pairs into balanced $30$-vs-$30$ contrasts, and guard the
+result with a permutation baseline---NMI under shuffled labels, where no true signal can
+exist---reporting the debiased NMI (observed minus baseline) and its empirical $p$-value.
+The conclusion is unchanged (Section~\ref{sec:eval-pi}): the indistinguishability is a
+property of the protocol, not of a degenerate measurement.

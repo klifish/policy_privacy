@@ -1,0 +1,24 @@
+% Top-level Evaluation chapter. \input this from the main manuscript.
+% Requires in the preamble: \usepackage{booktabs} \usepackage{amsmath} \usepackage{amssymb} \usepackage{graphicx}
+% If the main document uses a different graphics path for the figures, set it before \input.
+\section{Privacy Evaluation}
+\label{sec:eval}
+
+We evaluate the three privacy properties of our system---Policy Content Hiding,
+Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive
+on-chain observer (Section~\ref{sec:eval-threat}). Each property is attacked with both a
+supervised classifier and an unsupervised clustering attacker under an honest,
+reproducible, multi-seed criterion (Section~\ref{sec:eval-method}). All three properties
+pass under both attackers.
+
+\input{paper/sec_threat_model.tex}
+\input{paper/sec_methodology.tex}
+\input{paper/sec_pch.tex}
+\input{paper/tables/tab_pch_terms.tex}
+\input{paper/tables/tab_pch_icd10.tex}
+\input{paper/sec_pi.tex}
+\input{paper/tables/tab_pi_pairs.tex}
+\input{paper/sec_spp.tex}
+\input{paper/tables/tab_spp_contrasts.tex}
+\input{paper/sec_clustering.tex}
+\input{paper/tables/tab_clustering_summary.tex}

@@ -515,15 +515,16 @@ async function runExperiment(config = {}) {
       });
       console.log = origLog;
       for (const r of out.results) {
-        if (r.skipped || !r.randomForest) continue;
-        // AUC/advantage from RandomForest (LR over-separates → degenerate AUC);
+        if (r.skipped || !r.logisticRegression) continue;
+        // AUC/advantage from logistic regression (features are now min-max
+        // standardized, as in PCH/PI, so the sigmoid no longer saturates);
         // permutation p-value from the LR permutation test (signal check).
-        const rfEv = r.randomForest.evaluation || {};
+        const lrEv = r.logisticRegression.evaluation || {};
         const perm = (r.logisticRegression && r.logisticRegression.permutationTest) || {};
         records.push({
           key: `${attr}: ${r.class0}/${r.class1}`,
-          auc: typeof rfEv.auc === 'number' ? rfEv.auc : undefined,
-          advantage: typeof rfEv.advantage === 'number' ? rfEv.advantage : undefined,
+          auc: typeof lrEv.auc === 'number' ? lrEv.auc : undefined,
+          advantage: typeof lrEv.advantage === 'number' ? lrEv.advantage : undefined,
           permPValue: typeof perm.pValue === 'number' ? perm.pValue : undefined,
           n: typeof r.testSize === 'number' ? r.testSize : undefined
         });
@@ -556,19 +557,19 @@ async function runExperiment(config = {}) {
           balanceMethod: config.balanceMethod
         });
         console.log = origLog;
-        const r = (out.results || []).find(x => !x.skipped && x.randomForest);
+        const r = (out.results || []).find(x => !x.skipped && x.logisticRegression);
         if (r) {
-          const rfEv = r.randomForest.evaluation || {};
+          const lrEv = r.logisticRegression.evaluation || {};
           const perm = (r.logisticRegression && r.logisticRegression.permutationTest) || {};
           records.push({
             key: 'CONTROL: gas>median',
-            auc: typeof rfEv.auc === 'number' ? rfEv.auc : undefined,
-            advantage: typeof rfEv.advantage === 'number' ? rfEv.advantage : undefined,
+            auc: typeof lrEv.auc === 'number' ? lrEv.auc : undefined,
+            advantage: typeof lrEv.advantage === 'number' ? lrEv.advantage : undefined,
             permPValue: typeof perm.pValue === 'number' ? perm.pValue : undefined,
             n: typeof r.testSize === 'number' ? r.testSize : undefined,
-            precision: typeof rfEv.precision === 'number' ? rfEv.precision : undefined,
-            recall: typeof rfEv.recall === 'number' ? rfEv.recall : undefined,
-            f1: typeof rfEv.f1 === 'number' ? rfEv.f1 : undefined
+            precision: typeof lrEv.precision === 'number' ? lrEv.precision : undefined,
+            recall: typeof lrEv.recall === 'number' ? lrEv.recall : undefined,
+            f1: typeof lrEv.f1 === 'number' ? lrEv.f1 : undefined
           });
         }
       }

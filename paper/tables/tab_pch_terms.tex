@@ -1,0 +1,26 @@
+% Source of record: experiments/multiseed_results/polygonAmoy/pch_verdict.txt
+% Policy Content Hiding — supervised attack, multi-seed (30 policy-disjoint seeds).
+% Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
+\begin{table}[t]
+  \centering
+  \caption{Policy Content Hiding: per-term supervised attack over 30 policy-disjoint
+    seeds. Each DUO term is a one-vs-rest binary task; the headline attacker is the
+    stronger of logistic regression and random forest. \emph{\%sig} is the fraction of
+    seeds whose permutation test rejects at $\alpha{=}0.05$. All terms satisfy
+    AUC$_{\text{mean}}\le 0.55$ \emph{and} \%sig${}<50\%$.}
+  \label{tab:pch-terms}
+  \begin{tabular}{lccccc}
+    \toprule
+    Term & AUC (mean\,$\pm$\,std) & adv (mean\,$\pm$\,std) & perm $p$ & \%sig & verdict \\
+    \midrule
+    DUO GR  & $0.500 \pm 0.056$ & $0.046 \pm 0.031$ & $0.511$ & $7\%$  & \checkmark \\
+    DUO DS  & $0.464 \pm 0.025$ & $0.040 \pm 0.017$ & $0.758$ & $0\%$  & \checkmark \\
+    DUO RS  & $0.536 \pm 0.037$ & $0.043 \pm 0.028$ & $0.260$ & $10\%$ & \checkmark \\
+    DUO POA & $0.462 \pm 0.052$ & $0.053 \pm 0.035$ & $0.702$ & $0\%$  & \checkmark \\
+    DUO GS  & $0.478 \pm 0.035$ & $0.032 \pm 0.027$ & $0.639$ & $0\%$  & \checkmark \\
+    DUO CC  & $0.440 \pm 0.028$ & $0.060 \pm 0.027$ & $0.865$ & $0\%$  & \checkmark \\
+    \midrule
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS \quad (median test $n=162$ per term)} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

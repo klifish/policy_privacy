@@ -1,0 +1,32 @@
+% Shared threat model for the three privacy experiments.
+\subsection{Adversary and observables}
+\label{sec:eval-threat}
+
+We evaluate against a \emph{passive on-chain observer}: an adversary who sees every
+transaction and event our protocol emits, but never the plaintext policy, the witness,
+or any client-side timing. This is the strongest realistic attacker for a public
+blockchain---it has unrestricted, perpetual read access to the ledger.
+
+Concretely, for each policy execution (a commit transaction followed by an access
+transaction) the adversary observes the following nine on-chain features:
+%
+\begin{itemize}
+  \item \textbf{Gas:} \texttt{commitGasUsed}, \texttt{accessGasUsed}.
+  \item \textbf{Calldata size:} \texttt{commitCalldataLength}, \texttt{accessCalldataLength}.
+  \item \textbf{Proof size:} \texttt{proofSize}.
+  \item \textbf{Event logs:} \texttt{commitLogsCount}, \texttt{commitLogsSize},
+        \texttt{accessLogsCount}, \texttt{accessLogsSize}.
+  \item \textbf{Timing:} \texttt{blockDifference} (blocks between commit and access).
+\end{itemize}
+%
+By design, calldata length, proof size, and log counts/sizes are content-independent
+(constant across policies), so any residual signal can only flow through the gas
+features. The defenses (commitment-only interface, randomized access-gas padding) target
+exactly this channel.
+
+We consider three increasingly fine-grained attacker tasks, one per privacy property:
+(i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~tell two
+\emph{semantically related} policies apart (PI, Section~\ref{sec:eval-pi}); and
+(iii)~recover the policy's \emph{structure or parameter magnitude} (SPP,
+Section~\ref{sec:eval-spp}). Each task is run with both a supervised attacker and an
+unsupervised clustering attacker (Section~\ref{sec:eval-method}).
