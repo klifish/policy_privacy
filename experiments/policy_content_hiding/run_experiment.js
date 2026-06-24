@@ -19,15 +19,6 @@ const {
 } = require('../core/data_generator');
 
 // DUO term ID to attribute code mapping
-const DUO_TO_ATTRIBUTE_CODE = {
-  0: 'GR',  // GENERAL_RESEARCH
-  1: 'DS',  // DISEASE_SPECIFIC
-  2: 'RS',  // RESEARCH_SPECIFIC
-  3: 'POA', // POPULATION_ANCESTRY
-  4: 'GS',  // GEOGRAPHICAL_RESTRICTION
-  5: 'CC'   // CLINICAL_CARE
-};
-
 const {
   loadDataset,
   evaluateDatasetQuality,
@@ -52,57 +43,17 @@ const {
   checkPrivacyThresholds,
   calculateAUC,
   permutationTestAUC,
-  evaluateBinaryClassification
+  evaluateBinaryClassification,
+  calculateConfusionMatrix
 } = require('../core/evaluator');
 
 const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
 
 
-/**
- * Run BOTH attackers (logistic regression and random forest) on one binary
- * inference task and return the stronger one as the gating record. "Stronger" =
- * higher AUC; the permutation p-value is taken from the SAME classifier whose
- * AUC won, so the reported AUC and its significance test describe one model
- * (taking max-AUC from one model and its p-value from another would be
- * inconsistent). This upgrades the privacy claim from "logistic regression can't
- * infer it" to "neither a linear nor a non-linear attacker can", and matches
- * SPP, which already runs LR + RF (see structure_and_parameter_privacy/attacks.js).
- *
- * @returns {{key,auc,advantage,permPValue,n,classifier}|null} null on degenerate AUC.
- */
-function strongestAttack(key, trX, trY, teX, teY, permIterations, rfOpts = {}) {
-  const { trees = 50, maxDepth = 10 } = rfOpts;
-  const lr = new LogisticRegression(0.1, 500);
-  lr.train(trX, trY);
-  const lrProba = lr.predictProba(teX);
-  const lrAuc = calculateAUC(teY, lrProba);
-
-  const rf = new RandomForest(trees, maxDepth);
-  rf.train(trX, trY);
-  const rfProba = rf.predictProba(teX);
-  const rfAuc = calculateAUC(teY, rfProba);
-
-  let auc, proba, classifier;
-  if (rfAuc != null && (lrAuc == null || rfAuc >= lrAuc)) {
-    auc = rfAuc; proba = rfProba; classifier = 'rf';
-  } else if (lrAuc != null) {
-    auc = lrAuc; proba = lrProba; classifier = 'lr';
-  } else {
-    return null; // both degenerate
-  }
-
-  const { pValue } = permutationTestAUC(teY, proba, permIterations);
-  return {
-    key,
-    auc,
-    advantage: Math.abs(auc - 0.5), // AUC-based advantage, matches multiseed_eval
-    permPValue: pValue,
-    n: teY.length,
-    classifier
-  };
-}
-
-
+// bothAttacks, buildPchRecordsForSeed and DUO_TO_ATTRIBUTE_CODE live in
+// ./seed_records (a lightweight module the parallel worker can load without the
+// hardhat/ffjavascript graph that core/dataset/data_generator pulls in).
+const { buildPchRecordsForSeed, DUO_TO_ATTRIBUTE_CODE } = require("./seed_records");
 function parseArgs(argv = process.argv.slice(2)) {
   const config = parseCommonArgs(argv.filter(a => a !== '--'));
 
@@ -517,88 +468,32 @@ async function runExperiment(config = {}) {
     trees: config.rfTrees || 50,
     maxDepth: config.rfMaxDepth || 10
   };
-  const verdict = evaluateMultiseed((seedIndex) => {
-    const { train, test } = splitTrainTest(normalizedFeatures, testRatio);
-    const trX = prepareClassificationData(train, 'duoTerm').X;
-    const teX = prepareClassificationData(test, 'duoTerm').X;
-    const records = [];
-    for (const termId of observedDuoTermIds) {
-      const code = DUO_TO_ATTRIBUTE_CODE[termId];
-      const labelOf = f => (f.duoTerm === termId ||
-        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(code))) ? 1 : 0;
-      const trY = train.map(labelOf);
-      const teY = test.map(labelOf);
-      if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-      const rec = strongestAttack(`DUO ${code}`, trX, trY, teX, teY, permIterations, rfOpts);
-      if (rec) records.push(rec);
-    }
-
-    // ICD-10 chapter inference (one-vs-rest), included in the multi-seed verdict
-    // like the DUO tasks. Only rows that actually carry an ICD-10 chapter
-    // participate — other ontologies (OBI/HANCESTRO/...) have no ICD label and
-    // would inject an `undefined` class (the old single-split bug). AUC +
-    // permutation are binary-only, so each chapter is judged one-vs-rest.
-    {
-      const icdAll = normalizedFeatures.filter(
-        f => f.icd10Chapter !== undefined && f.icd10Chapter !== null
-      );
-      if (icdAll.length > 0) {
-        const icdChapters = [...new Set(icdAll.map(f => f.icd10Chapter))].sort((a, b) => a - b);
-        const { train: icdTrain, test: icdTest } = splitTrainTest(icdAll, testRatio);
-        const icdTrX = prepareClassificationData(icdTrain, 'icd10Chapter').X;
-        const icdTeX = prepareClassificationData(icdTest, 'icd10Chapter').X;
-        for (const ch of icdChapters) {
-          const labelOf = f => (f.icd10Chapter === ch ? 1 : 0);
-          const trY = icdTrain.map(labelOf);
-          const teY = icdTest.map(labelOf);
-          if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-          const rec = strongestAttack(`ICD ch${ch}`, icdTrX, trY, icdTeX, teY, permIterations, rfOpts);
-          if (rec) records.push(rec);
-        }
-      }
-    }
-
-    // Positive control (attack-validity sanity check): a synthetic, known-
-    // separable label derived from commitGasUsed (which is a real observable
-    // feature). The SAME pipeline (normalized X + LogisticRegression) should
-    // recover it with high AUC/F1, proving the ≈0.5 AUC on real DUO labels is
-    // "no signal", not a broken attack. Reported but non-gating.
-    {
-      const gasVals = train.map(f => f.commitGasUsed).filter(v => typeof v === 'number');
-      const gasMedian = gasVals.length
-        ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
-        : null;
-      const ctrlLabel = f => (f.commitGasUsed > gasMedian ? 1 : 0);
-      const ctrlTrY = train.map(ctrlLabel);
-      const ctrlTeY = test.map(ctrlLabel);
-      if (gasMedian != null && new Set(ctrlTrY).size === 2 && new Set(ctrlTeY).size === 2) {
-        const lr = new LogisticRegression(0.1, 500);
-        lr.train(trX, ctrlTrY);
-        const proba = lr.predictProba(teX);
-        const auc = calculateAUC(ctrlTeY, proba);
-        if (auc != null) {
-          const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
-          const ev = evaluateBinaryClassification(ctrlTeY, pred, proba);
-          const { pValue } = permutationTestAUC(ctrlTeY, proba, permIterations);
-          records.push({
-            key: 'CONTROL: gas>median',
-            auc,
-            advantage: Math.abs(auc - 0.5),
-            permPValue: pValue,
-            n: ctrlTeY.length,
-            precision: ev.precision,
-            recall: ev.recall,
-            f1: ev.f1
-          });
-        }
-      }
-    }
-    return records;
-  }, {
-    seeds: multiseedSeeds,
+  const seedCtx = {
+    normalizedFeatures,
+    observedDuoTermIds,
+    testRatio,
     permutationIterations: permIterations,
-    positiveControlKeys: ['CONTROL: gas>median']
-  });
+    rfOpts
+  };
+  const concurrency = Math.max(1, config.concurrency || 1);
+  const verdict = await evaluateMultiseed(
+    (seedIndex) => buildPchRecordsForSeed(seedIndex, seedCtx),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      positiveControlKeys: ['CONTROL: gas>median'],
+      // Parallel verdict: each worker re-derives normalizedFeatures from the saved
+      // features file and re-runs buildPchRecordsForSeed per seed in its own V8
+      // isolate; results replayed in seed order → byte-identical to serial.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        featuresOutputPath,
+        testRatio,
+        permutationIterations: permIterations,
+        rfOpts
+      } : undefined
+    });
 
   printVerdict('Policy Content Hiding', verdict);
   console.log();
@@ -740,20 +635,26 @@ function generateReadableReport(report) {
   if (mv && Array.isArray(mv.tasks)) {
     lines.push('## Multi-seed Verdict (authoritative)');
     lines.push('');
-    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}); both required, otherwise PASS. Over ${mv.criterion.seeds} policy-disjoint seeds, each task attacked by **both** logistic regression and random forest with the stronger (higher-AUC) model reported. Advantage reported, not gating.`);
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Advantage reported, not gating.`);
     lines.push('');
-    lines.push('| Task | AUC mean±std | perm p mean | %sig seeds | RF-won seeds | median test n | Verdict |');
+    lines.push('| Task | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
     lines.push('|---|---|---|---|---|---|---|');
+    const fmtAuc = (ms) => Number.isNaN(ms.mean) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
+    const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
     for (const t of mv.tasks) {
       if (t.positiveControl) continue; // shown separately under Attack-validity
-      const auc = Number.isNaN(t.auc.mean) ? 'n/a' : `${t.auc.mean.toFixed(3)} ± ${t.auc.std.toFixed(3)}`;
-      const pm = Number.isNaN(t.permPValue.mean) ? 'n/a' : t.permPValue.mean.toFixed(3);
-      const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
-      const rfw = t.rfWinFraction == null ? 'n/a' : `${(t.rfWinFraction * 100).toFixed(0)}%`;
       const verdict = t.skipped ? 'skipped'
         : t.underpowered ? '— (underpowered, non-gating)'
         : (t.passed ? '✓ PASS' : '✗ FAIL');
-      lines.push(`| ${t.key} | ${auc} | ${pm} | ${pct} | ${rfw} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      if (t.classifiers) {
+        const { lr, rf } = t.classifiers;
+        lines.push(`| ${t.key} | ${fmtAuc(lr.auc)} | ${fmtSig(lr.sigFraction)} | ${fmtAuc(rf.auc)} | ${fmtSig(rf.sigFraction)} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      } else {
+        // Defensive fallback for any single-classifier task (none in PCH today).
+        const auc = fmtAuc(t.auc);
+        const pct = fmtSig(t.sigFraction);
+        lines.push(`| ${t.key} | ${auc} | ${pct} | n/a | n/a | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      }
     }
     lines.push('');
   }
@@ -800,4 +701,4 @@ runMain(module, {
   getPassedFlag: (r) => r.overallPassed
 });
 
-module.exports = { runExperiment };
+module.exports = { runExperiment, buildPchRecordsForSeed };

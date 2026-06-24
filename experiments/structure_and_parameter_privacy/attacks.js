@@ -8,7 +8,7 @@
  */
 
 const { LogisticRegression, RandomForest } = require('../core/classifiers');
-const { calculateAUC } = require('../core/evaluator');
+const { calculateAUC, permutationTestAUC } = require('../core/evaluator');
 
 // Feature keys for side-channel analysis
 const FEATURE_KEYS = [
@@ -106,13 +106,17 @@ function oversampleMinorityClass(minorityData, targetCount) {
   const originalCount = minorityData.length;
   const needed = targetCount - originalCount;
 
-  if (needed <= 0) {
+  // No samples to draw from (a policy-disjoint split can empty a class for some
+  // seeds): nothing to oversample, so return as-is rather than indexing undefined.
+  if (needed <= 0 || originalCount === 0) {
     return minorityData;
   }
 
   // Simple oversampling: duplicate with small random noise
   for (let i = 0; i < needed; i++) {
-    const sourceIdx = Math.floor(Math.random() * originalCount);
+    // Clamp to the last valid index: Math.floor(Math.random()*n) can equal n
+    // when the (patched) PRNG returns a value at the top of [0,1).
+    const sourceIdx = Math.min(originalCount - 1, Math.floor(Math.random() * originalCount));
     const source = minorityData[sourceIdx];
 
     // Add small random noise to features
@@ -299,7 +303,15 @@ function runSupervisedAttacks(executionResults, config = {}) {
     targetAttribute = 'structureType',  // 'structureType', 'predicateCombo', 'paramType'
     testRatio = 0.3,
     permutationIterations = 500,
-    balanceMethod = 'both'  // 'oversample', 'undersample', 'both', 'none'
+    balanceMethod = 'both',  // 'oversample', 'undersample', 'both', 'none'
+    // When true, also attach an AUC-based permutation p-value to BOTH the LR and
+    // RF evaluations, each computed from that classifier's OWN test probabilities
+    // (label-shuffle, no retrain — the shared core/evaluator.permutationTestAUC,
+    // as used by PCH/PI). This makes each classifier self-consistent (its AUC and
+    // its significance test describe one model) so the unified per-classifier
+    // verdict can gate on LR and RF independently. Off by default: the legacy
+    // single-split path keeps using only the LR-retrain permutationTest below.
+    perClassifierPermutation = false
   } = config;
 
   console.log(`\nRunning supervised classification attack on: ${targetAttribute}`);
@@ -420,7 +432,14 @@ function runSupervisedAttacks(executionResults, config = {}) {
       // AUC from probabilities — used by the unified multi-seed verdict. Unlike
       // accuracy/advantage it is threshold-free and stable on imbalanced sets.
       const lrProba = lr.predictProba(lrScaled.test);
-      lrEval.auc = calculateAUC(test.map(d => d.label), lrProba);
+      const lrLabels = test.map(d => d.label);
+      lrEval.auc = calculateAUC(lrLabels, lrProba);
+      // Self-consistent significance test for the unified per-classifier verdict:
+      // permute the LR's own probabilities (no retrain). Kept separate from the
+      // LR-retrain permTest below, which the legacy single-split path still uses.
+      if (perClassifierPermutation) {
+        lrEval.aucPermPValue = permutationTestAUC(lrLabels, lrProba, permutationIterations).pValue;
+      }
 
       console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}, auc=${lrEval.auc.toFixed(3)}`);
 
@@ -441,7 +460,14 @@ function runSupervisedAttacks(executionResults, config = {}) {
       // SPP (the LR over-separates on near-constant features, giving degenerate
       // AUC, so RF's calibrated score is used instead).
       const rfProba = rf.predictProba(test.map(d => d.features));
-      rfEval.auc = calculateAUC(test.map(d => d.label), rfProba);
+      const rfLabels = test.map(d => d.label);
+      rfEval.auc = calculateAUC(rfLabels, rfProba);
+      // RF significance test for the unified verdict: permute the RF's own vote-
+      // fraction probabilities (no retrain), so RF gets the same {AUC, perm p}
+      // pair as LR and the per-classifier verdict can gate on it independently.
+      if (perClassifierPermutation) {
+        rfEval.aucPermPValue = permutationTestAUC(rfLabels, rfProba, permutationIterations).pValue;
+      }
 
       console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}, auc=${rfEval.auc.toFixed(3)}`);
 

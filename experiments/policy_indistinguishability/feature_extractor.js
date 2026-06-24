@@ -2,7 +2,7 @@
  * Feature preparation utilities for Policy Indistinguishability attacks.
  */
 
-const { FEATURE_KEYS } = require('./data_generator');
+const { FEATURE_KEYS } = require('./feature_keys');
 
 /**
  * Flatten pair executions into per-sample records for Level-I attacks.

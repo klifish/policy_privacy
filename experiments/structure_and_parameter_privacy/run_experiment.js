@@ -48,6 +48,11 @@ const DEFAULT_THRESHOLDS = {
   minSilhouette: 0.3
 };
 
+// buildSppRecordsForSeed + buildPerClassifierRecords live in ./seed_records (a
+// lightweight module the parallel worker can load without the hardhat/ffjavascript
+// graph that core/dataset pulls in). Re-exported below for the worker + tests.
+const { buildSppRecordsForSeed } = require("./seed_records");
+
 /**
  * Parse command line arguments
  */
@@ -502,85 +507,33 @@ async function runExperiment(config = {}) {
   const targetAttributes = ['structureType', 'predicateCombo', 'paramType'];
   const multiseedSeeds = config.multiseedSeeds || 30;
   const permIterations = config.permutationIterations || 200;
-  const origLog = console.log;
-  const verdict = evaluateMultiseed((seedIndex) => {
-    const records = [];
-    for (const attr of targetAttributes) {
-      console.log = () => {};
-      const out = runSupervisedAttacks(executionResults, {
-        targetAttribute: attr,
+  const seedCtx = {
+    executionResults,
+    targetAttributes,
+    testRatio: config.testRatio,
+    permutationIterations: permIterations,
+    balanceMethod: config.balanceMethod
+  };
+  const concurrency = Math.max(1, config.concurrency || 1);
+  const verdict = await evaluateMultiseed(
+    (seedIndex) => buildSppRecordsForSeed(seedIndex, seedCtx),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      positiveControlKeys: ['CONTROL: gas>median'],
+      // Parallel verdict: each worker re-reads the dataset and re-runs
+      // buildSppRecordsForSeed per seed in its own V8 isolate (own Math.random),
+      // results replayed in seed order so output is byte-identical to serial.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        executionResultsPath,
+        targetAttributes,
         testRatio: config.testRatio,
         permutationIterations: permIterations,
         balanceMethod: config.balanceMethod
-      });
-      console.log = origLog;
-      for (const r of out.results) {
-        if (r.skipped || !r.logisticRegression) continue;
-        // AUC/advantage from logistic regression (features are now min-max
-        // standardized, as in PCH/PI, so the sigmoid no longer saturates);
-        // permutation p-value from the LR permutation test (signal check).
-        const lrEv = r.logisticRegression.evaluation || {};
-        const perm = (r.logisticRegression && r.logisticRegression.permutationTest) || {};
-        records.push({
-          key: `${attr}: ${r.class0}/${r.class1}`,
-          auc: typeof lrEv.auc === 'number' ? lrEv.auc : undefined,
-          advantage: typeof lrEv.advantage === 'number' ? lrEv.advantage : undefined,
-          permPValue: typeof perm.pValue === 'number' ? perm.pValue : undefined,
-          n: typeof r.testSize === 'number' ? r.testSize : undefined
-        });
-      }
-    }
-
-    // Positive control (attack-validity sanity check): inject a synthetic,
-    // known-separable attribute derived from commitGasUsed (a real observable)
-    // and run it through the SAME runSupervisedAttacks pipeline. The attack
-    // should recover it with high AUC/F1, proving the ≈0.5 AUC on real
-    // structure/parameter attributes is "no signal", not a broken attack.
-    // Reported but non-gating.
-    {
-      const gasVals = executionResults
-        .map(r => extractFeatures(r).commitGasUsed)
-        .filter(v => typeof v === 'number');
-      const gasMedian = gasVals.length
-        ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
-        : null;
-      if (gasMedian != null) {
-        const tagged = executionResults.map(r => ({
-          ...r,
-          __control: extractFeatures(r).commitGasUsed > gasMedian ? 'high' : 'low'
-        }));
-        console.log = () => {};
-        const out = runSupervisedAttacks(tagged, {
-          targetAttribute: '__control',
-          testRatio: config.testRatio,
-          permutationIterations: permIterations,
-          balanceMethod: config.balanceMethod
-        });
-        console.log = origLog;
-        const r = (out.results || []).find(x => !x.skipped && x.logisticRegression);
-        if (r) {
-          const lrEv = r.logisticRegression.evaluation || {};
-          const perm = (r.logisticRegression && r.logisticRegression.permutationTest) || {};
-          records.push({
-            key: 'CONTROL: gas>median',
-            auc: typeof lrEv.auc === 'number' ? lrEv.auc : undefined,
-            advantage: typeof lrEv.advantage === 'number' ? lrEv.advantage : undefined,
-            permPValue: typeof perm.pValue === 'number' ? perm.pValue : undefined,
-            n: typeof r.testSize === 'number' ? r.testSize : undefined,
-            precision: typeof lrEv.precision === 'number' ? lrEv.precision : undefined,
-            recall: typeof lrEv.recall === 'number' ? lrEv.recall : undefined,
-            f1: typeof lrEv.f1 === 'number' ? lrEv.f1 : undefined
-          });
-        }
-      }
-    }
-    return records;
-  }, {
-    seeds: multiseedSeeds,
-    permutationIterations: permIterations,
-    positiveControlKeys: ['CONTROL: gas>median']
-  });
-  console.log = origLog;
+      } : undefined
+    });
   printVerdict('Structure & Parameter Privacy', verdict);
 
   const report = {
@@ -638,4 +591,4 @@ runMain(module, {
   getPassedFlag: (r) => r.overallPassed
 });
 
-module.exports = { runExperiment };
+module.exports = { runExperiment, buildSppRecordsForSeed };

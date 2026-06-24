@@ -28,6 +28,9 @@ const {
 } = require('./attacks');
 
 const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
+// buildPiRecordsForSeed lives in ./seed_records (shared by the serial path and the
+// parallel worker — one copy of the per-seed logic).
+const { buildPiRecordsForSeed } = require('./seed_records');
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
@@ -564,35 +567,27 @@ async function runExperiment(config = {}) {
   progress.startStep('Running multi-seed verdict (single-sample, Level I)');
   const multiseedSeeds = config.multiseedSeeds || 30;
   const permIterations = config.permutationIterations || 200;
-  const origLog = console.log;
-  const verdict = evaluateMultiseed((seedIndex) => {
-    console.log = () => {}; // silence per-run attack chatter
-    const results = runSingleSampleAttacks(pairs, {
-      testRatio: config.testRatio,
-      permutationIterations: permIterations
+  const seedCtx = { pairs, testRatio: config.testRatio, permutationIterations: permIterations };
+  const concurrency = Math.max(1, config.concurrency || 1);
+  const verdict = await evaluateMultiseed(
+    (seedIndex) => buildPiRecordsForSeed(seedIndex, seedCtx),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      // controlled_difference is a positive control (similarity 0, intentionally
+      // distinguishable): report it but do not gate the privacy verdict on it.
+      positiveControlKeys: ['controlled_difference'],
+      // Parallel verdict: each worker re-reads the saved pairs file and re-runs
+      // buildPiRecordsForSeed per seed in its own V8 isolate; results replayed in
+      // seed order → byte-identical to serial.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        pairsOutputPath,
+        testRatio: config.testRatio,
+        permutationIterations: permIterations
+      } : undefined
     });
-    console.log = origLog;
-    const records = [];
-    for (const r of results) {
-      if (r.skipped || r.classifier !== 'LogisticRegression' || !r.outcome) continue;
-      const ev = r.outcome.evaluation || {};
-      records.push({
-        key: r.scope,
-        auc: typeof ev.auc === 'number' ? ev.auc : undefined,
-        advantage: typeof ev.advantage === 'number' ? ev.advantage : undefined,
-        permPValue: r.outcome.permutationPValue,
-        n: r.dataset ? r.dataset.testSize : undefined
-      });
-    }
-    return records;
-  }, {
-    seeds: multiseedSeeds,
-    permutationIterations: permIterations,
-    // controlled_difference is a positive control (similarity 0, intentionally
-    // distinguishable): report it but do not gate the privacy verdict on it.
-    positiveControlKeys: ['controlled_difference']
-  });
-  console.log = origLog;
   progress.completeStep();
   printVerdict('Policy Indistinguishability', verdict);
 

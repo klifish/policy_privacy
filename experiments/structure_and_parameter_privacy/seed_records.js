@@ -1,0 +1,114 @@
+'use strict';
+
+/**
+ * Per-seed verdict record producer for SPP, in a STANDALONE module so the
+ * parallel worker (multiseed_worker.js) can import it without dragging in the
+ * full run_experiment graph (which transitively requires hardhat/ffjavascript via
+ * core/dataset — those spawn their own web-worker threads and printed noisy
+ * ERR_INVALID_ARG_TYPE traces when loaded inside our Worker). This module only
+ * requires ./attacks (pure ML, no chain deps). run_experiment.js re-exports these.
+ */
+
+const { runSupervisedAttacks, extractFeatures } = require('./attacks');
+
+/**
+ * Build per-classifier verdict records (one LR, one RF) from a single
+ * runSupervisedAttacks pairwise result. Each record carries that classifier's own
+ * AUC, AUC-based permutation p-value, advantage and P/R/F1, tagged
+ * perClassifier:true so the shared aggregator gates on BOTH (task FAILs if EITHER
+ * classifier clears the double criterion). Requires runSupervisedAttacks to have
+ * been called with perClassifierPermutation:true so `aucPermPValue` is present.
+ */
+function buildPerClassifierRecords(key, r) {
+  const legs = [
+    ['lr', (r.logisticRegression && r.logisticRegression.evaluation) || {}],
+    ['rf', (r.randomForest && r.randomForest.evaluation) || {}]
+  ];
+  const records = [];
+  for (const [classifier, ev] of legs) {
+    if (typeof ev.auc !== 'number') continue;
+    records.push({
+      key,
+      perClassifier: true,
+      classifier,
+      auc: ev.auc,
+      // AUC-based advantage, matching PCH/PI (the gated AUC and this advantage then
+      // describe the same model; the raw threshold advantage is unstable).
+      advantage: Math.abs(ev.auc - 0.5),
+      permPValue: typeof ev.aucPermPValue === 'number' ? ev.aucPermPValue : undefined,
+      n: typeof r.testSize === 'number' ? r.testSize : undefined,
+      precision: typeof ev.precision === 'number' ? ev.precision : undefined,
+      recall: typeof ev.recall === 'number' ? ev.recall : undefined,
+      f1: typeof ev.f1 === 'number' ? ev.f1 : undefined,
+      confusion: ev.confusion
+    });
+  }
+  return records;
+}
+
+/**
+ * Produce the verdict records for ONE seed. Pure function of (seedIndex, ctx):
+ * reads ctx.executionResults + config knobs, mutates nothing external (randomness
+ * flows through the seeded global Math.random the caller installed). Called BOTH
+ * by the serial closure in run_experiment AND the parallel worker entry — one copy.
+ *
+ * @param {number} seedIndex
+ * @param {{executionResults:Array, targetAttributes:string[], testRatio:number,
+ *          permutationIterations:number, balanceMethod:string}} ctx
+ */
+function buildSppRecordsForSeed(seedIndex, ctx) {
+  const { executionResults, targetAttributes, testRatio, permutationIterations, balanceMethod } = ctx;
+  const records = [];
+  const origLog = console.log;
+  for (const attr of targetAttributes) {
+    console.log = () => {};
+    const out = runSupervisedAttacks(executionResults, {
+      targetAttribute: attr,
+      testRatio,
+      permutationIterations,
+      balanceMethod,
+      perClassifierPermutation: true
+    });
+    console.log = origLog;
+    for (const r of out.results) {
+      if (r.skipped || !r.logisticRegression) continue;
+      // Exclude the empty-predicate / empty-parameter 'none' buckets (~7 policies
+      // on the of-record polygonAmoy dataset): too few for a stable policy-disjoint
+      // split (median test n < 20). Underpowered, non-gating.
+      if (r.class0 === 'none' || r.class1 === 'none') continue;
+      records.push(...buildPerClassifierRecords(`${attr}: ${r.class0}/${r.class1}`, r));
+    }
+  }
+
+  // Positive control (attack-validity): a synthetic, known-separable attribute
+  // from commitGasUsed (a real observable). The SAME pipeline should recover it
+  // with high AUC/F1, proving the ≈0.5 AUC on real attributes is "no signal".
+  const gasVals = executionResults
+    .map(r => extractFeatures(r).commitGasUsed)
+    .filter(v => typeof v === 'number');
+  const gasMedian = gasVals.length
+    ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
+    : null;
+  if (gasMedian != null) {
+    const tagged = executionResults.map(r => ({
+      ...r,
+      __control: extractFeatures(r).commitGasUsed > gasMedian ? 'high' : 'low'
+    }));
+    console.log = () => {};
+    const out = runSupervisedAttacks(tagged, {
+      targetAttribute: '__control',
+      testRatio,
+      permutationIterations,
+      balanceMethod,
+      perClassifierPermutation: true
+    });
+    console.log = origLog;
+    const r = (out.results || []).find(x => !x.skipped && x.logisticRegression);
+    if (r) {
+      records.push(...buildPerClassifierRecords('CONTROL: gas>median', r));
+    }
+  }
+  return records;
+}
+
+module.exports = { buildSppRecordsForSeed, buildPerClassifierRecords };

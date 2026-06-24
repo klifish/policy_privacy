@@ -1,5 +1,7 @@
 'use strict';
 
+const os = require('os');
+
 /**
  * Shared multi-seed privacy verdict, unified across PCH / PI / SPP.
  *
@@ -71,6 +73,15 @@ function withSeededRandom(seed, fn) {
   try { return fn(); } finally { Math.random = orig; }
 }
 
+/**
+ * The seed value for seed index `s` under `salt`. The ONLY place this formula
+ * lives — both the serial loop and the parallel workers import it, so a worker
+ * provably runs the same PRNG stream as the serial path for the same index.
+ */
+function seedFor(s, salt = 0) {
+  return (s * 2654435761 + (salt >>> 0)) >>> 0;
+}
+
 function meanStd(xs) {
   if (!xs || xs.length === 0) return { mean: NaN, std: NaN, n: 0 };
   const m = xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -89,39 +100,58 @@ function meanStd(xs) {
  *        sigFractionMax) and an optional `seedSalt` to decorrelate experiments.
  * @returns {{overallPassed:boolean, criterion:object, tasks:Array}}
  */
-function evaluateMultiseed(runOnce, opts = {}) {
-  const criterion = { ...DEFAULT_CRITERION, ...opts };
-  const salt = (opts.seedSalt || 0) >>> 0;
-
-  // key -> { auc:[], adv:[], p:[] }, preserving first-seen order.
-  const acc = new Map();
+// Bucket the records produced by ONE seed into the running `acc` Map. Factored
+// out of evaluateMultiseed so the serial and parallel paths share exactly one
+// copy of the bucketing logic; both call it in strict seed order s=0..N-1.
+function bucketRecords(acc, records, criterion) {
+  const emptySub = () => ({ auc: [], adv: [], p: [], precision: [], recall: [], f1: [], confusion: [] });
   const bucket = (key) => {
-    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [], precision: [], recall: [], f1: [], clf: [] });
+    if (!acc.has(key)) acc.set(key, { auc: [], adv: [], p: [], n: [], precision: [], recall: [], f1: [], clf: [], perClf: null });
     return acc.get(key);
   };
+  for (const r of records || []) {
+    if (!r || r.key == null) continue;
+    const b = bucket(r.key);
 
-  for (let s = 0; s < criterion.seeds; s++) {
-    const seed = (s * 2654435761 + salt) >>> 0;
-    const records = withSeededRandom(seed, () => runOnce(s)) || [];
-    for (const r of records) {
-      if (!r || r.key == null) continue;
-      const b = bucket(r.key);
-      if (typeof r.auc === 'number' && !Number.isNaN(r.auc)) b.auc.push(r.auc);
-      if (typeof r.advantage === 'number' && !Number.isNaN(r.advantage)) b.adv.push(r.advantage);
-      if (typeof r.permPValue === 'number' && !Number.isNaN(r.permPValue)) b.p.push(r.permPValue);
-      if (typeof r.n === 'number' && !Number.isNaN(r.n)) b.n.push(r.n);
-      // Optional P/R/F1: only carried by tasks that report them (e.g. positive
-      // controls). Aggregated below only when present, so other tasks are
-      // unaffected.
-      if (typeof r.precision === 'number' && !Number.isNaN(r.precision)) b.precision.push(r.precision);
-      if (typeof r.recall === 'number' && !Number.isNaN(r.recall)) b.recall.push(r.recall);
-      if (typeof r.f1 === 'number' && !Number.isNaN(r.f1)) b.f1.push(r.f1);
-      // Optional: which classifier won this seed (PCH runs LR+RF and keeps the
-      // stronger). Only present when records carry `classifier`; ignored otherwise.
-      if (typeof r.classifier === 'string') b.clf.push(r.classifier);
+    // Per-classifier records (PCH DUO/ICD: one record per LR and per RF, carrying
+    // perClassifier:true). Route them into a separate per-classifier sub-bucket so
+    // LR and RF aggregate independently and the task can gate on BOTH. PI/SPP/the
+    // PCH positive control lack this flag and fall through to the legacy path below.
+    if (r.perClassifier === true && (r.classifier === 'lr' || r.classifier === 'rf')) {
+      if (!b.perClf) b.perClf = { lr: emptySub(), rf: emptySub() };
+      const sub = b.perClf[r.classifier];
+      if (typeof r.auc === 'number' && !Number.isNaN(r.auc)) sub.auc.push(r.auc);
+      if (typeof r.advantage === 'number' && !Number.isNaN(r.advantage)) sub.adv.push(r.advantage);
+      if (typeof r.permPValue === 'number' && !Number.isNaN(r.permPValue)) sub.p.push(r.permPValue);
+      if (typeof r.precision === 'number' && !Number.isNaN(r.precision)) sub.precision.push(r.precision);
+      if (typeof r.recall === 'number' && !Number.isNaN(r.recall)) sub.recall.push(r.recall);
+      if (typeof r.f1 === 'number' && !Number.isNaN(r.f1)) sub.f1.push(r.f1);
+      if (r.confusion) sub.confusion.push(r.confusion);
+      // Test-set size is identical for both legs of a seed; record it once (from
+      // the LR leg) into the flat bucket so medianTestN stays a clean per-seed median.
+      if (r.classifier === 'lr' && typeof r.n === 'number' && !Number.isNaN(r.n)) b.n.push(r.n);
+      continue;
     }
-  }
 
+    if (typeof r.auc === 'number' && !Number.isNaN(r.auc)) b.auc.push(r.auc);
+    if (typeof r.advantage === 'number' && !Number.isNaN(r.advantage)) b.adv.push(r.advantage);
+    if (typeof r.permPValue === 'number' && !Number.isNaN(r.permPValue)) b.p.push(r.permPValue);
+    if (typeof r.n === 'number' && !Number.isNaN(r.n)) b.n.push(r.n);
+    // Optional P/R/F1: only carried by tasks that report them (e.g. positive
+    // controls). Aggregated below only when present, so other tasks are
+    // unaffected.
+    if (typeof r.precision === 'number' && !Number.isNaN(r.precision)) b.precision.push(r.precision);
+    if (typeof r.recall === 'number' && !Number.isNaN(r.recall)) b.recall.push(r.recall);
+    if (typeof r.f1 === 'number' && !Number.isNaN(r.f1)) b.f1.push(r.f1);
+    // Optional: which classifier won this seed (PCH runs LR+RF and keeps the
+    // stronger). Only present when records carry `classifier`; ignored otherwise.
+    if (typeof r.classifier === 'string') b.clf.push(r.classifier);
+  }
+}
+
+// Turn the bucketed `acc` Map into the final {overallPassed, criterion, tasks}
+// verdict. Unchanged from the original inline body; pure function of acc + criterion.
+function aggregateBuckets(acc, criterion) {
   const median = (xs) => {
     if (!xs.length) return null;
     const s = [...xs].sort((a, b) => a - b);
@@ -129,8 +159,74 @@ function evaluateMultiseed(runOnce, opts = {}) {
     return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
   };
 
+  // Aggregate one classifier's sub-bucket (PCH per-classifier path) into the same
+  // shape as the flat aggregates, plus its own gating legs and the full (non-
+  // aggregated) per-seed confusion-matrix snapshot.
+  const aggLeg = (sub) => {
+    const auc = meanStd(sub.auc);
+    const sigFraction = sub.p.length
+      ? sub.p.filter(p => p < criterion.permAlpha).length / sub.p.length
+      : null;
+    const aucHigh = auc.n > 0 && auc.mean > criterion.aucMax;
+    const sigHigh = sigFraction != null && sigFraction >= criterion.sigFractionMax;
+    return {
+      auc,
+      advantage: meanStd(sub.adv),
+      permPValue: meanStd(sub.p),
+      sigFraction,
+      prf: {
+        precision: meanStd(sub.precision),
+        recall: meanStd(sub.recall),
+        f1: meanStd(sub.f1)
+      },
+      confusion: sub.confusion, // full array: one {tp,tn,fp,fn} per non-degenerate seed
+      aucHigh,
+      sigHigh,
+      legFails: aucHigh && sigHigh,
+      seeds: { auc: auc.n, perm: sub.p.length }
+    };
+  };
+
   const tasks = [];
   for (const [key, b] of acc) {
+    // Per-classifier task (PCH DUO/ICD): LR and RF aggregated independently, the
+    // task gates on BOTH (FAIL if either classifier's double criterion fires).
+    if (b.perClf) {
+      const lr = aggLeg(b.perClf.lr);
+      const rf = aggLeg(b.perClf.rf);
+      const medianN = median(b.n);
+      const underpowered = criterion.minTestSamples > 0 && medianN != null
+        && medianN < criterion.minTestSamples;
+      const positiveControl = Array.isArray(criterion.positiveControlKeys)
+        && criterion.positiveControlKeys.includes(key);
+      const judgeable = lr.auc.n > 0 || rf.auc.n > 0
+        || lr.sigFraction != null || rf.sigFraction != null;
+      const anyLegFails = lr.legFails || rf.legFails;
+      const passed = (!judgeable || underpowered) ? null : !anyLegFails;
+      const nonGating = underpowered || positiveControl;
+
+      // Top-level fields are populated from the higher-AUC leg ("stronger
+      // attacker") so the console printVerdict and any legacy reader keep working
+      // unchanged; the per-classifier detail lives under `classifiers`.
+      const lead = (Number.isNaN(lr.auc.mean) || rf.auc.mean >= lr.auc.mean) ? rf : lr;
+      tasks.push({
+        key,
+        passed,
+        skipped: !judgeable,
+        underpowered,
+        positiveControl,
+        nonGating,
+        medianTestN: medianN,
+        auc: lead.auc,
+        advantage: lead.advantage,
+        permPValue: lead.permPValue,
+        sigFraction: lead.sigFraction,
+        seeds: lead.seeds,
+        classifiers: { lr, rf }
+      });
+      continue;
+    }
+
     const auc = meanStd(b.auc);
     const adv = meanStd(b.adv);
     const permP = meanStd(b.p);
@@ -206,6 +302,120 @@ function evaluateMultiseed(runOnce, opts = {}) {
   return { overallPassed, criterion, tasks };
 }
 
+/**
+ * Run each seed's record production in a worker_threads pool, returning
+ * recordsBySeed[0..seeds-1]. Each Worker is its own V8 isolate with its own
+ * global Math.random, so withSeededRandom's monkey-patch is worker-local and
+ * concurrent seeds cannot clobber one another's PRNG. A dynamic work queue hands
+ * out seed indices; results are placed by seedIndex so the caller can replay
+ * aggregation in strict seed order regardless of completion order. Rejects on any
+ * worker error/abnormal exit, or if any seed is missing when all workers finish.
+ */
+function runSeedsInWorkers({ workerEntry, workerData, salt, seeds, poolSize }) {
+  const { Worker } = require('worker_threads');
+  return new Promise((resolve, reject) => {
+    const recordsBySeed = new Array(seeds).fill(undefined);
+    let done = 0;
+    let nextSeed = 0;
+    let settled = false;
+    const workers = [];
+
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      for (const w of workers) w.terminate();
+      reject(err);
+    };
+
+    const assign = (w) => {
+      if (nextSeed >= seeds) { w.postMessage({ type: 'done' }); return; }
+      w.postMessage({ type: 'seed', seedIndex: nextSeed++ });
+    };
+
+    const n = Math.max(1, Math.min(poolSize, seeds));
+    for (let i = 0; i < n; i++) {
+      const w = new Worker(workerEntry, { workerData: { ...workerData, salt, seeds } });
+      workers.push(w);
+      w.on('message', (msg) => {
+        if (settled) return;
+        if (msg && msg.type === 'result') {
+          recordsBySeed[msg.seedIndex] = msg.records || [];
+          done += 1;
+          if (done === seeds) {
+            settled = true;
+            for (const ww of workers) ww.terminate();
+            // Completeness assertion: never aggregate a partial verdict.
+            const missing = recordsBySeed.findIndex(r => r === undefined);
+            if (missing !== -1) { reject(new Error(`Seed ${missing} produced no records`)); return; }
+            resolve(recordsBySeed);
+            return;
+          }
+          assign(w);
+        }
+      });
+      w.on('error', fail);
+      w.on('exit', (code) => { if (!settled && code !== 0) fail(new Error(`Worker exited with code ${code}`)); });
+      assign(w);
+    }
+  });
+}
+
+/**
+ * Run a per-split attack callback over N seeds and produce a unified verdict.
+ *
+ * Serial by default (`concurrency: 1`): runs the in-process `runOnce` closure
+ * inside withSeededRandom, identical to the original loop. With `concurrency > 1`
+ * it shards seeds across a worker_threads pool (`workerEntry` + `workerData`
+ * required) and replays aggregation in seed order so the output is byte-identical
+ * to serial. Returns a Promise either way.
+ *
+ * @param {(seedIndex:number)=>Array} runOnce  per-seed record producer (serial path)
+ * @param {object} [opts] criterion overrides + { concurrency, workerEntry,
+ *        workerData, seedSalt }.
+ * @returns {Promise<{overallPassed:boolean, criterion:object, tasks:Array}>}
+ */
+async function evaluateMultiseed(runOnce, opts = {}) {
+  // Strip the NEW execution-only options from `criterion` so a serial run and a
+  // parallel run of the SAME config serialize an identical verdict (concurrency/
+  // workerEntry/workerData describe HOW it ran, not the gating). seedSalt and any
+  // other pre-existing keys are left as before to keep prior of-record JSON stable.
+  const { concurrency: _c, workerEntry: _we, workerData: _wd, ...criterionOpts } = opts;
+  const criterion = { ...DEFAULT_CRITERION, ...criterionOpts };
+  const salt = (opts.seedSalt || 0) >>> 0;
+  const concurrency = Math.max(1, opts.concurrency || 1);
+
+  const acc = new Map(); // key -> bucket, preserving first-seen (seed-order) order.
+
+  if (concurrency === 1) {
+    // Serial path — unchanged behavior, bucket in seed order.
+    for (let s = 0; s < criterion.seeds; s++) {
+      const records = withSeededRandom(seedFor(s, salt), () => runOnce(s)) || [];
+      bucketRecords(acc, records, criterion);
+    }
+    return aggregateBuckets(acc, criterion);
+  }
+
+  // Parallel path. workerEntry is mandatory — never silently fall back to serial
+  // for an of-record run.
+  if (!opts.workerEntry) {
+    throw new Error('evaluateMultiseed: concurrency > 1 requires opts.workerEntry (abs path to the experiment worker module)');
+  }
+  const poolSize = Math.min(concurrency, Math.max(1, os.cpus().length - 1));
+  const recordsBySeed = await runSeedsInWorkers({
+    workerEntry: opts.workerEntry,
+    workerData: opts.workerData || {},
+    salt,
+    seeds: criterion.seeds,
+    poolSize
+  });
+  // Strict seed-order replay: makes parallel aggregation a literal replay of the
+  // serial loop (identical FP accumulation, first-seen key order, confusion arrays).
+  for (let s = 0; s < criterion.seeds; s++) {
+    bucketRecords(acc, recordsBySeed[s], criterion);
+  }
+  return aggregateBuckets(acc, criterion);
+}
+
 /** Pretty one-line-per-task console block for a verdict. */
 function printVerdict(title, verdict) {
   const c = verdict.criterion;
@@ -239,6 +449,8 @@ module.exports = {
   DEFAULT_CRITERION,
   evaluateMultiseed,
   withSeededRandom,
+  seedFor,
+  mulberry32,
   meanStd,
   printVerdict
 };

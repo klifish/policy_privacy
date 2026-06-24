@@ -22,21 +22,10 @@ const DEFAULT_PAIR_TARGETS = Object.freeze({
   controlled_difference: 5
 });
 
-// Observable on-chain features only (excluding proofGenerationTime - client-side only)
-const FEATURE_KEYS = Object.freeze([
-  'commitGasUsed',
-  'commitCalldataLength',
-  'accessGasUsed',
-  'accessCalldataLength',
-  'proofSize',
-  // 'proofGenerationTime',  // EXCLUDED: Not observable on-chain (client-side timing)
-  'commitLogsCount',
-  'commitLogsSize',
-  'accessLogsCount',
-  'accessLogsSize'
-  // blockDifference EXCLUDED: confounded harness artifact (execution order ×
-  // network drift), not a real policy-content channel. See core/feature_extractor.js.
-]);
+// Observable on-chain feature keys — single source of truth in ./feature_keys
+// (a light constants module the parallel verdict worker can load without this
+// hardhat-pulling generator). Re-exported below for existing importers.
+const { FEATURE_KEYS } = require('./feature_keys');
 
 /**
  * Helper – convert execution feature bag to numeric vector.

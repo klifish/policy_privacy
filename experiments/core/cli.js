@@ -47,6 +47,13 @@ function parseCommonArgs(argv) {
       case '--seed':
         config.seed = argv[++i];
         break;
+      case '--concurrency':
+        // Multi-seed verdict worker_threads pool size (default 1 = serial).
+        config.concurrency = parseInt(argv[++i], 10);
+        break;
+      case '--multiseed-seeds':
+        config.multiseedSeeds = parseInt(argv[++i], 10);
+        break;
       case '--use-unified-dataset':
       case '--unified':
         config.useUnifiedDataset = true;
