@@ -29,7 +29,7 @@ OUTPUT_DIR = Path(__file__).parents[1] / "results" / "spp_clustering_analysis"
 
 # Target Definitions based on user input and report
 TARGETS = {
-    "logicStructure": ["and_only", "and_or_mixed", "negation_heavy"],
+    "logicStructure": ["and_only", "and_or_mixed", "negation_heavy", "or_only"],
     "nestingDepth": ["deep", "flat", "medium", "shallow"],
     "predicateCount": ["few", "many", "none", "single"],
     "setSize": ["large", "medium", "none", "small"]

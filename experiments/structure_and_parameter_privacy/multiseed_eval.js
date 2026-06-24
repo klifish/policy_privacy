@@ -104,6 +104,11 @@ function main() {
 
       for (const r of out.results) {
         if (r.skipped) continue;
+        // Exclude the empty-predicate / empty-parameter 'none' buckets: on the
+        // of-record polygonAmoy dataset they hold only ~7 policies, too few for a
+        // stable policy-disjoint split (median test n < 20, also trips the
+        // oversampler). Reported separately as underpowered; not gating contrasts.
+        if (r.class0 === 'none' || r.class1 === 'none') continue;
         const key = `${attr}: ${r.class0}/${r.class1}`;
         const b = bucket(key);
         const lrEval = r.logisticRegression && r.logisticRegression.evaluation;

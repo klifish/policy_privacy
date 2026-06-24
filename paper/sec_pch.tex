@@ -21,15 +21,19 @@ identically to the terms we do not enumerate.
 
 \paragraph{Supervised attack.} We treat each of the six DUO terms (GR, DS, RS, POA, GS,
 CC) as a one-vs-rest binary recovery task and run the multi-seed pipeline of
-Section~\ref{sec:eval-method}. Table~\ref{tab:pch-terms} reports the result: every term
-has $\mathrm{AUC}_{\text{mean}}\in[0.44,0.54]$ with a significant-seed fraction at or
-below $10\%$, so all six pass and PCH passes overall. The same pipeline applied to the
-ten ICD-10 chapters (one-vs-rest over the ICD-bearing rows only; Table~\ref{tab:pch-icd10})
-passes all ten. The two highest-AUC chapters are the only ones worth scrutinizing---ch6
-at $\mathrm{AUC}_{\text{mean}}=0.607\pm0.066$ and ch4 at $0.578\pm0.068$---yet neither is
-permutation-significant (significant-seed fraction $0.37$ and $0.33$; mean $p=0.148$ and
-$0.210$), so under the dual criterion both are noise rather than a channel. We report
-these boundary cases rather than suppress them.
+Section~\ref{sec:eval-method}. Each task is attacked by \emph{both} a logistic regression
+(LR, linear) and a random forest (RF, non-linear), reported side by side; a term fails
+only if \emph{either} classifier has both $\mathrm{AUC}_{\text{mean}}>0.55$ and a
+significant-seed fraction $\ge 50\%$, so a pass means neither a linear nor a non-linear
+attacker recovers the term. Table~\ref{tab:pch-terms} reports the result: across both
+classifiers every term has $\mathrm{AUC}_{\text{mean}}\in[0.46,0.54]$, and the only seed
+fraction reaching $50\%$ (RF on DUO~RS) sits at $\mathrm{AUC}_{\text{mean}}=0.540<0.55$,
+so it clears neither leg; all six pass and PCH passes overall. The same pipeline applied
+to the ten ICD-10 chapters (one-vs-rest over the ICD-bearing rows only;
+Table~\ref{tab:pch-icd10}) passes all ten. The single highest value is RF on ch6 at
+$\mathrm{AUC}_{\text{mean}}=0.591\pm0.089$ (significant-seed fraction $0.40$); it exceeds
+neither the AUC nor the significance bar of the dual criterion, so it is a boundary case
+rather than a channel. We report such cases rather than suppress them.
 
 \paragraph{Positive control.} On the synthetic \texttt{gas\,>\,median} label the same
 pipeline reaches AUC $0.994\pm0.002$ and $F_1\approx 0.95$, confirming the chance-level
