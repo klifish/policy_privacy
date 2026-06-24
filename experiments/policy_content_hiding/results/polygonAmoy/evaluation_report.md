@@ -1,6 +1,6 @@
 # Policy Content Hiding Evaluation Report
 
-**Date:** 6/24/2026, 12:26:34 PM
+**Date:** 6/24/2026, 2:20:10 PM
 
 ## Objective
 
@@ -12,7 +12,7 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 - **DUO Terms (observed):** 6
 - **ICD-10 Chapters:** 10
 - **Executions per Policy:** 2
-- **Total Executions:** 2004
+- **Total Executions:** 2005
 - **Test Ratio:** 30%
 
 ## Privacy Evaluation Results
@@ -26,51 +26,51 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 ### DUO Term 0 Presence
 
 - **Type:** binary
-- **AUC:** 0.4778 (✓ PASS)
-- **Advantage:** 36.59% (✗ FAIL)
-  - *Interpretation: Adversary performs 36.59% better than random guessing*
+- **AUC:** 0.4342 (✓ PASS)
+- **Advantage:** 39.55% (✗ FAIL)
+  - *Interpretation: Adversary performs 39.55% better than random guessing*
 
 ### DUO Term 1 Presence
 
 - **Type:** binary
-- **AUC:** 0.4914 (✓ PASS)
-- **Advantage:** -3.20% (✓ PASS)
-  - *Interpretation: Adversary performs -3.20% better than random guessing*
+- **AUC:** 0.5336 (✓ PASS)
+- **Advantage:** -5.50% (✓ PASS)
+  - *Interpretation: Adversary performs -5.50% better than random guessing*
 
 ### DUO Term 2 Presence
 
 - **Type:** binary
-- **AUC:** 0.5418 (✓ PASS)
-- **Advantage:** -13.49% (✓ PASS)
-  - *Interpretation: Adversary performs -13.49% better than random guessing*
+- **AUC:** 0.5139 (✓ PASS)
+- **Advantage:** 4.77% (✓ PASS)
+  - *Interpretation: Adversary performs 4.77% better than random guessing*
 
 ### DUO Term 3 Presence
 
 - **Type:** binary
-- **AUC:** 0.4912 (✓ PASS)
-- **Advantage:** 12.30% (✗ FAIL)
-  - *Interpretation: Adversary performs 12.30% better than random guessing*
+- **AUC:** 0.5015 (✓ PASS)
+- **Advantage:** 10.18% (✗ FAIL)
+  - *Interpretation: Adversary performs 10.18% better than random guessing*
 
 ### DUO Term 4 Presence
 
 - **Type:** binary
-- **AUC:** 0.5060 (✓ PASS)
-- **Advantage:** -6.93% (✓ PASS)
-  - *Interpretation: Adversary performs -6.93% better than random guessing*
+- **AUC:** 0.5072 (✓ PASS)
+- **Advantage:** -9.64% (✓ PASS)
+  - *Interpretation: Adversary performs -9.64% better than random guessing*
 
 ### DUO Term 5 Presence
 
 - **Type:** binary
-- **AUC:** 0.5037 (✓ PASS)
-- **Advantage:** -0.37% (✓ PASS)
-  - *Interpretation: Adversary performs -0.37% better than random guessing*
+- **AUC:** 0.5025 (✓ PASS)
+- **Advantage:** -1.53% (✓ PASS)
+  - *Interpretation: Adversary performs -1.53% better than random guessing*
 
 ### ICD-10 Chapter Prediction (RandomForest)
 
 - **Type:** multi-class
-- **Advantage:** -5.80% (✓ PASS)
-  - *Interpretation: Adversary performs -5.80% better than random guessing*
-- **Macro F1:** 1.87%
+- **Advantage:** -1.23% (✓ PASS)
+  - *Interpretation: Adversary performs -1.23% better than random guessing*
+- **Macro F1:** 5.80%
 
 ## Privacy Threshold Check
 
@@ -79,37 +79,37 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 ### DUO Term 0 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4778 (threshold: 0.55)
-- ✗ **Advantage:** 0.3659 (threshold: 0.05)
+- ✓ **AUC:** 0.4342 (threshold: 0.55)
+- ✗ **Advantage:** 0.3955 (threshold: 0.05)
 
 ### DUO Term 1 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4914 (threshold: 0.55)
-- ✓ **Advantage:** -0.0320 (threshold: 0.05)
+- ✓ **AUC:** 0.5336 (threshold: 0.55)
+- ✓ **Advantage:** -0.0550 (threshold: 0.05)
 
 ### DUO Term 2 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5418 (threshold: 0.55)
-- ✓ **Advantage:** -0.1349 (threshold: 0.05)
+- ✓ **AUC:** 0.5139 (threshold: 0.55)
+- ✓ **Advantage:** 0.0477 (threshold: 0.05)
 
 ### DUO Term 3 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4912 (threshold: 0.55)
-- ✗ **Advantage:** 0.1230 (threshold: 0.05)
+- ✓ **AUC:** 0.5015 (threshold: 0.55)
+- ✗ **Advantage:** 0.1018 (threshold: 0.05)
 
 ### DUO Term 4 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5060 (threshold: 0.55)
-- ✓ **Advantage:** -0.0693 (threshold: 0.05)
+- ✓ **AUC:** 0.5072 (threshold: 0.55)
+- ✓ **Advantage:** -0.0964 (threshold: 0.05)
 
 ### DUO Term 5 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5037 (threshold: 0.55)
-- ✓ **Advantage:** -0.0037 (threshold: 0.05)
+- ✓ **AUC:** 0.5025 (threshold: 0.55)
+- ✓ **Advantage:** -0.0153 (threshold: 0.05)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 
-- ✓ **Advantage:** -0.0580 (threshold: 0.05)
+- ✓ **Advantage:** -0.0123 (threshold: 0.05)
 
 ## Multi-seed Verdict (authoritative)
 
