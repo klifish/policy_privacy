@@ -477,7 +477,7 @@ async function runExperiment(config = {}) {
   };
   const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
-    (seedIndex) => buildPchRecordsForSeed(seedIndex, seedCtx),
+    (seedIndex, baseSeed) => buildPchRecordsForSeed(seedIndex, seedCtx, baseSeed),
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,

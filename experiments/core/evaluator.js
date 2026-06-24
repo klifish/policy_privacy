@@ -80,7 +80,7 @@ function calculateAUC(yTrue, yProba) {
  * resulting p-value answers "could this AUC arise by chance?". Used as the
  * unified significance criterion across experiments.
  */
-function permutationTestAUC(yTrue, probabilities, iterations = 500) {
+function permutationTestAUC(yTrue, probabilities, iterations = 500, rng = Math.random) {
   if (!probabilities || probabilities.length === 0) {
     return { auc: 0.5, pValue: 1 };
   }
@@ -89,7 +89,7 @@ function permutationTestAUC(yTrue, probabilities, iterations = 500) {
   let count = 0;
   for (let i = 0; i < iterations; i++) {
     for (let j = labels.length - 1; j > 0; j--) {
-      const k = Math.floor(Math.random() * (j + 1));
+      const k = Math.floor(rng() * (j + 1));
       [labels[j], labels[k]] = [labels[k], labels[j]];
     }
     if (calculateAUC(labels, probabilities) >= actualAuc) count += 1;

@@ -11,19 +11,24 @@ const { runSingleSampleAttacks } = require('./attacks');
 /**
  * Produce the verdict records for ONE seed. Pure function of (seedIndex, ctx):
  * runs the single-sample attacks on ctx.pairs and maps the LogisticRegression
- * scope outcomes to records. Randomness flows through the seeded global
- * Math.random the caller installed.
+ * scope outcomes to records. When baseSeed is provided, each scope derives
+ * independent split/permutation/bootstrap streams.
  *
  * @param {number} seedIndex
  * @param {{pairs:Array, testRatio:number, permutationIterations:number}} ctx
  */
-function buildPiRecordsForSeed(seedIndex, ctx) {
+function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
   const { pairs, testRatio, permutationIterations } = ctx;
   const origLog = console.log;
   let results;
   try {
     console.log = () => {}; // silence per-run attack chatter
-    results = runSingleSampleAttacks(pairs, { testRatio, permutationIterations });
+    results = runSingleSampleAttacks(pairs, {
+      testRatio,
+      permutationIterations,
+      rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',
+      baseSeed
+    });
   } finally {
     console.log = origLog;
   }

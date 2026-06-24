@@ -10,16 +10,16 @@
  *   buildCtx(workerData)            -> ctx   (reconstruct the closure's captured
  *                                             inputs from serializable workerData;
  *                                             called ONCE per worker)
- *   buildRecordsForSeed(seedIndex, ctx) -> records[]  (the per-seed record
- *                                             producer — the SAME pure function the
- *                                             serial runOnce closure calls)
+ *   buildRecordsForSeed(seedIndex, ctx, baseSeed) -> records[] (the per-seed
+ *                                             producer — the SAME pure function
+ *                                             the serial runOnce closure calls)
  *
  * This base owns the message protocol with the pool driver in
  * core/multiseed_criterion.js (runSeedsInWorkers): it receives one seed index at
  * a time, runs it inside withSeededRandom(seedFor(s, salt)) — so the worker's
- * own (isolate-local) Math.random reproduces the exact serial PRNG stream — and
- * posts the records back keyed by seed index. console output is silenced inside
- * the worker so attack chatter never reaches the parent.
+ * own (isolate-local) Math.random preserves legacy callbacks, while baseSeed lets
+ * newer callbacks derive independent named RNG streams. Results are posted back
+ * by seed index. console output is silenced inside the worker.
  */
 
 const { parentPort, workerData } = require('worker_threads');
@@ -46,7 +46,11 @@ function runSeedWorker(buildCtx, buildRecordsForSeed) {
     }
     if (msg.type === 'seed') {
       const s = msg.seedIndex;
-      const records = withSeededRandom(seedFor(s, salt), () => buildRecordsForSeed(s, ctx)) || [];
+      const baseSeed = seedFor(s, salt);
+      const records = withSeededRandom(
+        baseSeed,
+        () => buildRecordsForSeed(s, ctx, baseSeed)
+      ) || [];
       parentPort.postMessage({ type: 'result', seedIndex: s, records });
     }
   });

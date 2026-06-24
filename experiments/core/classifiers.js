@@ -220,9 +220,10 @@ class SimpleDecisionTree {
  * Random Forest Classifier (simplified)
  */
 class RandomForest {
-  constructor(nTrees = 10, maxDepth = 5) {
+  constructor(nTrees = 10, maxDepth = 5, rng = null) {
     this.nTrees = nTrees;
     this.maxDepth = maxDepth;
+    this.rng = rng;
     this.trees = [];
   }
   
@@ -232,7 +233,8 @@ class RandomForest {
     const sampleY = [];
     
     for (let i = 0; i < n; i++) {
-      const idx = Math.floor(Math.random() * n);
+      const rng = this.rng || Math.random;
+      const idx = Math.floor(rng() * n);
       sampleX.push(X[idx]);
       sampleY.push(y[idx]);
     }

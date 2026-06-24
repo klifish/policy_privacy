@@ -2,7 +2,9 @@
  * Statistical utilities supporting PI experiment analysis.
  */
 
-const { calculateAUC } = require('../core/evaluator');
+const {
+  permutationTestAUC
+} = require('../core/evaluator');
 
 /**
  * Binary entropy of predicted probabilities (average -p log2 p - (1-p) log2 (1-p)).
@@ -14,34 +16,6 @@ function computeBinaryEntropy(probabilities) {
     return -(q * Math.log2(q) + (1 - q) * Math.log2(1 - q));
   });
   return entropies.reduce((acc, val) => acc + val, 0) / entropies.length;
-}
-
-/**
- * Permutation test for AUC significance.
- */
-function permutationTestAUC(yTrue, probabilities, iterations = 500) {
-  if (!probabilities || probabilities.length === 0) {
-    return { auc: 0.5, pValue: 1 };
-  }
-
-  const actualAuc = calculateAUC(yTrue, probabilities);
-  const labels = yTrue.slice();
-  let count = 0;
-
-  for (let i = 0; i < iterations; i++) {
-    // Fisher-Yates shuffle
-    for (let j = labels.length - 1; j > 0; j--) {
-      const k = Math.floor(Math.random() * (j + 1));
-      [labels[j], labels[k]] = [labels[k], labels[j]];
-    }
-    const auc = calculateAUC(labels, probabilities);
-    if (auc >= actualAuc) {
-      count += 1;
-    }
-  }
-
-  const pValue = (count + 1) / (iterations + 1);
-  return { auc: actualAuc, pValue };
 }
 
 /**

@@ -20,5 +20,5 @@ runSeedWorker(
     permutationIterations: workerData.permutationIterations,
     balanceMethod: workerData.balanceMethod
   }),
-  (seedIndex, ctx) => buildSppRecordsForSeed(seedIndex, ctx)
+  (seedIndex, ctx, baseSeed) => buildSppRecordsForSeed(seedIndex, ctx, baseSeed)
 );

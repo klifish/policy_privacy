@@ -1,6 +1,7 @@
 'use strict';
 
 const os = require('os');
+const { mulberry32 } = require('./random');
 
 /**
  * Shared multi-seed privacy verdict, unified across PCH / PI / SPP.
@@ -54,18 +55,6 @@ const DEFAULT_CRITERION = Object.freeze({
   // `underpowered`). Empty by default, so PCH/SPP are unaffected.
   positiveControlKeys: []
 });
-
-// Deterministic PRNG so each seed is reproducible. Patches Math.random for the
-// duration of one attack run (splits and permutation tests draw from it).
-function mulberry32(seed) {
-  let a = seed >>> 0;
-  return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 function withSeededRandom(seed, fn) {
   const orig = Math.random;
@@ -414,7 +403,8 @@ function requirePositiveInteger(value, name) {
  * required) and replays aggregation in seed order so the output is byte-identical
  * to serial. Returns a Promise either way.
  *
- * @param {(seedIndex:number)=>Array} runOnce  per-seed record producer (serial path)
+ * @param {(seedIndex:number,baseSeed:number)=>Array} runOnce per-seed record
+ *        producer (serial path). Existing callbacks may ignore baseSeed.
  * @param {object} [opts] criterion overrides + { concurrency, workerEntry,
  *        workerData, seedSalt }.
  * @returns {Promise<{overallPassed:boolean, criterion:object, tasks:Array}>}
@@ -435,7 +425,8 @@ async function evaluateMultiseed(runOnce, opts = {}) {
   if (concurrency === 1) {
     // Serial path — unchanged behavior, bucket in seed order.
     for (let s = 0; s < criterion.seeds; s++) {
-      const records = withSeededRandom(seedFor(s, salt), () => runOnce(s)) || [];
+      const baseSeed = seedFor(s, salt);
+      const records = withSeededRandom(baseSeed, () => runOnce(s, baseSeed)) || [];
       bucketRecords(acc, records, criterion);
     }
     return aggregateBuckets(acc, criterion);

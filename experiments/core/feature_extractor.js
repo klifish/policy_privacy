@@ -138,11 +138,11 @@ function normalizeFeatures(features) {
  * commitment's calldata byte pattern) from train to test, and the attack
  * measures policy re-identification instead of content inference.
  */
-function splitTrainTest(data, testRatio = 0.3) {
+function splitTrainTest(data, testRatio = 0.3, rng = Math.random) {
   const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
 
   if (!hasGroups) {
-    const shuffled = [...data].sort(() => Math.random() - 0.5);
+    const shuffled = [...data].sort(() => rng() - 0.5);
     const splitIndex = Math.floor(shuffled.length * (1 - testRatio));
     return {
       train: shuffled.slice(0, splitIndex),
@@ -151,7 +151,7 @@ function splitTrainTest(data, testRatio = 0.3) {
   }
 
   const groups = [...new Set(data.map(d => d.policyIndex))];
-  const shuffledGroups = groups.sort(() => Math.random() - 0.5);
+  const shuffledGroups = groups.sort(() => rng() - 0.5);
   const splitIndex = Math.floor(shuffledGroups.length * (1 - testRatio));
   const trainGroups = new Set(shuffledGroups.slice(0, splitIndex));
 

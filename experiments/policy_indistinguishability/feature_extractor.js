@@ -190,7 +190,7 @@ function toMatrix(samplesWithVectors) {
  *
  * Falls back to a plain row-level split when no policy identifiers are present.
  */
-function trainTestSplit(samples, testRatio = 0.3) {
+function trainTestSplit(samples, testRatio = 0.3, rng = Math.random) {
   if (samples.length === 0) {
     return { train: [], test: [] };
   }
@@ -201,7 +201,7 @@ function trainTestSplit(samples, testRatio = 0.3) {
   const hasSingleId = samples[0].policyId !== undefined;
 
   if (!hasPairIds && !hasSingleId) {
-    const shuffled = [...samples].sort(() => Math.random() - 0.5);
+    const shuffled = [...samples].sort(() => rng() - 0.5);
     const split = Math.floor(shuffled.length * (1 - testRatio));
     return {
       train: shuffled.slice(0, split),
@@ -215,7 +215,7 @@ function trainTestSplit(samples, testRatio = 0.3) {
 
   const policyIds = [...new Set(
     samples.flatMap(policiesOf)
-  )].sort(() => Math.random() - 0.5);
+  )].sort(() => rng() - 0.5);
   const testCount = Math.floor(policyIds.length * testRatio);
   const testPolicies = new Set(policyIds.slice(0, testCount));
   const trainPolicies = new Set(policyIds.slice(testCount));

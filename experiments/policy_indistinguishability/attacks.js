@@ -19,6 +19,7 @@ const {
   ksTest,
   computeMMD
 } = require('./statistics');
+const { createRng } = require('../core/random');
 
 function groupPairsByType(pairs) {
   const groups = new Map();
@@ -35,7 +36,7 @@ function ensureDatasetReady(samples) {
   return Array.isArray(samples) && samples.length >= 10;
 }
 
-function runLogistic(name, trainMatrix, testMatrix, permutationIterations) {
+function runLogistic(name, trainMatrix, testMatrix, permutationIterations, permutationRng = Math.random) {
   const model = new LogisticRegression(0.1, 400);
   model.train(trainMatrix.X, trainMatrix.y);
 
@@ -53,7 +54,8 @@ function runLogistic(name, trainMatrix, testMatrix, permutationIterations) {
   const { pValue } = permutationTestAUC(
     testMatrix.y,
     probabilities,
-    typeof permutationIterations === 'number' ? permutationIterations : undefined
+    typeof permutationIterations === 'number' ? permutationIterations : undefined,
+    permutationRng
   );
 
   return {
@@ -67,8 +69,8 @@ function runLogistic(name, trainMatrix, testMatrix, permutationIterations) {
   };
 }
 
-function runRandomForest(name, trainMatrix, testMatrix) {
-  const forest = new RandomForest(25, 6);
+function runRandomForest(name, trainMatrix, testMatrix, rng = Math.random) {
+  const forest = new RandomForest(25, 6, rng);
   forest.train(trainMatrix.X, trainMatrix.y);
   const predictions = forest.predict(testMatrix.X).map((label) => Number(label));
 
@@ -93,6 +95,13 @@ function runSingleSampleAttacks(pairs, options = {}) {
   const results = [];
   const testRatio = options.testRatio || 0.3;
   const permutationIterations = options.permutationIterations;
+  const isolated = options.rngMode === 'isolated';
+  if (isolated && !Number.isInteger(options.baseSeed)) {
+    throw new TypeError('runSingleSampleAttacks: isolated rngMode requires an integer baseSeed');
+  }
+  const rng = (scope, purpose) => isolated
+    ? createRng(options.baseSeed, 'pi', scope, purpose)
+    : Math.random;
 
   const overallPairs = pairs.length > 0 ? [{ pairType: 'overall', subset: pairs }] : [];
   const scopedGroups = overallPairs.concat(
@@ -114,7 +123,11 @@ function runSingleSampleAttacks(pairs, options = {}) {
 
     const summary = summarizeFeatureStats(dataset);
     const { samples } = normalizeSamples(dataset);
-    const { train, test } = trainTestSplit(samples, testRatio);
+    const { train, test } = trainTestSplit(
+      samples,
+      testRatio,
+      rng(pairType, 'split')
+    );
 
     if (train.length < 8 || test.length < 4) {
       results.push({
@@ -133,13 +146,15 @@ function runSingleSampleAttacks(pairs, options = {}) {
       `Single-sample PI (${pairType})`,
       trainMatrix,
       testMatrix,
-      permutationIterations
+      permutationIterations,
+      rng(pairType, 'lr-permutation')
     );
 
     const forestOutcome = runRandomForest(
       `Single-sample PI (RF ${pairType})`,
       trainMatrix,
-      testMatrix
+      testMatrix,
+      rng(pairType, 'rf-bootstrap')
     );
 
     results.push({

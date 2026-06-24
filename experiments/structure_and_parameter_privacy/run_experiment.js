@@ -516,14 +516,14 @@ async function runExperiment(config = {}) {
   };
   const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
-    (seedIndex) => buildSppRecordsForSeed(seedIndex, seedCtx),
+    (seedIndex, baseSeed) => buildSppRecordsForSeed(seedIndex, seedCtx, baseSeed),
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
       positiveControlKeys: ['CONTROL: gas>median'],
       // Parallel verdict: each worker re-reads the dataset and re-runs
-      // buildSppRecordsForSeed per seed in its own V8 isolate (own Math.random),
-      // results replayed in seed order so output is byte-identical to serial.
+      // buildSppRecordsForSeed derives named RNG streams from each seed in either
+      // serial or worker mode; results replay in seed order.
       concurrency,
       workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
       workerData: concurrency > 1 ? {

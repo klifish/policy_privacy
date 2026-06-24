@@ -48,16 +48,18 @@ function buildPerClassifierRecords(key, r) {
 
 /**
  * Produce the verdict records for ONE seed. Pure function of (seedIndex, ctx):
- * reads ctx.executionResults + config knobs, mutates nothing external (randomness
- * flows through the seeded global Math.random the caller installed). Called BOTH
- * by the serial closure in run_experiment AND the parallel worker entry — one copy.
+ * reads ctx.executionResults + config knobs and derives independent named RNG
+ * streams from baseSeed. Without baseSeed it preserves the legacy Math.random
+ * behavior used by single-run diagnostics and compatibility tests.
  *
  * @param {number} seedIndex
  * @param {{executionResults:Array, targetAttributes:string[], testRatio:number,
  *          permutationIterations:number, balanceMethod:string}} ctx
  */
-function buildSppRecordsForSeed(seedIndex, ctx) {
+function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
   const { executionResults, targetAttributes, testRatio, permutationIterations, balanceMethod } = ctx;
+  const isolated = Number.isInteger(baseSeed);
+  const skipLegacyPermutation = isolated && ctx.skipLegacyPermutation !== false;
   const records = [];
   const origLog = console.log;
   for (const attr of targetAttributes) {
@@ -69,7 +71,10 @@ function buildSppRecordsForSeed(seedIndex, ctx) {
         testRatio,
         permutationIterations,
         balanceMethod,
-        perClassifierPermutation: true
+        perClassifierPermutation: true,
+        rngMode: isolated ? 'isolated' : 'legacy',
+        baseSeed,
+        skipLegacyPermutation
       });
     } finally {
       console.log = origLog;
@@ -104,7 +109,10 @@ function buildSppRecordsForSeed(seedIndex, ctx) {
         testRatio,
         permutationIterations,
         balanceMethod,
-        perClassifierPermutation: true
+        perClassifierPermutation: true,
+        rngMode: isolated ? 'isolated' : 'legacy',
+        baseSeed,
+        skipLegacyPermutation
       });
     } finally {
       console.log = origLog;

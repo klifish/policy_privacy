@@ -22,5 +22,5 @@ runSeedWorker(
       permutationIterations: workerData.permutationIterations
     };
   },
-  (seedIndex, ctx) => buildPiRecordsForSeed(seedIndex, ctx)
+  (seedIndex, ctx, baseSeed) => buildPiRecordsForSeed(seedIndex, ctx, baseSeed)
 );

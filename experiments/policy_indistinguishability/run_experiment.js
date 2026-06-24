@@ -570,7 +570,7 @@ async function runExperiment(config = {}) {
   const seedCtx = { pairs, testRatio: config.testRatio, permutationIterations: permIterations };
   const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
-    (seedIndex) => buildPiRecordsForSeed(seedIndex, seedCtx),
+    (seedIndex, baseSeed) => buildPiRecordsForSeed(seedIndex, seedCtx, baseSeed),
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,

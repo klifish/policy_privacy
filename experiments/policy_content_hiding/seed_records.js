@@ -19,6 +19,7 @@ const {
   evaluateBinaryClassification,
   calculateConfusionMatrix
 } = require('../core/evaluator');
+const { createRng } = require('../core/random');
 
 const DUO_TO_ATTRIBUTE_CODE = {
   0: 'GR',  // GENERAL_RESEARCH
@@ -37,14 +38,23 @@ const DUO_TO_ATTRIBUTE_CODE = {
  * permutation p-value uses the SAME classifier's probabilities, so each record's
  * AUC and significance test describe one consistent model.
  */
-function bothAttacks(key, trX, trY, teX, teY, permIterations, rfOpts = {}) {
+function bothAttacks(
+  key,
+  trX,
+  trY,
+  teX,
+  teY,
+  permIterations,
+  rfOpts = {},
+  rngs = {}
+) {
   const { trees = 50, maxDepth = 10 } = rfOpts;
 
   const lr = new LogisticRegression(0.1, 500);
   lr.train(trX, trY);
   const lrProba = lr.predictProba(teX);
 
-  const rf = new RandomForest(trees, maxDepth);
+  const rf = new RandomForest(trees, maxDepth, rngs.rfBootstrap || Math.random);
   rf.train(trX, trY);
   const rfProba = rf.predictProba(teX);
 
@@ -55,7 +65,15 @@ function bothAttacks(key, trX, trY, teX, teY, permIterations, rfOpts = {}) {
     const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
     const ev = evaluateBinaryClassification(teY, pred, proba);
     const confusion = calculateConfusionMatrix(teY, pred);
-    const { pValue } = permutationTestAUC(teY, proba, permIterations);
+    const permutationRng = classifier === 'lr'
+      ? rngs.lrPermutation
+      : rngs.rfPermutation;
+    const { pValue } = permutationTestAUC(
+      teY,
+      proba,
+      permIterations,
+      permutationRng || Math.random
+    );
     records.push({
       key,
       perClassifier: true,
@@ -76,17 +94,24 @@ function bothAttacks(key, trX, trY, teX, teY, permIterations, rfOpts = {}) {
 /**
  * Produce the verdict records for ONE seed. Pure function of (seedIndex, ctx):
  * reads ctx.normalizedFeatures + ctx.observedDuoTermIds + config knobs, mutates
- * nothing external (randomness flows through the seeded global Math.random the
- * caller installed). Called BOTH by the serial closure in run_experiment AND the
- * parallel worker entry — one copy of the per-seed logic.
+ * nothing external, and derives named RNG streams from baseSeed when provided.
+ * Called BOTH by the serial closure and the parallel worker entry.
  *
  * @param {number} seedIndex
  * @param {{normalizedFeatures:Array, observedDuoTermIds:number[], testRatio:number,
  *          permutationIterations:number, rfOpts:{trees:number,maxDepth:number}}} ctx
  */
-function buildPchRecordsForSeed(seedIndex, ctx) {
+function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   const { normalizedFeatures, observedDuoTermIds, testRatio, permutationIterations: permIterations, rfOpts } = ctx;
-  const { train, test } = splitTrainTest(normalizedFeatures, testRatio);
+  const isolated = Number.isInteger(baseSeed);
+  const rng = (...parts) => isolated
+    ? createRng(baseSeed, 'pch', ...parts)
+    : Math.random;
+  const { train, test } = splitTrainTest(
+    normalizedFeatures,
+    testRatio,
+    rng('duo', 'split')
+  );
   const trX = prepareClassificationData(train, 'duoTerm').X;
   const teX = prepareClassificationData(test, 'duoTerm').X;
   const records = [];
@@ -97,7 +122,21 @@ function buildPchRecordsForSeed(seedIndex, ctx) {
     const trY = train.map(labelOf);
     const teY = test.map(labelOf);
     if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-    records.push(...bothAttacks(`DUO ${code}`, trX, trY, teX, teY, permIterations, rfOpts));
+    const key = `DUO ${code}`;
+    records.push(...bothAttacks(
+      key,
+      trX,
+      trY,
+      teX,
+      teY,
+      permIterations,
+      rfOpts,
+      {
+        rfBootstrap: rng(key, 'rf-bootstrap'),
+        lrPermutation: rng(key, 'lr-permutation'),
+        rfPermutation: rng(key, 'rf-permutation')
+      }
+    ));
   }
 
   // ICD-10 chapter inference (one-vs-rest). Only rows carrying an ICD-10 chapter
@@ -108,7 +147,11 @@ function buildPchRecordsForSeed(seedIndex, ctx) {
     );
     if (icdAll.length > 0) {
       const icdChapters = [...new Set(icdAll.map(f => f.icd10Chapter))].sort((a, b) => a - b);
-      const { train: icdTrain, test: icdTest } = splitTrainTest(icdAll, testRatio);
+      const { train: icdTrain, test: icdTest } = splitTrainTest(
+        icdAll,
+        testRatio,
+        rng('icd', 'split')
+      );
       const icdTrX = prepareClassificationData(icdTrain, 'icd10Chapter').X;
       const icdTeX = prepareClassificationData(icdTest, 'icd10Chapter').X;
       for (const ch of icdChapters) {
@@ -116,7 +159,21 @@ function buildPchRecordsForSeed(seedIndex, ctx) {
         const trY = icdTrain.map(labelOf);
         const teY = icdTest.map(labelOf);
         if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-        records.push(...bothAttacks(`ICD ch${ch}`, icdTrX, trY, icdTeX, teY, permIterations, rfOpts));
+        const key = `ICD ch${ch}`;
+        records.push(...bothAttacks(
+          key,
+          icdTrX,
+          trY,
+          icdTeX,
+          teY,
+          permIterations,
+          rfOpts,
+          {
+            rfBootstrap: rng(key, 'rf-bootstrap'),
+            lrPermutation: rng(key, 'lr-permutation'),
+            rfPermutation: rng(key, 'rf-permutation')
+          }
+        ));
       }
     }
   }
@@ -140,7 +197,12 @@ function buildPchRecordsForSeed(seedIndex, ctx) {
       if (auc != null) {
         const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
         const ev = evaluateBinaryClassification(ctrlTeY, pred, proba);
-        const { pValue } = permutationTestAUC(ctrlTeY, proba, permIterations);
+        const { pValue } = permutationTestAUC(
+          ctrlTeY,
+          proba,
+          permIterations,
+          rng('CONTROL: gas>median', 'lr-permutation')
+        );
         records.push({
           key: 'CONTROL: gas>median',
           auc,

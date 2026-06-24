@@ -28,5 +28,5 @@ runSeedWorker(
       rfOpts: workerData.rfOpts
     };
   },
-  (seedIndex, ctx) => buildPchRecordsForSeed(seedIndex, ctx)
+  (seedIndex, ctx, baseSeed) => buildPchRecordsForSeed(seedIndex, ctx, baseSeed)
 );
