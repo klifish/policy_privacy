@@ -565,10 +565,10 @@ async function runExperiment(config = {}) {
   // diagnostic), but PASS/FAIL is decided here — a single split's per-scope AUC
   // has std ~0.05-0.09, which produced spurious FAILs that were sampling noise.
   progress.startStep('Running multi-seed verdict (single-sample, Level I)');
-  const multiseedSeeds = config.multiseedSeeds || 30;
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
   const permIterations = config.permutationIterations || 200;
   const seedCtx = { pairs, testRatio: config.testRatio, permutationIterations: permIterations };
-  const concurrency = Math.max(1, config.concurrency || 1);
+  const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
     (seedIndex) => buildPiRecordsForSeed(seedIndex, seedCtx),
     {

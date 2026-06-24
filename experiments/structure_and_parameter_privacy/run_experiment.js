@@ -505,7 +505,7 @@ async function runExperiment(config = {}) {
   // test sets (degenerate majority-class predictors scored high advantage with
   // f1=0 while the permutation test showed no signal), causing spurious FAILs.
   const targetAttributes = ['structureType', 'predicateCombo', 'paramType'];
-  const multiseedSeeds = config.multiseedSeeds || 30;
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
   const permIterations = config.permutationIterations || 200;
   const seedCtx = {
     executionResults,
@@ -514,7 +514,7 @@ async function runExperiment(config = {}) {
     permutationIterations: permIterations,
     balanceMethod: config.balanceMethod
   };
-  const concurrency = Math.max(1, config.concurrency || 1);
+  const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
     (seedIndex) => buildSppRecordsForSeed(seedIndex, seedCtx),
     {

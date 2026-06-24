@@ -20,9 +20,13 @@ const { runSingleSampleAttacks } = require('./attacks');
 function buildPiRecordsForSeed(seedIndex, ctx) {
   const { pairs, testRatio, permutationIterations } = ctx;
   const origLog = console.log;
-  console.log = () => {}; // silence per-run attack chatter
-  const results = runSingleSampleAttacks(pairs, { testRatio, permutationIterations });
-  console.log = origLog;
+  let results;
+  try {
+    console.log = () => {}; // silence per-run attack chatter
+    results = runSingleSampleAttacks(pairs, { testRatio, permutationIterations });
+  } finally {
+    console.log = origLog;
+  }
   const records = [];
   for (const r of results) {
     if (r.skipped || r.classifier !== 'LogisticRegression' || !r.outcome) continue;

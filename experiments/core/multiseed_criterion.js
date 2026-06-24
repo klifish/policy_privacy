@@ -319,6 +319,7 @@ function runSeedsInWorkers({ workerEntry, workerData, salt, seeds, poolSize }) {
     let nextSeed = 0;
     let settled = false;
     const workers = [];
+    const workerStates = new Map();
 
     const fail = (err) => {
       if (settled) return;
@@ -328,36 +329,80 @@ function runSeedsInWorkers({ workerEntry, workerData, salt, seeds, poolSize }) {
     };
 
     const assign = (w) => {
-      if (nextSeed >= seeds) { w.postMessage({ type: 'done' }); return; }
-      w.postMessage({ type: 'seed', seedIndex: nextSeed++ });
+      const state = workerStates.get(w);
+      if (nextSeed >= seeds) {
+        state.doneSent = true;
+        state.seedIndex = null;
+        w.postMessage({ type: 'done' });
+        return;
+      }
+      state.seedIndex = nextSeed++;
+      w.postMessage({ type: 'seed', seedIndex: state.seedIndex });
     };
 
     const n = Math.max(1, Math.min(poolSize, seeds));
     for (let i = 0; i < n; i++) {
       const w = new Worker(workerEntry, { workerData: { ...workerData, salt, seeds } });
       workers.push(w);
+      workerStates.set(w, { seedIndex: null, doneSent: false });
       w.on('message', (msg) => {
         if (settled) return;
-        if (msg && msg.type === 'result') {
-          recordsBySeed[msg.seedIndex] = msg.records || [];
-          done += 1;
-          if (done === seeds) {
-            settled = true;
-            for (const ww of workers) ww.terminate();
-            // Completeness assertion: never aggregate a partial verdict.
-            const missing = recordsBySeed.findIndex(r => r === undefined);
-            if (missing !== -1) { reject(new Error(`Seed ${missing} produced no records`)); return; }
-            resolve(recordsBySeed);
+        const state = workerStates.get(w);
+        if (!msg || msg.type !== 'result') {
+          fail(new Error('Worker sent an invalid message'));
+          return;
+        }
+        if (!Number.isInteger(msg.seedIndex) || msg.seedIndex !== state.seedIndex) {
+          fail(new Error(`Worker returned unexpected seed ${msg.seedIndex}; expected ${state.seedIndex}`));
+          return;
+        }
+        if (recordsBySeed[msg.seedIndex] !== undefined) {
+          fail(new Error(`Worker returned duplicate result for seed ${msg.seedIndex}`));
+          return;
+        }
+        if (!Array.isArray(msg.records)) {
+          fail(new Error(`Worker returned non-array records for seed ${msg.seedIndex}`));
+          return;
+        }
+        recordsBySeed[msg.seedIndex] = msg.records;
+        state.seedIndex = null;
+        done += 1;
+        if (done === seeds) {
+          // Completeness assertion: never aggregate a partial verdict.
+          const missing = recordsBySeed.findIndex(r => r === undefined);
+          if (missing !== -1) {
+            fail(new Error(`Seed ${missing} produced no records`));
             return;
           }
-          assign(w);
+          settled = true;
+          for (const ww of workers) ww.terminate();
+          resolve(recordsBySeed);
+          return;
         }
+        assign(w);
       });
       w.on('error', fail);
-      w.on('exit', (code) => { if (!settled && code !== 0) fail(new Error(`Worker exited with code ${code}`)); });
+      w.on('exit', (code) => {
+        if (settled) return;
+        const state = workerStates.get(w);
+        if (code !== 0) {
+          fail(new Error(`Worker exited with code ${code}`));
+        } else if (!state.doneSent || state.seedIndex !== null) {
+          fail(new Error(
+            `Worker exited before completing seed ${state.seedIndex == null ? 'assignment' : state.seedIndex}`
+          ));
+        }
+      });
       assign(w);
     }
   });
+}
+
+function requirePositiveInteger(value, name) {
+  if (!Number.isInteger(value) || value < 1) {
+    throw new TypeError(`${name} must be a positive integer; received ${value}`);
+  }
+  return value;
 }
 
 /**
@@ -382,7 +427,8 @@ async function evaluateMultiseed(runOnce, opts = {}) {
   const { concurrency: _c, workerEntry: _we, workerData: _wd, ...criterionOpts } = opts;
   const criterion = { ...DEFAULT_CRITERION, ...criterionOpts };
   const salt = (opts.seedSalt || 0) >>> 0;
-  const concurrency = Math.max(1, opts.concurrency || 1);
+  const concurrency = requirePositiveInteger(opts.concurrency ?? 1, 'concurrency');
+  requirePositiveInteger(criterion.seeds, 'seeds');
 
   const acc = new Map(); // key -> bucket, preserving first-seen (seed-order) order.
 

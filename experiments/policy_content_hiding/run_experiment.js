@@ -453,7 +453,7 @@ async function runExperiment(config = {}) {
   // The single split above is kept only as a diagnostic — its AUC has std ~0.05
   // at ~3 executions/policy, and raw advantage is unstable on imbalanced test
   // sets, so it is not the basis for PASS/FAIL.
-  const multiseedSeeds = config.multiseedSeeds || 30;
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
   const permIterations = config.permutationIterations || 200;
   // Random-forest hyperparameters for the second (non-linear) attacker, matching
   // SPP's forest (50 trees, depth 10). A depth scan (3→10) confirmed RF's
@@ -475,7 +475,7 @@ async function runExperiment(config = {}) {
     permutationIterations: permIterations,
     rfOpts
   };
-  const concurrency = Math.max(1, config.concurrency || 1);
+  const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
     (seedIndex) => buildPchRecordsForSeed(seedIndex, seedCtx),
     {

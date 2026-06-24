@@ -61,21 +61,23 @@ function buildSppRecordsForSeed(seedIndex, ctx) {
   const records = [];
   const origLog = console.log;
   for (const attr of targetAttributes) {
-    console.log = () => {};
-    const out = runSupervisedAttacks(executionResults, {
-      targetAttribute: attr,
-      testRatio,
-      permutationIterations,
-      balanceMethod,
-      perClassifierPermutation: true
-    });
-    console.log = origLog;
+    let out;
+    try {
+      console.log = () => {};
+      out = runSupervisedAttacks(executionResults, {
+        targetAttribute: attr,
+        testRatio,
+        permutationIterations,
+        balanceMethod,
+        perClassifierPermutation: true
+      });
+    } finally {
+      console.log = origLog;
+    }
     for (const r of out.results) {
       if (r.skipped || !r.logisticRegression) continue;
-      // Exclude the empty-predicate / empty-parameter 'none' buckets (~7 policies
-      // on the of-record polygonAmoy dataset): too few for a stable policy-disjoint
-      // split (median test n < 20). Underpowered, non-gating.
-      if (r.class0 === 'none' || r.class1 === 'none') continue;
+      // Keep 'none' contrasts visible. The shared criterion decides from their
+      // actual median test size whether they are underpowered/non-gating.
       records.push(...buildPerClassifierRecords(`${attr}: ${r.class0}/${r.class1}`, r));
     }
   }
@@ -94,15 +96,19 @@ function buildSppRecordsForSeed(seedIndex, ctx) {
       ...r,
       __control: extractFeatures(r).commitGasUsed > gasMedian ? 'high' : 'low'
     }));
-    console.log = () => {};
-    const out = runSupervisedAttacks(tagged, {
-      targetAttribute: '__control',
-      testRatio,
-      permutationIterations,
-      balanceMethod,
-      perClassifierPermutation: true
-    });
-    console.log = origLog;
+    let out;
+    try {
+      console.log = () => {};
+      out = runSupervisedAttacks(tagged, {
+        targetAttribute: '__control',
+        testRatio,
+        permutationIterations,
+        balanceMethod,
+        perClassifierPermutation: true
+      });
+    } finally {
+      console.log = origLog;
+    }
     const r = (out.results || []).find(x => !x.skipped && x.logisticRegression);
     if (r) {
       records.push(...buildPerClassifierRecords('CONTROL: gas>median', r));

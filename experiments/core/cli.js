@@ -7,17 +7,35 @@ const path = require('path');
  *
  * Handles: --phase/--start-phase, --dataset, --execution-results, --output,
  *          --policy-count, --executions-per-policy, --satisfy-ratio,
- *          --test-ratio, --seed, --use-unified-dataset/--unified,
- *          --unified-dir, --help/-h
+ *          --test-ratio, --seed, --concurrency, --multiseed-seeds,
+ *          --use-unified-dataset/--unified, --unified-dir, --help/-h
  *
  * Returns a partial config object; callers merge it with their own defaults
  * and handle any experiment-specific flags in their own parseArgs().
  */
 function parseCommonArgs(argv) {
   const config = {};
+  const positiveInteger = (raw, flag) => {
+    if (raw === undefined || raw === '') {
+      throw new Error(`${flag} requires a positive integer value`);
+    }
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 1) {
+      throw new Error(`${flag} must be a positive integer; received ${raw}`);
+    }
+    return value;
+  };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
+    if (arg.startsWith('--concurrency=')) {
+      config.concurrency = positiveInteger(arg.slice('--concurrency='.length), '--concurrency');
+      continue;
+    }
+    if (arg.startsWith('--multiseed-seeds=')) {
+      config.multiseedSeeds = positiveInteger(arg.slice('--multiseed-seeds='.length), '--multiseed-seeds');
+      continue;
+    }
     switch (arg) {
       case '--phase':
       case '--start-phase':
@@ -49,10 +67,10 @@ function parseCommonArgs(argv) {
         break;
       case '--concurrency':
         // Multi-seed verdict worker_threads pool size (default 1 = serial).
-        config.concurrency = parseInt(argv[++i], 10);
+        config.concurrency = positiveInteger(argv[++i], '--concurrency');
         break;
       case '--multiseed-seeds':
-        config.multiseedSeeds = parseInt(argv[++i], 10);
+        config.multiseedSeeds = positiveInteger(argv[++i], '--multiseed-seeds');
         break;
       case '--use-unified-dataset':
       case '--unified':
@@ -99,6 +117,8 @@ function printCommonHelp() {
   console.log('  --satisfy-ratio <float>           Ratio of satisfying executions');
   console.log('  --test-ratio <float>              Train/test split ratio');
   console.log('  --seed <value>                    Random seed for reproducibility');
+  console.log('  --concurrency <n>                 Multi-seed worker count (default: 1)');
+  console.log('  --multiseed-seeds <n>             Number of verdict seeds (default: 30)');
   console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
   console.log('  --unified-dir <path>              Override unified artifact directory');
   console.log('  --network <name>                  Network scope for artifact/result dirs (default: localhost)');
