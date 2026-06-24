@@ -115,7 +115,11 @@ function evaluateResults(supervisedResults, statisticalResults, clusteringResult
 
       const lrAdv = result.logisticRegression?.evaluation?.advantage || 0;
       const rfAdv = result.randomForest?.evaluation?.advantage || 0;
-      const permPValue = result.logisticRegression?.permutationTest?.pValue || 1;
+      // Single-split now uses the fixed-score AUC permutation (aucPermPValue);
+      // fall back to the legacy retrain permutationTest.pValue for older reports.
+      const permPValue = result.logisticRegression?.evaluation?.aucPermPValue
+        ?? result.logisticRegression?.permutationTest?.pValue
+        ?? 1;
 
       if (lrAdv > thresholds.maxAdvantage) {
         failures.push({
@@ -415,25 +419,31 @@ async function runExperiment(config = {}) {
   console.log('-'.repeat(60));
 
   progress.startStep('Running supervised classification attacks');
+  // Single-split diagnostic: skip the expensive legacy LR-retrain permutation
+  // (500 retrains/pair) and instead attach the cheap fixed-score AUC permutation
+  // (perClassifierPermutation -> evaluation.aucPermPValue), the same significance
+  // test the authoritative multi-seed verdict uses. This diagnostic is non-gating
+  // (multiseedVerdict decides PASS/FAIL), so the legacy retrain only added cost.
+  const diagnosticSupervisedOpts = {
+    testRatio: config.testRatio,
+    permutationIterations: config.permutationIterations ?? 200,
+    balanceMethod: config.balanceMethod,
+    skipLegacyPermutation: true,
+    perClassifierPermutation: true
+  };
   const supervisedStructure = runSupervisedAttacks(executionResults, {
     targetAttribute: 'structureType',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
 
   const supervisedPredicate = runSupervisedAttacks(executionResults, {
     targetAttribute: 'predicateCombo',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
 
   const supervisedParam = runSupervisedAttacks(executionResults, {
     targetAttribute: 'paramType',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
   progress.completeStep();
 
