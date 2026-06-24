@@ -366,6 +366,45 @@ function renderMarkdownReport(report) {
   }
   lines.push('');
 
+  const mv = report.multiseedVerdict;
+  if (mv && Array.isArray(mv.tasks)) {
+    lines.push('## Multi-seed Verdict (authoritative)');
+    lines.push('');
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Advantage reported, not gating.`);
+    lines.push('');
+    lines.push('| Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
+    lines.push('|---|---|---|---|---|---|---|');
+    const fmtAuc = (ms) => (!ms || Number.isNaN(ms.mean)) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
+    const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
+    for (const t of mv.tasks) {
+      if (t.positiveControl) continue; // shown separately under Attack-validity
+      const verdict = t.skipped ? 'skipped'
+        : t.underpowered ? '— (underpowered, non-gating)'
+        : (t.passed ? '✓ PASS' : '✗ FAIL');
+      if (t.classifiers) {
+        const { lr, rf } = t.classifiers;
+        lines.push(`| ${t.key} | ${fmtAuc(lr.auc)} | ${fmtSig(lr.sigFraction)} | ${fmtAuc(rf.auc)} | ${fmtSig(rf.sigFraction)} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      } else {
+        lines.push(`| ${t.key} | ${fmtAuc(t.auc)} | ${fmtSig(t.sigFraction)} | n/a | n/a | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      }
+    }
+    lines.push('');
+
+    const control = mv.tasks.find(t => t.positiveControl);
+    if (control) {
+      const cls = control.classifiers || {};
+      const fmtLeg = (leg) => leg && leg.auc ? `${fmtAuc(leg.auc)} (${fmtSig(leg.sigFraction)} sig)` : 'n/a';
+      lines.push('## Attack-validity (positive control)');
+      lines.push('');
+      lines.push(`- **${control.key}:** LR AUC ${fmtLeg(cls.lr)}, RF AUC ${fmtLeg(cls.rf)}`);
+      lines.push('');
+      lines.push('> `controlled_difference` pairs are intentionally distinguishable (similarity 0). ' +
+        'The same attack pipeline separates them well above chance, confirming the ≈0.5 AUC on the ' +
+        'genuinely-similar pair types reflects *absence of signal*, not a broken attack. Non-gating.');
+      lines.push('');
+    }
+  }
+
   lines.push('## Conclusion');
   lines.push('');
   const label = report.overallPassed ? '✓ PASS' : '✗ FAIL';

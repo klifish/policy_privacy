@@ -69,21 +69,33 @@ function runLogistic(name, trainMatrix, testMatrix, permutationIterations, permu
   };
 }
 
-function runRandomForest(name, trainMatrix, testMatrix, rng = Math.random) {
+function runRandomForest(name, trainMatrix, testMatrix, permutationIterations, rng = Math.random, permutationRng = Math.random) {
   const forest = new RandomForest(25, 6, rng);
   forest.train(trainMatrix.X, trainMatrix.y);
   const predictions = forest.predict(testMatrix.X).map((label) => Number(label));
+  // Continuous vote-fraction scores so the RF leg gets a real AUC + AUC
+  // permutation test, matching the LR leg and PCH/SPP's per-classifier verdict.
+  const probabilities = forest.predictProba(testMatrix.X);
 
   const evaluation = evaluateBinaryClassification(
     testMatrix.y,
     predictions,
-    null,
+    probabilities,
     name
+  );
+
+  const { pValue } = permutationTestAUC(
+    testMatrix.y,
+    probabilities,
+    typeof permutationIterations === 'number' ? permutationIterations : undefined,
+    permutationRng
   );
 
   return {
     evaluation,
-    predictions
+    probabilities,
+    predictions,
+    permutationPValue: pValue
   };
 }
 
@@ -154,7 +166,9 @@ function runSingleSampleAttacks(pairs, options = {}) {
       `Single-sample PI (RF ${pairType})`,
       trainMatrix,
       testMatrix,
-      rng(pairType, 'rf-bootstrap')
+      permutationIterations,
+      rng(pairType, 'rf-bootstrap'),
+      rng(pairType, 'rf-permutation')
     );
 
     results.push({
