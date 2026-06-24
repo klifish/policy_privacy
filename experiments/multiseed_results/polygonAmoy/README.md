@@ -34,9 +34,11 @@ SPP's AUC uses RandomForest (tree-vote fraction): the logistic model
 over-separates on near-constant features and yields degenerate AUC (~0), so the
 calibrated RF score is used for SPP's AUC leg. PCH/PI use logistic-regression AUC.
 
-The standalone `*_multiseed.txt` tables below predate the unified pipeline and
-report the same numbers via the standalone wrappers (`multiseed_eval.js`); they
-are kept for quick re-analysis without rerunning phase 2.
+The standalone `*_multiseed.txt` tables below predate the unified pipeline but
+report the same numbers; they are kept as a quick reference. The legacy
+standalone `multiseed_eval.js` wrappers that produced them have been removed —
+the parallel `run_experiment.js --concurrency` path (worker_threads, byte-identical
+to serial) is now the single way to reproduce the multi-seed verdict.
 
 ## Provenance
 
@@ -63,11 +65,10 @@ within noise of 0.5 (|AUC−0.5| ≤ 0.06). Only `commitGasUsed` and (padded)
 all log counts/sizes are zero-variance (content-independent by construction).
 `blockDifference` is excluded from modeling (confounded harness artifact).
 
-Reproduce:
+Reproduce (parallel verdict; the multi-seed table is printed by `printVerdict`):
 ```
-node experiments/policy_content_hiding/multiseed_eval.js \
-  --features experiments/policy_content_hiding/results/polygonAmoy/features.json \
-  --seeds 30
+node experiments/policy_content_hiding/run_experiment.js \
+  --network polygonAmoy --multiseed-seeds 30 --concurrency 8
 ```
 
 ## PI — Policy Indistinguishability (single-sample, Level I)
@@ -83,11 +84,10 @@ Privacy holds: AUC ≈ 0.5, advantage ≈ 0, permutation p well above 0.05. Note
 regressed to 0.541 ± 0.095 / 40% sig at 30 seeds — a single-split fluke, which is
 exactly why multi-seed evaluation is required.
 
-Reproduce:
+Reproduce (parallel verdict; the multi-seed table is printed by `printVerdict`):
 ```
-node experiments/policy_indistinguishability/multiseed_eval.js \
-  --pairs experiments/policy_indistinguishability/results/polygonAmoy/pi_pairs.json \
-  --seeds 30 --permutation-iterations 200
+node experiments/policy_indistinguishability/run_experiment.js \
+  --network polygonAmoy --multiseed-seeds 30 --permutation-iterations 200 --concurrency 8
 ```
 
 ## SPP — Structure & Parameter Privacy (supervised, pairwise contrasts)
@@ -103,11 +103,10 @@ Full table: see `spp_multiseed.txt`. Across all 18 pairwise class contrasts
 
 Privacy holds for all structure/parameter contrasts under the honest metric.
 
-Reproduce:
+Reproduce (parallel verdict; the multi-seed table is printed by `printVerdict`):
 ```
-node experiments/structure_and_parameter_privacy/multiseed_eval.js \
-  --dataset experiments/unified/artifacts_data/polygonAmoy/spp_dataset.json \
-  --seeds 30 --permutation-iterations 200
+node experiments/structure_and_parameter_privacy/run_experiment.js \
+  --network polygonAmoy --multiseed-seeds 30 --permutation-iterations 200 --concurrency 8
 ```
 
 ## Methodology notes
