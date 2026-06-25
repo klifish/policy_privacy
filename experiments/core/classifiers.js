@@ -1,9 +1,11 @@
 /**
  * Attack Modeling for Policy Content Hiding Evaluation
- * 
+ *
  * Implements simple classifiers to test if adversaries can infer
  * policy content from observable features.
  */
+
+const { shuffleInPlace } = require('./random');
 
 /**
  * Logistic Regression Classifier (binary)
@@ -86,8 +88,14 @@ class DecisionTreeNode {
 }
 
 class SimpleDecisionTree {
-  constructor(maxDepth = 5) {
+  // maxFeatures: number of features to randomly consider at EACH split (the
+  // feature-bagging that makes a forest a *random* forest rather than plain
+  // bagging). null = consider all features (legacy single-tree behavior). rng is
+  // the injected deterministic stream used to pick that random feature subset.
+  constructor(maxDepth = 5, maxFeatures = null, rng = null) {
     this.maxDepth = maxDepth;
+    this.maxFeatures = maxFeatures;
+    this.rng = rng || Math.random;
     this.root = null;
   }
   
@@ -119,15 +127,28 @@ class SimpleDecisionTree {
     return { leftX, leftY, rightX, rightY };
   }
   
+  // Randomly pick which features this split is allowed to consider. With
+  // maxFeatures = null (single-tree use) it returns all of them, preserving the
+  // original exhaustive behavior. In a forest each split sees a fresh sqrt(d)-ish
+  // subset, drawn from the tree's injected rng so the result is reproducible.
+  candidateFeatures(n) {
+    if (!this.maxFeatures || this.maxFeatures >= n) {
+      return Array.from({ length: n }, (_, i) => i);
+    }
+    const indices = Array.from({ length: n }, (_, i) => i);
+    shuffleInPlace(indices, this.rng);
+    return indices.slice(0, this.maxFeatures);
+  }
+
   findBestSplit(X, y) {
     const n = X[0].length;
     let bestGain = 0;
     let bestFeature = 0;
     let bestThreshold = 0;
-    
+
     const parentImpurity = this.giniImpurity(y);
-    
-    for (let feature = 0; feature < n; feature++) {
+
+    for (const feature of this.candidateFeatures(n)) {
       const values = X.map(x => x[feature]);
       const uniqueValues = [...new Set(values)].sort((a, b) => a - b);
       
@@ -220,11 +241,22 @@ class SimpleDecisionTree {
  * Random Forest Classifier (simplified)
  */
 class RandomForest {
-  constructor(nTrees = 10, maxDepth = 5, rng = null) {
+  // maxFeatures: features considered per split (feature bagging). Default 'sqrt'
+  // resolves to round(sqrt(d)) at train time — the standard random-forest setting
+  // that decorrelates the trees. Pass a number to override, or null/0 to disable
+  // (degenerates to plain bagging, the pre-fix behavior).
+  constructor(nTrees = 10, maxDepth = 5, rng = null, maxFeatures = 'sqrt') {
     this.nTrees = nTrees;
     this.maxDepth = maxDepth;
     this.rng = rng;
+    this.maxFeatures = maxFeatures;
     this.trees = [];
+  }
+
+  resolveMaxFeatures(n) {
+    if (this.maxFeatures === 'sqrt') return Math.max(1, Math.round(Math.sqrt(n)));
+    if (!this.maxFeatures) return null; // null/0 -> all features (plain bagging)
+    return Math.max(1, Math.min(this.maxFeatures, n));
   }
   
   bootstrapSample(X, y) {
@@ -244,10 +276,16 @@ class RandomForest {
   
   train(X, y) {
     this.trees = [];
-    
+    const rng = this.rng || Math.random;
+    const maxFeatures = X.length > 0 ? this.resolveMaxFeatures(X[0].length) : null;
+
     for (let i = 0; i < this.nTrees; i++) {
-      const tree = new SimpleDecisionTree(this.maxDepth);
+      // Each tree draws its bootstrap sample then its per-split feature subsets
+      // from the SAME injected rng, in a fixed order (bootstrap-then-train per
+      // tree, tree 0..nTrees-1). Serial and worker runs execute identical code on
+      // identical rng, so the consumption order — and the forest — is reproducible.
       const { sampleX, sampleY } = this.bootstrapSample(X, y);
+      const tree = new SimpleDecisionTree(this.maxDepth, maxFeatures, rng);
       tree.train(sampleX, sampleY);
       this.trees.push(tree);
     }

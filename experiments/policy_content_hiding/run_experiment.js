@@ -47,7 +47,7 @@ const {
   calculateConfusionMatrix
 } = require('../core/evaluator');
 
-const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
 
 
 // bothAttacks, buildPchRecordsForSeed and DUO_TO_ATTRIBUTE_CODE live in
@@ -532,9 +532,11 @@ async function runExperiment(config = {}) {
     multiseedVerdict: verdict, // authoritative
     featureStats,
     overallPassed: verdict.overallPassed,
-    conclusion: verdict.overallPassed
-      ? 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant).'
-      : 'WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.'
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.',
+      inconclusive: 'INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made.'
+    })
   };
 
   const reportPath = path.join(resolvedOutputDir, 'evaluation_report.json');
@@ -675,7 +677,11 @@ function generateReadableReport(report) {
 
   lines.push('## Overall Result');
   lines.push('');
-  const overallStatus = report.overallPassed ? '✓ **PASS**' : '✗ **FAIL**';
+  const overallStatus = pickVerdictText(report.overallPassed, {
+    pass: '✓ **PASS**',
+    fail: '✗ **FAIL**',
+    inconclusive: '? **INCONCLUSIVE**'
+  });
   lines.push(`**Status:** ${overallStatus} _(multi-seed, policy-disjoint; single split shown above is diagnostic)_`);
   lines.push('');
 
@@ -684,11 +690,11 @@ function generateReadableReport(report) {
   lines.push(report.conclusion);
   lines.push('');
 
-  if (report.overallPassed) {
-    lines.push('The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.');
-  } else {
-    lines.push('**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.');
-  }
+  lines.push(pickVerdictText(report.overallPassed, {
+    pass: 'The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.',
+    fail: '**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.',
+    inconclusive: '**Inconclusive:** the positive control (a known-distinguishable task) was not separated by the attack pipeline, so the near-chance AUC on real tasks cannot be read as privacy. The attack must be made effective (verified on the control) before any PASS is meaningful.'
+  }));
   lines.push('');
 
   return lines.join('\n');

@@ -1,9 +1,11 @@
 /**
  * Feature Extractor for Policy Content Hiding Evaluation
- * 
+ *
  * Extracts and normalizes observable features from executed policies
  * for machine learning analysis.
  */
+
+const { shuffleInPlace } = require('./random');
 
 /**
  * Extract features from execution results
@@ -142,7 +144,7 @@ function splitTrainTest(data, testRatio = 0.3, rng = Math.random) {
   const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
 
   if (!hasGroups) {
-    const shuffled = [...data].sort(() => rng() - 0.5);
+    const shuffled = shuffleInPlace([...data], rng);
     const splitIndex = Math.floor(shuffled.length * (1 - testRatio));
     return {
       train: shuffled.slice(0, splitIndex),
@@ -151,7 +153,7 @@ function splitTrainTest(data, testRatio = 0.3, rng = Math.random) {
   }
 
   const groups = [...new Set(data.map(d => d.policyIndex))];
-  const shuffledGroups = groups.sort(() => rng() - 0.5);
+  const shuffledGroups = shuffleInPlace(groups, rng);
   const splitIndex = Math.floor(shuffledGroups.length * (1 - testRatio));
   const trainGroups = new Set(shuffledGroups.slice(0, splitIndex));
 

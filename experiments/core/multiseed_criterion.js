@@ -205,6 +205,11 @@ function aggregateBuckets(acc, criterion) {
         underpowered,
         positiveControl,
         nonGating,
+        // A positive control is "separable" iff EITHER leg clears the double
+        // criterion — i.e. the attack pipeline DOES distinguish a known-different
+        // task. The control-validity gate (below) uses this. Undefined for
+        // non-controls (controlSeparable stays undefined).
+        ...(positiveControl ? { controlSeparable: lr.legFails || rf.legFails } : {}),
         medianTestN: medianN,
         auc: lead.auc,
         advantage: lead.advantage,
@@ -260,6 +265,9 @@ function aggregateBuckets(acc, criterion) {
       underpowered,
       positiveControl,
       nonGating,
+      // See the per-classifier path: a separable control is one the attack DOES
+      // distinguish (high AUC AND significant). Used by the control-validity gate.
+      ...(positiveControl ? { controlSeparable: aucHigh && sigHigh } : {}),
       medianTestN: medianN,
       auc,
       advantage: adv,
@@ -286,9 +294,24 @@ function aggregateBuckets(acc, criterion) {
   }
 
   const judged = tasks.filter(t => t.passed !== null && !t.nonGating);
-  const overallPassed = judged.length > 0 && judged.every(t => t.passed);
+  const basePassed = judged.length > 0 && judged.every(t => t.passed);
 
-  return { overallPassed, criterion, tasks };
+  // Control-validity gate. A PASS is only trustworthy if the attack pipeline
+  // demonstrably separates a known-distinguishable positive control. If controls
+  // exist but at least one is NOT separable (e.g. PI's controlled_difference,
+  // whose execution features are near-identical so the attack finds nothing),
+  // the run is INCONCLUSIVE — we cannot tell "privacy holds" from "the attack is
+  // powerless". Encoded as overallPassed === null (not false: false would assert
+  // leakage, which we have not shown). PCH/SPP controls separate (AUC≈0.99) so
+  // this is a no-op for them.
+  const controlTasks = tasks.filter(t => t.positiveControl);
+  const controlsPresent = controlTasks.length > 0;
+  const controlsValid = !controlsPresent
+    ? null
+    : controlTasks.every(t => t.controlSeparable === true);
+  const overallPassed = (controlsPresent && controlsValid === false) ? null : basePassed;
+
+  return { overallPassed, controlsPresent, controlsValid, criterion, tasks };
 }
 
 /**
@@ -453,6 +476,17 @@ async function evaluateMultiseed(runOnce, opts = {}) {
   return aggregateBuckets(acc, criterion);
 }
 
+/**
+ * Tri-state PASS/FAIL/INCONCLUSIVE selector for the three possible
+ * overallPassed values (true / false / null). Centralizes the mapping so every
+ * console line, report field and markdown renderer treats null === "control not
+ * separable → inconclusive" the same way instead of falling into the FAIL branch.
+ */
+function pickVerdictText(overallPassed, { pass, fail, inconclusive }) {
+  if (overallPassed === null) return inconclusive;
+  return overallPassed ? pass : fail;
+}
+
 /** Pretty one-line-per-task console block for a verdict. */
 function printVerdict(title, verdict) {
   const c = verdict.criterion;
@@ -479,7 +513,12 @@ function printVerdict(title, verdict) {
     }
   }
   console.log('--------------------------------------+-----------------+-----------------+-------------+------+--------');
-  console.log(`Overall: ${verdict.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  const overall = pickVerdictText(verdict.overallPassed, {
+    pass: '✓ PASS',
+    fail: '✗ FAIL',
+    inconclusive: '? INCONCLUSIVE (positive control not separable — attack pipeline shows no discriminative power)'
+  });
+  console.log(`Overall: ${overall}`);
 }
 
 module.exports = {
@@ -489,5 +528,6 @@ module.exports = {
   seedFor,
   mulberry32,
   meanStd,
-  printVerdict
+  printVerdict,
+  pickVerdictText
 };

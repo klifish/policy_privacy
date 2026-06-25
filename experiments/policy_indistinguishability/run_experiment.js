@@ -27,7 +27,7 @@ const {
   runTwoSampleTests
 } = require('./attacks');
 
-const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
 // buildPiRecordsForSeed lives in ./seed_records (shared by the serial path and the
 // parallel worker — one copy of the per-seed logic).
 const { buildPiRecordsForSeed } = require('./seed_records');
@@ -407,7 +407,7 @@ function renderMarkdownReport(report) {
 
   lines.push('## Conclusion');
   lines.push('');
-  const label = report.overallPassed ? '✓ PASS' : '✗ FAIL';
+  const label = pickVerdictText(report.overallPassed, { pass: '✓ PASS', fail: '✗ FAIL', inconclusive: '? INCONCLUSIVE' });
   lines.push(`**Status:** ${label} _(multi-seed, policy-disjoint; single split above is diagnostic)_`);
   lines.push('');
   lines.push(report.conclusion);
@@ -684,9 +684,11 @@ async function runExperiment(config = {}) {
     },
     multiseedVerdict: verdict, // authoritative
     overallPassed: verdict.overallPassed,
-    conclusion: verdict.overallPassed
-      ? 'Policies appear indistinguishable across modeled adversaries (multi-seed AUC ≈ 0.5, permutation not significant).'
-      : 'Potential leakage detected. Further hardening is required.'
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'Policies appear indistinguishable across modeled adversaries (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'Potential leakage detected. Further hardening is required.',
+      inconclusive: 'INCONCLUSIVE: the positive control (controlled_difference, intentionally distinguishable) was NOT separated by the attack pipeline, so the near-chance AUC on similar pairs reflects an attack with no discriminative power rather than demonstrated indistinguishability. No privacy claim is made until the control is separable.'
+    })
   };
 
   fs.writeFileSync(reportJsonPath, JSON.stringify(report, null, 2));
@@ -698,7 +700,7 @@ async function runExperiment(config = {}) {
 
   progress.complete();
   console.log('');
-  console.log(`Overall status (multi-seed): ${verdict.overallPassed ? 'PASS' : 'FAIL'}`);
+  console.log(`Overall status (multi-seed): ${pickVerdictText(verdict.overallPassed, { pass: 'PASS', fail: 'FAIL', inconclusive: 'INCONCLUSIVE' })}`);
   console.log('='.repeat(60));
 
   return report;

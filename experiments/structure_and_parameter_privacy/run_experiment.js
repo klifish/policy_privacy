@@ -23,7 +23,7 @@ const {
 } = require('./attacks');
 
 const { ProgressTracker } = require('../core/progress');
-const { evaluateMultiseed, printVerdict } = require('../core/multiseed_criterion');
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
 
 /**
  * Default configuration
@@ -356,7 +356,7 @@ function generateMarkdownReport(report) {
 
   lines.push('## Conclusion');
   lines.push('');
-  lines.push(`**Overall Status:** ${report.overallPassed ? '✓ PASS' : '✗ FAIL'} _(multi-seed, policy-disjoint; single-split table below is diagnostic)_`);
+  lines.push(`**Overall Status:** ${pickVerdictText(report.overallPassed, { pass: '✓ PASS', fail: '✗ FAIL', inconclusive: '? INCONCLUSIVE' })} _(multi-seed, policy-disjoint; single-split table below is diagnostic)_`);
   lines.push('');
   lines.push(report.conclusion);
   lines.push('');
@@ -574,9 +574,11 @@ async function runExperiment(config = {}) {
     },
     multiseedVerdict: verdict, // authoritative
     overallPassed: verdict.overallPassed,
-    conclusion: verdict.overallPassed
-      ? 'Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).'
-      : 'Potential leakage detected in structure or parameters. Further hardening recommended.'
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'Potential leakage detected in structure or parameters. Further hardening recommended.',
+      inconclusive: 'INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made.'
+    })
   };
 
   fs.writeFileSync(reportJsonPath, JSON.stringify(report, null, 2));
@@ -588,7 +590,7 @@ async function runExperiment(config = {}) {
 
   progress.complete();
   console.log('');
-  console.log(`Overall status (multi-seed): ${verdict.overallPassed ? 'PASS' : 'FAIL'}`);
+  console.log(`Overall status (multi-seed): ${pickVerdictText(verdict.overallPassed, { pass: 'PASS', fail: 'FAIL', inconclusive: 'INCONCLUSIVE' })}`);
   console.log('='.repeat(60));
 
   return report;

@@ -3,6 +3,7 @@
  */
 
 const { FEATURE_KEYS } = require('./feature_keys');
+const { shuffleInPlace } = require('../core/random');
 
 /**
  * Flatten pair executions into per-sample records for Level-I attacks.
@@ -201,7 +202,7 @@ function trainTestSplit(samples, testRatio = 0.3, rng = Math.random) {
   const hasSingleId = samples[0].policyId !== undefined;
 
   if (!hasPairIds && !hasSingleId) {
-    const shuffled = [...samples].sort(() => rng() - 0.5);
+    const shuffled = shuffleInPlace([...samples], rng);
     const split = Math.floor(shuffled.length * (1 - testRatio));
     return {
       train: shuffled.slice(0, split),
@@ -213,9 +214,9 @@ function trainTestSplit(samples, testRatio = 0.3, rng = Math.random) {
     ? [s.raw.policyAId, s.raw.policyBId]
     : [s.policyId];
 
-  const policyIds = [...new Set(
+  const policyIds = shuffleInPlace([...new Set(
     samples.flatMap(policiesOf)
-  )].sort(() => rng() - 0.5);
+  )], rng);
   const testCount = Math.floor(policyIds.length * testRatio);
   const testPolicies = new Set(policyIds.slice(0, testCount));
   const trainPolicies = new Set(policyIds.slice(testCount));

@@ -42,36 +42,49 @@ function calculatePrecisionRecall(yTrue, yPred) {
 }
 
 /**
- * Calculate AUC (Area Under ROC Curve) using trapezoidal rule
+ * Calculate AUC (Area Under ROC Curve) via the rank-based Mann–Whitney U
+ * statistic with AVERAGE-RANK tie handling.
+ *
+ * The previous step-function/trapezoid implementation broke on ties: when
+ * several samples share the same predicted score it gave no half-credit and the
+ * result depended on Array.sort's ordering of equal-score rows. RandomForest
+ * scores are discrete vote fractions (k/trees), so ties are pervasive, and
+ * permutationTestAUC recomputes AUC over the same tied scores every iteration —
+ * biasing the null distribution and pushing p-values toward "non-significant".
+ *
+ * Average-rank Mann–Whitney makes a tied positive/negative pair contribute
+ * exactly 0.5 (the correct AUC) and is order-independent. With NO ties it is
+ * numerically identical to the old trapezoid value. Signature and return type
+ * (a single number) are unchanged.
  */
 function calculateAUC(yTrue, yProba) {
-  // Sort by predicted probability
-  const sorted = yTrue.map((y, i) => ({ y, p: yProba[i] }))
-    .sort((a, b) => b.p - a.p);
-  
   const positives = yTrue.filter(y => y === 1).length;
   const negatives = yTrue.length - positives;
-  
+
   if (positives === 0 || negatives === 0) {
     return 0.5; // undefined case
   }
-  
-  let tpr = 0;
-  let fpr = 0;
-  let auc = 0;
-  let prevFpr = 0;
-  
-  for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i].y === 1) {
-      tpr += 1 / positives;
-    } else {
-      fpr += 1 / negatives;
-      auc += tpr * (fpr - prevFpr);
-      prevFpr = fpr;
+
+  // Ascending sort by score; ties get the mean of the ranks they span.
+  const order = yProba.map((p, i) => i).sort((a, b) => yProba[a] - yProba[b]);
+
+  let sumRanksPos = 0;
+  let i = 0;
+  while (i < order.length) {
+    // Group consecutive equal scores (exact equality — vote fractions are exact).
+    let j = i;
+    while (j + 1 < order.length && yProba[order[j + 1]] === yProba[order[i]]) {
+      j += 1;
     }
+    // Ranks are 1-based; this tie group spans ranks (i+1)..(j+1), mean = (i+j)/2 + 1.
+    const avgRank = (i + j) / 2 + 1;
+    for (let k = i; k <= j; k++) {
+      if (yTrue[order[k]] === 1) sumRanksPos += avgRank;
+    }
+    i = j + 1;
   }
-  
-  return auc;
+
+  return (sumRanksPos - positives * (positives + 1) / 2) / (positives * negatives);
 }
 
 /**

@@ -9,7 +9,7 @@
 
 const { LogisticRegression, RandomForest } = require('../core/classifiers');
 const { calculateAUC, permutationTestAUC } = require('../core/evaluator');
-const { createRng } = require('../core/random');
+const { createRng, shuffleInPlace } = require('../core/random');
 
 // Feature keys for side-channel analysis
 const FEATURE_KEYS = [
@@ -147,7 +147,7 @@ function undersampleMajorityClass(majorityData, targetCount, rng = Math.random) 
   }
 
   // Random undersampling
-  const shuffled = [...majorityData].sort(() => rng() - 0.5);
+  const shuffled = shuffleInPlace([...majorityData], rng);
   return shuffled.slice(0, targetCount);
 }
 
@@ -198,7 +198,7 @@ function trainTestSplit(data, testRatio = 0.3, rng = Math.random) {
   const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
 
   if (!hasGroups) {
-    const shuffled = [...data].sort(() => rng() - 0.5);
+    const shuffled = shuffleInPlace([...data], rng);
     const testSize = Math.floor(data.length * testRatio);
     return {
       train: shuffled.slice(testSize),
@@ -206,7 +206,7 @@ function trainTestSplit(data, testRatio = 0.3, rng = Math.random) {
     };
   }
 
-  const groups = [...new Set(data.map(d => d.policyIndex))].sort(() => rng() - 0.5);
+  const groups = shuffleInPlace([...new Set(data.map(d => d.policyIndex))], rng);
   const testGroupCount = Math.floor(groups.length * testRatio);
   const testGroups = new Set(groups.slice(0, testGroupCount));
   return {
@@ -268,7 +268,7 @@ function permutationTest(features, labels, iterations = 500, rng = Math.random) 
   // Permutation tests
   let betterCount = 0;
   for (let i = 0; i < iterations; i++) {
-    const permutedLabels = [...labels].sort(() => rng() - 0.5);
+    const permutedLabels = shuffleInPlace([...labels], rng);
     const permSplit = trainTestSplit(
       features.map((f, idx) => ({ features: f, label: permutedLabels[idx] })),
       0.3,

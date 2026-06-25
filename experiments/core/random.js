@@ -38,4 +38,20 @@ function createRng(baseSeed, ...namespaceParts) {
   return mulberry32(deriveSeed(baseSeed, ...namespaceParts));
 }
 
-module.exports = { mulberry32, deriveSeed, createRng };
+/**
+ * Unbiased in-place Fisher–Yates shuffle driven by an injected rng.
+ *
+ * Replaces the `arr.sort(() => rng() - 0.5)` idiom, which does NOT produce a
+ * uniform permutation (Array.sort with a random comparator is biased and
+ * engine-dependent). Same Fisher–Yates as core/evaluator.permutationTestAUC, kept
+ * here once for reuse by every split/balance/permutation consumer.
+ */
+function shuffleInPlace(arr, rng = Math.random) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+module.exports = { mulberry32, deriveSeed, createRng, shuffleInPlace };
