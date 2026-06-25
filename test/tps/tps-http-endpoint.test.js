@@ -266,6 +266,26 @@ describe('TPS Chain Submission', function () {
             expect(granted).to.be.true;
         });
 
+        it('uses the unpadded requestAccessBound entry point when pad target is zero', async () => {
+            const unpaddedApp = buildTestApp(contract.connect(tpsSigner), 0);
+            const nonce = freshNonce();
+            const res = await request(unpaddedApp)
+                .post('/tps/prove')
+                .send({
+                    policyId: sharedPolicyId.toString(),
+                    resourceId: sharedResourceId.toString(),
+                    nonce,
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    submitOnChain: true
+                });
+
+            expect(res.status).to.equal(200);
+            const tx = await ethers.provider.getTransaction(res.body.chainResult.transactionHash);
+            const parsed = contract.interface.parseTransaction({ data: tx.data, value: tx.value });
+            expect(parsed.name).to.equal('requestAccessBound');
+        });
+
         it('access gas padding pins observable gas to the configured target', async () => {
             const PAD_TARGET = 600000;
             const padApp = buildTestApp(contract.connect(tpsSigner), PAD_TARGET);

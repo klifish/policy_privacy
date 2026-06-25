@@ -72,6 +72,9 @@ function parseCommonArgs(argv) {
       case '--multiseed-seeds':
         config.multiseedSeeds = positiveInteger(argv[++i], '--multiseed-seeds');
         break;
+      case '--include-seed-records':
+        config.includeSeedRecords = true;
+        break;
       case '--use-unified-dataset':
       case '--unified':
         config.useUnifiedDataset = true;
@@ -119,6 +122,7 @@ function printCommonHelp() {
   console.log('  --seed <value>                    Random seed for reproducibility');
   console.log('  --concurrency <n>                 Multi-seed worker count (default: 1)');
   console.log('  --multiseed-seeds <n>             Number of verdict seeds (default: 30)');
+  console.log('  --include-seed-records             Persist per-seed attack records for paired ablation analysis');
   console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
   console.log('  --unified-dir <path>              Override unified artifact directory');
   console.log('  --network <name>                  Network scope for artifact/result dirs (default: localhost)');

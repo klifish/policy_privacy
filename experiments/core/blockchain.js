@@ -20,10 +20,11 @@ const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
 });
 
 // Calibrated against measured usage (commit avg ~305k max ~329k;
-// access avg ~602k max ~618k) with headroom.
+// registerResource ~80k; access avg ~602k max ~667k) with headroom.
 const GAS_ESTIMATES = Object.freeze({
   deployment: 4_500_000n,
   commit: 350_000n,
+  registration: 100_000n,
   access: 650_000n,
   bufferPercent: 25n
 });
@@ -42,7 +43,8 @@ function estimateTotalGas(executionCount) {
     return 0n;
   }
 
-  const base = GAS_ESTIMATES.deployment + count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.access);
+  const base = GAS_ESTIMATES.deployment +
+    count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.registration + GAS_ESTIMATES.access);
   return withBuffer(base);
 }
 
@@ -53,7 +55,10 @@ function estimateDeployerGas(executionCount) {
   if (count === 0n) {
     return 0n;
   }
-  return withBuffer(GAS_ESTIMATES.deployment + count * GAS_ESTIMATES.commit);
+  return withBuffer(
+    GAS_ESTIMATES.deployment +
+    count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.registration)
+  );
 }
 
 function estimateTpsGas(executionCount) {

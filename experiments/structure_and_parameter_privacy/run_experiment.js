@@ -531,6 +531,7 @@ async function runExperiment(config = {}) {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
       positiveControlKeys: ['CONTROL: gas>median'],
+      includeSeedRecords: config.includeSeedRecords === true,
       // Parallel verdict: each worker re-reads the dataset and re-runs
       // buildSppRecordsForSeed derives named RNG streams from each seed in either
       // serial or worker mode; results replay in seed order.

@@ -47,7 +47,8 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, options
     progressTracker,
     checkpointPath,
     clearCheckpointOnDone = false,
-    continueOnError = true
+    continueOnError = true,
+    executionOptions = {}
   } = options;
 
   let results = [];
@@ -67,7 +68,7 @@ async function executeDatasetWithProgress(dataset, contract, outputPath, options
   for (let i = startIndex; i < dataset.length; i++) {
     const policyData = dataset[i];
     try {
-      const result = await executePolicy(policyData, contract);
+      const result = await executePolicy(policyData, contract, executionOptions);
       results.push(result);
 
       if (progressTracker) {

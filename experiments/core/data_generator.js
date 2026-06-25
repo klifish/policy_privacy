@@ -270,6 +270,20 @@ const GAS_PAD_TARGET_GAS = Object.freeze({
 // Gas randomization configuration
 const GAS_PAD_VARIANCE = 0.1; // ±10% randomization range (50k for commit, 100k for access)
 
+const PROTECTION_PROFILES = Object.freeze({
+  B1_UNPADDED: 'b1_unpadded',
+  B2_PADDED: 'b2_padded'
+});
+
+function normalizeProtectionProfile(profile = PROTECTION_PROFILES.B2_PADDED) {
+  if (!Object.values(PROTECTION_PROFILES).includes(profile)) {
+    throw new Error(
+      `Unknown protection profile "${profile}". Expected one of: ${Object.values(PROTECTION_PROFILES).join(', ')}`
+    );
+  }
+  return profile;
+}
+
 /**
  * Generate a randomized gas target within the configured variance range.
  * This adds noise to prevent gas-based policy fingerprinting.
@@ -2170,7 +2184,8 @@ async function generateDataset(config = {}) {
 /**
  * Provider behavior: commit policy on-chain, then provision material to TPS (Stage 1→2).
  */
-async function providerCommitAndProvision(policyData, contract) {
+async function providerCommitAndProvision(policyData, contract, options = {}) {
+  const protectionProfile = normalizeProtectionProfile(options.protectionProfile);
   const {
     policy,
     numOperations,
@@ -2233,7 +2248,7 @@ async function providerCommitAndProvision(policyData, contract) {
 
   // Stage 1: commit policy on-chain (provider)
   const signer = await getExperimentSigner(contract.runner.provider);
-  const gasPadEnabled = true;
+  const gasPadEnabled = protectionProfile === PROTECTION_PROFILES.B2_PADDED;
   const commitPadTarget = gasPadEnabled ? getRandomGasTarget(GAS_PAD_TARGET_GAS.commit) : 0n;
   const contractWithSigner = contract.connect(signer);
 
@@ -2361,8 +2376,11 @@ async function requesterRequestAccess(policyData, commitResult) {
  * Provider: commitPolicy + registerResource + provision → TPS.
  * Requester: TPS prove + requestAccessBound (TPS submits on-chain, not requester).
  */
-async function executePolicy(policyData, contract) {
-  const commitResult = await providerCommitAndProvision(policyData, contract);
+async function executePolicy(policyData, contract, options = {}) {
+  const protectionProfile = normalizeProtectionProfile(options.protectionProfile);
+  const commitResult = await providerCommitAndProvision(policyData, contract, {
+    protectionProfile
+  });
   const accessResult = await requesterRequestAccess(policyData, commitResult);
 
   const { commitReceipt, commitTx, resourceReceipt, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
@@ -2414,6 +2432,7 @@ async function executePolicy(policyData, contract) {
     policyCommitment,
     paramsCommitment,
     blockchainPolicyId: blockchainPolicyId.toString(),
+    protectionProfile,
     transactions: {
       commit: {
         tx: serializeTransactionResponse(commitTx),
@@ -2430,7 +2449,7 @@ async function executePolicy(policyData, contract) {
 /**
  * Execute dataset and collect all features
  */
-async function executeDataset(dataset, contract, outputPath) {
+async function executeDataset(dataset, contract, outputPath, options = {}) {
   const results = [];
 
   console.log(`Executing ${dataset.length} policy instances...`);
@@ -2440,7 +2459,7 @@ async function executeDataset(dataset, contract, outputPath) {
     console.log(`Progress: ${i}/${dataset.length}`);
 
     try {
-      const result = await executePolicy(dataset[i], contract);
+      const result = await executePolicy(dataset[i], contract, options);
       results.push(result);
     } catch (error) {
       console.error(`Error executing policy ${i}:`, error.message);
@@ -2466,6 +2485,8 @@ module.exports = {
   SNOMED_TERMS,
   GAS_PAD_TARGET_GAS,
   GAS_PAD_VARIANCE,
+  PROTECTION_PROFILES,
+  normalizeProtectionProfile,
   getRandomGasTarget,
   isOntologyLinked,
   getOntologyNamespace,

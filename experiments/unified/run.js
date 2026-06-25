@@ -6,10 +6,12 @@
  * 3. Executes the dataset on-chain once and saves execution results
  * 4. Emits experiment-specific dataset slices (PCH/SPP/PI)
  *
- * Usage:
- *   npx hardhat run experiments/run_unified_dataset.js --network <network>
- *     --config=experiments/unified_dataset_config_optimized.json
- *     --artifact-dir=experiments/unified_dataset_artifacts
+ * Usage (Hardhat does not forward arbitrary script flags, so env vars are the
+ * portable CLI interface):
+ *   UNIFIED_CONFIG_PATH=experiments/unified/configs/unified_dataset_config_optimized.json \
+ *   UNIFIED_ARTIFACT_DIR=experiments/unified/artifacts_data/<network> \
+ *   PROTECTION_PROFILE=b2_padded \
+ *   npx hardhat run experiments/unified/run.js --network <network>
  */
 
 const path = require('path');
@@ -37,6 +39,10 @@ const {
   getExperimentSigner,
   deployPolicyPrivacyContracts
 } = require('../core/blockchain');
+const {
+  PROTECTION_PROFILES,
+  normalizeProtectionProfile
+} = require('../core/data_generator');
 
 const tpsClient = require('../../lib/tps-client');
 
@@ -141,6 +147,8 @@ function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     artifactDir: null,
     configPath: null,
+    datasetPath: null,
+    protectionProfile: null,
     sppExecutionsPerPolicy: 3,
     help: false
   };
@@ -152,6 +160,10 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.configPath = path.resolve(arg.split('=')[1]);
     } else if (arg.startsWith('--artifact-dir=')) {
       options.artifactDir = path.resolve(arg.split('=')[1]);
+    } else if (arg.startsWith('--dataset=')) {
+      options.datasetPath = path.resolve(arg.split('=')[1]);
+    } else if (arg.startsWith('--protection-profile=')) {
+      options.protectionProfile = normalizeProtectionProfile(arg.split('=')[1]);
     } else if (arg.startsWith('--spp-executions=')) {
       options.sppExecutionsPerPolicy = parseInt(arg.split('=')[1], 10);
     } else if (arg.startsWith('--coverage-executions=')) {
@@ -171,6 +183,8 @@ function printUsage() {
   console.log('\nOptions:');
   console.log('  --config=<path>            Path to unified dataset config (JSON)');
   console.log('  --artifact-dir=<path>      Output directory for shared artifacts');
+  console.log('  --dataset=<path>           Reuse exact policy definitions instead of regenerating them');
+  console.log('  --protection-profile=<id>  b1_unpadded or b2_padded (default: b2_padded)');
   console.log('  --spp-executions=<n>       Executions per policy to expose to SPP experiment (default: 3)');
   console.log('  --coverage-executions=<n>  Two-layer: executions for coverage-layer policies (default from config)');
   console.log('  --depth-executions=<n>     Two-layer: executions for depth-layer subset; enables two-layer mode');
@@ -182,8 +196,15 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   const options = {
     // Artifacts are network-scoped by default so testnet results (with real
     // tx hashes) are never overwritten by localhost smoke runs.
-    artifactDir: cliOptions.artifactDir || path.join(DEFAULT_ARTIFACT_DIR, network.name),
+    artifactDir: cliOptions.artifactDir ||
+      (process.env.UNIFIED_ARTIFACT_DIR ? path.resolve(process.env.UNIFIED_ARTIFACT_DIR) : null) ||
+      path.join(DEFAULT_ARTIFACT_DIR, network.name),
     configPath: cliOptions.configPath || process.env.UNIFIED_CONFIG_PATH,
+    datasetPath: cliOptions.datasetPath ||
+      (process.env.UNIFIED_DATASET_PATH ? path.resolve(process.env.UNIFIED_DATASET_PATH) : null),
+    protectionProfile: normalizeProtectionProfile(
+      cliOptions.protectionProfile || process.env.PROTECTION_PROFILE || PROTECTION_PROFILES.B2_PADDED
+    ),
     sppExecutionsPerPolicy: cliOptions.sppExecutionsPerPolicy ?? 3
   };
 
@@ -215,19 +236,43 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   }
   console.log();
 
-  // Step 1: validate + generate dataset
-  const validationResult = await validateUnifiedDataset(config, {
-    writeArtifacts: false,
-    sourceConfigPath: options.configPath
-  });
-  const effectiveConfig = validationResult.config ?? config;
-
-  if (!validationResult.allPassed) {
-    throw new Error('Unified dataset validation failed. Resolve issues before executing on-chain.');
+  let sourceDataset;
+  let effectiveConfig = config;
+  if (options.datasetPath) {
+    sourceDataset = JSON.parse(fs.readFileSync(options.datasetPath, 'utf8'));
+    if (!Array.isArray(sourceDataset) || sourceDataset.length === 0) {
+      throw new Error(`Reusable dataset must be a non-empty JSON array: ${options.datasetPath}`);
+    }
+    const reusedPolicyIds = new Set(
+      sourceDataset.map(entry => entry.policyIndex ?? entry.policyId)
+    );
+    effectiveConfig = {
+      ...config,
+      policyCount: reusedPolicyIds.size,
+      policyCountTarget: reusedPolicyIds.size,
+      executionsPerPolicy: null,
+      reusedDataset: true
+    };
+    console.log(`Reusing exact policy definitions: ${options.datasetPath}`);
+  } else {
+    const validationResult = await validateUnifiedDataset(config, {
+      writeArtifacts: false,
+      sourceConfigPath: options.configPath
+    });
+    effectiveConfig = validationResult.config ?? config;
+    if (!validationResult.allPassed) {
+      throw new Error('Unified dataset validation failed. Resolve issues before executing on-chain.');
+    }
+    sourceDataset = validationResult.dataset;
   }
 
   // Step 2: annotate + save dataset artifacts
-  const { dataset: annotatedDataset, summary } = annotateDatasetForSPP(validationResult.dataset);
+  const { dataset: annotatedDataset, summary } = annotateDatasetForSPP(sourceDataset);
+  effectiveConfig = {
+    ...effectiveConfig,
+    protectionProfile: options.protectionProfile,
+    sourceDatasetPath: options.datasetPath
+  };
   const { paths } = writeDatasetArtifacts({
     dataset: annotatedDataset,
     config: effectiveConfig,
@@ -237,6 +282,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   });
 
   console.log(`Policy definitions saved to: ${paths.policyDefinitions}`);
+  console.log(`Protection profile: ${options.protectionProfile}`);
 
   // Step 3: execute dataset on-chain via TPS workflow
   const provider = ethers.provider;
@@ -304,7 +350,9 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   // Measured bare access on Amoy is ~650k–667k (constant: fixed-depth circuit,
   // only proof zero-byte variance moves it). Base 750k → band 675k–825k, all
   // above real usage. Default 750k; override or disable (0) via env.
-  const accessGasPadTarget = process.env.TPS_ACCESS_GAS_PAD_TARGET || '750000';
+  const accessGasPadTarget = options.protectionProfile === PROTECTION_PROFILES.B1_UNPADDED
+    ? '0'
+    : (process.env.TPS_ACCESS_GAS_PAD_TARGET || '750000');
   const tpsProcess = await startTpsServer({
     TPS_PRIVATE_KEY: tpsPrivateKey,
     CONTRACT_ADDRESS: await policyPrivacy.getAddress(),
@@ -321,7 +369,12 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
       annotatedDataset,
       policyPrivacy,
       paths.executedDataset,
-      { checkpointPath, clearCheckpointOnDone: true, continueOnError: false }
+      {
+        checkpointPath,
+        clearCheckpointOnDone: true,
+        continueOnError: false,
+        executionOptions: { protectionProfile: options.protectionProfile }
+      }
     );
     fs.unlinkSync(contractCachePath);
   } finally {

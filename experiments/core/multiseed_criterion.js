@@ -470,13 +470,20 @@ async function evaluateMultiseed(runOnce, opts = {}) {
   // parallel run of the SAME config serialize an identical verdict (concurrency/
   // workerEntry/workerData describe HOW it ran, not the gating). seedSalt and any
   // other pre-existing keys are left as before to keep prior of-record JSON stable.
-  const { concurrency: _c, workerEntry: _we, workerData: _wd, ...criterionOpts } = opts;
+  const {
+    concurrency: _c,
+    workerEntry: _we,
+    workerData: _wd,
+    includeSeedRecords,
+    ...criterionOpts
+  } = opts;
   const criterion = { ...DEFAULT_CRITERION, ...criterionOpts };
   const salt = (opts.seedSalt || 0) >>> 0;
   const concurrency = requirePositiveInteger(opts.concurrency ?? 1, 'concurrency');
   requirePositiveInteger(criterion.seeds, 'seeds');
 
   const acc = new Map(); // key -> bucket, preserving first-seen (seed-order) order.
+  const seedRecords = includeSeedRecords ? [] : null;
 
   if (concurrency === 1) {
     // Serial path — unchanged behavior, bucket in seed order.
@@ -484,8 +491,11 @@ async function evaluateMultiseed(runOnce, opts = {}) {
       const baseSeed = seedFor(s, salt);
       const records = withSeededRandom(baseSeed, () => runOnce(s, baseSeed)) || [];
       bucketRecords(acc, records, criterion);
+      if (seedRecords) seedRecords.push({ seedIndex: s, baseSeed, records });
     }
-    return aggregateBuckets(acc, criterion);
+    const verdict = aggregateBuckets(acc, criterion);
+    if (seedRecords) verdict.seedRecords = seedRecords;
+    return verdict;
   }
 
   // Parallel path. workerEntry is mandatory — never silently fall back to serial
@@ -505,8 +515,17 @@ async function evaluateMultiseed(runOnce, opts = {}) {
   // serial loop (identical FP accumulation, first-seen key order, confusion arrays).
   for (let s = 0; s < criterion.seeds; s++) {
     bucketRecords(acc, recordsBySeed[s], criterion);
+    if (seedRecords) {
+      seedRecords.push({
+        seedIndex: s,
+        baseSeed: seedFor(s, salt),
+        records: recordsBySeed[s]
+      });
+    }
   }
-  return aggregateBuckets(acc, criterion);
+  const verdict = aggregateBuckets(acc, criterion);
+  if (seedRecords) verdict.seedRecords = seedRecords;
+  return verdict;
 }
 
 /**

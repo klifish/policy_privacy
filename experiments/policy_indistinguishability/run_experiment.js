@@ -647,6 +647,7 @@ async function runExperiment(config = {}) {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
       positiveControlKeys: ['CONTROL: gas>median'],
+      includeSeedRecords: config.includeSeedRecords === true,
       // Semantically dissimilar pairs remain useful diagnostics, but PI's
       // privacy claim is scoped to related policies, so they do not gate.
       nonGatingKeys: ['controlled_difference'],

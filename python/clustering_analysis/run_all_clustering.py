@@ -84,32 +84,30 @@ def validate_inputs(data_dir: Path):
 
     duo = extract_data_global(pch, use_icd10=False)
     icd = extract_data_global(pch, use_icd10=True)
-    if duo is None or (len(duo["X"]), duo["n_classes"]) != (2005, 6):
-        raise ValueError("Expected PCH DUO input to contain 2005 samples / 6 classes")
-    if icd is None or (len(icd["X"]), icd["n_classes"]) != (920, 10):
-        raise ValueError("Expected PCH ICD-10 input to contain 920 samples / 10 classes")
+    if duo is None or len(duo["X"]) < 20 or duo["n_classes"] < 2:
+        raise ValueError("PCH DUO input is too small or has fewer than two classes")
+    if icd is None or len(icd["X"]) < 20 or icd["n_classes"] < 2:
+        raise ValueError("PCH ICD-10 input is too small or has fewer than two classes")
 
     policies = aggregate_policies(pi)
     high_execution = sum(len(record["runs"]) >= 30 for record in policies.values())
-    if high_execution != 32:
-        raise ValueError(
-            f"Expected 32 PI policies with at least 30 executions; found {high_execution}"
-        )
+    if high_execution < 2:
+        raise ValueError("PI requires at least two policies with 30 executions")
 
     for target, classes in TARGETS.items():
         data = extract_data_for_target(spp, target, classes)
-        if data is None or (len(data["X"]), data["n_classes"]) != (1141, 4):
+        if data is None or len(data["X"]) < 20 or data["n_classes"] < 2:
             found = None if data is None else (len(data["X"]), data["n_classes"])
             raise ValueError(
-                f"Expected SPP {target} input to contain 1141 samples / 4 classes; "
+                f"SPP {target} input is too small or has fewer than two classes; "
                 f"found {found}"
             )
 
     print("Input validation passed:")
-    print("  PCH DUO: 2005 samples / 6 classes")
-    print("  PCH ICD-10: 920 samples / 10 classes")
-    print("  PI: 32 policies with >=30 executions")
-    print("  SPP: 1141 samples / 4 classes for every target")
+    print(f"  PCH DUO: {len(duo['X'])} samples / {duo['n_classes']} classes")
+    print(f"  PCH ICD-10: {len(icd['X'])} samples / {icd['n_classes']} classes")
+    print(f"  PI: {high_execution} policies with >=30 executions")
+    print("  SPP: all targets have >=20 samples and >=2 classes")
 
 
 def validate_outputs(data_dir: Path, results_dir: Path):
@@ -136,8 +134,8 @@ def validate_outputs(data_dir: Path, results_dir: Path):
 
     pairs_payload = load_json(data_dir / "pi_pairs_balanced.json")
     pairs = pairs_payload.get("pairs", [])
-    if len(pairs) != 133:
-        raise ValueError(f"Expected 133 balanced PI pairs; found {len(pairs)}")
+    if not pairs:
+        raise ValueError("No balanced PI pairs were generated")
     for pair in pairs:
         counts = [len(policy.get("features", [])) for policy in pair.get("policies", [])]
         if counts != [30, 30]:
@@ -146,8 +144,10 @@ def validate_outputs(data_dir: Path, results_dir: Path):
     pi_frame = pd.read_csv(
         results_dir / RESULT_SUBDIRS["pi"] / "pi_balanced_debiased.csv"
     )
-    if len(pi_frame) != 133:
-        raise ValueError(f"Expected 133 PI result rows; found {len(pi_frame)}")
+    if len(pi_frame) != len(pairs):
+        raise ValueError(
+            f"Expected one PI result per pair ({len(pairs)}); found {len(pi_frame)}"
+        )
     if not ((pi_frame["n0"] == 30) & (pi_frame["n1"] == 30)).all():
         raise ValueError("PI result CSV contains a non-30-vs-30 pair")
     if int(pi_frame["significant"].sum()) != int(

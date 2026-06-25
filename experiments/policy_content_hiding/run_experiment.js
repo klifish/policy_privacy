@@ -482,6 +482,7 @@ async function runExperiment(config = {}) {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
       positiveControlKeys: ['CONTROL: gas>median'],
+      includeSeedRecords: config.includeSeedRecords === true,
       // Parallel verdict: each worker re-derives normalizedFeatures from the saved
       // features file and re-runs buildPchRecordsForSeed per seed in its own V8
       // isolate; results replayed in seed order → byte-identical to serial.
