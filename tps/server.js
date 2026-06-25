@@ -133,8 +133,10 @@ router.post('/prove', async (req, res) => {
             status: 'proving'
         });
 
-        // Construct witness w = (penc, a, p, r, ω) and generate proof
-        const { pA, pB, pC, pubSignals } = await generateProof(
+        // Construct witness w = (penc, a, p, r, ω) and generate proof.
+        // timings = { witnessMs, proveMs, verifyMs, verified } — server-side,
+        // network-free proof costs, surfaced to the client below.
+        const { pA, pB, pC, pubSignals, timings: proofTimings } = await generateProof(
             material,
             evidence,
             { policyCommitment }
@@ -247,7 +249,7 @@ router.post('/prove', async (req, res) => {
             };
         }
 
-        return res.json({ pA, pB, pC, pubSignals, sessionId, chainResult });
+        return res.json({ pA, pB, pC, pubSignals, sessionId, chainResult, proofTimings });
     } catch (err) {
         console.error('[TPS prove] error:', err.message);
         return res.status(500).json({ error: err.message });

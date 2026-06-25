@@ -28,6 +28,7 @@ const {
 const BUILD_DIR = path.resolve(__dirname, '../build/circuits');
 const WASM_PATH = path.join(BUILD_DIR, 'policy_privacy_main_instance_js', 'policy_privacy_main_instance.wasm');
 const ZKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_final.zkey');
+const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
 // circuits/policy_privacy_main_instance.circom
@@ -166,7 +167,13 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
         ontologyEpochs: witness.ontologyEpochs
     });
 
-    return _rawGenerateProof(witness, { wasmPath: WASM_PATH, zkeyPath: ZKEY_PATH });
+    // Returns { pA, pB, pC, pubSignals, timings } — timings passed through to
+    // the prove response so per-execution proof costs can be recorded.
+    return _rawGenerateProof(witness, {
+        wasmPath: WASM_PATH,
+        zkeyPath: ZKEY_PATH,
+        vkeyPath: VKEY_PATH
+    });
 }
 
-module.exports = { generateProof, buildWitness, WASM_PATH, ZKEY_PATH };
+module.exports = { generateProof, buildWitness, WASM_PATH, ZKEY_PATH, VKEY_PATH };

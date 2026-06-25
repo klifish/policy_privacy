@@ -2348,7 +2348,7 @@ async function requesterRequestAccess(policyData, commitResult) {
   // Stage 4+5: TPS generates proof and submits requestAccessBound() on-chain.
   // submitOnChain=true hides the requester address — on-chain msg.sender = TPS.
   const proveStartTime = Date.now();
-  const { pA, pB, pC, pubSignals, sessionId, chainResult } = await tpsClient.prove({
+  const { pA, pB, pC, pubSignals, sessionId, chainResult, proofTimings } = await tpsClient.prove({
     policyId: blockchainPolicyId.toString(),
     resourceId: resourceId.toString(),
     nonce,
@@ -2356,6 +2356,8 @@ async function requesterRequestAccess(policyData, commitResult) {
     evidence,
     submitOnChain: true
   });
+  // proofGenerationTime is end-to-end (witness + prove + HTTP + on-chain submit).
+  // proofTimings carries the server-side, network-free breakdown when available.
   const proofGenerationTime = Date.now() - proveStartTime;
 
   console.log(`[TPS] Submitted proof on-chain for policyId=${blockchainPolicyId}, requestId=${chainResult.requestId}`);
@@ -2366,6 +2368,7 @@ async function requesterRequestAccess(policyData, commitResult) {
     accessTx: { hash: chainResult.transactionHash },
     proof: { pA, pB, pC, pubSignals },
     proofGenerationTime,
+    proofTimings,
     sessionId,
     chainResult
   };
@@ -2384,7 +2387,7 @@ async function executePolicy(policyData, contract, options = {}) {
   const accessResult = await requesterRequestAccess(policyData, commitResult);
 
   const { commitReceipt, commitTx, resourceReceipt, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
-  const { accessTx, proof, proofGenerationTime, chainResult } = accessResult;
+  const { accessTx, proof, proofGenerationTime, proofTimings, chainResult } = accessResult;
 
   const commitEventLogs = commitReceipt.logs.filter(
     (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
@@ -2417,6 +2420,12 @@ async function executePolicy(policyData, contract, options = {}) {
     accessCalldataLength: null,
     proofSize,
     proofGenerationTime,
+    // Server-side, network-free proof costs (ms). null when unavailable (e.g.
+    // B2 rows predate this instrumentation). Performance side-metrics only —
+    // excluded from every attack feature set, like proofGenerationTime.
+    proofWitnessTime: proofTimings ? proofTimings.witnessMs : null,
+    proofProveTime: proofTimings ? proofTimings.proveMs : null,
+    proofVerifyTime: proofTimings ? proofTimings.verifyMs : null,
     commitLogsCount,
     commitLogsSize: commitLogsSizeBytes,
     accessLogsCount,

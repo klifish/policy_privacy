@@ -7,8 +7,11 @@
  * feature_extractor.js import from here so the parallel verdict worker stays
  * light. data_generator.js re-exports FEATURE_KEYS from here for compatibility.
  *
- * Excludes proofGenerationTime (client-side only) and blockDifference (a confounded
- * harness artifact: execution order × network drift, not a policy-content channel).
+ * Excludes proof-timing fields (proofGenerationTime end-to-end; proofWitnessTime /
+ * proofProveTime / proofVerifyTime server-side) — performance side-metrics, not a
+ * policy-content channel — and blockDifference (a confounded harness artifact:
+ * execution order × network drift). This is an explicit whitelist, so adding new
+ * non-observable fields to a record does not silently leak them into attacks.
  */
 const FEATURE_KEYS = Object.freeze([
   'commitGasUsed',

@@ -278,7 +278,9 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     config: effectiveConfig,
     artifactDir: options.artifactDir,
     summary,
-    sourceConfigPath: options.configPath
+    sourceConfigPath: options.configPath,
+    network: network.name,
+    protectionProfile: options.protectionProfile
   });
 
   console.log(`Policy definitions saved to: ${paths.policyDefinitions}`);

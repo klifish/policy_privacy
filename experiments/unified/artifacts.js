@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const {
   annotatePolicy,
@@ -7,6 +8,59 @@ const {
 } = require('../structure_and_parameter_privacy/data_generator');
 
 const DEFAULT_ARTIFACT_DIR = path.join(__dirname, 'artifacts_data');
+
+// Circuit build artefacts — same constants used by the TPS prover.
+const BUILD_DIR = path.resolve(__dirname, '../../build/circuits');
+const CIRCUIT_WASM_PATH = path.join(BUILD_DIR, 'policy_privacy_main_instance_js', 'policy_privacy_main_instance.wasm');
+const CIRCUIT_ZKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_final.zkey');
+const CIRCUIT_VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
+
+function fileBytes(filePath) {
+  try {
+    return fs.statSync(filePath).size;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Run-level reproducibility metadata: circuit scale, toolchain versions, and the
+ * git commit. All fields are best-effort; anything unresolved is recorded as null
+ * rather than aborting the run. Recorded once per run (not per execution row).
+ */
+function buildProvenance({ network, protectionProfile } = {}) {
+  let commitHash = null;
+  try {
+    commitHash = execSync('git rev-parse HEAD', {
+      cwd: __dirname,
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).toString().trim();
+  } catch (_) { /* not a git checkout or git unavailable */ }
+
+  // snarkjs does not expose package.json via its exports map, so resolve the
+  // installed module and read package.json from its directory.
+  let snarkjsVersion = null;
+  try {
+    const snarkjsMain = require.resolve('snarkjs');
+    const snarkjsPkg = path.join(snarkjsMain.slice(0, snarkjsMain.indexOf(`${path.sep}snarkjs${path.sep}`) + `${path.sep}snarkjs`.length), 'package.json');
+    snarkjsVersion = JSON.parse(fs.readFileSync(snarkjsPkg, 'utf8')).version;
+  } catch (_) { /* snarkjs not resolvable from here */ }
+
+  return {
+    // Circuit instantiation (see circuits/policy_privacy_main_instance.circom).
+    circuitDepth: 20,
+    numAttributes: 6,
+    numPredicates: 5,
+    wasmBytes: fileBytes(CIRCUIT_WASM_PATH),
+    zkeyBytes: fileBytes(CIRCUIT_ZKEY_PATH),
+    vkeyBytes: fileBytes(CIRCUIT_VKEY_PATH),
+    snarkjsVersion,
+    nodeVersion: process.version,
+    network: network || null,
+    protectionProfile: protectionProfile || null,
+    commitHash
+  };
+}
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -114,7 +168,9 @@ function writeDatasetArtifacts({
   config,
   artifactDir,
   summary,
-  sourceConfigPath
+  sourceConfigPath,
+  network,
+  protectionProfile
 }) {
   const paths = getArtifactPaths(artifactDir);
   ensureDir(paths.dir);
@@ -132,6 +188,7 @@ function writeDatasetArtifacts({
     satisfyRatio: config?.satisfyRatio ?? null,
     seed: config?.seed ?? null,
     datasetEntries: Array.isArray(dataset) ? dataset.length : null,
+    provenance: buildProvenance({ network, protectionProfile }),
     summary
   };
 
@@ -192,5 +249,6 @@ module.exports = {
   getArtifactPaths,
   writeDatasetArtifacts,
   writeExecutionArtifacts,
-  sliceExecutionsForSPP
+  sliceExecutionsForSPP,
+  buildProvenance
 };

@@ -96,7 +96,7 @@ function normalizeFeatures(features) {
   // Include all observable features for adversary modeling
   // Note: Gas features may show ~360 gas difference due to padding limitations
   const featureNames = Object.keys(features[0]).filter(
-    key => !['policyIndex', 'duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime', 'blockDifference'].includes(key)
+    key => !['policyIndex', 'duoTerm', 'duoTermCodes', 'ontologyNamespace', 'ontologyValue', 'icd10Chapter', 'satisfy', 'proofGenerationTime', 'proofWitnessTime', 'proofProveTime', 'proofVerifyTime', 'blockDifference'].includes(key)
   );
   console.log('Normalizing features:', featureNames.join(', '));
   // const featureNames = ["commitGasUsed", "accessGasUsed"];
