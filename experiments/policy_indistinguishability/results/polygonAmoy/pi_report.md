@@ -1,6 +1,6 @@
 # Policy Indistinguishability Evaluation Report
 
-**Date:** 6/24/2026, 5:06:58 PM
+**Date:** 6/25/2026, 9:14:59 AM
 
 ## Objective
 
@@ -24,41 +24,41 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 
 ### Level I
 
-- **overall / LogisticRegression:** ✗ FAIL
-  - AUC: 0.5270 (threshold 0.55)
-  - Advantage: 0.1608 (threshold 0.05)
-  - Permutation p-value: 0.1891 (threshold 0.05)
-  - Top features: commitGasUsed (-0.153), accessGasUsed (0.054), commitCalldataLength (0.000)
-- **overall / RandomForest:** ✗ FAIL
-  - Advantage: 0.0925 (threshold 0.05)
+- **overall / LogisticRegression:** ✓ PASS
+  - AUC: 0.5196 (threshold 0.55)
+  - Advantage: -0.1463 (threshold 0.05)
+  - Permutation p-value: 0.2275 (threshold 0.05)
+  - Top features: accessGasUsed (0.080), commitGasUsed (-0.058), commitCalldataLength (0.000)
+- **overall / RandomForest:** ✓ PASS
+  - Advantage: -0.0884 (threshold 0.05)
 - **semantic_equivalent / LogisticRegression:** ✓ PASS
-  - AUC: 0.5132 (threshold 0.55)
-  - Advantage: -0.1234 (threshold 0.05)
-  - Permutation p-value: 0.3831 (threshold 0.05)
-  - Top features: commitGasUsed (-0.158), accessGasUsed (-0.062), commitCalldataLength (0.000)
+  - AUC: 0.3855 (threshold 0.55)
+  - Advantage: -0.0698 (threshold 0.05)
+  - Permutation p-value: 0.9661 (threshold 0.05)
+  - Top features: accessGasUsed (0.242), commitGasUsed (-0.157), commitCalldataLength (0.000)
 - **semantic_equivalent / RandomForest:** ✓ PASS
-  - Advantage: -0.1104 (threshold 0.05)
-- **structural_variant / LogisticRegression:** ✗ FAIL
-  - AUC: 0.5639 (threshold 0.55)
-  - Advantage: -0.1941 (threshold 0.05)
-  - Permutation p-value: 0.1791 (threshold 0.05)
-  - Top features: commitGasUsed (-0.078), accessGasUsed (0.016), commitCalldataLength (0.000)
+  - Advantage: -0.0116 (threshold 0.05)
+- **structural_variant / LogisticRegression:** ✓ PASS
+  - AUC: 0.3622 (threshold 0.55)
+  - Advantage: 0.0000 (threshold 0.05)
+  - Permutation p-value: 0.9621 (threshold 0.05)
+  - Top features: accessGasUsed (-0.085), commitGasUsed (0.044), commitCalldataLength (0.000)
 - **structural_variant / RandomForest:** ✓ PASS
-  - Advantage: -0.1941 (threshold 0.05)
-- **weak_equivalent / LogisticRegression:** ✓ PASS
-  - AUC: 0.5242 (threshold 0.55)
-  - Advantage: -0.3182 (threshold 0.05)
-  - Permutation p-value: 0.3333 (threshold 0.05)
-  - Top features: accessGasUsed (-0.355), commitGasUsed (0.133), commitCalldataLength (0.000)
+  - Advantage: -0.0333 (threshold 0.05)
+- **weak_equivalent / LogisticRegression:** ✗ FAIL
+  - AUC: 0.5829 (threshold 0.55)
+  - Advantage: -0.1477 (threshold 0.05)
+  - Permutation p-value: 0.1218 (threshold 0.05)
+  - Top features: accessGasUsed (-0.085), commitGasUsed (-0.027), commitCalldataLength (0.000)
 - **weak_equivalent / RandomForest:** ✓ PASS
-  - Advantage: -0.0734 (threshold 0.05)
+  - Advantage: -0.1250 (threshold 0.05)
 - **controlled_difference / LogisticRegression:** ✓ PASS
-  - AUC: 0.4937 (threshold 0.55)
-  - Advantage: -0.2627 (threshold 0.05)
-  - Permutation p-value: 0.5970 (threshold 0.05)
-  - Top features: commitGasUsed (-0.407), accessGasUsed (0.184), commitCalldataLength (0.000)
+  - AUC: 0.4974 (threshold 0.55)
+  - Advantage: -0.1133 (threshold 0.05)
+  - Permutation p-value: 0.4910 (threshold 0.05)
+  - Top features: commitGasUsed (-0.163), accessGasUsed (-0.063), commitCalldataLength (0.000)
 - **controlled_difference / RandomForest:** ✓ PASS
-  - Advantage: -0.1441 (threshold 0.05)
+  - Advantage: -0.1067 (threshold 0.05)
 
 ### Level II
 
@@ -66,7 +66,7 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
   - AUC: 0.5000 (threshold 0.55)
   - Advantage: 0.5000 (threshold 0.05)
   - Permutation p-value: 1.0000 (threshold 0.05)
-  - Top features: accessGasUsed (1.009), commitGasUsed (0.966), commitCalldataLength (0.000)
+  - Top features: accessGasUsed (1.062), commitGasUsed (0.892), commitCalldataLength (0.000)
 - **overall / RandomForest:** ✗ FAIL
   - Advantage: 0.5000 (threshold 0.05)
 
@@ -76,8 +76,8 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
   - MMD: -0.0241 (threshold 0.05)
   - KS p-value mean: 0.9525 (threshold 0.05)
 - **controlled_difference / Two-sample statistics:** ✓ PASS
-  - MMD: 0.0024 (threshold 0.05)
-  - KS p-value mean: 0.5715 (threshold 0.05)
+  - MMD: -0.0042 (threshold 0.05)
+  - KS p-value mean: 0.6257 (threshold 0.05)
 
 ## Two-sample Diagnostics
 
@@ -91,10 +91,10 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
   - commitLogsSize: KS mean 0.0000, p-value mean 1.0000
   - accessLogsCount: KS mean 0.0000, p-value mean 1.0000
   - accessLogsSize: KS mean 0.0000, p-value mean 1.0000
-- **controlled_difference:** MMD 0.0024
-  - commitGasUsed: KS mean 0.1883, p-value mean 0.6562
+- **controlled_difference:** MMD -0.0042
+  - commitGasUsed: KS mean 0.1907, p-value mean 0.6460
   - commitCalldataLength: KS mean 0.0000, p-value mean 1.0000
-  - accessGasUsed: KS mean 0.2110, p-value mean 0.5715
+  - accessGasUsed: KS mean 0.1970, p-value mean 0.6257
   - accessCalldataLength: KS mean 0.0000, p-value mean 1.0000
   - proofSize: KS mean 0.0000, p-value mean 1.0000
   - commitLogsCount: KS mean 0.0000, p-value mean 1.0000
@@ -108,14 +108,14 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 
 | Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |
 |---|---|---|---|---|---|---|
-| overall | 0.510 ± 0.023 | 3% | 0.487 ± 0.030 | 3% | 381.5 | ✓ PASS |
-| semantic_equivalent | 0.517 ± 0.045 | 7% | 0.497 ± 0.045 | 3% | 150 | ✓ PASS |
-| structural_variant | 0.508 ± 0.061 | 3% | 0.425 ± 0.058 | 0% | 93 | ✓ PASS |
-| weak_equivalent | 0.517 ± 0.061 | 0% | 0.495 ± 0.050 | 0% | 87 | ✓ PASS |
+| overall | 0.488 ± 0.025 | 0% | 0.487 ± 0.035 | 3% | 344.5 | ✓ PASS |
+| semantic_equivalent | 0.463 ± 0.049 | 0% | 0.490 ± 0.050 | 0% | 95 | ✓ PASS |
+| structural_variant | 0.475 ± 0.068 | 0% | 0.529 ± 0.077 | 10% | 62 | ✓ PASS |
+| weak_equivalent | 0.457 ± 0.064 | 0% | 0.454 ± 0.087 | 3% | 62 | ✓ PASS |
 
 ## Attack-validity (positive control)
 
-- **controlled_difference:** LR AUC 0.549 ± 0.061 (17% sig), RF AUC 0.531 ± 0.054 (3% sig)
+- **controlled_difference:** LR AUC 0.482 ± 0.056 (0% sig), RF AUC 0.445 ± 0.058 (0% sig)
 
 > `controlled_difference` pairs are intentionally distinguishable (similarity 0). The same attack pipeline separates them well above chance, confirming the ≈0.5 AUC on the genuinely-similar pair types reflects *absence of signal*, not a broken attack. Non-gating.
 
