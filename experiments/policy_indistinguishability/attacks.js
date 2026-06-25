@@ -201,6 +201,14 @@ function runSingleSampleAttacks(pairs, options = {}) {
  * Pairwise (Siamese-style) classifier using absolute feature deltas (Level II).
  */
 function runPairwiseAttacks(pairs, options = {}) {
+  const isolated = options.rngMode === 'isolated';
+  if (isolated && !Number.isInteger(options.baseSeed)) {
+    throw new TypeError('runPairwiseAttacks: isolated rngMode requires an integer baseSeed');
+  }
+  const rng = (purpose) => isolated
+    ? createRng(options.baseSeed, 'pi', 'pairwise', purpose)
+    : Math.random;
+
   const dataset = buildPairwiseDataset(pairs);
   if (!ensureDatasetReady(dataset)) {
     return [{
@@ -212,7 +220,7 @@ function runPairwiseAttacks(pairs, options = {}) {
 
   const summary = summarizeFeatureStats(dataset);
   const { samples } = normalizeSamples(dataset);
-  const { train, test } = trainTestSplit(samples, options.testRatio || 0.3);
+  const { train, test } = trainTestSplit(samples, options.testRatio || 0.3, rng('split'));
 
   if (train.length < 8 || test.length < 4) {
     return [{
@@ -229,9 +237,16 @@ function runPairwiseAttacks(pairs, options = {}) {
     'Pairwise PI (difference vectors)',
     trainMatrix,
     testMatrix,
-    options.permutationIterations
+    options.permutationIterations,
+    rng('lr-permutation')
   );
-  const forestOutcome = runRandomForest('Pairwise PI RF', trainMatrix, testMatrix);
+  const forestOutcome = runRandomForest(
+    'Pairwise PI RF',
+    trainMatrix,
+    testMatrix,
+    undefined,
+    rng('rf-bootstrap')
+  );
 
   return [
     {

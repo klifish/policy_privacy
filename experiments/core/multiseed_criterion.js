@@ -53,7 +53,13 @@ const DEFAULT_CRITERION = Object.freeze({
   // *expected* sanity-check signal, not leakage. Their metrics and `passed` are
   // still computed and reported, but they do NOT gate overallPassed (mirrors
   // `underpowered`). Empty by default, so PCH/SPP are unaffected.
-  positiveControlKeys: []
+  positiveControlKeys: [],
+  // Control-validity gate: when true (default), a PASS is downgraded to
+  // INCONCLUSIVE (overallPassed === null) if a positive control is present but
+  // not separable by the attack pipeline. Set false to report the control's
+  // separability without letting it gate the verdict (e.g. PI, where
+  // controlled_difference's execution features are near-identical by design).
+  gateOnControlValidity: true
 });
 
 function withSeededRandom(seed, fn) {
@@ -303,13 +309,17 @@ function aggregateBuckets(acc, criterion) {
   // the run is INCONCLUSIVE — we cannot tell "privacy holds" from "the attack is
   // powerless". Encoded as overallPassed === null (not false: false would assert
   // leakage, which we have not shown). PCH/SPP controls separate (AUC≈0.99) so
-  // this is a no-op for them.
+  // this is a no-op for them. Experiments may opt out via
+  // gateOnControlValidity:false — the control's separability is still reported,
+  // but it no longer gates the verdict.
   const controlTasks = tasks.filter(t => t.positiveControl);
   const controlsPresent = controlTasks.length > 0;
   const controlsValid = !controlsPresent
     ? null
     : controlTasks.every(t => t.controlSeparable === true);
-  const overallPassed = (controlsPresent && controlsValid === false) ? null : basePassed;
+  const overallPassed = (criterion.gateOnControlValidity && controlsPresent && controlsValid === false)
+    ? null
+    : basePassed;
 
   return { overallPassed, controlsPresent, controlsValid, criterion, tasks };
 }

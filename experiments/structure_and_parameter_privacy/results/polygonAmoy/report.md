@@ -1,6 +1,6 @@
 # Structure & Parameter Privacy Evaluation Report
 
-**Date:** 6/24/2026, 2:31:24 PM
+**Date:** 6/25/2026, 11:57:33 AM
 
 ## Objective
 
@@ -24,37 +24,39 @@ after applying postfix interpreter + padding protections.
 **Status:** ✗ FAIL
 
 **Failures:**
-- and_only vs negation_heavy / Random Forest: advantage=0.0562 (threshold: 0.05)
-- or_only vs negation_heavy / Logistic Regression: advantage=0.0980 (threshold: 0.05)
-- or_only vs negation_heavy / Permutation Test: p-value=0.0399 (threshold: 0.05)
-- or_only vs and_or_mixed / Logistic Regression: advantage=0.0976 (threshold: 0.05)
-- or_only vs and_or_mixed / Random Forest: advantage=0.0680 (threshold: 0.05)
+- and_only vs negation_heavy / Logistic Regression: advantage=0.0621 (threshold: 0.05)
+- and_only vs negation_heavy / Random Forest: advantage=0.0858 (threshold: 0.05)
+- and_only vs and_or_mixed / Random Forest: advantage=0.0674 (threshold: 0.05)
+- or_only vs negation_heavy / Random Forest: advantage=0.0685 (threshold: 0.05)
+- or_only vs and_or_mixed / Random Forest: advantage=0.0879 (threshold: 0.05)
 
 #### Target: predicateCombo
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- none vs single / Logistic Regression: advantage=0.1486 (threshold: 0.05)
-- none vs single / Random Forest: advantage=0.1081 (threshold: 0.05)
-- none vs few / Logistic Regression: advantage=0.1056 (threshold: 0.05)
-- none vs few / Random Forest: advantage=0.0869 (threshold: 0.05)
-- none vs many / Logistic Regression: advantage=0.1271 (threshold: 0.05)
-- none vs many / Random Forest: advantage=0.1780 (threshold: 0.05)
-- single vs few / Logistic Regression: advantage=0.0547 (threshold: 0.05)
-- few vs many / Logistic Regression: advantage=0.1704 (threshold: 0.05)
+- none vs few / Logistic Regression: advantage=0.1372 (threshold: 0.05)
+- none vs few / Random Forest: advantage=0.1884 (threshold: 0.05)
+- none vs many / Logistic Regression: advantage=0.1769 (threshold: 0.05)
+- single vs few / Logistic Regression: advantage=0.1259 (threshold: 0.05)
+- single vs few / Random Forest: advantage=0.1783 (threshold: 0.05)
+- single vs many / Logistic Regression: advantage=0.1160 (threshold: 0.05)
+- single vs many / Random Forest: advantage=0.1160 (threshold: 0.05)
+- few vs many / Logistic Regression: advantage=0.1805 (threshold: 0.05)
+- few vs many / Random Forest: advantage=0.2744 (threshold: 0.05)
 
 #### Target: paramType
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- none vs small / Logistic Regression: advantage=0.2353 (threshold: 0.05)
-- none vs small / Random Forest: advantage=0.1176 (threshold: 0.05)
-- none vs medium / Logistic Regression: advantage=0.1332 (threshold: 0.05)
-- none vs large / Logistic Regression: advantage=0.0823 (threshold: 0.05)
-- small vs medium / Logistic Regression: advantage=0.0953 (threshold: 0.05)
-- medium vs large / Logistic Regression: advantage=0.0927 (threshold: 0.05)
+- none vs small / Logistic Regression: advantage=0.0968 (threshold: 0.05)
+- none vs small / Random Forest: advantage=0.1290 (threshold: 0.05)
+- none vs medium / Logistic Regression: advantage=0.1124 (threshold: 0.05)
+- none vs large / Logistic Regression: advantage=0.2778 (threshold: 0.05)
+- none vs large / Random Forest: advantage=0.0679 (threshold: 0.05)
+- medium vs large / Logistic Regression: advantage=0.1157 (threshold: 0.05)
+- medium vs large / Random Forest: advantage=0.0943 (threshold: 0.05)
 
 ### Statistical Hypothesis Tests
 
@@ -79,28 +81,28 @@ after applying postfix interpreter + padding protections.
 **Failures:**
 - k=2 / silhouette: 0.5245 (threshold: 0.3)
 - k=3 / silhouette: 0.4126 (threshold: 0.3)
-- k=4 / silhouette: 0.3970 (threshold: 0.3)
-- k=5 / silhouette: 0.3479 (threshold: 0.3)
+- k=4 / silhouette: 0.3967 (threshold: 0.3)
+- k=5 / silhouette: 0.3741 (threshold: 0.3)
 
 #### Target: predicateCombo
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5245 (threshold: 0.3)
-- k=3 / silhouette: 0.4124 (threshold: 0.3)
-- k=4 / silhouette: 0.3724 (threshold: 0.3)
-- k=5 / silhouette: 0.3741 (threshold: 0.3)
+- k=2 / silhouette: 0.5244 (threshold: 0.3)
+- k=3 / silhouette: 0.4126 (threshold: 0.3)
+- k=4 / silhouette: 0.3970 (threshold: 0.3)
+- k=5 / silhouette: 0.3787 (threshold: 0.3)
 
 #### Target: paramType
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5245 (threshold: 0.3)
+- k=2 / silhouette: 0.5244 (threshold: 0.3)
 - k=3 / silhouette: 0.4126 (threshold: 0.3)
-- k=4 / silhouette: 0.3570 (threshold: 0.3)
-- k=5 / silhouette: 0.3757 (threshold: 0.3)
+- k=4 / silhouette: 0.3970 (threshold: 0.3)
+- k=5 / silhouette: 0.3727 (threshold: 0.3)
 
 ## Conclusion
 

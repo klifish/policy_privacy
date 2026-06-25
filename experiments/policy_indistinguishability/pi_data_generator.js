@@ -45,8 +45,28 @@ const PAIR_TYPE_THRESHOLDS = Object.freeze({
  */
 class SeededRandom {
   constructor(seed) {
-    this.seed = seed || Date.now();
+    this.seed = SeededRandom.normalizeSeed(seed);
     this.state = this.seed;
+  }
+
+  // Coerce any seed to a fixed 31-bit integer so the LCG below is well-defined.
+  // Numbers are masked to 31 bits; strings are folded with FNV-1a (so a string
+  // seed like 'pi-experiment' is usable, not NaN). A missing seed falls back to
+  // a FIXED constant — never Date.now() — so phase-2 pair sampling is
+  // reproducible across runs instead of reseeding off the wall clock.
+  static normalizeSeed(seed) {
+    if (typeof seed === 'number' && Number.isFinite(seed)) {
+      return (seed >>> 0) % 0x7fffffff || 1;
+    }
+    if (typeof seed === 'string' && seed.length) {
+      let h = 2166136261;
+      for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0) % 0x7fffffff || 1;
+    }
+    return 0x70695f /* 'pi_' */;
   }
 
   next() {
