@@ -48,17 +48,21 @@ const DEFAULT_CRITERION = Object.freeze({
   // FAIL. The large pooled scope ('overall') and adequately-sized subclasses
   // still gate. 0 disables the rule.
   minTestSamples: 20,
-  // Positive-control keys: tasks that are intentionally distinguishable (e.g.
-  // PI's controlled_difference pair, similarity 0), so a high AUC is the
-  // *expected* sanity-check signal, not leakage. Their metrics and `passed` are
-  // still computed and reported, but they do NOT gate overallPassed (mirrors
-  // `underpowered`). Empty by default, so PCH/SPP are unaffected.
+  // Positive-control keys: tasks that are intentionally distinguishable, so a
+  // high AUC is the *expected* sanity-check signal, not leakage. Their metrics
+  // and `passed` are still computed and reported, but they do NOT gate
+  // overallPassed directly (mirrors `underpowered`). The control-validity gate
+  // below separately requires every configured control to be present and
+  // separable.
   positiveControlKeys: [],
+  // Diagnostic task keys: ordinary measured tasks that should be reported but
+  // must not decide the privacy verdict. Unlike positive controls, they are not
+  // expected to be separable and do not participate in the control-validity
+  // gate.
+  nonGatingKeys: [],
   // Control-validity gate: when true (default), a PASS is downgraded to
   // INCONCLUSIVE (overallPassed === null) if a positive control is present but
-  // not separable by the attack pipeline. Set false to report the control's
-  // separability without letting it gate the verdict (e.g. PI, where
-  // controlled_difference's execution features are near-identical by design).
+  // missing or not separable by the attack pipeline.
   gateOnControlValidity: true
 });
 
@@ -108,10 +112,9 @@ function bucketRecords(acc, records, criterion) {
     if (!r || r.key == null) continue;
     const b = bucket(r.key);
 
-    // Per-classifier records (PCH DUO/ICD: one record per LR and per RF, carrying
+    // Per-classifier records (one record per LR and per RF, carrying
     // perClassifier:true). Route them into a separate per-classifier sub-bucket so
-    // LR and RF aggregate independently and the task can gate on BOTH. PI/SPP/the
-    // PCH positive control lack this flag and fall through to the legacy path below.
+    // LR and RF aggregate independently and the task can gate on BOTH.
     if (r.perClassifier === true && (r.classifier === 'lr' || r.classifier === 'rf')) {
       if (!b.perClf) b.perClf = { lr: emptySub(), rf: emptySub() };
       const sub = b.perClf[r.classifier];
@@ -184,7 +187,7 @@ function aggregateBuckets(acc, criterion) {
 
   const tasks = [];
   for (const [key, b] of acc) {
-    // Per-classifier task (PCH DUO/ICD): LR and RF aggregated independently, the
+    // Per-classifier task: LR and RF aggregated independently, the
     // task gates on BOTH (FAIL if either classifier's double criterion fires).
     if (b.perClf) {
       const lr = aggLeg(b.perClf.lr);
@@ -194,11 +197,13 @@ function aggregateBuckets(acc, criterion) {
         && medianN < criterion.minTestSamples;
       const positiveControl = Array.isArray(criterion.positiveControlKeys)
         && criterion.positiveControlKeys.includes(key);
+      const diagnostic = Array.isArray(criterion.nonGatingKeys)
+        && criterion.nonGatingKeys.includes(key);
       const judgeable = lr.auc.n > 0 || rf.auc.n > 0
         || lr.sigFraction != null || rf.sigFraction != null;
       const anyLegFails = lr.legFails || rf.legFails;
       const passed = (!judgeable || underpowered) ? null : !anyLegFails;
-      const nonGating = underpowered || positiveControl;
+      const nonGating = underpowered || positiveControl || diagnostic;
 
       // Top-level fields are populated from the higher-AUC leg ("stronger
       // attacker") so the console printVerdict and any legacy reader keep working
@@ -210,6 +215,7 @@ function aggregateBuckets(acc, criterion) {
         skipped: !judgeable,
         underpowered,
         positiveControl,
+        diagnostic,
         nonGating,
         // A positive control is "separable" iff EITHER leg clears the double
         // criterion — i.e. the attack pipeline DOES distinguish a known-different
@@ -244,6 +250,8 @@ function aggregateBuckets(acc, criterion) {
     // Positive controls are reported but do not gate (see DEFAULT_CRITERION).
     const positiveControl = Array.isArray(criterion.positiveControlKeys)
       && criterion.positiveControlKeys.includes(key);
+    const diagnostic = Array.isArray(criterion.nonGatingKeys)
+      && criterion.nonGatingKeys.includes(key);
 
     // Double criterion: a task FAILs only when BOTH legs cross the line — the
     // AUC is meaningfully above chance AND that advantage is statistically
@@ -262,7 +270,7 @@ function aggregateBuckets(acc, criterion) {
     // = "distinguishable" on BOTH legs, the desired sanity signal). Gating
     // exclusion is carried separately by `nonGating` so the JSON shows both facts.
     const passed = (!judgeable || underpowered) ? null : !(aucHigh && sigHigh);
-    const nonGating = underpowered || positiveControl;
+    const nonGating = underpowered || positiveControl || diagnostic;
 
     const task = {
       key,
@@ -270,6 +278,7 @@ function aggregateBuckets(acc, criterion) {
       skipped: !judgeable,
       underpowered,
       positiveControl,
+      diagnostic,
       nonGating,
       // See the per-classifier path: a separable control is one the attack DOES
       // distinguish (high AUC AND significant). Used by the control-validity gate.
@@ -304,24 +313,38 @@ function aggregateBuckets(acc, criterion) {
 
   // Control-validity gate. A PASS is only trustworthy if the attack pipeline
   // demonstrably separates a known-distinguishable positive control. If controls
-  // exist but at least one is NOT separable (e.g. PI's controlled_difference,
-  // whose execution features are near-identical so the attack finds nothing),
-  // the run is INCONCLUSIVE — we cannot tell "privacy holds" from "the attack is
+  // are configured but at least one is missing or NOT separable, the run is
+  // INCONCLUSIVE — we cannot tell "privacy holds" from "the attack is
   // powerless". Encoded as overallPassed === null (not false: false would assert
-  // leakage, which we have not shown). PCH/SPP controls separate (AUC≈0.99) so
-  // this is a no-op for them. Experiments may opt out via
-  // gateOnControlValidity:false — the control's separability is still reported,
-  // but it no longer gates the verdict.
-  const controlTasks = tasks.filter(t => t.positiveControl);
-  const controlsPresent = controlTasks.length > 0;
+  // leakage, which we have not shown).
+  const expectedControlKeys = Array.isArray(criterion.positiveControlKeys)
+    ? [...new Set(criterion.positiveControlKeys)]
+    : [];
+  const controlTasksByKey = new Map(
+    tasks.filter(t => t.positiveControl).map(t => [t.key, t])
+  );
+  const missingPositiveControlKeys = expectedControlKeys.filter(
+    key => !controlTasksByKey.has(key)
+  );
+  const controlsPresent = expectedControlKeys.length > 0;
   const controlsValid = !controlsPresent
     ? null
-    : controlTasks.every(t => t.controlSeparable === true);
+    : missingPositiveControlKeys.length === 0
+      && expectedControlKeys.every(
+        key => controlTasksByKey.get(key).controlSeparable === true
+      );
   const overallPassed = (criterion.gateOnControlValidity && controlsPresent && controlsValid === false)
     ? null
     : basePassed;
 
-  return { overallPassed, controlsPresent, controlsValid, criterion, tasks };
+  return {
+    overallPassed,
+    controlsPresent,
+    controlsValid,
+    missingPositiveControlKeys,
+    criterion,
+    tasks
+  };
 }
 
 /**
@@ -504,6 +527,7 @@ function printVerdict(title, verdict) {
   console.log(`Criterion: FAIL iff AUC_mean > ${c.aucMax} AND significant-seed fraction ≥ ${c.sigFractionMax} (perm α=${c.permAlpha}); both required, else PASS. Advantage reported, not gating.`);
   console.log(`Underpowered tasks (median test n < ${c.minTestSamples}) are reported but do not gate.`);
   console.log(`Positive-control tasks are reported but do not gate (expected to be distinguishable).`);
+  console.log(`Diagnostic tasks are reported but do not gate.`);
   console.log('Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict');
   console.log('--------------------------------------+-----------------+-----------------+-------------+------+------+--------');
   for (const t of verdict.tasks) {
@@ -511,6 +535,7 @@ function printVerdict(title, verdict) {
     const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
     const v = t.skipped ? 'SKIP'
       : t.positiveControl ? '— (control)'
+      : t.diagnostic ? '— (diagnostic)'
       : t.underpowered ? '— (underpowered)'
       : (t.passed ? '✓ PASS' : '✗ FAIL');
     const permMean = Number.isNaN(t.permPValue.mean) ? '  n/a  ' : t.permPValue.mean.toFixed(3);

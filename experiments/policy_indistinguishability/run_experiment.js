@@ -383,6 +383,7 @@ function renderMarkdownReport(report) {
     for (const t of mv.tasks) {
       if (t.positiveControl) continue; // shown separately under Attack-validity
       const verdict = t.skipped ? 'skipped'
+        : t.diagnostic ? '— (diagnostic, non-gating)'
         : t.underpowered ? '— (underpowered, non-gating)'
         : (t.passed ? '✓ PASS' : '✗ FAIL');
       if (t.classifiers) {
@@ -398,21 +399,31 @@ function renderMarkdownReport(report) {
     if (control) {
       const cls = control.classifiers || {};
       const fmtLeg = (leg) => leg && leg.auc ? `${fmtAuc(leg.auc)} (${fmtSig(leg.sigFraction)} sig)` : 'n/a';
+      const fmtPrf = (leg) => leg && leg.prf && leg.prf.f1 && leg.prf.f1.n > 0
+        ? `${leg.prf.precision.mean.toFixed(2)} / ${leg.prf.recall.mean.toFixed(2)} / ${leg.prf.f1.mean.toFixed(2)}`
+        : 'n/a';
       lines.push('## Attack-validity (positive control)');
       lines.push('');
       lines.push(`- **${control.key}:** LR AUC ${fmtLeg(cls.lr)}, RF AUC ${fmtLeg(cls.rf)}`);
+      lines.push(`- **P/R/F1:** LR ${fmtPrf(cls.lr)}, RF ${fmtPrf(cls.rf)}`);
       lines.push('');
       if (control.controlSeparable) {
-        lines.push('> `controlled_difference` pairs are intentionally distinguishable (similarity 0). ' +
-          'The same attack pipeline separates them well above chance, confirming the ≈0.5 AUC on the ' +
-          'genuinely-similar pair types reflects *absence of signal*, not a broken attack. Non-gating.');
+        lines.push('> The same PI Level-I pipeline recovers a synthetic, known-separable label ' +
+          'derived from observable commit gas (`gas > training median`). This confirms the near-chance ' +
+          'AUC on the real pair scopes reflects absence of detected signal, not a broken attack. Non-gating.');
       } else {
-        lines.push('> `controlled_difference` pairs are intended as a positive control (similarity 0), but ' +
-          'their on-chain execution features are near-identical by design, so the attack does **not** ' +
-          'separate them above chance here. This control is therefore reported for transparency but does ' +
-          'not gate the verdict — the ≈0.5 AUC on the genuinely-similar pair types is not corroborated by ' +
-          'a separable control. Non-gating.');
+        lines.push('> The synthetic `gas > training median` positive control was not separated by the ' +
+          'PI Level-I pipeline. The overall result is therefore inconclusive: near-chance AUC on the real ' +
+          'pair scopes cannot be distinguished from an ineffective attack.');
       }
+      lines.push('');
+    } else if (Array.isArray(mv.missingPositiveControlKeys)
+        && mv.missingPositiveControlKeys.length > 0) {
+      lines.push('## Attack-validity (positive control)');
+      lines.push('');
+      lines.push(`- Missing control results: ${mv.missingPositiveControlKeys.join(', ')}`);
+      lines.push('');
+      lines.push('> The configured positive control could not be evaluated, so the overall result is inconclusive.');
       lines.push('');
     }
   }
@@ -635,12 +646,10 @@ async function runExperiment(config = {}) {
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
-      // controlled_difference is a positive control (similarity 0, intentionally
-      // distinguishable): report it but do not gate the privacy verdict on it.
-      // Its execution features are near-identical by design, so the attack often
-      // cannot separate it; we report that separability but do not let it gate.
-      positiveControlKeys: ['controlled_difference'],
-      gateOnControlValidity: false,
+      positiveControlKeys: ['CONTROL: gas>median'],
+      // Semantically dissimilar pairs remain useful diagnostics, but PI's
+      // privacy claim is scoped to related policies, so they do not gate.
+      nonGatingKeys: ['controlled_difference'],
       // Parallel verdict: each worker re-reads the saved pairs file and re-runs
       // buildPiRecordsForSeed per seed in its own V8 isolate; results replayed in
       // seed order → byte-identical to serial.
@@ -712,7 +721,7 @@ async function runExperiment(config = {}) {
     conclusion: pickVerdictText(verdict.overallPassed, {
       pass: 'Policies appear indistinguishable across modeled adversaries (multi-seed AUC ≈ 0.5, permutation not significant).',
       fail: 'Potential leakage detected. Further hardening is required.',
-      inconclusive: 'INCONCLUSIVE: the positive control (controlled_difference, intentionally distinguishable) was NOT separated by the attack pipeline, so the near-chance AUC on similar pairs reflects an attack with no discriminative power rather than demonstrated indistinguishability. No privacy claim is made until the control is separable.'
+      inconclusive: 'INCONCLUSIVE: the synthetic gas-derived positive control was missing or not separated by the PI Level-I attack pipeline, so near-chance AUC on real pair scopes cannot support a privacy claim.'
     })
   };
 

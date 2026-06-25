@@ -27,7 +27,7 @@ Verdict tables of record: `pch_verdict.txt`, `pi_verdict.txt`, `spp_verdict.txt`
 | Experiment | Overall | Notes |
 |---|---|---|
 | PCH | ✓ PASS | 6 DUO terms, AUC 0.44–0.54, all medN 162 |
-| PI  | ✓ PASS | overall AUC 0.480 / 0% sig / medN 369; `weak_equivalent` (n=9) underpowered, excluded |
+| PI  | ✓ PASS | overall RF AUC 0.516 / 10% sig / medN 270; gas control AUC 1.000 / 100% sig; `controlled_difference` diagnostic, non-gating |
 | SPP | ✓ PASS | all 18 contrasts AUC 0.43–0.52 (RF-based; LR over-separates), %sig ≤ 27% |
 
 SPP's AUC uses RandomForest (tree-vote fraction): the logistic model

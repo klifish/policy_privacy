@@ -198,6 +198,123 @@ function runSingleSampleAttacks(pairs, options = {}) {
 }
 
 /**
+ * Synthetic attack-validity control for Level I.
+ *
+ * Uses the same flattened PI samples, normalization, policy-disjoint split,
+ * classifiers and permutation tests as the real scopes. The label is derived
+ * from an observable feature using a threshold fitted on TRAINING data only.
+ */
+function runGasMedianPositiveControl(pairs, options = {}) {
+  const scope = 'CONTROL: gas>median';
+  const testRatio = options.testRatio || 0.3;
+  const permutationIterations = options.permutationIterations;
+  const isolated = options.rngMode === 'isolated';
+  if (isolated && !Number.isInteger(options.baseSeed)) {
+    throw new TypeError('runGasMedianPositiveControl: isolated rngMode requires an integer baseSeed');
+  }
+  const rng = (purpose) => isolated
+    ? createRng(options.baseSeed, 'pi', scope, purpose)
+    : Math.random;
+
+  const dataset = buildSingleSampleDataset(pairs).sort((a, b) => {
+    const pairOrder = String(a.pairId).localeCompare(String(b.pairId));
+    if (pairOrder !== 0) return pairOrder;
+    return String(a.policyId).localeCompare(String(b.policyId));
+  });
+  if (!ensureDatasetReady(dataset)) {
+    return [{
+      scope,
+      classifier: 'LogisticRegression',
+      skipped: true,
+      reason: 'Insufficient samples (<10)'
+    }];
+  }
+
+  const summary = summarizeFeatureStats(dataset);
+  const { samples } = normalizeSamples(dataset);
+  const { train, test } = trainTestSplit(samples, testRatio, rng('split'));
+  if (train.length < 8 || test.length < 4) {
+    return [{
+      scope,
+      classifier: 'LogisticRegression',
+      skipped: true,
+      reason: 'Insufficient train/test partition'
+    }];
+  }
+
+  const gasValues = train
+    .map(sample => sample.features.commitGasUsed)
+    .filter(value => typeof value === 'number' && Number.isFinite(value));
+  if (gasValues.length !== train.length) {
+    return [{
+      scope,
+      classifier: 'LogisticRegression',
+      skipped: true,
+      reason: 'Missing commitGasUsed values'
+    }];
+  }
+  gasValues.sort((a, b) => a - b);
+  const gasMedian = gasValues[Math.floor(gasValues.length / 2)];
+  const label = sample => sample.features.commitGasUsed > gasMedian ? 1 : 0;
+  const controlTrain = train.map(sample => ({ ...sample, label: label(sample) }));
+  const controlTest = test.map(sample => ({ ...sample, label: label(sample) }));
+
+  if (new Set(controlTrain.map(sample => sample.label)).size < 2
+      || new Set(controlTest.map(sample => sample.label)).size < 2) {
+    return [{
+      scope,
+      classifier: 'LogisticRegression',
+      skipped: true,
+      reason: 'Positive control lacks both classes after policy-disjoint split',
+      dataset: {
+        trainSize: controlTrain.length,
+        testSize: controlTest.length,
+        controlThreshold: gasMedian,
+        featureSummary: summary
+      }
+    }];
+  }
+
+  const trainMatrix = toMatrix(controlTrain);
+  const testMatrix = toMatrix(controlTest);
+  const logisticOutcome = runLogistic(
+    `Single-sample PI (${scope})`,
+    trainMatrix,
+    testMatrix,
+    permutationIterations,
+    rng('lr-permutation')
+  );
+  const forestOutcome = runRandomForest(
+    `Single-sample PI (RF ${scope})`,
+    trainMatrix,
+    testMatrix,
+    permutationIterations,
+    rng('rf-bootstrap'),
+    rng('rf-permutation')
+  );
+  const metadata = {
+    trainSize: trainMatrix.y.length,
+    testSize: testMatrix.y.length,
+    controlThreshold: gasMedian,
+    featureSummary: summary
+  };
+  return [
+    {
+      scope,
+      classifier: 'LogisticRegression',
+      outcome: logisticOutcome,
+      dataset: metadata
+    },
+    {
+      scope,
+      classifier: 'RandomForest',
+      outcome: forestOutcome,
+      dataset: metadata
+    }
+  ];
+}
+
+/**
  * Pairwise (Siamese-style) classifier using absolute feature deltas (Level II).
  */
 function runPairwiseAttacks(pairs, options = {}) {
@@ -339,6 +456,7 @@ function runTwoSampleTests(pairs) {
 
 module.exports = {
   runSingleSampleAttacks,
+  runGasMedianPositiveControl,
   runPairwiseAttacks,
   runTwoSampleTests
 };

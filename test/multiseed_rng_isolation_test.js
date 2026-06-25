@@ -205,6 +205,8 @@ describe('Multi-seed isolated RNG streams', function () {
 
     expect(reverse['semantic:single']).to.deep.equal(forward['semantic:single']);
     expect(reverse['structural:single']).to.deep.equal(forward['structural:single']);
+    expect(reverse['CONTROL: gas>median:lr']).to.deep.equal(forward['CONTROL: gas>median:lr']);
+    expect(reverse['CONTROL: gas>median:rf']).to.deep.equal(forward['CONTROL: gas>median:rf']);
   });
 
   it('keeps named SPP tasks stable when attribute traversal order changes', function () {

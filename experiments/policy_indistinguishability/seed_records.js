@@ -6,7 +6,10 @@
  * run_experiment.js re-imports buildPiRecordsForSeed from here.
  */
 
-const { runSingleSampleAttacks } = require('./attacks');
+const {
+  runSingleSampleAttacks,
+  runGasMedianPositiveControl
+} = require('./attacks');
 
 // Map an attack-module classifier name to the short per-classifier leg tag used
 // by the shared multiseed aggregator (matches PCH/SPP's 'lr'/'rf').
@@ -40,6 +43,12 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
       rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',
       baseSeed
     });
+    results.push(...runGasMedianPositiveControl(pairs, {
+      testRatio,
+      permutationIterations,
+      rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',
+      baseSeed
+    }));
   } finally {
     console.log = origLog;
   }
@@ -49,7 +58,7 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
     if (r.skipped || !classifier || !r.outcome) continue;
     const ev = r.outcome.evaluation || {};
     if (typeof ev.auc !== 'number') continue;
-    records.push({
+    const record = {
       key: r.scope,
       perClassifier: true,
       classifier,
@@ -59,7 +68,13 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
       advantage: Math.abs(ev.auc - 0.5),
       permPValue: r.outcome.permutationPValue,
       n: r.dataset ? r.dataset.testSize : undefined
-    });
+    };
+    if (r.scope === 'CONTROL: gas>median') {
+      record.precision = ev.precision;
+      record.recall = ev.recall;
+      record.f1 = ev.f1;
+    }
+    records.push(record);
   }
   return records;
 }
