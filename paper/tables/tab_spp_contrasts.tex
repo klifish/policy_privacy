@@ -4,18 +4,15 @@
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 \begin{table}[t]
   \centering
-  \caption{Structure \& Parameter Privacy: 12 pairwise contrasts across three annotation
-    axes (logical structure type, predicate count, set-size magnitude), each over 30
-    policy-disjoint seeds. AUC is the calibrated random-forest score. The empty-predicate
-    and empty-parameter (\texttt{none}) buckets (nine policies each) are excluded as
-    underpowered for a policy-disjoint split. Every contrast
-    satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and} \%sig${}<50\%$.}
+  \caption{Structure \& Parameter Privacy: 18 pairwise contrasts across three annotation
+    axes, each over 30 policy-disjoint seeds. AUC is the calibrated random-forest score.
+    Every contrast satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and} \%sig${}<50\%$.}
   \label{tab:spp-contrasts}
   \begin{tabular}{lccccc}
     \toprule
     Contrast & AUC (mean\,$\pm$\,std) & adv (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ \\
     \midrule
-    \multicolumn{6}{l}{\textit{logicStructure}} \\
+    \multicolumn{6}{l}{\textit{structureType}} \\
     and\_only / or\_only              & $0.475 \pm 0.051$ & $0.036 \pm 0.029$ & $0.547$ & $10\%$ & $102$ \\
     and\_only / negation\_heavy       & $0.428 \pm 0.058$ & $0.060 \pm 0.028$ & $0.537$ & $23\%$ & $90$  \\
     and\_only / and\_or\_mixed        & $0.521 \pm 0.073$ & $0.057 \pm 0.041$ & $0.432$ & $27\%$ & $78$  \\
@@ -23,17 +20,23 @@
     or\_only / and\_or\_mixed         & $0.504 \pm 0.066$ & $0.044 \pm 0.037$ & $0.520$ & $17\%$ & $66$  \\
     negation\_heavy / and\_or\_mixed  & $0.515 \pm 0.076$ & $0.049 \pm 0.031$ & $0.548$ & $13\%$ & $57$  \\
     \midrule
-    \multicolumn{6}{l}{\textit{predicateCount}} \\
+    \multicolumn{6}{l}{\textit{predicateCombo}} \\
+    none / single   & $0.467 \pm 0.073$ & $0.041 \pm 0.033$ & $0.571$ & $0\%$  & $54$  \\
+    none / few      & $0.484 \pm 0.061$ & $0.032 \pm 0.022$ & $0.525$ & $10\%$ & $102$ \\
+    none / many     & $0.511 \pm 0.080$ & $0.067 \pm 0.036$ & $0.595$ & $7\%$  & $42$  \\
     single / few    & $0.466 \pm 0.053$ & $0.039 \pm 0.030$ & $0.645$ & $0\%$  & $117$ \\
     single / many   & $0.476 \pm 0.064$ & $0.049 \pm 0.036$ & $0.537$ & $13\%$ & $54$  \\
     few / many      & $0.521 \pm 0.059$ & $0.043 \pm 0.034$ & $0.535$ & $10\%$ & $102$ \\
     \midrule
-    \multicolumn{6}{l}{\textit{setSize} (set-size magnitude)} \\
+    \multicolumn{6}{l}{\textit{paramType}} \\
+    none / small    & $0.480 \pm 0.074$ & $0.050 \pm 0.041$ & $0.628$ & $3\%$  & $54$  \\
+    none / medium   & $0.458 \pm 0.074$ & $0.056 \pm 0.037$ & $0.540$ & $13\%$ & $96$  \\
+    none / large    & $0.521 \pm 0.062$ & $0.055 \pm 0.037$ & $0.569$ & $3\%$  & $48$  \\
     small / medium  & $0.513 \pm 0.052$ & $0.030 \pm 0.025$ & $0.583$ & $3\%$  & $108$ \\
     small / large   & $0.486 \pm 0.072$ & $0.046 \pm 0.031$ & $0.573$ & $10\%$ & $63$  \\
     medium / large  & $0.493 \pm 0.068$ & $0.036 \pm 0.028$ & $0.531$ & $20\%$ & $102$ \\
     \midrule
-    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 12 contrasts)} \\
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 18 contrasts)} \\
     \bottomrule
   \end{tabular}
 \end{table}

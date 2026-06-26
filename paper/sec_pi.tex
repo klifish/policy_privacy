@@ -10,34 +10,18 @@ different execution protections), \texttt{weak\_equivalent} ($\ge 0.95$ semantic
 overlap), and \texttt{controlled\_difference} (small targeted deltas; a regression
 control).
 
-\paragraph{Attacker levels.} The distinguisher's task is to decide, from the on-chain
-features of an execution, which policy of the pair produced it. We try three attackers of
-increasing strength: \emph{Level~I} trains a classifier on the features of a single
-execution; \emph{Level~II} compares the feature \emph{difference} between the two
-policies' executions (a paired attacker); and \emph{Level~III} runs two-sample
-statistical tests (Kolmogorov--Smirnov and Maximum Mean Discrepancy) directly on the two
-feature distributions. A pair is indistinguishable only if all three stay at chance.
+\paragraph{Supervised attack.} The distinguisher's task is to decide, from the on-chain
+features of a single execution, which policy of the pair produced it. We evaluate this
+single-sample classifier over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}). The
+overall AUC is $0.516\pm0.030$ with permutation $p=0.367$ and only $10\%$ of seeds
+significant. All three gating archetypes---\texttt{semantic\_equivalent},
+\texttt{structural\_variant}, and \texttt{weak\_equivalent}---remain within noise of
+chance. \texttt{controlled\_difference} is reported as a diagnostic regression control
+but does not gate the PI verdict.
 
-\paragraph{Results.} Our primary attacker is Level~I, evaluated over 30 policy-disjoint
-seeds (Table~\ref{tab:pi-pairs}): the overall AUC is $0.480\pm0.042$ with $0\%$ of seeds
-significant, and every archetype that has enough test data passes. Only
-\texttt{weak\_equivalent} is set aside---its median test set is $n=9$, below the
-power threshold of Section~\ref{sec:eval-method}, so it is reported but not gated. The
-stronger Level~II and Level~III attackers, measured on a single split as a diagnostic,
-are likewise at chance (Level~II overall AUC $0.500$; Level~III MMD $\le 0.05$ with
-non-significant KS), so no attacker separates the pairs.
-
-\paragraph{Why multi-seed matters.} At three seeds the \texttt{structural\_variant}
-archetype read AUC $0.69$ with $100\%$ of seeds significant---enough to look like a
-leak---but at 30 seeds it regressed to $0.541\pm0.095$ with only $40\%$ significant,
-revealing the spike as a small-sample fluke. The final 30-seed verdict
-(Table~\ref{tab:pi-pairs}, AUC $0.535\pm0.088$, $20\%$ significant) confirms the pass.
+\paragraph{Why multi-seed matters.} Earlier three-seed diagnostics made the
+\texttt{structural\_variant} archetype look separable, but the 30-seed policy-disjoint
+run in Table~\ref{tab:pi-pairs} gives AUC $0.524\pm0.071$ with $0\%$ significant seeds.
 This is precisely the failure mode the multi-seed criterion of
-Section~\ref{sec:eval-method} is designed to reject.
-
-\paragraph{Clustering attack.} On balanced $30$-vs-$30$ pairs (133 pairs, after the
-sample-size correction of Section~\ref{sec:eval-method}) K-Means recovers no structure:
-mean ARI $0.0015$, mean observed NMI $0.0136$, mean debiased NMI $0.0012$
-(Table~\ref{tab:clustering-summary}). Only $6/133$ pairs cross the per-pair significance
-threshold---consistent with the $\approx 5\%$ false-positive rate expected by chance at
-$\alpha{=}0.05$---so PI holds under the unsupervised attacker as well.
+Section~\ref{sec:eval-method} is designed to reject: a single split can create an
+apparently meaningful spike that does not reproduce across independent policy splits.

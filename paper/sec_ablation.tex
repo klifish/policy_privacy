@@ -1,0 +1,27 @@
+% Gas-padding ablation / mechanism attribution.
+\subsection{Ablation: contribution of access-gas padding}
+\label{sec:eval-ablation}
+
+The main results show that the full mechanism hides content, policy identity, and
+structure/parameters. The ablation asks \emph{why}: how much of the residual attack
+surface is removed by randomized access-gas padding after the fixed circuit and
+commitment-only interface have already eliminated calldata, proof-size, and event-log
+channels.
+
+We compare two aligned protection profiles on the same selected policy set.
+\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile
+without commit/access gas padding. \textbf{B2} is the full mechanism used in the main
+evaluation, with randomized access-gas padding. The paired leakage metric is
+%
+\[
+  \Delta_{\text{leak}} =
+  |\mathrm{AUC}_{\mathrm{B1}} - 0.5| -
+  |\mathrm{AUC}_{\mathrm{B2}} - 0.5|.
+\]
+%
+Positive values mean padding moved the attacker closer to chance. Table~\ref{tab:ablation-gas-padding}
+is intentionally separated from the main privacy verdicts: the main verdicts answer
+whether the full mechanism is private; this ablation attributes that privacy to a
+specific defense layer and reports its gas cost. The comparison report is not yet
+committed in this repository, so the table records the intended manuscript shape without
+inventing B1/B2 deltas.

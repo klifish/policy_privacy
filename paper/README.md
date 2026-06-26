@@ -1,19 +1,26 @@
 # `paper/` — Evaluation chapter (LaTeX)
 
-Drop-in LaTeX for the **Privacy Evaluation** chapter, covering all three privacy
-properties (PCH, PI, SPP) under **two attack families**: supervised classifiers and
-unsupervised clustering. Every number is transcribed from a committed source of record
-(no recomputation here).
+Drop-in LaTeX for the **Privacy Evaluation** chapter. The chapter now follows the
+paper's intended argument order:
 
-## How to use in your manuscript
+1. evaluation setup and threat model;
+2. headline supervised privacy results;
+3. per-property supervised results for PCH, PI, and SPP;
+4. unsupervised clustering as a label-free cross-check;
+5. gas-padding ablation as mechanism attribution.
 
-In your main document preamble:
+Every committed result in the supervised tables is transcribed from the current
+multi-seed verdict files, not from older single-split reports.
+
+## How to use
+
+In the manuscript preamble:
 
 ```latex
 \usepackage{booktabs}
-\usepackage{amsmath}   % \text, \mathrm in math mode
-\usepackage{amssymb}   % \checkmark
-\usepackage{graphicx}  % only if you uncomment the figures
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
 ```
 
 Then, from a manuscript whose working directory is the repo root:
@@ -22,85 +29,80 @@ Then, from a manuscript whose working directory is the repo root:
 \input{paper/evaluation.tex}
 ```
 
-`evaluation.tex` only `\input`s the section bodies and tables (paths are
-`paper/...`-relative to the repo root). If your manuscript lives elsewhere (e.g. an
-Overleaf project), copy the `paper/` tree in and adjust the `\input` paths, or flatten
-the files. Section/table `\label`s (`sec:eval-pch`, `tab:pch-terms`, …) are stable for
-cross-referencing.
+`evaluation.tex` inputs the section bodies and tables with `paper/...` paths. If
+copying into Overleaf, copy the whole `paper/` tree or adjust the input paths.
 
 ## Files
 
 | File | Role |
 |---|---|
-| `evaluation.tex` | Top-level chapter; assembles everything via `\input`. |
-| `sec_threat_model.tex` | Passive on-chain observer + 9 observable features. |
-| `sec_methodology.tex` | Supervised (multi-seed + LR/RF + permutation + positive control + unified verdict) and unsupervised (K-Means/DBSCAN + ARI/NMI; PI pairs add balanced resampling + permutation debias). |
-| `sec_pch.tex` / `sec_pi.tex` / `sec_spp.tex` | Per-property bodies. |
-| `sec_clustering.tex` | Cross-property clustering view + PI rebalancing/debias. |
-| `tables/tab_*.tex` | One table per file (see provenance below). |
-| `_smoke.tex` | Standalone compile check; **not** part of the manuscript. |
+| `evaluation.tex` | Top-level chapter assembly. |
+| `sec_threat_model.tex` | Passive on-chain observer and observable features. |
+| `sec_methodology.tex` | Multi-seed supervised attack criterion and clustering cross-check methodology. |
+| `sec_pch.tex` / `sec_pi.tex` / `sec_spp.tex` | Per-property supervised result narratives. |
+| `sec_clustering.tex` | Consolidated unsupervised clustering cross-check. |
+| `sec_ablation.tex` | Gas-padding mechanism-attribution ablation. |
+| `tables/tab_privacy_summary.tex` | Main headline privacy table. |
+| `tables/tab_pch_terms.tex` / `tab_pch_icd10.tex` | PCH supervised result tables. |
+| `tables/tab_pi_pairs.tex` | PI supervised result table. |
+| `tables/tab_spp_contrasts.tex` | SPP supervised result table. |
+| `tables/tab_clustering_summary.tex` | Unsupervised clustering summary. |
+| `tables/tab_ablation_gas_padding.tex` | Ablation design / pending report table. |
+| `_smoke.tex` | Standalone compile check; not part of the manuscript. |
 
-## Provenance (each table → its source of record)
+## Provenance
 
-All tables come from the **same Polygon Amoy dataset** (fixed circuit, commitment-only
-interface, access-gas padded to a randomized 750k ±10% target). The supervised and
-unsupervised attacks are two independent attack families on one dataset, not two datasets.
+All main supervised tables use the Polygon Amoy fixed-circuit, commitment-only,
+access-gas-padded dataset and 30 policy-disjoint seeds.
 
-**Supervised** — verdicts from `experiments/multiseed_results/polygonAmoy/`:
-
-| Table | Source |
+| Table | Source of record |
 |---|---|
-| `tab_pch_terms.tex` | `experiments/multiseed_results/polygonAmoy/pch_verdict.txt` (DUO terms; same generation as PI/SPP) |
-| `tab_pch_icd10.tex` | `experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.md` ("Multi-seed Verdict" table; the per-chapter ICD-10 rows exist only here) |
+| `tab_privacy_summary.tex` | `experiments/multiseed_results/polygonAmoy/{pch,pi,spp}_verdict.txt` |
+| `tab_pch_terms.tex` | `experiments/multiseed_results/polygonAmoy/pch_verdict.txt` |
+| `tab_pch_icd10.tex` | `experiments/multiseed_results/polygonAmoy/pch_verdict.txt` |
 | `tab_pi_pairs.tex` | `experiments/multiseed_results/polygonAmoy/pi_verdict.txt` |
 | `tab_spp_contrasts.tex` | `experiments/multiseed_results/polygonAmoy/spp_verdict.txt` |
 
-**Unsupervised** — clustering over the same executions exported to
-`python/data/polygonAmoy/`, run by `python/clustering_analysis/run_all_clustering.py`
-(PCH clustered globally, no layering; PI debias = 20 K-Means seeds vs 200 label permutations):
+Older per-experiment markdown/JSON reports under `experiments/*/results/` are
+diagnostics only. They may contain stale single-split numbers and should not be
+used for manuscript tables unless explicitly regenerated and promoted to a
+committed source of record.
 
-| Table | Source |
+## Clustering Sources
+
+The clustering section is a complementary label-free cross-check over the same
+executions exported to `python/data/polygonAmoy/`.
+
+| Table / figure | Source |
 |---|---|
-| `tab_clustering_summary.tex` | `python/results/pch_clustering_analysis/pch_global_duo_clustering.csv`, `.../pch_global_icd10_clustering.csv`, `python/results/pi_clustering_analysis/pi_balanced_debiased.csv`, `python/results/spp_clustering_analysis/spp_clustering_summary.csv` |
+| `tab_clustering_summary.tex` | `python/results/pch_clustering_analysis/pch_global_duo_clustering.csv`, `pch_global_icd10_clustering.csv`, `python/results/pi_clustering_analysis/pi_balanced_debiased.csv`, `python/results/spp_clustering_analysis/spp_clustering_summary.csv` |
+| Fig. `fig:clust-spp` | `python/results/spp_clustering_analysis/spp_detailed_analysis.png` |
+| Fig. `fig:clust-pi` | `python/results/pi_clustering_analysis/pi_analysis_by_type.png` |
 
-> **One dataset, two attack families.** Both the supervised verdicts and the clustering
-> results are computed on the Polygon Amoy executions; their numbers are reported
-> separately (different metrics) but are not in conflict. Per-task sample sizes vary and
-> live in the result tables. (Note: `python/policy_privacy_report.json` is a stale
-> artifact of an earlier supervised run on a different local path and is **not** the
-> source for any table here.)
+`python/results/` is gitignored. Before sharing the manuscript or pushing to
+Overleaf, regenerate those PNGs or copy the needed figures into a tracked
+`paper/figures/` directory; `sec_clustering.tex` already includes `figures/` in
+its `\graphicspath`.
 
-> The single-split markdown reports under each experiment's `results/` directory
-> (e.g. "2004 executions", "1077 policies") are **diagnostics only** and are
-> superseded by the multi-seed verdict files; they are not used in these tables.
+## Ablation Source
 
-## Figures (embedded)
+The gas-padding ablation table is intentionally a design/pending-report table
+until the paired comparison is generated. The intended source is:
 
-`sec_clustering.tex` embeds two figures via `\includegraphics`. A `\graphicspath` at the
-top of that file resolves them whether you compile **from the repo root** (it points into
-the `python/results/...` trees) or **inside Overleaf** (it also looks in `figures/` and
-`./`). The PNGs are produced by `python/clustering_analysis/run_all_clustering.py`.
+```text
+experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
+experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.md
+```
 
-| Embedded as | File | Shows |
-|---|---|---|
-| Fig.\ `fig:clust-spp` | `python/results/spp_clustering_analysis/spp_detailed_analysis.png` | SPP ARI/NMI by target. |
-| Fig.\ `fig:clust-pi` | `python/results/pi_clustering_analysis/pi_analysis_by_type.png` | PI ARI/NMI by pair type. |
+Do not fill B1/B2 leakage deltas or gas overhead from scratchpad or smoke-test
+artifacts. Use the paired comparison report after B1/B2 alignment has been
+verified.
 
-> **Note:** `python/results/` is gitignored, so these PNGs are *not* tracked in git.
-> Before sharing the manuscript (or pushing an Overleaf project), regenerate them with
-> `python/clustering_analysis/run_all_clustering.py`, or copy the three files into a
-> tracked `paper/figures/` directory (the `\graphicspath` already includes `figures/`).
-
-Other available PNGs you may want to add: `pch_duo_vs_icd10_comparison.png`,
-`pi_detailed_analysis.png`, and per-target `{logicStructure,nestingDepth,predicateCount,setSize}_kmeans.png`.
-
-## Compile check
+## Compile Check
 
 ```sh
-# from repo root
 latexmk -pdf -outdir=/tmp/papersmoke paper/_smoke.tex
 ```
 
-If no LaTeX toolchain is installed, the files are plain `booktabs`/`amssymb` and were
-checked for brace/column balance by hand (no live `pdflatex` run in the authoring
-environment).
+If no LaTeX toolchain is installed, at minimum check table column counts, input
+paths, and stale-number searches before exporting.

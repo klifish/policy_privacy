@@ -1,33 +1,26 @@
-% Source of record: experiments/multiseed_results/polygonAmoy/pch_verdict.txt (DUO rows;
-%   same generation as PI/SPP). LR/RF per-classifier AUC and %sig columns are read from
-%   experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json.
-% Policy Content Hiding — supervised attack, multi-seed (30 policy-disjoint seeds).
-% Each DUO term is attacked by BOTH logistic regression (LR) and random forest (RF),
-% reported side by side; a term FAILs iff EITHER classifier has
-% AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05); else PASS.
+% Source of record: experiments/multiseed_results/polygonAmoy/pch_verdict.txt.
+% Policy Content Hiding -- supervised attack, multi-seed (30 policy-disjoint seeds).
+% Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5
+% (perm alpha=0.05); both legs required, else PASS.
 \begin{table}[t]
   \centering
   \caption{Policy Content Hiding: per-term supervised attack over 30 policy-disjoint
-    seeds. Each DUO term is a one-vs-rest binary task, attacked by both logistic
-    regression (LR) and random forest (RF). \emph{\%sig} is the fraction of seeds whose
-    permutation test rejects at $\alpha{=}0.05$. A term passes unless \emph{either}
-    classifier has both AUC$_{\text{mean}}>0.55$ \emph{and} \%sig${}\ge 50\%$; all six
-    pass.}
+    seeds. Each DUO term is a one-vs-rest binary task. \emph{\%sig} is the fraction of
+    seeds whose permutation test rejects at $\alpha{=}0.05$. All six tasks pass the
+    unified criterion.}
   \label{tab:pch-terms}
-  \begin{tabular}{lccccccc}
+  \begin{tabular}{lccccc}
     \toprule
-    & \multicolumn{2}{c}{LR} & \multicolumn{2}{c}{RF} & & \\
-    \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-    Term & AUC (mean\,$\pm$\,std) & \%sig & AUC (mean\,$\pm$\,std) & \%sig & test $n$ & verdict \\
+    Term & AUC (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ & verdict \\
     \midrule
-    DUO GR  & $0.479 \pm 0.029$ & $0\%$ & $0.517 \pm 0.038$ & $17\%$ & $584$ & \checkmark \\
-    DUO DS  & $0.492 \pm 0.022$ & $0\%$ & $0.462 \pm 0.018$ & $0\%$  & $584$ & \checkmark \\
-    DUO RS  & $0.504 \pm 0.023$ & $3\%$ & $0.540 \pm 0.017$ & $50\%$ & $584$ & \checkmark \\
-    DUO POA & $0.477 \pm 0.017$ & $0\%$ & $0.485 \pm 0.021$ & $0\%$  & $584$ & \checkmark \\
-    DUO GS  & $0.480 \pm 0.015$ & $0\%$ & $0.515 \pm 0.023$ & $10\%$ & $584$ & \checkmark \\
-    DUO CC  & $0.498 \pm 0.025$ & $3\%$ & $0.500 \pm 0.025$ & $3\%$  & $584$ & \checkmark \\
+    DUO GR  & $0.517 \pm 0.038$ & $0.348$ & $17\%$ & $584$ & \checkmark \\
+    DUO DS  & $0.492 \pm 0.022$ & $0.579$ & $0\%$  & $584$ & \checkmark \\
+    DUO RS  & $0.540 \pm 0.017$ & $0.099$ & $50\%$ & $584$ & \checkmark \\
+    DUO POA & $0.485 \pm 0.021$ & $0.678$ & $0\%$  & $584$ & \checkmark \\
+    DUO GS  & $0.515 \pm 0.023$ & $0.327$ & $10\%$ & $584$ & \checkmark \\
+    DUO CC  & $0.500 \pm 0.025$ & $0.490$ & $3\%$  & $584$ & \checkmark \\
     \midrule
-    \multicolumn{7}{l}{Overall: \checkmark\ PASS \quad (median test $n=584$ per term)} \\
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS} \\
     \bottomrule
   \end{tabular}
 \end{table}

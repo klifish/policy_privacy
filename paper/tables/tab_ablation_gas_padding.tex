@@ -1,0 +1,30 @@
+% Expected source once generated:
+%   experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.{md,json}
+% B1 artifacts currently live under experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/.
+% B2 artifacts reuse experiments/ablation/gas_padding/polygonAmoy/b2_padded/.
+\begin{table}[t]
+  \centering
+  \caption{Gas-padding ablation design. B1 and B2 are aligned on the same selected policy
+    set. $\Delta_{\text{leak}}>0$ means padding reduces classifier leakage. Numeric B1/B2
+    leakage and gas-overhead entries should be filled from the paired comparison report
+    once \texttt{ablation\_report.json} is generated.}
+  \label{tab:ablation-gas-padding}
+  \begin{tabular}{p{0.20\linewidth}p{0.36\linewidth}p{0.16\linewidth}p{0.16\linewidth}}
+    \toprule
+    Profile / metric & Mechanism & Leakage summary & Gas overhead \\
+    \midrule
+    B1 unpadded
+      & Fixed circuit + commitment-only interface + TPS; no commit/access gas padding
+      & pending report
+      & baseline \\
+    B2 padded
+      & Full mechanism with randomized access-gas padding
+      & pending report
+      & pending report \\
+    $\Delta_{\text{leak}}$
+      & $|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|$
+      & pending report
+      & -- \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -6,13 +6,15 @@
 
 We evaluate the three privacy properties of our system---Policy Content Hiding,
 Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive
-on-chain observer (Section~\ref{sec:eval-threat}). Each property is attacked with both a
-supervised classifier and an unsupervised clustering attacker under an honest,
-reproducible, multi-seed criterion (Section~\ref{sec:eval-method}). All three properties
-pass under both attackers.
+on-chain observer (Section~\ref{sec:eval-threat}). The primary evidence is a
+supervised, multi-seed attack evaluation with policy-disjoint splits and permutation
+tests (Section~\ref{sec:eval-method}); unsupervised clustering provides a label-free
+cross-check on the same executions. All three properties pass the supervised criterion,
+and the clustering attack finds no natural grouping by hidden labels.
 
 \input{paper/sec_threat_model.tex}
 \input{paper/sec_methodology.tex}
+\input{paper/tables/tab_privacy_summary.tex}
 \input{paper/sec_pch.tex}
 \input{paper/tables/tab_pch_terms.tex}
 \input{paper/tables/tab_pch_icd10.tex}
@@ -22,3 +24,5 @@ pass under both attackers.
 \input{paper/tables/tab_spp_contrasts.tex}
 \input{paper/sec_clustering.tex}
 \input{paper/tables/tab_clustering_summary.tex}
+\input{paper/sec_ablation.tex}
+\input{paper/tables/tab_ablation_gas_padding.tex}

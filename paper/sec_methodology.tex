@@ -1,21 +1,22 @@
-% Shared methodology: supervised attack pipeline + unsupervised clustering pipeline.
+% Shared methodology: supervised attack pipeline + unsupervised clustering cross-check.
 \subsection{Attack methodology}
 \label{sec:eval-method}
 
-We attack each privacy property in two complementary ways. The \emph{supervised}
-pipeline asks whether a trained classifier can recover a hidden label from the
-observables; the \emph{unsupervised} pipeline asks whether the observables cluster
-along the hidden label without any supervision. A property is private only if
-\emph{both} attackers fail.
+We evaluate each privacy property with a primary supervised attack and a complementary
+unsupervised cross-check. The \emph{supervised} pipeline asks whether a trained
+classifier can recover a hidden label from the observables; this is the main privacy
+verdict because it gives the adversary labels and therefore more power than a purely
+exploratory analysis. The \emph{unsupervised} pipeline asks whether the observables
+cluster along the hidden label without any supervision, providing a label-free sanity
+check on the same executions.
 
 \subsubsection{Supervised attacks}
-For every task we train both a logistic-regression (linear) and a random-forest
-(non-linear) classifier and report the stronger of the two, so that a non-linear gas
-side-channel cannot hide behind a weak linear model. Each task is evaluated over
-\textbf{30 random seeds} using a \textbf{policy-disjoint train/test split}: the policies
-used to train the attacker never appear in the test set, so a high score cannot come
-from memorizing individual policies. For each seed we run a label-permutation test and
-record whether the AUC is significant at $\alpha{=}0.05$.
+For every task we train linear and non-linear classifiers and report the score used by
+the unified verdict for that property. Each task is evaluated over \textbf{30 random
+seeds} using a \textbf{policy-disjoint train/test split}: the policies used to train the
+attacker never appear in the test set, so a high score cannot come from memorizing
+individual policies. For each seed we run a label-permutation test and record whether
+the AUC is significant at $\alpha{=}0.05$.
 
 The honest headline metrics are the AUC, its distance from chance $|\mathrm{AUC}-0.5|$,
 and the permutation $p$-value. We \emph{report} the classifier advantage over random but
@@ -31,10 +32,10 @@ verdict (\texttt{experiments/core/multiseed\_criterion.js}) is:
 Both legs are required: high classification power that is not statistically reproducible
 across seeds (or reproducible significance with chance-level AUC) does not constitute a
 leak. Subclasses whose median test size is $n<20$ are \emph{underpowered}---reported but
-excluded from gating, so a tiny subclass's noise cannot decide the verdict. SPP uses the
-calibrated random-forest score for its AUC leg (logistic regression over-separates on
-the near-constant SPP features and yields a degenerate AUC); PCH and PI use the
-logistic-regression AUC.
+excluded from gating, so a tiny subclass's noise cannot decide the verdict. The result
+tables report the AUC selected by the committed verdict file for each task. SPP uses the
+calibrated random-forest score for its AUC leg because logistic regression
+over-separates on the near-constant SPP features and yields a degenerate AUC.
 
 \paragraph{Positive control.} To show that a chance-level AUC means \emph{no signal}
 rather than a \emph{broken attack}, every supervised experiment also runs a synthetic
@@ -66,7 +67,7 @@ the empirical $p$-value is the fraction of permutations whose NMI meets or excee
 observed; a pair leaks only if its debiased NMI is positive \emph{and} significant
 ($p<0.05$).
 
-\paragraph{Dataset.} Both pipelines run on the same fixed-circuit, commitment-only,
+\paragraph{Dataset.} Both attack families run on the same fixed-circuit, commitment-only,
 access-gas-padded \emph{Polygon~Amoy} dataset: the supervised verdicts read
 \texttt{experiments/multiseed\_results/polygonAmoy/} (numbers of record), and the
 clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. The
