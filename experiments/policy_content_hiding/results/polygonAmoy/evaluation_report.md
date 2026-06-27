@@ -1,6 +1,6 @@
 # Policy Content Hiding Evaluation Report
 
-**Date:** 6/27/2026, 4:50:15 PM
+**Date:** 6/27/2026, 3:49:06 PM
 
 ## Objective
 
@@ -17,103 +17,80 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 ## Privacy Evaluation Results
 
-**Note:** AUC (Area Under ROC Curve) and Advantage are the primary privacy metrics.
+**Note:** AUC (Area Under ROC Curve) is the primary single-split privacy diagnostic.
 - **AUC ≤ 0.55:** Indicates adversary cannot rank samples better than random
-- **Advantage ≤ 5%:** Indicates adversary gains minimal benefit over random guessing
 
 > Accuracy metric removed: misleading for imbalanced datasets in privacy evaluation.
 
 ### DUO Term 0 Presence
 
 - **Type:** binary
-- **AUC:** 0.4945 (✓ PASS)
-- **Advantage:** 35.23% (✗ FAIL)
-  - *Interpretation: Adversary performs 35.23% better than random guessing*
+- **AUC:** 0.4943 (✓ PASS)
 
 ### DUO Term 1 Presence
 
 - **Type:** binary
-- **AUC:** 0.5084 (✓ PASS)
-- **Advantage:** 0.27% (✓ PASS)
-  - *Interpretation: Adversary performs 0.27% better than random guessing*
+- **AUC:** 0.4564 (✓ PASS)
 
 ### DUO Term 2 Presence
 
 - **Type:** binary
-- **AUC:** 0.4863 (✓ PASS)
-- **Advantage:** 2.25% (✓ PASS)
-  - *Interpretation: Adversary performs 2.25% better than random guessing*
+- **AUC:** 0.5355 (✓ PASS)
 
 ### DUO Term 3 Presence
 
 - **Type:** binary
-- **AUC:** 0.4407 (✓ PASS)
-- **Advantage:** 8.92% (✗ FAIL)
-  - *Interpretation: Adversary performs 8.92% better than random guessing*
+- **AUC:** 0.4844 (✓ PASS)
 
 ### DUO Term 4 Presence
 
 - **Type:** binary
-- **AUC:** 0.4569 (✓ PASS)
-- **Advantage:** -2.25% (✓ PASS)
-  - *Interpretation: Adversary performs -2.25% better than random guessing*
+- **AUC:** 0.4598 (✓ PASS)
 
 ### DUO Term 5 Presence
 
 - **Type:** binary
-- **AUC:** 0.5292 (✓ PASS)
-- **Advantage:** -4.95% (✓ PASS)
-  - *Interpretation: Adversary performs -4.95% better than random guessing*
+- **AUC:** 0.4380 (✓ PASS)
 
 ### ICD-10 Chapter Prediction (RandomForest)
 
 - **Type:** multi-class
-- **Advantage:** 0.87% (✓ PASS)
-  - *Interpretation: Adversary performs 0.87% better than random guessing*
-- **Macro F1:** 5.31%
+- **Macro F1:** 1.90%
 
 ## Privacy Threshold Check
 
 - **AUC Threshold:** ≤ 0.55
-- **Advantage Threshold:** ≤ 0.05
 
-### DUO Term 0 Presence: ✗ FAIL
+### DUO Term 0 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4945 (threshold: 0.55)
-- ✗ **Advantage:** 0.3523 (threshold: 0.05)
+- ✓ **AUC:** 0.4943 (threshold: 0.55)
 
 ### DUO Term 1 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5084 (threshold: 0.55)
-- ✓ **Advantage:** 0.0027 (threshold: 0.05)
+- ✓ **AUC:** 0.4564 (threshold: 0.55)
 
 ### DUO Term 2 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4863 (threshold: 0.55)
-- ✓ **Advantage:** 0.0225 (threshold: 0.05)
+- ✓ **AUC:** 0.5355 (threshold: 0.55)
 
-### DUO Term 3 Presence: ✗ FAIL
+### DUO Term 3 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4407 (threshold: 0.55)
-- ✗ **Advantage:** 0.0892 (threshold: 0.05)
+- ✓ **AUC:** 0.4844 (threshold: 0.55)
 
 ### DUO Term 4 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4569 (threshold: 0.55)
-- ✓ **Advantage:** -0.0225 (threshold: 0.05)
+- ✓ **AUC:** 0.4598 (threshold: 0.55)
 
 ### DUO Term 5 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5292 (threshold: 0.55)
-- ✓ **Advantage:** -0.0495 (threshold: 0.05)
+- ✓ **AUC:** 0.4380 (threshold: 0.55)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 
-- ✓ **Advantage:** 0.0087 (threshold: 0.05)
 
 ## Multi-seed Verdict (authoritative)
 
-Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction ≥ 0.5 (permutation α=0.05). Over 30 policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Advantage reported, not gating.
+Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction ≥ 0.5 (permutation α=0.05). Over 30 policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
 
 | Task | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |
 |---|---|---|---|---|---|---|

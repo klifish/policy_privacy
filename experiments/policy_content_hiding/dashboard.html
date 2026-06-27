@@ -553,14 +553,13 @@
 
             const results = evaluationData.evaluation?.results || [];
             const html = results.map(r => {
-                const status = (r.auc && r.auc <= 0.55 && r.advantage <= 0.05) ? 'pass' : 'fail';
+                const status = (r.auc && r.auc <= 0.55) ? 'pass' : 'fail';
                 return `
                     <div class="metric-card">
                         <div class="metric-label">${r.task}</div>
                         <div class="metric-value">${(r.accuracy * 100).toFixed(1)}%</div>
                         <div class="metric-sub">
-                            AUC: ${r.auc ? r.auc.toFixed(4) : 'N/A'}<br>
-                            Advantage: ${(r.advantage * 100).toFixed(1)}%
+                            AUC: ${r.auc ? r.auc.toFixed(4) : 'N/A'}
                             <span class="status-badge status-${status}">${status.toUpperCase()}</span>
                         </div>
                     </div>

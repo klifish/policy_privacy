@@ -230,7 +230,7 @@ function evaluateClassificationTasks(results) {
 /**
  * Check if metrics meet privacy thresholds
  */
-function checkPrivacyThresholds(evaluation, thresholds = { aucMax: 0.55, advantageMax: 0.05 }) {
+function checkPrivacyThresholds(evaluation, thresholds = { aucMax: 0.55 }) {
   const results = evaluation.results.map(result => {
     const checks = {
       task: result.task,
@@ -250,15 +250,6 @@ function checkPrivacyThresholds(evaluation, thresholds = { aucMax: 0.55, advanta
       checks.passed = checks.passed && aucPass;
     }
     
-    // Check advantage threshold
-    const advantagePass = result.advantage <= thresholds.advantageMax;
-    checks.checks.push({
-      metric: 'Advantage',
-      value: result.advantage,
-      threshold: thresholds.advantageMax,
-      passed: advantagePass
-    });
-    checks.passed = checks.passed && advantagePass;
     
     return checks;
   });

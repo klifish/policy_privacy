@@ -19,14 +19,15 @@ individual policies. For each seed we run a label-permutation test and record wh
 the AUC is significant at $\alpha{=}0.05$.
 
 The honest headline metrics are the AUC, its distance from chance $|\mathrm{AUC}-0.5|$,
-and the permutation $p$-value. We \emph{report} the classifier advantage over random but
-do \emph{not} gate on it: on imbalanced test sets a majority-class predictor scores a
-large advantage with $F_1\approx 0$, so advantage alone is unreliable. The unified
-verdict (\texttt{experiments/core/multiseed\_criterion.js}) is:
+and the permutation $p$-value. Raw accuracy advantage is retained only as a legacy
+diagnostic field because, on imbalanced test sets, a majority-class predictor can score
+large apparent gains with $F_1\approx 0$. The unified verdict
+(\texttt{experiments/core/multiseed\_criterion.js}) is:
 %
 \begin{quote}
-  \textbf{PASS} iff $\mathrm{AUC}_{\text{mean}}\le 0.55$ \textbf{and} the
-  significant-seed fraction is $<0.5$ (over 30 policy-disjoint seeds).
+  \textbf{FAIL} iff $\mathrm{AUC}_{\text{mean}}>0.55$ \textbf{and} the
+  significant-seed fraction is $\ge 0.5$ (over 30 policy-disjoint seeds);
+  \textbf{PASS} otherwise.
 \end{quote}
 %
 Both legs are required: high classification power that is not statistically reproducible

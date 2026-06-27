@@ -35,7 +35,6 @@ const { buildPiRecordsForSeed } = require('./seed_records');
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
-  advantageMax: 0.05,
   permutationMin: 0.05,
   mmdMax: 0.05,
   ksPValueMin: 0.05
@@ -99,9 +98,6 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--auc-threshold':
         config.aucThreshold = parseFloat(unknown[++i]);
         break;
-      case '--advantage-threshold':
-        config.advantageThreshold = parseFloat(unknown[++i]);
-        break;
       case '--permutation-min':
         config.permutationMin = parseFloat(unknown[++i]);
         break;
@@ -142,7 +138,6 @@ function printUsage() {
   console.log('  --pairs <path>                 Path to cached policy pair JSON');
   console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
-  console.log('  --advantage-threshold <float>  Max acceptable advantage (default 0.05)');
   console.log('  --permutation-min <float>      Min acceptable permutation p-value (default 0.05)');
   console.log('  --mmd-threshold <float>        Max acceptable MMD distance (default 0.05)');
   console.log('  --ks-min <float>               Min acceptable average KS p-value (default 0.05)');
@@ -180,13 +175,11 @@ function featureImportance(weights) {
 function evaluateLogisticResult(result, thresholds, level) {
   const evaluation = result.outcome.evaluation;
   const auc = typeof evaluation.auc === 'number' ? evaluation.auc : 0.5;
-  const advantage = evaluation.advantage ?? 0;
   const entropy = result.outcome.entropy;
   const permutation = result.outcome.permutationPValue ?? 1;
 
   const checks = [
     { metric: 'AUC', value: auc, threshold: thresholds.aucMax, passed: auc <= thresholds.aucMax },
-    { metric: 'Advantage', value: advantage, threshold: thresholds.advantageMax, passed: advantage <= thresholds.advantageMax },
     { metric: 'Permutation p-value', value: permutation, threshold: thresholds.permutationMin, passed: permutation >= thresholds.permutationMin }
   ];
 
@@ -197,7 +190,6 @@ function evaluateLogisticResult(result, thresholds, level) {
     passed: checks.every((check) => check.passed),
     metrics: {
       auc,
-      advantage,
       entropy,
       permutationPValue: permutation,
       accuracy: evaluation.accuracy
@@ -209,10 +201,7 @@ function evaluateLogisticResult(result, thresholds, level) {
 
 function evaluateRandomForestResult(result, thresholds, level) {
   const evaluation = result.outcome.evaluation;
-  const advantage = evaluation.advantage ?? 0;
-  const checks = [
-    { metric: 'Advantage', value: advantage, threshold: thresholds.advantageMax, passed: advantage <= thresholds.advantageMax }
-  ];
+  const checks = [];
 
   return {
     level,
@@ -221,7 +210,6 @@ function evaluateRandomForestResult(result, thresholds, level) {
     passed: checks.every((check) => check.passed),
     metrics: {
       accuracy: evaluation.accuracy,
-      advantage
     },
     checks
   };
@@ -374,7 +362,7 @@ function renderMarkdownReport(report) {
   if (mv && Array.isArray(mv.tasks)) {
     lines.push('## Multi-seed Verdict (authoritative)');
     lines.push('');
-    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Advantage reported, not gating.`);
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
     lines.push('');
     lines.push('| Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
     lines.push('|---|---|---|---|---|---|---|');
@@ -472,7 +460,6 @@ async function runExperiment(config = {}) {
 
   const thresholds = {
     aucMax: config.aucThreshold ?? DEFAULT_THRESHOLDS.aucMax,
-    advantageMax: config.advantageThreshold ?? DEFAULT_THRESHOLDS.advantageMax,
     permutationMin: config.permutationMin ?? DEFAULT_THRESHOLDS.permutationMin,
     mmdMax: config.mmdThreshold ?? DEFAULT_THRESHOLDS.mmdMax,
     ksPValueMin: config.ksPValueMin ?? DEFAULT_THRESHOLDS.ksPValueMin

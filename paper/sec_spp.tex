@@ -14,8 +14,8 @@ contrasts over 30 policy-disjoint seeds across \texttt{structureType},
 score, since logistic regression over-separates on the near-constant SPP features.
 Every contrast has $\mathrm{AUC}_{\text{mean}}\in[0.428,0.521]$ and a significant-seed
 fraction at or below $27\%$, so all 18 pass and SPP passes overall. We gate on AUC and
-the permutation test rather than on raw advantage: single-split logistic-regression
-advantage can run large on imbalanced contrasts, but this is the majority-class artifact
-described in Section~\ref{sec:eval-method}---a near-constant predictor scoring high
-advantage without genuine separation---which the AUC-plus-permutation criterion
-correctly reads as chance.
+the permutation test. Single-split accuracy-style diagnostics can run large on imbalanced
+contrasts, but this is the majority-class artifact described in
+Section~\ref{sec:eval-method}---a near-constant predictor scoring apparent gains
+without genuine separation---which the AUC-plus-permutation criterion correctly reads
+as chance.

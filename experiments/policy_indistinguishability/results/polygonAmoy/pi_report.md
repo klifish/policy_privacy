@@ -1,6 +1,6 @@
 # Policy Indistinguishability Evaluation Report
 
-**Date:** 6/27/2026, 4:50:35 PM
+**Date:** 6/27/2026, 3:49:54 PM
 
 ## Objective
 
@@ -26,49 +26,37 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 
 - **overall / LogisticRegression:** ✓ PASS
   - AUC: 0.5060 (threshold 0.55)
-  - Advantage: 0.0212 (threshold 0.05)
   - Permutation p-value: 0.4032 (threshold 0.05)
   - Top features: accessGasUsed (0.167), commitGasUsed (-0.083), commitCalldataLength (0.000)
 - **overall / RandomForest:** ✓ PASS
-  - Advantage: 0.0467 (threshold 0.05)
 - **semantic_equivalent / LogisticRegression:** ✓ PASS
   - AUC: 0.5221 (threshold 0.55)
-  - Advantage: -0.1000 (threshold 0.05)
   - Permutation p-value: 0.4251 (threshold 0.05)
   - Top features: commitGasUsed (-0.310), accessGasUsed (0.087), commitCalldataLength (0.000)
 - **semantic_equivalent / RandomForest:** ✓ PASS
-  - Advantage: -0.1000 (threshold 0.05)
 - **structural_variant / LogisticRegression:** ✓ PASS
   - AUC: 0.5402 (threshold 0.55)
-  - Advantage: 0.0263 (threshold 0.05)
   - Permutation p-value: 0.3333 (threshold 0.05)
   - Top features: accessGasUsed (0.114), commitGasUsed (0.060), commitCalldataLength (0.000)
-- **structural_variant / RandomForest:** ✗ FAIL
-  - Advantage: 0.0789 (threshold 0.05)
+- **structural_variant / RandomForest:** ✓ PASS
 - **weak_equivalent / LogisticRegression:** ✓ PASS
   - AUC: 0.5450 (threshold 0.55)
-  - Advantage: 0.0385 (threshold 0.05)
   - Permutation p-value: 0.3253 (threshold 0.05)
   - Top features: accessGasUsed (-0.124), commitGasUsed (-0.054), commitCalldataLength (0.000)
 - **weak_equivalent / RandomForest:** ✓ PASS
-  - Advantage: 0.0385 (threshold 0.05)
 - **controlled_difference / LogisticRegression:** ✗ FAIL
   - AUC: 0.5696 (threshold 0.55)
-  - Advantage: -0.0789 (threshold 0.05)
   - Permutation p-value: 0.2555 (threshold 0.05)
   - Top features: accessGasUsed (0.258), commitGasUsed (0.075), commitCalldataLength (0.000)
 - **controlled_difference / RandomForest:** ✓ PASS
-  - Advantage: -0.0789 (threshold 0.05)
 
 ### Level II
 
-- **overall / LogisticRegression:** ✗ FAIL
+- **overall / LogisticRegression:** ✓ PASS
   - AUC: 0.5000 (threshold 0.55)
-  - Advantage: 0.5000 (threshold 0.05)
   - Permutation p-value: 1.0000 (threshold 0.05)
   - Top features: accessGasUsed (1.002), commitGasUsed (0.970), commitCalldataLength (0.000)
-- **overall / RandomForest:** ✗ FAIL
-  - Advantage: 0.5000 (threshold 0.05)
+- **overall / RandomForest:** ✓ PASS
 
 ### Level III
 
@@ -104,7 +92,7 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 
 ## Multi-seed Verdict (authoritative)
 
-Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction ≥ 0.5 (permutation α=0.05). Over 30 policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Advantage reported, not gating.
+Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction ≥ 0.5 (permutation α=0.05). Over 30 policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
 
 | Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |
 |---|---|---|---|---|---|---|

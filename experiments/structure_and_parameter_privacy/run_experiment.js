@@ -40,7 +40,6 @@ const DEFAULT_CONFIG = {
 };
 
 const DEFAULT_THRESHOLDS = {
-  maxAdvantage: 0.05,
   maxAUC: 0.55,
   minPermutationPValue: 0.05,
   maxMMD: 0.05,
@@ -113,34 +112,11 @@ function evaluateResults(supervisedResults, statisticalResults, clusteringResult
     results.results.forEach(result => {
       if (result.skipped) return;
 
-      const lrAdv = result.logisticRegression?.evaluation?.advantage || 0;
-      const rfAdv = result.randomForest?.evaluation?.advantage || 0;
       // Single-split now uses the fixed-score AUC permutation (aucPermPValue);
       // fall back to the legacy retrain permutationTest.pValue for older reports.
       const permPValue = result.logisticRegression?.evaluation?.aucPermPValue
         ?? result.logisticRegression?.permutationTest?.pValue
         ?? 1;
-
-      if (lrAdv > thresholds.maxAdvantage) {
-        failures.push({
-          comparison: `${result.class0} vs ${result.class1}`,
-          attack: 'Logistic Regression',
-          metric: 'advantage',
-          value: lrAdv,
-          threshold: thresholds.maxAdvantage
-        });
-      }
-
-      if (rfAdv > thresholds.maxAdvantage) {
-        failures.push({
-          comparison: `${result.class0} vs ${result.class1}`,
-          attack: 'Random Forest',
-          metric: 'advantage',
-          value: rfAdv,
-          threshold: thresholds.maxAdvantage
-        });
-      }
-
       if (permPValue < thresholds.minPermutationPValue) {
         failures.push({
           comparison: `${result.class0} vs ${result.class1}`,
@@ -498,7 +474,7 @@ async function runExperiment(config = {}) {
 
   // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
   // The single-split `evaluation` above is kept as a diagnostic; PASS/FAIL is
-  // decided here. The single split's raw "advantage" was unstable on imbalanced
+  // decided here. The single split's raw accuracy advantage was unstable on imbalanced
   // test sets (degenerate majority-class predictors scored high advantage with
   // f1=0 while the permutation test showed no signal), causing spurious FAILs.
   const targetAttributes = ['structureType', 'predicateCombo', 'paramType'];

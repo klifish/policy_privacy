@@ -76,8 +76,6 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.numDuoTerms = parseInt(unknown[++i], 10);
     } else if (arg === '--auc-threshold') {
       config.aucThreshold = parseFloat(unknown[++i]);
-    } else if (arg === '--advantage-threshold') {
-      config.advantageThreshold = parseFloat(unknown[++i]);
     } else if (arg === '--evaluate-dataset' || arg === '--dataset-quality') {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
@@ -93,7 +91,6 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printUsage() {
   console.log('Policy Content Hiding Experiment');
   console.log('Usage: node run_experiment.js [options]');
-  console.log();
   printCommonHelp();
   console.log();
   console.log('PCH-specific options:');
@@ -102,7 +99,6 @@ function printUsage() {
   console.log('  --executions <value>            Executions per policy (number) or execution results path (legacy)');
   console.log('  --num-duo-terms <n>             Number of DUO terms to include when generating data');
   console.log('  --auc-threshold <float>         AUC threshold for privacy checks');
-  console.log('  --advantage-threshold <float>   Advantage threshold for privacy checks');
   console.log('  --evaluate-dataset              Evaluate dataset quality after generation or load');
   console.log('  --dataset-quality-output <path> Override path for dataset quality JSON output');
 }
@@ -116,7 +112,6 @@ async function runExperiment(config = {}) {
     outputDir = path.join(__dirname, 'results', network),
     testRatio = 0.3,
     aucThreshold = 0.55,
-    advantageThreshold = 0.05,
     startPhase: startPhaseOverride = undefined,
     datasetPath: initialDatasetPath = null,
     executionResultsPath: initialExecutionResultsPath = null,
@@ -388,8 +383,8 @@ async function runExperiment(config = {}) {
   const evaluation = evaluateClassificationTasks(classificationResults);
 
   console.log('Classification Results (Privacy Metrics):');
-  console.log('Note: AUC and Advantage are the primary privacy indicators.');
-  console.log('AUC ≤ 0.55 and Advantage ≤ 5% indicate good privacy protection.');
+  console.log('Note: AUC is the primary single-split privacy diagnostic.');
+  console.log('AUC ≤ 0.55 indicates the adversary cannot rank samples better than random.');
   console.log('');
   for (const result of evaluation.results) {
     console.log(`Task: ${result.task}`);
@@ -406,10 +401,6 @@ async function runExperiment(config = {}) {
       const aucStatus = result.auc <= aucThreshold ? '✓' : '✗';
       console.log(`  ${aucStatus} AUC: ${result.auc.toFixed(4)} (threshold: ≤${aucThreshold})`);
     }
-
-    const advStatus = result.advantage <= advantageThreshold ? '✓' : '✗';
-    console.log(`  ${advStatus} Advantage: ${(result.advantage * 100).toFixed(2)}%`);
-    console.log(`     → Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing`);
 
     // Secondary metrics for diagnostics
     if (result.type === 'binary') {
@@ -429,13 +420,11 @@ async function runExperiment(config = {}) {
 
   // Check privacy thresholds
   const privacyCheck = checkPrivacyThresholds(evaluation, {
-    aucMax: aucThreshold,
-    advantageMax: advantageThreshold
+    aucMax: aucThreshold
   });
 
   console.log('Privacy Threshold Check:');
   console.log(`  AUC Threshold: ≤ ${aucThreshold}`);
-  console.log(`  Advantage Threshold: ≤ ${advantageThreshold}`);
   console.log();
 
   for (const result of privacyCheck.results) {
@@ -451,7 +440,7 @@ async function runExperiment(config = {}) {
 
   // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
   // The single split above is kept only as a diagnostic — its AUC has std ~0.05
-  // at ~3 executions/policy, and raw advantage is unstable on imbalanced test
+  // at ~3 executions/policy, and raw accuracy advantage is unstable on imbalanced test
   // sets, so it is not the basis for PASS/FAIL.
   const multiseedSeeds = config.multiseedSeeds ?? 30;
   const permIterations = config.permutationIterations || 200;
@@ -581,9 +570,8 @@ function generateReadableReport(report) {
 
   lines.push('## Privacy Evaluation Results');
   lines.push('');
-  lines.push('**Note:** AUC (Area Under ROC Curve) and Advantage are the primary privacy metrics.');
+  lines.push('**Note:** AUC (Area Under ROC Curve) is the primary single-split privacy diagnostic.');
   lines.push('- **AUC ≤ 0.55:** Indicates adversary cannot rank samples better than random');
-  lines.push('- **Advantage ≤ 5%:** Indicates adversary gains minimal benefit over random guessing');
   lines.push('');
   lines.push('> Accuracy metric removed: misleading for imbalanced datasets in privacy evaluation.');
   lines.push('');
@@ -599,10 +587,6 @@ function generateReadableReport(report) {
       lines.push(`- **AUC:** ${result.auc.toFixed(4)} (${aucStatus})`);
     }
 
-    const advStatus = result.advantage <= 0.05 ? '✓ PASS' : '✗ FAIL';
-    lines.push(`- **Advantage:** ${(result.advantage * 100).toFixed(2)}% (${advStatus})`);
-    lines.push(`  - *Interpretation: Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing*`);
-
     // Secondary metrics
     if (result.type === 'multi-class' && result.macroF1 !== undefined && result.macroF1 !== null) {
       lines.push(`- **Macro F1:** ${(result.macroF1 * 100).toFixed(2)}%`);
@@ -614,7 +598,6 @@ function generateReadableReport(report) {
   lines.push('## Privacy Threshold Check');
   lines.push('');
   lines.push(`- **AUC Threshold:** ≤ ${report.diagnostics.privacyCheck.thresholds.aucMax}`);
-  lines.push(`- **Advantage Threshold:** ≤ ${report.diagnostics.privacyCheck.thresholds.advantageMax}`);
   lines.push('');
 
   for (const result of report.diagnostics.privacyCheck.results) {
@@ -637,7 +620,7 @@ function generateReadableReport(report) {
   if (mv && Array.isArray(mv.tasks)) {
     lines.push('## Multi-seed Verdict (authoritative)');
     lines.push('');
-    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Advantage reported, not gating.`);
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
     lines.push('');
     lines.push('| Task | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
     lines.push('|---|---|---|---|---|---|---|');

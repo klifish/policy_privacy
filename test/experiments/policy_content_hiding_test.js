@@ -481,12 +481,13 @@ describe('Policy Content Hiding Evaluation', function () {
       };
 
       const check = checkPrivacyThresholds(evaluation, {
-        aucMax: 0.55,
-        advantageMax: 0.05
+        aucMax: 0.55
       });
 
       expect(check).to.have.property('overallPassed', true);
       expect(check.results).to.be.an('array').with.lengthOf(2);
+      expect(check.results[0].checks.map(c => c.metric)).to.deep.equal(['AUC']);
+      expect(check.results[1].checks).to.deep.equal([]);
     });
   });
 

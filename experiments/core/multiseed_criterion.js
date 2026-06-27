@@ -27,7 +27,7 @@ const { mulberry32 } = require('./random');
  * attacker can push AUC above the threshold by fitting noise-dominated features
  * (the permutation test then stays non-significant — not a real channel), while
  * a permutation test can call a trivially small AUC "significant" (real but of
- * no adversarial value). Advantage is reported (mean±std) but does NOT gate, as
+ * no adversarial value). Raw accuracy advantage is retained only as a legacy diagnostic field, as
  * it is unreliable on imbalanced test sets. The single-split report is kept
  * separately for diagnostics; this is the authoritative verdict.
  */
@@ -496,11 +496,11 @@ function pickVerdictText(overallPassed, { pass, fail, inconclusive }) {
 function printVerdict(title, verdict) {
   const c = verdict.criterion;
   console.log(`\n${title} — multi-seed verdict (${c.seeds} seeds, policy-disjoint)`);
-  console.log(`Criterion: FAIL iff AUC_mean > ${c.aucMax} AND significant-seed fraction ≥ ${c.sigFractionMax} (perm α=${c.permAlpha}); both required, else PASS. Advantage reported, not gating.`);
+  console.log(`Criterion: FAIL iff AUC_mean > ${c.aucMax} AND significant-seed fraction ≥ ${c.sigFractionMax} (perm α=${c.permAlpha}); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
   console.log(`Underpowered tasks (median test n < ${c.minTestSamples}) are reported but do not gate.`);
   console.log(`Diagnostic tasks are reported but do not gate.`);
-  console.log('Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict');
-  console.log('--------------------------------------+-----------------+-----------------+-------------+------+------+--------');
+  console.log('Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict');
+  console.log('--------------------------------------+-----------------+-------------+------+------+--------');
   for (const t of verdict.tasks) {
     const f = (ms) => Number.isNaN(ms.mean) ? '   n/a       ' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
     const pct = t.sigFraction == null ? 'n/a' : `${(t.sigFraction * 100).toFixed(0)}%`;
@@ -510,12 +510,12 @@ function printVerdict(title, verdict) {
       : (t.passed ? '✓ PASS' : '✗ FAIL');
     const permMean = Number.isNaN(t.permPValue.mean) ? '  n/a  ' : t.permPValue.mean.toFixed(3);
     const medN = t.medianTestN == null ? ' n/a' : String(t.medianTestN);
-    console.log(`${t.key.padEnd(37)} | ${f(t.auc).padEnd(15)} | ${f(t.advantage).padEnd(15)} | ${permMean.padEnd(11)} | ${pct.padEnd(4)} | ${medN.padEnd(4)} | ${v}`);
+    console.log(`${t.key.padEnd(37)} | ${f(t.auc).padEnd(15)} | ${permMean.padEnd(11)} | ${pct.padEnd(4)} | ${medN.padEnd(4)} | ${v}`);
     if (t.prf) {
       console.log(`${' '.repeat(37)} |   P/R/F1: ${t.prf.precision.mean.toFixed(2)} / ${t.prf.recall.mean.toFixed(2)} / ${t.prf.f1.mean.toFixed(2)}`);
     }
   }
-  console.log('--------------------------------------+-----------------+-----------------+-------------+------+--------');
+  console.log('--------------------------------------+-----------------+-------------+------+--------');
   const overall = pickVerdictText(verdict.overallPassed, {
     pass: '✓ PASS',
     fail: '✗ FAIL',
