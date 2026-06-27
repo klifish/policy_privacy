@@ -82,11 +82,9 @@ def compare_supervised(root, rng, iterations):
         b2_report = load_json(base / "b2_padded" / experiment / report_name)
         b1 = flatten_seed_records(b1_report)
         b2 = flatten_seed_records(b2_report)
-        non_control_b1 = {key for key in b1 if not str(key[1]).startswith("CONTROL:")}
-        non_control_b2 = {key for key in b2 if not str(key[1]).startswith("CONTROL:")}
-        if non_control_b1 != non_control_b2:
-            missing_b1 = sorted(non_control_b2 - non_control_b1)
-            missing_b2 = sorted(non_control_b1 - non_control_b2)
+        if set(b1) != set(b2):
+            missing_b1 = sorted(set(b2) - set(b1))
+            missing_b2 = sorted(set(b1) - set(b2))
             raise ValueError(
                 f"{experiment} seed/task mismatch; missing B1={missing_b1[:5]}, missing B2={missing_b2[:5]}"
             )
@@ -111,7 +109,6 @@ def compare_supervised(root, rng, iterations):
             tasks.append({
                 "task": key,
                 "classifier": classifier,
-                "positiveControl": key.startswith("CONTROL:"),
                 "b1AucMean": float(np.mean([row["b1_auc"] for row in rows])),
                 "b2AucMean": float(np.mean([row["b2_auc"] for row in rows])),
                 "b1SignificantSeedFraction": float(np.mean([row["b1_significant"] for row in rows])),
@@ -121,10 +118,6 @@ def compare_supervised(root, rng, iterations):
             })
         output[experiment] = {
             "tasks": tasks,
-            "controlsValid": {
-                "b1": b1_report.get("multiseedVerdict", {}).get("controlsValid"),
-                "b2": b2_report.get("multiseedVerdict", {}).get("controlsValid"),
-            },
         }
     return output
 
@@ -267,8 +260,6 @@ def render_markdown(report):
     ]
     for experiment, experiment_result in report["supervised"].items():
         for task in experiment_result["tasks"]:
-            if task["positiveControl"]:
-                continue
             effect = task["deltaLeakage"]
             ci = effect["ci95"]
             lines.append(

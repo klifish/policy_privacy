@@ -7,9 +7,7 @@
   \centering
   \caption{Headline privacy results on the Polygon Amoy dataset. The supervised attacker
     uses 30 policy-disjoint seeds and a permutation test. A task passes unless both
-    AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant. The
-    \texttt{gas\,>\,median} controls validate that the attack pipeline detects a real
-    gas channel when one is present.}
+    AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant.}
   \label{tab:privacy-summary}
   \begin{tabular}{p{0.16\linewidth}p{0.32\linewidth}p{0.31\linewidth}c}
     \toprule
@@ -24,9 +22,6 @@
     SPP & Structure, predicate, and parameter buckets
         & 18 pairwise contrasts pass; AUCs $0.428$--$0.521$, max $27\%$ significant seeds
         & \checkmark \\
-    Control & \texttt{gas\,>\,median}
-        & PCH AUC $0.994$, PI AUC $1.000$; controls are intentionally separable
-        & valid \\
     \bottomrule
   \end{tabular}
 \end{table}

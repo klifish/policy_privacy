@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Indistinguishability",
-  "timestamp": "2026-06-26T14:02:54.672Z",
+  "timestamp": "2026-06-27T14:27:16.523Z",
   "config": {
     "policyCount": 100,
     "executionsPerPolicy": 2,
@@ -5900,25 +5900,19 @@
     }
   },
   "multiseedVerdict": {
-    "overallPassed": null,
-    "controlsPresent": true,
-    "controlsValid": false,
-    "missingPositiveControlKeys": [
-      "CONTROL: gas>median"
-    ],
+    "overallPassed": false,
+    "controlsPresent": false,
+    "controlsValid": null,
+    "missingPositiveControlKeys": [],
     "criterion": {
       "seeds": 30,
       "aucMax": 0.55,
       "permAlpha": 0.05,
       "sigFractionMax": 0.5,
       "minTestSamples": 20,
-      "positiveControlKeys": [
-        "CONTROL: gas>median"
-      ],
       "nonGatingKeys": [
         "controlled_difference"
       ],
-      "gateOnControlValidity": true,
       "permutationIterations": 500
     },
     "tasks": [
@@ -5927,7 +5921,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 267.5,
@@ -6045,7 +6038,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 22.5,
@@ -6163,7 +6155,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 48.5,
@@ -6281,7 +6272,6 @@
         "passed": null,
         "skipped": false,
         "underpowered": true,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": true,
         "medianTestN": 6,
@@ -6399,7 +6389,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": true,
         "nonGating": true,
         "medianTestN": 149,
@@ -9396,6 +9385,6 @@
       }
     ]
   },
-  "overallPassed": null,
-  "conclusion": "INCONCLUSIVE: the synthetic gas-derived positive control was missing or not separated by the PI Level-I attack pipeline, so near-chance AUC on real pair scopes cannot support a privacy claim."
+  "overallPassed": false,
+  "conclusion": "Potential leakage detected. Further hardening is required."
 }

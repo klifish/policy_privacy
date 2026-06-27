@@ -11,7 +11,11 @@ channels.
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile
 without commit/access gas padding. \textbf{B2} is the full mechanism used in the main
-evaluation, with randomized access-gas padding. The paired leakage metric is
+evaluation, with randomized access-gas padding. This paired design also validates the
+attack pipeline directly: the same features, splits, and classifiers produce
+well-above-chance AUCs on B1 when padding is absent, while B2 returns the attacker toward
+chance. Thus the main privacy claim rests on a real ablation contrast rather than on a
+synthetic label derived from an input feature. The paired leakage metric is
 %
 \[
   \Delta_{\text{leak}} =

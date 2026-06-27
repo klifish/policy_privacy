@@ -37,12 +37,6 @@ tables report the AUC selected by the committed verdict file for each task. SPP 
 calibrated random-forest score for its AUC leg because logistic regression
 over-separates on the near-constant SPP features and yields a degenerate AUC.
 
-\paragraph{Positive control.} To show that a chance-level AUC means \emph{no signal}
-rather than a \emph{broken attack}, every supervised experiment also runs a synthetic
-control: a label deterministically derived from the gas (``\texttt{gas\,>\,median}'')
-pushed through the identical pipeline. The control reaches AUC $\approx 0.99$ and
-$F_1\approx 0.95$, confirming the attack can detect a real channel when one exists.
-
 \subsubsection{Unsupervised clustering attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features
 \emph{naturally} group along the hidden property. We run K-Means (with $K$ set to the

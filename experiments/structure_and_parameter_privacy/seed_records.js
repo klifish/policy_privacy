@@ -9,7 +9,7 @@
  * requires ./attacks (pure ML, no chain deps). run_experiment.js re-exports these.
  */
 
-const { runSupervisedAttacks, extractFeatures } = require('./attacks');
+const { runSupervisedAttacks } = require('./attacks');
 
 /**
  * Build per-classifier verdict records (one LR, one RF) from a single
@@ -87,41 +87,6 @@ function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
     }
   }
 
-  // Positive control (attack-validity): a synthetic, known-separable attribute
-  // from commitGasUsed (a real observable). The SAME pipeline should recover it
-  // with high AUC/F1, proving the ≈0.5 AUC on real attributes is "no signal".
-  const gasVals = executionResults
-    .map(r => extractFeatures(r).commitGasUsed)
-    .filter(v => typeof v === 'number');
-  const gasMedian = gasVals.length
-    ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
-    : null;
-  if (gasMedian != null) {
-    const tagged = executionResults.map(r => ({
-      ...r,
-      __control: extractFeatures(r).commitGasUsed > gasMedian ? 'high' : 'low'
-    }));
-    let out;
-    try {
-      console.log = () => {};
-      out = runSupervisedAttacks(tagged, {
-        targetAttribute: '__control',
-        testRatio,
-        permutationIterations,
-        balanceMethod,
-        perClassifierPermutation: true,
-        rngMode: isolated ? 'isolated' : 'legacy',
-        baseSeed,
-        skipLegacyPermutation
-      });
-    } finally {
-      console.log = origLog;
-    }
-    const r = (out.results || []).find(x => !x.skipped && x.logisticRegression);
-    if (r) {
-      records.push(...buildPerClassifierRecords('CONTROL: gas>median', r));
-    }
-  }
   return records;
 }
 

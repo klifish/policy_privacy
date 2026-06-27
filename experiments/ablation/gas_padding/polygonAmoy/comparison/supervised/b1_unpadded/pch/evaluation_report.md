@@ -1,6 +1,6 @@
 # Policy Content Hiding Evaluation Report
 
-**Date:** 6/26/2026, 4:02:51 PM
+**Date:** 6/27/2026, 4:27:12 PM
 
 ## Objective
 
@@ -26,51 +26,51 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 ### DUO Term 0 Presence
 
 - **Type:** binary
-- **AUC:** 0.4625 (✓ PASS)
-- **Advantage:** 46.23% (✗ FAIL)
-  - *Interpretation: Adversary performs 46.23% better than random guessing*
+- **AUC:** 0.2207 (✓ PASS)
+- **Advantage:** 37.25% (✗ FAIL)
+  - *Interpretation: Adversary performs 37.25% better than random guessing*
 
 ### DUO Term 1 Presence
 
 - **Type:** binary
-- **AUC:** 0.5775 (✗ FAIL)
-- **Advantage:** 5.94% (✗ FAIL)
-  - *Interpretation: Adversary performs 5.94% better than random guessing*
+- **AUC:** 0.4727 (✓ PASS)
+- **Advantage:** -18.99% (✓ PASS)
+  - *Interpretation: Adversary performs -18.99% better than random guessing*
 
 ### DUO Term 2 Presence
 
 - **Type:** binary
-- **AUC:** 0.5978 (✗ FAIL)
-- **Advantage:** 10.87% (✗ FAIL)
-  - *Interpretation: Adversary performs 10.87% better than random guessing*
+- **AUC:** 0.8255 (✗ FAIL)
+- **Advantage:** 1.30% (✓ PASS)
+  - *Interpretation: Adversary performs 1.30% better than random guessing*
 
 ### DUO Term 3 Presence
 
 - **Type:** binary
-- **AUC:** 0.3463 (✓ PASS)
-- **Advantage:** 6.52% (✗ FAIL)
-  - *Interpretation: Adversary performs 6.52% better than random guessing*
+- **AUC:** 0.5358 (✓ PASS)
+- **Advantage:** 15.51% (✗ FAIL)
+  - *Interpretation: Adversary performs 15.51% better than random guessing*
 
 ### DUO Term 4 Presence
 
 - **Type:** binary
-- **AUC:** 0.5972 (✗ FAIL)
-- **Advantage:** 7.68% (✗ FAIL)
-  - *Interpretation: Adversary performs 7.68% better than random guessing*
+- **AUC:** 0.5722 (✗ FAIL)
+- **Advantage:** -15.80% (✓ PASS)
+  - *Interpretation: Adversary performs -15.80% better than random guessing*
 
 ### DUO Term 5 Presence
 
 - **Type:** binary
-- **AUC:** 0.2532 (✓ PASS)
-- **Advantage:** -0.72% (✓ PASS)
-  - *Interpretation: Adversary performs -0.72% better than random guessing*
+- **AUC:** 0.4579 (✓ PASS)
+- **Advantage:** 2.46% (✓ PASS)
+  - *Interpretation: Adversary performs 2.46% better than random guessing*
 
 ### ICD-10 Chapter Prediction (RandomForest)
 
 - **Type:** multi-class
-- **Advantage:** -7.94% (✓ PASS)
-  - *Interpretation: Adversary performs -7.94% better than random guessing*
-- **Macro F1:** 1.07%
+- **Advantage:** -8.66% (✓ PASS)
+  - *Interpretation: Adversary performs -8.66% better than random guessing*
+- **Macro F1:** 1.38%
 
 ## Privacy Threshold Check
 
@@ -79,37 +79,37 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 ### DUO Term 0 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.4625 (threshold: 0.55)
-- ✗ **Advantage:** 0.4623 (threshold: 0.05)
+- ✓ **AUC:** 0.2207 (threshold: 0.55)
+- ✗ **Advantage:** 0.3725 (threshold: 0.05)
 
-### DUO Term 1 Presence: ✗ FAIL
+### DUO Term 1 Presence: ✓ PASS
 
-- ✗ **AUC:** 0.5775 (threshold: 0.55)
-- ✗ **Advantage:** 0.0594 (threshold: 0.05)
+- ✓ **AUC:** 0.4727 (threshold: 0.55)
+- ✓ **Advantage:** -0.1899 (threshold: 0.05)
 
 ### DUO Term 2 Presence: ✗ FAIL
 
-- ✗ **AUC:** 0.5978 (threshold: 0.55)
-- ✗ **Advantage:** 0.1087 (threshold: 0.05)
+- ✗ **AUC:** 0.8255 (threshold: 0.55)
+- ✓ **Advantage:** 0.0130 (threshold: 0.05)
 
 ### DUO Term 3 Presence: ✗ FAIL
 
-- ✓ **AUC:** 0.3463 (threshold: 0.55)
-- ✗ **Advantage:** 0.0652 (threshold: 0.05)
+- ✓ **AUC:** 0.5358 (threshold: 0.55)
+- ✗ **Advantage:** 0.1551 (threshold: 0.05)
 
 ### DUO Term 4 Presence: ✗ FAIL
 
-- ✗ **AUC:** 0.5972 (threshold: 0.55)
-- ✗ **Advantage:** 0.0768 (threshold: 0.05)
+- ✗ **AUC:** 0.5722 (threshold: 0.55)
+- ✓ **Advantage:** -0.1580 (threshold: 0.05)
 
 ### DUO Term 5 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.2532 (threshold: 0.55)
-- ✓ **Advantage:** -0.0072 (threshold: 0.05)
+- ✓ **AUC:** 0.4579 (threshold: 0.55)
+- ✓ **Advantage:** 0.0246 (threshold: 0.05)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 
-- ✓ **Advantage:** -0.0794 (threshold: 0.05)
+- ✓ **Advantage:** -0.0866 (threshold: 0.05)
 
 ## Multi-seed Verdict (authoritative)
 
@@ -136,10 +136,10 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 
 ## Overall Result
 
-**Status:** ? **INCONCLUSIVE** _(multi-seed, policy-disjoint; single split shown above is diagnostic)_
+**Status:** ✗ **FAIL** _(multi-seed, policy-disjoint; single split shown above is diagnostic)_
 
 ## Conclusion
 
-INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made.
+WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.
 
-**Inconclusive:** the positive control (a known-distinguishable task) was not separated by the attack pipeline, so the near-chance AUC on real tasks cannot be read as privacy. The attack must be made effective (verified on the control) before any PASS is meaningful.
+**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.

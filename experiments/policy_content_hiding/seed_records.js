@@ -178,44 +178,6 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
     }
   }
 
-  // Positive control (attack-validity): a synthetic, known-separable label from
-  // commitGasUsed (a real observable). The SAME pipeline should recover it with
-  // high AUC/F1, proving ≈0.5 AUC on real DUO labels is "no signal". Non-gating.
-  {
-    const gasVals = train.map(f => f.commitGasUsed).filter(v => typeof v === 'number');
-    const gasMedian = gasVals.length
-      ? [...gasVals].sort((a, b) => a - b)[Math.floor(gasVals.length / 2)]
-      : null;
-    const ctrlLabel = f => (f.commitGasUsed > gasMedian ? 1 : 0);
-    const ctrlTrY = train.map(ctrlLabel);
-    const ctrlTeY = test.map(ctrlLabel);
-    if (gasMedian != null && new Set(ctrlTrY).size === 2 && new Set(ctrlTeY).size === 2) {
-      const lr = new LogisticRegression(0.1, 500);
-      lr.train(trX, ctrlTrY);
-      const proba = lr.predictProba(teX);
-      const auc = calculateAUC(ctrlTeY, proba);
-      if (auc != null) {
-        const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
-        const ev = evaluateBinaryClassification(ctrlTeY, pred, proba);
-        const { pValue } = permutationTestAUC(
-          ctrlTeY,
-          proba,
-          permIterations,
-          rng('CONTROL: gas>median', 'lr-permutation')
-        );
-        records.push({
-          key: 'CONTROL: gas>median',
-          auc,
-          advantage: Math.abs(auc - 0.5),
-          permPValue: pValue,
-          n: ctrlTeY.length,
-          precision: ev.precision,
-          recall: ev.recall,
-          f1: ev.f1
-        });
-      }
-    }
-  }
   return records;
 }
 

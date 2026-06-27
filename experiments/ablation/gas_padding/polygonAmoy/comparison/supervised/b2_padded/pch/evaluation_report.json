@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Content Hiding Evaluation",
-  "timestamp": "2026-06-26T14:07:30.890Z",
+  "timestamp": "2026-06-27T14:31:19.703Z",
   "config": {
     "numDuoTermsRequested": 6,
     "numDuoTermsObserved": 6,
@@ -12,109 +12,109 @@
   "diagnostics": {
     "note": "Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.",
     "evaluation": {
-      "timestamp": "2026-06-26T14:05:19.828Z",
+      "timestamp": "2026-06-27T14:29:10.576Z",
       "results": [
         {
           "task": "DUO Term 0 Presence",
           "type": "binary",
-          "accuracy": 0.9581881533101045,
+          "accuracy": 0.8947368421052632,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.616969696969697,
-          "advantage": 0.45818815331010454,
+          "auc": 0.5334059549745824,
+          "advantage": 0.39473684210526316,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 12,
-            "testTotal": 287,
-            "testRatio": 0.041811846689895474
+            "testPositive": 18,
+            "testTotal": 171,
+            "testRatio": 0.10526315789473684
           }
         },
         {
           "task": "DUO Term 1 Presence",
           "type": "binary",
-          "accuracy": 0.4738675958188153,
-          "precision": 0.4738675958188153,
+          "accuracy": 0.6374269005847953,
+          "precision": 0.6374269005847953,
           "recall": 1,
-          "f1": 0.6430260047281323,
-          "auc": 0.49717569146864043,
-          "advantage": -0.026132404181184676,
+          "f1": 0.7785714285714287,
+          "auc": 0.5275229357798165,
+          "advantage": 0.13742690058479534,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 136,
-            "testTotal": 287,
-            "testRatio": 0.4738675958188153
+            "testPositive": 109,
+            "testTotal": 171,
+            "testRatio": 0.6374269005847953
           }
         },
         {
           "task": "DUO Term 2 Presence",
           "type": "binary",
-          "accuracy": 0.7212543554006968,
-          "precision": 0.7212543554006968,
+          "accuracy": 0.7192982456140351,
+          "precision": 0.7192982456140351,
           "recall": 1,
-          "f1": 0.8380566801619432,
-          "auc": 0.518840579710145,
-          "advantage": 0.22125435540069682,
+          "f1": 0.8367346938775511,
+          "auc": 0.4600271002710027,
+          "advantage": 0.2192982456140351,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 207,
-            "testTotal": 287,
-            "testRatio": 0.7212543554006968
+            "testPositive": 123,
+            "testTotal": 171,
+            "testRatio": 0.7192982456140351
           }
         },
         {
           "task": "DUO Term 3 Presence",
           "type": "binary",
-          "accuracy": 0.5923344947735192,
+          "accuracy": 0.4678362573099415,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.4809954751131222,
-          "advantage": 0.09233449477351918,
+          "auc": 0.47802197802197804,
+          "advantage": -0.032163742690058506,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 117,
-            "testTotal": 287,
-            "testRatio": 0.4076655052264808
+            "testPositive": 91,
+            "testTotal": 171,
+            "testRatio": 0.5321637426900585
           }
         },
         {
           "task": "DUO Term 4 Presence",
           "type": "binary",
-          "accuracy": 0.42160278745644597,
+          "accuracy": 0.543859649122807,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.45773175346012146,
-          "advantage": -0.07839721254355403,
+          "auc": 0.45064791838985385,
+          "advantage": 0.04385964912280704,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 166,
-            "testTotal": 287,
-            "testRatio": 0.578397212543554
+            "testPositive": 78,
+            "testTotal": 171,
+            "testRatio": 0.45614035087719296
           }
         },
         {
           "task": "DUO Term 5 Presence",
           "type": "binary",
-          "accuracy": 0.4808362369337979,
-          "precision": 0.5586592178770949,
-          "recall": 0.5882352941176471,
-          "f1": 0.5730659025787965,
-          "auc": 0.4762192056309703,
-          "advantage": -0.0191637630662021,
+          "accuracy": 0.6432748538011696,
+          "precision": 0.6736111111111112,
+          "recall": 0.8738738738738738,
+          "f1": 0.7607843137254903,
+          "auc": 0.5277777777777778,
+          "advantage": 0.14327485380116955,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 170,
-            "testTotal": 287,
-            "testRatio": 0.5923344947735192
+            "testPositive": 111,
+            "testTotal": 171,
+            "testRatio": 0.6491228070175439
           }
         },
         {
           "task": "ICD-10 Chapter Prediction (RandomForest)",
           "type": "multi-class",
-          "accuracy": 0.04411764705882353,
-          "macroF1": 0.01679151061173533,
+          "accuracy": 0.045871559633027525,
+          "macroF1": 0.034079240530853434,
           "perClassMetrics": {
             "0": {
               "precision": 0,
@@ -122,14 +122,14 @@
               "f1": 0
             },
             "1": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0
+              "precision": 0.03389830508474576,
+              "recall": 0.6666666666666666,
+              "f1": 0.06451612903225806
             },
             "2": {
-              "precision": 0,
-              "recall": 0,
-              "f1": 0
+              "precision": 1,
+              "recall": 0.027777777777777776,
+              "f1": 0.05405405405405406
             },
             "3": {
               "precision": 0,
@@ -142,9 +142,9 @@
               "f1": 0
             },
             "5": {
-              "precision": 0.03125,
-              "recall": 0.25,
-              "f1": 0.05555555555555555
+              "precision": 0,
+              "recall": 0,
+              "f1": 0
             },
             "6": {
               "precision": 0,
@@ -152,9 +152,9 @@
               "f1": 0
             },
             "7": {
-              "precision": 0.06329113924050633,
-              "recall": 0.5,
-              "f1": 0.11235955056179776
+              "precision": 0.4,
+              "recall": 0.15384615384615385,
+              "f1": 0.2222222222222222
             },
             "8": {
               "precision": 0,
@@ -167,7 +167,7 @@
               "f1": 0
             }
           },
-          "advantage": -0.05588235294117647,
+          "advantage": -0.05412844036697248,
           "randomBaseline": 0.1,
           "numClasses": 10
         }
@@ -182,13 +182,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.616969696969697,
+              "value": 0.5334059549745824,
               "threshold": 0.55,
-              "passed": false
+              "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.45818815331010454,
+              "value": 0.39473684210526316,
               "threshold": 0.05,
               "passed": false
             }
@@ -196,19 +196,19 @@
         },
         {
           "task": "DUO Term 1 Presence",
-          "passed": true,
+          "passed": false,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.49717569146864043,
+              "value": 0.5275229357798165,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": -0.026132404181184676,
+              "value": 0.13742690058479534,
               "threshold": 0.05,
-              "passed": true
+              "passed": false
             }
           ]
         },
@@ -218,13 +218,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.518840579710145,
+              "value": 0.4600271002710027,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.22125435540069682,
+              "value": 0.2192982456140351,
               "threshold": 0.05,
               "passed": false
             }
@@ -232,19 +232,19 @@
         },
         {
           "task": "DUO Term 3 Presence",
-          "passed": false,
+          "passed": true,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.4809954751131222,
+              "value": 0.47802197802197804,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": 0.09233449477351918,
+              "value": -0.032163742690058506,
               "threshold": 0.05,
-              "passed": false
+              "passed": true
             }
           ]
         },
@@ -254,13 +254,13 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.45773175346012146,
+              "value": 0.45064791838985385,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": -0.07839721254355403,
+              "value": 0.04385964912280704,
               "threshold": 0.05,
               "passed": true
             }
@@ -268,19 +268,19 @@
         },
         {
           "task": "DUO Term 5 Presence",
-          "passed": true,
+          "passed": false,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.4762192056309703,
+              "value": 0.5277777777777778,
               "threshold": 0.55,
               "passed": true
             },
             {
               "metric": "Advantage",
-              "value": -0.0191637630662021,
+              "value": 0.14327485380116955,
               "threshold": 0.05,
-              "passed": true
+              "passed": false
             }
           ]
         },
@@ -290,7 +290,7 @@
           "checks": [
             {
               "metric": "Advantage",
-              "value": -0.05588235294117647,
+              "value": -0.05412844036697248,
               "threshold": 0.05,
               "passed": true
             }
@@ -305,8 +305,8 @@
   },
   "multiseedVerdict": {
     "overallPassed": true,
-    "controlsPresent": true,
-    "controlsValid": true,
+    "controlsPresent": false,
+    "controlsValid": null,
     "missingPositiveControlKeys": [],
     "criterion": {
       "seeds": 30,
@@ -314,11 +314,7 @@
       "permAlpha": 0.05,
       "sigFractionMax": 0.5,
       "minTestSamples": 20,
-      "positiveControlKeys": [
-        "CONTROL: gas>median"
-      ],
       "nonGatingKeys": [],
-      "gateOnControlValidity": true,
       "permutationIterations": 200
     },
     "tasks": [
@@ -327,7 +323,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -807,7 +802,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -1287,7 +1281,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -1767,7 +1760,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -2247,7 +2239,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -2727,7 +2718,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 374,
@@ -3207,7 +3197,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -3687,7 +3676,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -4167,7 +4155,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -4635,7 +4622,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -5115,7 +5101,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -5583,7 +5568,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -6051,7 +6035,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -6531,7 +6514,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -7011,7 +6993,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -7491,7 +7472,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 192,
@@ -7963,54 +7943,6 @@
               "auc": 30,
               "perm": 30
             }
-          }
-        }
-      },
-      {
-        "key": "CONTROL: gas>median",
-        "passed": false,
-        "skipped": false,
-        "underpowered": false,
-        "positiveControl": true,
-        "diagnostic": false,
-        "nonGating": true,
-        "controlSeparable": true,
-        "medianTestN": 374,
-        "auc": {
-          "mean": 0.9942988095211459,
-          "std": 0.002302499247972201,
-          "n": 30
-        },
-        "advantage": {
-          "mean": 0.49429880952114585,
-          "std": 0.002302499247972201,
-          "n": 30
-        },
-        "permPValue": {
-          "mean": 0.004975124378109455,
-          "std": 2.6020852139652106e-18,
-          "n": 30
-        },
-        "sigFraction": 1,
-        "seeds": {
-          "auc": 30,
-          "perm": 30
-        },
-        "prf": {
-          "precision": {
-            "mean": 0.9074184501937759,
-            "std": 0.021681445059123953,
-            "n": 30
-          },
-          "recall": {
-            "mean": 0.9843258673924993,
-            "std": 0.007607633578860886,
-            "n": 30
-          },
-          "f1": {
-            "mean": 0.9441546396415774,
-            "std": 0.012155530039497462,
-            "n": 30
           }
         }
       }
@@ -8595,16 +8527,6 @@
               "tn": 203,
               "fn": 15
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.998006999805561,
-            "advantage": 0.49800699980556096,
-            "permPValue": 0.004975124378109453,
-            "n": 287,
-            "precision": 0.9261744966442953,
-            "recall": 0.9928057553956835,
-            "f1": 0.9583333333333334
           }
         ]
       },
@@ -9187,16 +9109,6 @@
               "tn": 95,
               "fn": 10
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9939367939367939,
-            "advantage": 0.4939367939367939,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.8904761904761904,
-            "recall": 0.9894179894179894,
-            "f1": 0.93734335839599
           }
         ]
       },
@@ -9779,16 +9691,6 @@
               "tn": 179,
               "fn": 41
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.995567518345921,
-            "advantage": 0.49556751834592105,
-            "permPValue": 0.004975124378109453,
-            "n": 548,
-            "precision": 0.899641577060932,
-            "recall": 0.9881889763779528,
-            "f1": 0.9418386491557224
           }
         ]
       },
@@ -10371,16 +10273,6 @@
               "tn": 92,
               "fn": 13
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9963744882355843,
-            "advantage": 0.4963744882355843,
-            "permPValue": 0.004975124378109453,
-            "n": 403,
-            "precision": 0.9018691588785047,
-            "recall": 0.9948453608247423,
-            "f1": 0.9460784313725491
           }
         ]
       },
@@ -10963,16 +10855,6 @@
               "tn": 211,
               "fn": 10
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9950007509601562,
-            "advantage": 0.49500075096015617,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.9162995594713657,
-            "recall": 0.9952153110047847,
-            "f1": 0.9541284403669725
           }
         ]
       },
@@ -11555,16 +11437,6 @@
               "tn": 181,
               "fn": 10
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9955598455598456,
-            "advantage": 0.49555984555984556,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.9361702127659575,
-            "recall": 0.990990990990991,
-            "f1": 0.962800875273523
           }
         ]
       },
@@ -12147,16 +12019,6 @@
               "tn": 180,
               "fn": 12
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9891492183418398,
-            "advantage": 0.4891492183418398,
-            "permPValue": 0.004975124378109453,
-            "n": 316,
-            "precision": 0.9005524861878453,
-            "recall": 0.9760479041916168,
-            "f1": 0.9367816091954023
           }
         ]
       },
@@ -12739,16 +12601,6 @@
               "tn": 94,
               "fn": 40
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9909238444431088,
-            "advantage": 0.49092384444310877,
-            "permPValue": 0.004975124378109453,
-            "n": 258,
-            "precision": 0.8620689655172413,
-            "recall": 0.984251968503937,
-            "f1": 0.9191176470588235
           }
         ]
       },
@@ -13331,16 +13183,6 @@
               "tn": 182,
               "fn": 8
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9943216037167685,
-            "advantage": 0.4943216037167685,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.919047619047619,
-            "recall": 0.9796954314720813,
-            "f1": 0.9484029484029485
           }
         ]
       },
@@ -13923,16 +13765,6 @@
               "tn": 147,
               "fn": 42
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.991493291853004,
-            "advantage": 0.49149329185300406,
-            "permPValue": 0.004975124378109453,
-            "n": 287,
-            "precision": 0.9235668789808917,
-            "recall": 0.9797297297297297,
-            "f1": 0.9508196721311475
           }
         ]
       },
@@ -14515,16 +14347,6 @@
               "tn": 148,
               "fn": 15
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9934791934791934,
-            "advantage": 0.49347919347919345,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.9183673469387755,
-            "recall": 0.972972972972973,
-            "f1": 0.9448818897637795
           }
         ]
       },
@@ -15107,16 +14929,6 @@
               "tn": 148,
               "fn": 44
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9964944368236549,
-            "advantage": 0.4964944368236549,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.9077669902912622,
-            "recall": 0.9894179894179894,
-            "f1": 0.9468354430379746
           }
         ]
       },
@@ -15699,16 +15511,6 @@
               "tn": 121,
               "fn": 40
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9951174855050351,
-            "advantage": 0.4951174855050351,
-            "permPValue": 0.004975124378109453,
-            "n": 229,
-            "precision": 0.9180327868852459,
-            "recall": 0.9911504424778761,
-            "f1": 0.9531914893617022
           }
         ]
       },
@@ -16291,16 +16093,6 @@
               "tn": 150,
               "fn": 42
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9949494949494949,
-            "advantage": 0.4949494949494949,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.9198113207547169,
-            "recall": 0.9848484848484849,
-            "f1": 0.9512195121951219
           }
         ]
       },
@@ -16847,16 +16639,6 @@
               "tn": 239,
               "fn": 8
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9909934130931577,
-            "advantage": 0.4909934130931577,
-            "permPValue": 0.004975124378109453,
-            "n": 345,
-            "precision": 0.9226519337016574,
-            "recall": 0.9709302325581395,
-            "f1": 0.9461756373937678
           }
         ]
       },
@@ -17439,16 +17221,6 @@
               "tn": 179,
               "fn": 13
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9941271032043725,
-            "advantage": 0.4941271032043725,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.8983050847457628,
-            "recall": 0.9769585253456221,
-            "f1": 0.93598233995585
           }
         ]
       },
@@ -17995,16 +17767,6 @@
               "tn": 180,
               "fn": 41
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9904438205014531,
-            "advantage": 0.4904438205014531,
-            "permPValue": 0.004975124378109453,
-            "n": 403,
-            "precision": 0.8873873873873874,
-            "recall": 0.9800995024875622,
-            "f1": 0.9314420803782506
           }
         ]
       },
@@ -18587,16 +18349,6 @@
               "tn": 209,
               "fn": 11
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9941848739495799,
-            "advantage": 0.4941848739495799,
-            "permPValue": 0.004975124378109453,
-            "n": 345,
-            "precision": 0.9293478260869565,
-            "recall": 0.9771428571428571,
-            "f1": 0.9526462395543175
           }
         ]
       },
@@ -19143,16 +18895,6 @@
               "tn": 143,
               "fn": 18
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9890239711315405,
-            "advantage": 0.4890239711315405,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.8866396761133604,
-            "recall": 0.9690265486725663,
-            "f1": 0.9260042283298098
           }
         ]
       },
@@ -19735,16 +19477,6 @@
               "tn": 155,
               "fn": 8
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9965832003192339,
-            "advantage": 0.49658320031923386,
-            "permPValue": 0.004975124378109453,
-            "n": 403,
-            "precision": 0.8817733990147784,
-            "recall": 1,
-            "f1": 0.9371727748691099
           }
         ]
       },
@@ -20327,16 +20059,6 @@
               "tn": 214,
               "fn": 7
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9972903734358065,
-            "advantage": 0.4972903734358065,
-            "permPValue": 0.004975124378109453,
-            "n": 403,
-            "precision": 0.9308755760368663,
-            "recall": 0.9901960784313726,
-            "f1": 0.9596199524940617
           }
         ]
       },
@@ -20919,16 +20641,6 @@
               "tn": 120,
               "fn": 43
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9945446673401646,
-            "advantage": 0.49454466734016456,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.8697916666666666,
-            "recall": 0.9881656804733728,
-            "f1": 0.925207756232687
           }
         ]
       },
@@ -21511,16 +21223,6 @@
               "tn": 144,
               "fn": 19
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9924490932722659,
-            "advantage": 0.49244909327226594,
-            "permPValue": 0.004975124378109453,
-            "n": 258,
-            "precision": 0.8536585365853658,
-            "recall": 0.9813084112149533,
-            "f1": 0.9130434782608695
           }
         ]
       },
@@ -22103,16 +21805,6 @@
               "tn": 149,
               "fn": 14
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9951181292189006,
-            "advantage": 0.49511812921890064,
-            "permPValue": 0.004975124378109453,
-            "n": 258,
-            "precision": 0.9246575342465754,
-            "recall": 0.9926470588235294,
-            "f1": 0.9574468085106385
           }
         ]
       },
@@ -22695,16 +22387,6 @@
               "tn": 237,
               "fn": 7
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.99575554217213,
-            "advantage": 0.49575554217213,
-            "permPValue": 0.004975124378109453,
-            "n": 374,
-            "precision": 0.90625,
-            "recall": 0.9830508474576272,
-            "f1": 0.943089430894309
           }
         ]
       },
@@ -23287,16 +22969,6 @@
               "tn": 178,
               "fn": 11
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9955626119524508,
-            "advantage": 0.49556261195245077,
-            "permPValue": 0.004975124378109453,
-            "n": 316,
-            "precision": 0.9066666666666666,
-            "recall": 0.9855072463768116,
-            "f1": 0.9444444444444444
           }
         ]
       },
@@ -23879,16 +23551,6 @@
               "tn": 180,
               "fn": 11
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9948821548821549,
-            "advantage": 0.4948821548821549,
-            "permPValue": 0.004975124378109453,
-            "n": 345,
-            "precision": 0.9252873563218391,
-            "recall": 0.9757575757575757,
-            "f1": 0.9498525073746313
           }
         ]
       },
@@ -24471,16 +24133,6 @@
               "tn": 179,
               "fn": 13
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9958446251129178,
-            "advantage": 0.4958446251129178,
-            "permPValue": 0.004975124378109453,
-            "n": 258,
-            "precision": 0.9496402877697842,
-            "recall": 0.9777777777777777,
-            "f1": 0.9635036496350364
           }
         ]
       },
@@ -25063,16 +24715,6 @@
               "tn": 261,
               "fn": 42
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.9966962524654832,
-            "advantage": 0.4966962524654832,
-            "permPValue": 0.004975124378109453,
-            "n": 403,
-            "precision": 0.9014084507042254,
-            "recall": 0.9846153846153847,
-            "f1": 0.9411764705882353
           }
         ]
       },
@@ -25655,16 +25297,6 @@
               "tn": 148,
               "fn": 14
             }
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "auc": 0.995089487626801,
-            "advantage": 0.49508948762680105,
-            "permPValue": 0.004975124378109453,
-            "n": 432,
-            "precision": 0.9083665338645418,
-            "recall": 0.987012987012987,
-            "f1": 0.946058091286307
           }
         ]
       }

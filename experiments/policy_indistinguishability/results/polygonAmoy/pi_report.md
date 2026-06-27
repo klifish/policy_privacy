@@ -1,6 +1,6 @@
 # Policy Indistinguishability Evaluation Report
 
-**Date:** 6/25/2026, 2:35:16 PM
+**Date:** 6/27/2026, 4:50:35 PM
 
 ## Objective
 
@@ -113,13 +113,6 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 | structural_variant | 0.488 ± 0.051 | 0% | 0.524 ± 0.071 | 0% | 40 | ✓ PASS |
 | weak_equivalent | 0.486 ± 0.077 | 0% | 0.494 ± 0.085 | 7% | 54.5 | ✓ PASS |
 | controlled_difference | 0.510 ± 0.076 | 3% | 0.508 ± 0.071 | 7% | 68 | — (diagnostic, non-gating) |
-
-## Attack-validity (positive control)
-
-- **CONTROL: gas>median:** LR AUC 0.994 ± 0.004 (100% sig), RF AUC 1.000 ± 0.000 (100% sig)
-- **P/R/F1:** LR 0.92 / 0.99 / 0.95, RF 1.00 / 1.00 / 1.00
-
-> The same PI Level-I pipeline recovers a synthetic, known-separable label derived from observable commit gas (`gas > training median`). This confirms the near-chance AUC on the real pair scopes reflects absence of detected signal, not a broken attack. Non-gating.
 
 ## Conclusion
 

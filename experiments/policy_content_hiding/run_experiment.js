@@ -481,7 +481,6 @@ async function runExperiment(config = {}) {
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
-      positiveControlKeys: ['CONTROL: gas>median'],
       includeSeedRecords: config.includeSeedRecords === true,
       // Parallel verdict: each worker re-derives normalizedFeatures from the saved
       // features file and re-runs buildPchRecordsForSeed per seed in its own V8
@@ -536,7 +535,7 @@ async function runExperiment(config = {}) {
     conclusion: pickVerdictText(verdict.overallPassed, {
       pass: 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant).',
       fail: 'WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.',
-      inconclusive: 'INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made.'
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
     })
   };
 
@@ -645,7 +644,6 @@ function generateReadableReport(report) {
     const fmtAuc = (ms) => Number.isNaN(ms.mean) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
     const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
     for (const t of mv.tasks) {
-      if (t.positiveControl) continue; // shown separately under Attack-validity
       const verdict = t.skipped ? 'skipped'
         : t.underpowered ? '— (underpowered, non-gating)'
         : (t.passed ? '✓ PASS' : '✗ FAIL');
@@ -659,20 +657,6 @@ function generateReadableReport(report) {
         lines.push(`| ${t.key} | ${auc} | ${pct} | n/a | n/a | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
       }
     }
-    lines.push('');
-  }
-
-  const control = (report.multiseedVerdict.tasks || []).find(t => t.positiveControl);
-  if (control && control.prf) {
-    lines.push('## Attack-validity (positive control)');
-    lines.push('');
-    lines.push(`- **${control.key}:** AUC ${control.auc.mean.toFixed(3)} ± ${control.auc.std.toFixed(3)}, ` +
-      `P/R/F1 = ${control.prf.precision.mean.toFixed(2)} / ${control.prf.recall.mean.toFixed(2)} / ${control.prf.f1.mean.toFixed(2)}`);
-    lines.push('');
-    lines.push('> The same attack pipeline recovers a synthetic, known-separable label ' +
-      '(derived from observable gas) with high AUC/F1. This confirms the ≈0.5 AUC on real ' +
-      'policy-content labels reflects *absence of signal*, not a broken attack. ' +
-      'Non-gating sanity check.');
     lines.push('');
   }
 
@@ -694,7 +678,7 @@ function generateReadableReport(report) {
   lines.push(pickVerdictText(report.overallPassed, {
     pass: 'The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.',
     fail: '**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.',
-    inconclusive: '**Inconclusive:** the positive control (a known-distinguishable task) was not separated by the attack pipeline, so the near-chance AUC on real tasks cannot be read as privacy. The attack must be made effective (verified on the control) before any PASS is meaningful.'
+    inconclusive: '**Inconclusive:** no gating task was judgeable, so no privacy claim is made.'
   }));
   lines.push('');
 

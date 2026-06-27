@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Indistinguishability",
-  "timestamp": "2026-06-25T12:35:16.641Z",
+  "timestamp": "2026-06-27T14:50:35.690Z",
   "config": {
     "policyCount": 100,
     "executionsPerPolicy": 2,
@@ -5901,8 +5901,8 @@
   },
   "multiseedVerdict": {
     "overallPassed": true,
-    "controlsPresent": true,
-    "controlsValid": true,
+    "controlsPresent": false,
+    "controlsValid": null,
     "missingPositiveControlKeys": [],
     "criterion": {
       "seeds": 30,
@@ -5910,13 +5910,9 @@
       "permAlpha": 0.05,
       "sigFractionMax": 0.5,
       "minTestSamples": 20,
-      "positiveControlKeys": [
-        "CONTROL: gas>median"
-      ],
       "nonGatingKeys": [
         "controlled_difference"
       ],
-      "gateOnControlValidity": true,
       "permutationIterations": 500
     },
     "tasks": [
@@ -5925,7 +5921,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 270,
@@ -6043,7 +6038,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 71,
@@ -6161,7 +6155,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 40,
@@ -6279,7 +6272,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 54.5,
@@ -6397,7 +6389,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": true,
         "nonGating": true,
         "medianTestN": 68,
@@ -6503,125 +6494,6 @@
             "aucHigh": false,
             "sigHigh": false,
             "legFails": false,
-            "seeds": {
-              "auc": 30,
-              "perm": 30
-            }
-          }
-        }
-      },
-      {
-        "key": "CONTROL: gas>median",
-        "passed": false,
-        "skipped": false,
-        "underpowered": false,
-        "positiveControl": true,
-        "diagnostic": false,
-        "nonGating": true,
-        "controlSeparable": true,
-        "medianTestN": 281.5,
-        "auc": {
-          "mean": 0.9999334664005323,
-          "std": 0.00035829439834561853,
-          "n": 30
-        },
-        "advantage": {
-          "mean": 0.49993346640053227,
-          "std": 0.00035829439834561853,
-          "n": 30
-        },
-        "permPValue": {
-          "mean": 0.001996007984031935,
-          "std": 8.673617379884035e-19,
-          "n": 30
-        },
-        "sigFraction": 1,
-        "seeds": {
-          "auc": 30,
-          "perm": 30
-        },
-        "classifiers": {
-          "lr": {
-            "auc": {
-              "mean": 0.9944350069788592,
-              "std": 0.003835963051755059,
-              "n": 30
-            },
-            "advantage": {
-              "mean": 0.49443500697885934,
-              "std": 0.0038359630517550594,
-              "n": 30
-            },
-            "permPValue": {
-              "mean": 0.001996007984031935,
-              "std": 8.673617379884035e-19,
-              "n": 30
-            },
-            "sigFraction": 1,
-            "prf": {
-              "precision": {
-                "mean": 0.916440966658368,
-                "std": 0.036333321257904484,
-                "n": 30
-              },
-              "recall": {
-                "mean": 0.992861743232974,
-                "std": 0.00903171380111411,
-                "n": 30
-              },
-              "f1": {
-                "mean": 0.9527450828585009,
-                "std": 0.02068748794013803,
-                "n": 30
-              }
-            },
-            "confusion": [],
-            "aucHigh": true,
-            "sigHigh": true,
-            "legFails": true,
-            "seeds": {
-              "auc": 30,
-              "perm": 30
-            }
-          },
-          "rf": {
-            "auc": {
-              "mean": 0.9999334664005323,
-              "std": 0.00035829439834561853,
-              "n": 30
-            },
-            "advantage": {
-              "mean": 0.49993346640053227,
-              "std": 0.00035829439834561853,
-              "n": 30
-            },
-            "permPValue": {
-              "mean": 0.001996007984031935,
-              "std": 8.673617379884035e-19,
-              "n": 30
-            },
-            "sigFraction": 1,
-            "prf": {
-              "precision": {
-                "mean": 1,
-                "std": 0,
-                "n": 30
-              },
-              "recall": {
-                "mean": 0.9985398908726816,
-                "std": 0.00397926986953759,
-                "n": 30
-              },
-              "f1": {
-                "mean": 0.9992654235976691,
-                "std": 0.002003163270467912,
-                "n": 30
-              }
-            },
-            "confusion": [],
-            "aucHigh": true,
-            "sigHigh": true,
-            "legFails": true,
             "seeds": {
               "auc": 30,
               "perm": 30

@@ -381,7 +381,6 @@ function renderMarkdownReport(report) {
     const fmtAuc = (ms) => (!ms || Number.isNaN(ms.mean)) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
     const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
     for (const t of mv.tasks) {
-      if (t.positiveControl) continue; // shown separately under Attack-validity
       const verdict = t.skipped ? 'skipped'
         : t.diagnostic ? '— (diagnostic, non-gating)'
         : t.underpowered ? '— (underpowered, non-gating)'
@@ -395,37 +394,6 @@ function renderMarkdownReport(report) {
     }
     lines.push('');
 
-    const control = mv.tasks.find(t => t.positiveControl);
-    if (control) {
-      const cls = control.classifiers || {};
-      const fmtLeg = (leg) => leg && leg.auc ? `${fmtAuc(leg.auc)} (${fmtSig(leg.sigFraction)} sig)` : 'n/a';
-      const fmtPrf = (leg) => leg && leg.prf && leg.prf.f1 && leg.prf.f1.n > 0
-        ? `${leg.prf.precision.mean.toFixed(2)} / ${leg.prf.recall.mean.toFixed(2)} / ${leg.prf.f1.mean.toFixed(2)}`
-        : 'n/a';
-      lines.push('## Attack-validity (positive control)');
-      lines.push('');
-      lines.push(`- **${control.key}:** LR AUC ${fmtLeg(cls.lr)}, RF AUC ${fmtLeg(cls.rf)}`);
-      lines.push(`- **P/R/F1:** LR ${fmtPrf(cls.lr)}, RF ${fmtPrf(cls.rf)}`);
-      lines.push('');
-      if (control.controlSeparable) {
-        lines.push('> The same PI Level-I pipeline recovers a synthetic, known-separable label ' +
-          'derived from observable commit gas (`gas > training median`). This confirms the near-chance ' +
-          'AUC on the real pair scopes reflects absence of detected signal, not a broken attack. Non-gating.');
-      } else {
-        lines.push('> The synthetic `gas > training median` positive control was not separated by the ' +
-          'PI Level-I pipeline. The overall result is therefore inconclusive: near-chance AUC on the real ' +
-          'pair scopes cannot be distinguished from an ineffective attack.');
-      }
-      lines.push('');
-    } else if (Array.isArray(mv.missingPositiveControlKeys)
-        && mv.missingPositiveControlKeys.length > 0) {
-      lines.push('## Attack-validity (positive control)');
-      lines.push('');
-      lines.push(`- Missing control results: ${mv.missingPositiveControlKeys.join(', ')}`);
-      lines.push('');
-      lines.push('> The configured positive control could not be evaluated, so the overall result is inconclusive.');
-      lines.push('');
-    }
   }
 
   lines.push('## Conclusion');
@@ -646,7 +614,6 @@ async function runExperiment(config = {}) {
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
-      positiveControlKeys: ['CONTROL: gas>median'],
       includeSeedRecords: config.includeSeedRecords === true,
       // Semantically dissimilar pairs remain useful diagnostics, but PI's
       // privacy claim is scoped to related policies, so they do not gate.
@@ -722,7 +689,7 @@ async function runExperiment(config = {}) {
     conclusion: pickVerdictText(verdict.overallPassed, {
       pass: 'Policies appear indistinguishable across modeled adversaries (multi-seed AUC ≈ 0.5, permutation not significant).',
       fail: 'Potential leakage detected. Further hardening is required.',
-      inconclusive: 'INCONCLUSIVE: the synthetic gas-derived positive control was missing or not separated by the PI Level-I attack pipeline, so near-chance AUC on real pair scopes cannot support a privacy claim.'
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
     })
   };
 

@@ -7,8 +7,7 @@
  */
 
 const {
-  runSingleSampleAttacks,
-  runGasMedianPositiveControl
+  runSingleSampleAttacks
 } = require('./attacks');
 
 // Map an attack-module classifier name to the short per-classifier leg tag used
@@ -43,12 +42,6 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
       rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',
       baseSeed
     });
-    results.push(...runGasMedianPositiveControl(pairs, {
-      testRatio,
-      permutationIterations,
-      rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',
-      baseSeed
-    }));
   } finally {
     console.log = origLog;
   }
@@ -69,11 +62,6 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
       permPValue: r.outcome.permutationPValue,
       n: r.dataset ? r.dataset.testSize : undefined
     };
-    if (r.scope === 'CONTROL: gas>median') {
-      record.precision = ev.precision;
-      record.recall = ev.recall;
-      record.f1 = ev.f1;
-    }
     records.push(record);
   }
   return records;

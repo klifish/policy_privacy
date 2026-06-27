@@ -1,6 +1,6 @@
 # Policy Indistinguishability Evaluation Report
 
-**Date:** 6/26/2026, 4:02:54 PM
+**Date:** 6/27/2026, 4:27:16 PM
 
 ## Objective
 
@@ -114,14 +114,8 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 | weak_equivalent | 0.277 ± 0.171 | 0% | 0.391 ± 0.238 | 0% | 6 | — (underpowered, non-gating) |
 | controlled_difference | 0.415 ± 0.206 | 27% | 0.611 ± 0.119 | 67% | 149 | — (diagnostic, non-gating) |
 
-## Attack-validity (positive control)
-
-- Missing control results: CONTROL: gas>median
-
-> The configured positive control could not be evaluated, so the overall result is inconclusive.
-
 ## Conclusion
 
-**Status:** ? INCONCLUSIVE _(multi-seed, policy-disjoint; single split above is diagnostic)_
+**Status:** ✗ FAIL _(multi-seed, policy-disjoint; single split above is diagnostic)_
 
-INCONCLUSIVE: the synthetic gas-derived positive control was missing or not separated by the PI Level-I attack pipeline, so near-chance AUC on real pair scopes cannot support a privacy claim.
+Potential leakage detected. Further hardening is required.

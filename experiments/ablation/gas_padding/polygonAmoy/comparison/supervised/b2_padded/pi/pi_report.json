@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Indistinguishability",
-  "timestamp": "2026-06-26T14:07:39.759Z",
+  "timestamp": "2026-06-27T14:31:25.730Z",
   "config": {
     "policyCount": 100,
     "executionsPerPolicy": 2,
@@ -5901,8 +5901,8 @@
   },
   "multiseedVerdict": {
     "overallPassed": true,
-    "controlsPresent": true,
-    "controlsValid": true,
+    "controlsPresent": false,
+    "controlsValid": null,
     "missingPositiveControlKeys": [],
     "criterion": {
       "seeds": 30,
@@ -5910,13 +5910,9 @@
       "permAlpha": 0.05,
       "sigFractionMax": 0.5,
       "minTestSamples": 20,
-      "positiveControlKeys": [
-        "CONTROL: gas>median"
-      ],
       "nonGatingKeys": [
         "controlled_difference"
       ],
-      "gateOnControlValidity": true,
       "permutationIterations": 500
     },
     "tasks": [
@@ -5925,7 +5921,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 267.5,
@@ -6043,7 +6038,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 22.5,
@@ -6161,7 +6155,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 48.5,
@@ -6279,7 +6272,6 @@
         "passed": null,
         "skipped": false,
         "underpowered": true,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": true,
         "medianTestN": 6,
@@ -6397,7 +6389,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": true,
         "nonGating": true,
         "medianTestN": 149,
@@ -6509,125 +6500,6 @@
             }
           }
         }
-      },
-      {
-        "key": "CONTROL: gas>median",
-        "passed": false,
-        "skipped": false,
-        "underpowered": false,
-        "positiveControl": true,
-        "diagnostic": false,
-        "nonGating": true,
-        "controlSeparable": true,
-        "medianTestN": 275.5,
-        "auc": {
-          "mean": 0.9990965672671387,
-          "std": 0.00314166477703002,
-          "n": 30
-        },
-        "advantage": {
-          "mean": 0.49909656726713875,
-          "std": 0.003141664777030021,
-          "n": 30
-        },
-        "permPValue": {
-          "mean": 0.001996007984031935,
-          "std": 8.673617379884035e-19,
-          "n": 30
-        },
-        "sigFraction": 1,
-        "seeds": {
-          "auc": 30,
-          "perm": 30
-        },
-        "classifiers": {
-          "lr": {
-            "auc": {
-              "mean": 0.9931808078309918,
-              "std": 0.00434179362234551,
-              "n": 30
-            },
-            "advantage": {
-              "mean": 0.4931808078309918,
-              "std": 0.004341793622345509,
-              "n": 30
-            },
-            "permPValue": {
-              "mean": 0.001996007984031935,
-              "std": 8.673617379884035e-19,
-              "n": 30
-            },
-            "sigFraction": 1,
-            "prf": {
-              "precision": {
-                "mean": 0.8759816627385429,
-                "std": 0.05132231763603646,
-                "n": 30
-              },
-              "recall": {
-                "mean": 0.9941819058496244,
-                "std": 0.009982039880931081,
-                "n": 30
-              },
-              "f1": {
-                "mean": 0.9304327551148245,
-                "std": 0.028789835769386356,
-                "n": 30
-              }
-            },
-            "confusion": [],
-            "aucHigh": true,
-            "sigHigh": true,
-            "legFails": true,
-            "seeds": {
-              "auc": 30,
-              "perm": 30
-            }
-          },
-          "rf": {
-            "auc": {
-              "mean": 0.9990965672671387,
-              "std": 0.00314166477703002,
-              "n": 30
-            },
-            "advantage": {
-              "mean": 0.49909656726713875,
-              "std": 0.003141664777030021,
-              "n": 30
-            },
-            "permPValue": {
-              "mean": 0.001996007984031935,
-              "std": 8.673617379884035e-19,
-              "n": 30
-            },
-            "sigFraction": 1,
-            "prf": {
-              "precision": {
-                "mean": 0.9998449612403101,
-                "std": 0.0008349092724239517,
-                "n": 30
-              },
-              "recall": {
-                "mean": 0.9951994382234356,
-                "std": 0.008936516696895372,
-                "n": 30
-              },
-              "f1": {
-                "mean": 0.9974959549546903,
-                "std": 0.004507497245902007,
-                "n": 30
-              }
-            },
-            "confusion": [],
-            "aucHigh": true,
-            "sigHigh": true,
-            "legFails": true,
-            "seeds": {
-              "auc": 30,
-              "perm": 30
-            }
-          }
-        }
       }
     ],
     "seedRecords": [
@@ -6724,30 +6596,6 @@
             "advantage": 0.02860011474469304,
             "permPValue": 0.2215568862275449,
             "n": 271
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9993650793650793,
-            "advantage": 0.49936507936507935,
-            "permPValue": 0.001996007984031936,
-            "n": 195,
-            "precision": 0.9130434782608695,
-            "recall": 1,
-            "f1": 0.9545454545454545
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 195,
-            "precision": 1,
-            "recall": 0.9904761904761905,
-            "f1": 0.9952153110047847
           }
         ]
       },
@@ -6844,30 +6692,6 @@
             "advantage": 0.02674258109040717,
             "permPValue": 0.7025948103792415,
             "n": 153
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.987509238728751,
-            "advantage": 0.48750923872875096,
-            "permPValue": 0.001996007984031936,
-            "n": 329,
-            "precision": 0.8797814207650273,
-            "recall": 0.9757575757575757,
-            "f1": 0.925287356321839
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 329,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -6964,30 +6788,6 @@
             "advantage": 0.0544028340080972,
             "permPValue": 0.08183632734530938,
             "n": 180
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9915343915343915,
-            "advantage": 0.4915343915343915,
-            "permPValue": 0.001996007984031936,
-            "n": 303,
-            "precision": 0.8083832335329342,
-            "recall": 1,
-            "f1": 0.8940397350993378
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 303,
-            "precision": 1,
-            "recall": 0.9851851851851852,
-            "f1": 0.9925373134328358
           }
         ]
       },
@@ -7084,30 +6884,6 @@
             "advantage": 0.01684189379227219,
             "permPValue": 0.3153692614770459,
             "n": 246
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9913090385998562,
-            "advantage": 0.4913090385998562,
-            "permPValue": 0.001996007984031936,
-            "n": 269,
-            "precision": 0.8016528925619835,
-            "recall": 1,
-            "f1": 0.8899082568807339
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 269,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -7204,30 +6980,6 @@
             "advantage": 0.12196969696969695,
             "permPValue": 0.9021956087824351,
             "n": 67
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9959181616609555,
-            "advantage": 0.4959181616609555,
-            "permPValue": 0.001996007984031936,
-            "n": 285,
-            "precision": 0.8832116788321168,
-            "recall": 1,
-            "f1": 0.937984496124031
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 0.9840253981052207,
-            "advantage": 0.4840253981052207,
-            "permPValue": 0.001996007984031936,
-            "n": 285,
-            "precision": 1,
-            "recall": 0.9834710743801653,
-            "f1": 0.9916666666666667
           }
         ]
       },
@@ -7324,30 +7076,6 @@
             "advantage": 0.026955602536997914,
             "permPValue": 0.36327345309381237,
             "n": 65
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9937165968510762,
-            "advantage": 0.49371659685107616,
-            "permPValue": 0.001996007984031936,
-            "n": 333,
-            "precision": 0.8341968911917098,
-            "recall": 1,
-            "f1": 0.9096045197740114
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 333,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -7444,30 +7172,6 @@
             "advantage": 0.04258373205741628,
             "permPValue": 0.7504990019960079,
             "n": 129
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.997408580477973,
-            "advantage": 0.497408580477973,
-            "permPValue": 0.001996007984031936,
-            "n": 312,
-            "precision": 0.8797814207650273,
-            "recall": 1,
-            "f1": 0.936046511627907
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 312,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -7564,30 +7268,6 @@
             "advantage": 0.05158730158730157,
             "permPValue": 0.7245508982035929,
             "n": 39
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9995324918186068,
-            "advantage": 0.4995324918186068,
-            "permPValue": 0.001996007984031936,
-            "n": 139,
-            "precision": 0.9789473684210527,
-            "recall": 1,
-            "f1": 0.9893617021276596
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 139,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -7684,30 +7364,6 @@
             "advantage": 0.005587599134823373,
             "permPValue": 0.5688622754491018,
             "n": 149
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9933257918552036,
-            "advantage": 0.49332579185520364,
-            "permPValue": 0.001996007984031936,
-            "n": 266,
-            "precision": 0.8774193548387097,
-            "recall": 1,
-            "f1": 0.9347079037800687
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 266,
-            "precision": 1,
-            "recall": 0.9852941176470589,
-            "f1": 0.9925925925925926
           }
         ]
       },
@@ -7804,30 +7460,6 @@
             "advantage": 0.07467532467532467,
             "permPValue": 0.9341317365269461,
             "n": 123
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9873295910184443,
-            "advantage": 0.4873295910184443,
-            "permPValue": 0.001996007984031936,
-            "n": 274,
-            "precision": 0.8757763975155279,
-            "recall": 0.9724137931034482,
-            "f1": 0.9215686274509803
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 274,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -7924,30 +7556,6 @@
             "advantage": 0.08243145743145741,
             "permPValue": 0.041916167664670656,
             "n": 149
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9990842490842491,
-            "advantage": 0.4990842490842491,
-            "permPValue": 0.001996007984031936,
-            "n": 229,
-            "precision": 0.8818897637795275,
-            "recall": 1,
-            "f1": 0.9372384937238494
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 229,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8044,30 +7652,6 @@
             "advantage": 0.024074074074074026,
             "permPValue": 0.2654690618762475,
             "n": 218
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9996315973164773,
-            "advantage": 0.4996315973164773,
-            "permPValue": 0.001996007984031936,
-            "n": 455,
-            "precision": 0.8594377510040161,
-            "recall": 1,
-            "f1": 0.9244060475161987
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 0.9999903051925388,
-            "advantage": 0.49999030519253884,
-            "permPValue": 0.001996007984031936,
-            "n": 455,
-            "precision": 0.9953488372093023,
-            "recall": 1,
-            "f1": 0.9976689976689977
           }
         ]
       },
@@ -8164,30 +7748,6 @@
             "advantage": 0.021428571428571463,
             "permPValue": 0.25748502994011974,
             "n": 277
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9887079668101566,
-            "advantage": 0.4887079668101566,
-            "permPValue": 0.001996007984031936,
-            "n": 254,
-            "precision": 0.8859060402684564,
-            "recall": 0.9635036496350365,
-            "f1": 0.9230769230769231
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 254,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8284,30 +7844,6 @@
             "advantage": 0.11957446808510641,
             "permPValue": 0.00998003992015968,
             "n": 122
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9959568733153639,
-            "advantage": 0.49595687331536387,
-            "permPValue": 0.001996007984031936,
-            "n": 176,
-            "precision": 0.9459459459459459,
-            "recall": 0.9905660377358491,
-            "f1": 0.967741935483871
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 176,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8404,30 +7940,6 @@
             "advantage": 0.0011961722488038062,
             "permPValue": 0.500998003992016,
             "n": 215
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.987894656952034,
-            "advantage": 0.48789465695203404,
-            "permPValue": 0.001996007984031936,
-            "n": 460,
-            "precision": 0.8734693877551021,
-            "recall": 0.9907407407407407,
-            "f1": 0.9284164859002169
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 460,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8524,30 +8036,6 @@
             "advantage": 0.04391304347826086,
             "permPValue": 0.7904191616766467,
             "n": 96
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9927849927849928,
-            "advantage": 0.49278499278499277,
-            "permPValue": 0.001996007984031936,
-            "n": 299,
-            "precision": 0.9261083743842364,
-            "recall": 0.9947089947089947,
-            "f1": 0.9591836734693877
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 299,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8644,30 +8132,6 @@
             "advantage": 0.051367781155015224,
             "permPValue": 0.8642714570858283,
             "n": 152
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9909442588359416,
-            "advantage": 0.4909442588359416,
-            "permPValue": 0.001996007984031936,
-            "n": 215,
-            "precision": 0.831858407079646,
-            "recall": 1,
-            "f1": 0.9082125603864734
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 0.9957798487779146,
-            "advantage": 0.4957798487779146,
-            "permPValue": 0.001996007984031936,
-            "n": 215,
-            "precision": 1,
-            "recall": 0.9787234042553191,
-            "f1": 0.989247311827957
           }
         ]
       },
@@ -8764,30 +8228,6 @@
             "advantage": 0.037336847389558225,
             "permPValue": 0.11377245508982035,
             "n": 358
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9925521350546177,
-            "advantage": 0.4925521350546177,
-            "permPValue": 0.001996007984031936,
-            "n": 235,
-            "precision": 0.7169811320754716,
-            "recall": 1,
-            "f1": 0.8351648351648352
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 235,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -8884,30 +8324,6 @@
             "advantage": 0.0063180827886710755,
             "permPValue": 0.4550898203592814,
             "n": 96
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9904997525977239,
-            "advantage": 0.49049975259772394,
-            "permPValue": 0.001996007984031936,
-            "n": 450,
-            "precision": 0.9033613445378151,
-            "recall": 1,
-            "f1": 0.9492273730684327
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 450,
-            "precision": 1,
-            "recall": 0.9627906976744186,
-            "f1": 0.9810426540284359
           }
         ]
       },
@@ -9004,30 +8420,6 @@
             "advantage": 0.025493774151996607,
             "permPValue": 0.21756487025948104,
             "n": 273
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9971192122354913,
-            "advantage": 0.49711921223549127,
-            "permPValue": 0.001996007984031936,
-            "n": 277,
-            "precision": 0.8716216216216216,
-            "recall": 1,
-            "f1": 0.9314079422382672
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 277,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9124,30 +8516,6 @@
             "advantage": 0.023990860624524046,
             "permPValue": 0.32335329341317365,
             "n": 153
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9926304528705575,
-            "advantage": 0.4926304528705575,
-            "permPValue": 0.001996007984031936,
-            "n": 320,
-            "precision": 0.8974358974358975,
-            "recall": 0.9929078014184397,
-            "f1": 0.9427609427609428
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 320,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9244,30 +8612,6 @@
             "advantage": 0.06334037648866697,
             "permPValue": 0.043912175648702596,
             "n": 213
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9816520467836257,
-            "advantage": 0.4816520467836257,
-            "permPValue": 0.001996007984031936,
-            "n": 234,
-            "precision": 0.8888888888888888,
-            "recall": 1,
-            "f1": 0.9411764705882353
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 234,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9364,30 +8708,6 @@
             "advantage": 0.00011932035127909524,
             "permPValue": 0.5608782435129741,
             "n": 302
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9892449191514612,
-            "advantage": 0.4892449191514612,
-            "permPValue": 0.001996007984031936,
-            "n": 403,
-            "precision": 0.8289473684210527,
-            "recall": 1,
-            "f1": 0.9064748201438849
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 403,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9484,30 +8804,6 @@
             "advantage": 0.12910381543921912,
             "permPValue": 0.013972055888223553,
             "n": 95
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9917327547508604,
-            "advantage": 0.4917327547508604,
-            "permPValue": 0.001996007984031936,
-            "n": 327,
-            "precision": 0.8938547486033519,
-            "recall": 0.975609756097561,
-            "f1": 0.9329446064139941
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 327,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9604,30 +8900,6 @@
             "advantage": 0.0423315602836879,
             "permPValue": 0.19560878243512975,
             "n": 95
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9910895556056847,
-            "advantage": 0.4910895556056847,
-            "permPValue": 0.001996007984031936,
-            "n": 329,
-            "precision": 0.8562874251497006,
-            "recall": 1,
-            "f1": 0.9225806451612903
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 329,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9724,30 +8996,6 @@
             "advantage": 0.00046918986549893127,
             "permPValue": 0.5109780439121756,
             "n": 185
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9971974705375107,
-            "advantage": 0.49719747053751073,
-            "permPValue": 0.001996007984031936,
-            "n": 240,
-            "precision": 0.9655172413793104,
-            "recall": 0.9859154929577465,
-            "f1": 0.975609756097561
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 0.993101465938488,
-            "advantage": 0.493101465938488,
-            "permPValue": 0.001996007984031936,
-            "n": 240,
-            "precision": 1,
-            "recall": 0.9859154929577465,
-            "f1": 0.9929078014184397
           }
         ]
       },
@@ -9844,30 +9092,6 @@
             "advantage": 0.07782051282051283,
             "permPValue": 0.05788423153692615,
             "n": 128
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9907114624505929,
-            "advantage": 0.49071146245059294,
-            "permPValue": 0.001996007984031936,
-            "n": 247,
-            "precision": 0.8214285714285714,
-            "recall": 1,
-            "f1": 0.9019607843137255
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 247,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -9964,30 +9188,6 @@
             "advantage": 0.0021564117308797703,
             "permPValue": 0.43313373253493015,
             "n": 121
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9989061382472969,
-            "advantage": 0.4989061382472969,
-            "permPValue": 0.001996007984031936,
-            "n": 310,
-            "precision": 0.8853503184713376,
-            "recall": 1,
-            "f1": 0.9391891891891893
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 310,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       },
@@ -10084,30 +9284,6 @@
             "advantage": 0.06051587301587302,
             "permPValue": 0.24550898203592814,
             "n": 96
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.9927248677248677,
-            "advantage": 0.4927248677248677,
-            "permPValue": 0.001996007984031936,
-            "n": 258,
-            "precision": 0.8689655172413793,
-            "recall": 1,
-            "f1": 0.9298892988929889
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 258,
-            "precision": 1,
-            "recall": 0.9841269841269841,
-            "f1": 0.9919999999999999
           }
         ]
       },
@@ -10204,30 +9380,6 @@
             "advantage": 0.033333333333333326,
             "permPValue": 0.3912175648702595,
             "n": 71
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "lr",
-            "auc": 0.99740990990991,
-            "advantage": 0.49740990990990996,
-            "permPValue": 0.001996007984031936,
-            "n": 194,
-            "precision": 0.944,
-            "recall": 0.9833333333333333,
-            "f1": 0.9632653061224489
-          },
-          {
-            "key": "CONTROL: gas>median",
-            "perClassifier": true,
-            "classifier": "rf",
-            "auc": 1,
-            "advantage": 0.5,
-            "permPValue": 0.001996007984031936,
-            "n": 194,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
           }
         ]
       }

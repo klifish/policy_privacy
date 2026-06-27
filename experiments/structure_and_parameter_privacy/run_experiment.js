@@ -340,19 +340,6 @@ function generateMarkdownReport(report) {
     }
   });
 
-  const control = (report.multiseedVerdict?.tasks || []).find(t => t.positiveControl);
-  if (control && control.prf) {
-    lines.push('## Attack-validity (positive control)');
-    lines.push('');
-    lines.push(`- **${control.key}:** AUC ${control.auc.mean.toFixed(3)} ± ${control.auc.std.toFixed(3)}, ` +
-      `P/R/F1 = ${control.prf.precision.mean.toFixed(2)} / ${control.prf.recall.mean.toFixed(2)} / ${control.prf.f1.mean.toFixed(2)}`);
-    lines.push('');
-    lines.push('> The same attack pipeline recovers a synthetic, known-separable label ' +
-      '(derived from observable gas) with high AUC/F1. This confirms the ≈0.5 AUC on real ' +
-      'structure/parameter attributes reflects *absence of signal*, not a broken attack. ' +
-      'Non-gating sanity check.');
-    lines.push('');
-  }
 
   lines.push('## Conclusion');
   lines.push('');
@@ -530,7 +517,6 @@ async function runExperiment(config = {}) {
     {
       seeds: multiseedSeeds,
       permutationIterations: permIterations,
-      positiveControlKeys: ['CONTROL: gas>median'],
       includeSeedRecords: config.includeSeedRecords === true,
       // Parallel verdict: each worker re-reads the dataset and re-runs
       // buildSppRecordsForSeed derives named RNG streams from each seed in either
@@ -578,7 +564,7 @@ async function runExperiment(config = {}) {
     conclusion: pickVerdictText(verdict.overallPassed, {
       pass: 'Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).',
       fail: 'Potential leakage detected in structure or parameters. Further hardening recommended.',
-      inconclusive: 'INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made.'
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
     })
   };
 

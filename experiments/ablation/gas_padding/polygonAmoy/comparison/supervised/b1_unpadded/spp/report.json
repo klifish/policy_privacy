@@ -1,6 +1,6 @@
 {
   "experiment": "Structure & Parameter Privacy",
-  "timestamp": "2026-06-26T14:02:57.836Z",
+  "timestamp": "2026-06-27T14:27:19.978Z",
   "config": {
     "policyCount": 120,
     "executionsPerPolicy": 3,
@@ -42,32 +42,32 @@
               "sampleCount": 175,
               "originalCount0": 91,
               "originalCount1": 84,
-              "balancedCount0": 59,
-              "balancedCount1": 59,
+              "balancedCount0": 61,
+              "balancedCount1": 61,
               "imbalanceRatio": 1.0833333333333333,
               "balanceMethod": "undersample",
-              "trainSize": 118,
-              "testSize": 46,
+              "trainSize": 122,
+              "testSize": 48,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.5434782608695652,
-                  "advantage": 0.04347826086956519,
-                  "precision": 0.5434782608695652,
+                  "accuracy": 0.4791666666666667,
+                  "advantage": 0.020833333333333315,
+                  "precision": 0.4791666666666667,
                   "recall": 1,
-                  "f1": 0.704225352112676,
+                  "f1": 0.647887323943662,
                   "confusion": {
-                    "tp": 25,
+                    "tp": 23,
                     "tn": 0,
-                    "fp": 21,
+                    "fp": 25,
                     "fn": 0
                   },
-                  "auc": 0.2,
-                  "aucPermPValue": 1
+                  "auc": 0.3095652173913043,
+                  "aucPermPValue": 0.9860279441117764
                 },
                 "weights": [
-                  -0.04140447619153851,
+                  -0.03985965239533151,
                   0,
-                  -0.03932231049359693,
+                  -0.037773658895443436,
                   0,
                   0,
                   0,
@@ -79,19 +79,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.717391304347826,
-                  "advantage": 0.21739130434782605,
-                  "precision": 0.875,
-                  "recall": 0.56,
-                  "f1": 0.6829268292682927,
+                  "accuracy": 0.6875,
+                  "advantage": 0.1875,
+                  "precision": 0.7,
+                  "recall": 0.6086956521739131,
+                  "f1": 0.6511627906976744,
                   "confusion": {
                     "tp": 14,
                     "tn": 19,
-                    "fp": 2,
-                    "fn": 11
+                    "fp": 6,
+                    "fn": 9
                   },
-                  "auc": 0.7342857142857143,
-                  "aucPermPValue": 0.005988023952095809
+                  "auc": 0.6869565217391305,
+                  "aucPermPValue": 0.015968063872255488
                 },
                 "nTrees": 50
               }
@@ -103,32 +103,32 @@
               "sampleCount": 193,
               "originalCount0": 91,
               "originalCount1": 102,
-              "balancedCount0": 66,
-              "balancedCount1": 66,
+              "balancedCount0": 63,
+              "balancedCount1": 63,
               "imbalanceRatio": 1.120879120879121,
               "balanceMethod": "undersample",
-              "trainSize": 132,
-              "testSize": 50,
+              "trainSize": 126,
+              "testSize": 58,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.5,
-                  "advantage": 0,
-                  "precision": 0.5,
+                  "accuracy": 0.6724137931034483,
+                  "advantage": 0.1724137931034483,
+                  "precision": 0.6724137931034483,
                   "recall": 1,
-                  "f1": 0.6666666666666666,
+                  "f1": 0.8041237113402061,
                   "confusion": {
-                    "tp": 25,
+                    "tp": 39,
                     "tn": 0,
-                    "fp": 25,
+                    "fp": 19,
                     "fn": 0
                   },
-                  "auc": 0.284,
-                  "aucPermPValue": 0.998003992015968
+                  "auc": 0.7395411605937922,
+                  "aucPermPValue": 0.001996007984031936
                 },
                 "weights": [
-                  -0.036884054746754824,
+                  0.04122380371164047,
                   0,
-                  -0.03345643352128533,
+                  0.3823014510081833,
                   0,
                   0,
                   0,
@@ -140,19 +140,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.66,
-                  "advantage": 0.16000000000000003,
-                  "precision": 0.7,
-                  "recall": 0.56,
-                  "f1": 0.6222222222222222,
+                  "accuracy": 0.7068965517241379,
+                  "advantage": 0.2068965517241379,
+                  "precision": 0.775,
+                  "recall": 0.7948717948717948,
+                  "f1": 0.7848101265822786,
                   "confusion": {
-                    "tp": 14,
-                    "tn": 19,
-                    "fp": 6,
-                    "fn": 11
+                    "tp": 31,
+                    "tn": 10,
+                    "fp": 9,
+                    "fn": 8
                   },
-                  "auc": 0.704,
-                  "aucPermPValue": 0.003992015968063872
+                  "auc": 0.7145748987854251,
+                  "aucPermPValue": 0.005988023952095809
                 },
                 "nTrees": 50
               }
@@ -164,32 +164,32 @@
               "sampleCount": 156,
               "originalCount0": 91,
               "originalCount1": 65,
-              "balancedCount0": 43,
-              "balancedCount1": 43,
+              "balancedCount0": 47,
+              "balancedCount1": 47,
               "imbalanceRatio": 1.4,
               "balanceMethod": "undersample",
-              "trainSize": 86,
+              "trainSize": 94,
               "testSize": 45,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.4888888888888889,
-                  "advantage": 0.011111111111111127,
-                  "precision": 0.4888888888888889,
+                  "accuracy": 0.4,
+                  "advantage": 0.09999999999999998,
+                  "precision": 0.4,
                   "recall": 1,
-                  "f1": 0.6567164179104478,
+                  "f1": 0.5714285714285715,
                   "confusion": {
-                    "tp": 22,
+                    "tp": 18,
                     "tn": 0,
-                    "fp": 23,
+                    "fp": 27,
                     "fn": 0
                   },
-                  "auc": 0.2124505928853755,
-                  "aucPermPValue": 0.998003992015968
+                  "auc": 0.22530864197530864,
+                  "aucPermPValue": 1
                 },
                 "weights": [
-                  -0.056086507446812865,
+                  -0.05171145862128289,
                   0,
-                  -0.05304281436468168,
+                  -0.04896570825217873,
                   0,
                   0,
                   0,
@@ -201,18 +201,18 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.7111111111111111,
-                  "advantage": 0.21111111111111114,
-                  "precision": 0.6551724137931034,
-                  "recall": 0.8636363636363636,
-                  "f1": 0.7450980392156864,
+                  "accuracy": 0.7333333333333333,
+                  "advantage": 0.23333333333333328,
+                  "precision": 0.65,
+                  "recall": 0.7222222222222222,
+                  "f1": 0.6842105263157895,
                   "confusion": {
-                    "tp": 19,
-                    "tn": 13,
-                    "fp": 10,
-                    "fn": 3
+                    "tp": 13,
+                    "tn": 20,
+                    "fp": 7,
+                    "fn": 5
                   },
-                  "auc": 0.8053359683794467,
+                  "auc": 0.7849794238683128,
                   "aucPermPValue": 0.001996007984031936
                 },
                 "nTrees": 50
@@ -225,32 +225,32 @@
               "sampleCount": 186,
               "originalCount0": 84,
               "originalCount1": 102,
-              "balancedCount0": 57,
-              "balancedCount1": 57,
+              "balancedCount0": 62,
+              "balancedCount1": 62,
               "imbalanceRatio": 1.2142857142857142,
               "balanceMethod": "undersample",
-              "trainSize": 114,
-              "testSize": 56,
+              "trainSize": 124,
+              "testSize": 54,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.44642857142857145,
-                  "advantage": 0.05357142857142855,
-                  "precision": 0.4807692307692308,
-                  "recall": 0.8620689655172413,
-                  "f1": 0.6172839506172839,
+                  "accuracy": 0.5370370370370371,
+                  "advantage": 0.03703703703703709,
+                  "precision": 0.5853658536585366,
+                  "recall": 0.75,
+                  "f1": 0.6575342465753423,
                   "confusion": {
-                    "tp": 25,
-                    "tn": 0,
-                    "fp": 27,
-                    "fn": 4
+                    "tp": 24,
+                    "tn": 5,
+                    "fp": 17,
+                    "fn": 8
                   },
-                  "auc": 0.42911877394636017,
-                  "aucPermPValue": 0.8323353293413174
+                  "auc": 0.48792613636363635,
+                  "aucPermPValue": 0.5588822355289421
                 },
                 "weights": [
-                  -0.05039607699379585,
+                  -0.10171810502680173,
                   0,
-                  0.24358665127438303,
+                  0.19803363003424543,
                   0,
                   0,
                   0,
@@ -262,19 +262,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.42857142857142855,
-                  "advantage": 0.07142857142857145,
-                  "precision": 0.4117647058823529,
-                  "recall": 0.2413793103448276,
-                  "f1": 0.3043478260869565,
+                  "accuracy": 0.5185185185185185,
+                  "advantage": 0.01851851851851849,
+                  "precision": 0.6875,
+                  "recall": 0.34375,
+                  "f1": 0.4583333333333333,
                   "confusion": {
-                    "tp": 7,
+                    "tp": 11,
                     "tn": 17,
-                    "fp": 10,
-                    "fn": 22
+                    "fp": 5,
+                    "fn": 21
                   },
-                  "auc": 0.4604086845466156,
-                  "aucPermPValue": 0.6666666666666666
+                  "auc": 0.5710227272727273,
+                  "aucPermPValue": 0.17764471057884232
                 },
                 "nTrees": 50
               }
@@ -286,32 +286,32 @@
               "sampleCount": 149,
               "originalCount0": 84,
               "originalCount1": 65,
-              "balancedCount0": 40,
-              "balancedCount1": 40,
+              "balancedCount0": 49,
+              "balancedCount1": 49,
               "imbalanceRatio": 1.2923076923076924,
               "balanceMethod": "undersample",
-              "trainSize": 80,
-              "testSize": 45,
+              "trainSize": 98,
+              "testSize": 41,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.6222222222222222,
-                  "advantage": 0.12222222222222223,
-                  "precision": 0.7,
-                  "recall": 0.56,
-                  "f1": 0.6222222222222222,
+                  "accuracy": 0.36585365853658536,
+                  "advantage": 0.13414634146341464,
+                  "precision": 0.35294117647058826,
+                  "recall": 0.75,
+                  "f1": 0.48,
                   "confusion": {
-                    "tp": 14,
-                    "tn": 14,
-                    "fp": 6,
-                    "fn": 11
+                    "tp": 12,
+                    "tn": 3,
+                    "fp": 22,
+                    "fn": 4
                   },
-                  "auc": 0.685,
-                  "aucPermPValue": 0.01996007984031936
+                  "auc": 0.465,
+                  "aucPermPValue": 0.6586826347305389
                 },
                 "weights": [
-                  -0.03914696005238223,
+                  -0.03750002196387335,
                   0,
-                  0.05089900238800264,
+                  0.17290620548992042,
                   0,
                   0,
                   0,
@@ -323,19 +323,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.5333333333333333,
-                  "advantage": 0.033333333333333326,
-                  "precision": 0.5588235294117647,
-                  "recall": 0.76,
-                  "f1": 0.6440677966101696,
+                  "accuracy": 0.6341463414634146,
+                  "advantage": 0.13414634146341464,
+                  "precision": 0.6666666666666666,
+                  "recall": 0.125,
+                  "f1": 0.21052631578947367,
                   "confusion": {
-                    "tp": 19,
-                    "tn": 5,
-                    "fp": 15,
-                    "fn": 6
+                    "tp": 2,
+                    "tn": 24,
+                    "fp": 1,
+                    "fn": 14
                   },
-                  "auc": 0.571,
-                  "aucPermPValue": 0.18363273453093812
+                  "auc": 0.42375,
+                  "aucPermPValue": 0.8063872255489022
                 },
                 "nTrees": 50
               }
@@ -355,24 +355,24 @@
               "testSize": 50,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.6,
-                  "advantage": 0.09999999999999998,
+                  "accuracy": 0.58,
+                  "advantage": 0.07999999999999996,
                   "precision": 0.3333333333333333,
-                  "recall": 0.17647058823529413,
-                  "f1": 0.23076923076923078,
+                  "recall": 0.23529411764705882,
+                  "f1": 0.27586206896551724,
                   "confusion": {
-                    "tp": 3,
-                    "tn": 27,
-                    "fp": 6,
-                    "fn": 14
+                    "tp": 4,
+                    "tn": 25,
+                    "fp": 8,
+                    "fn": 13
                   },
-                  "auc": 0.5213903743315508,
-                  "aucPermPValue": 0.41317365269461076
+                  "auc": 0.517825311942959,
+                  "aucPermPValue": 0.41916167664670656
                 },
                 "weights": [
-                  -0.020369022206541517,
+                  -0.02660809544041437,
                   0,
-                  -0.0836278221397672,
+                  -0.12016340743144155,
                   0,
                   0,
                   0,
@@ -384,19 +384,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.66,
-                  "advantage": 0.16000000000000003,
-                  "precision": 0,
-                  "recall": 0,
-                  "f1": 0,
+                  "accuracy": 0.5,
+                  "advantage": 0,
+                  "precision": 0.3,
+                  "recall": 0.35294117647058826,
+                  "f1": 0.3243243243243243,
                   "confusion": {
-                    "tp": 0,
-                    "tn": 33,
-                    "fp": 0,
-                    "fn": 17
+                    "tp": 6,
+                    "tn": 19,
+                    "fp": 14,
+                    "fn": 11
                   },
-                  "auc": 0.44206773618538325,
-                  "aucPermPValue": 0.7524950099800399
+                  "auc": 0.38324420677361853,
+                  "aucPermPValue": 0.9201596806387226
                 },
                 "nTrees": 50
               }
@@ -417,42 +417,35 @@
               "targetAttribute": "predicateCombo",
               "class0": "none",
               "class1": "single",
-              "skipped": true,
-              "reason": "Empty train/test class after split"
-            },
-            {
-              "targetAttribute": "predicateCombo",
-              "class0": "none",
-              "class1": "few",
-              "sampleCount": 210,
+              "sampleCount": 72,
               "originalCount0": 9,
-              "originalCount1": 201,
-              "balancedCount0": 3,
-              "balancedCount1": 3,
-              "imbalanceRatio": 22.333333333333332,
+              "originalCount1": 63,
+              "balancedCount0": 5,
+              "balancedCount1": 5,
+              "imbalanceRatio": 7,
               "balanceMethod": "undersample",
-              "trainSize": 6,
-              "testSize": 71,
+              "trainSize": 10,
+              "testSize": 20,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.2112676056338028,
-                  "advantage": 0.2887323943661972,
-                  "precision": 0.9090909090909091,
-                  "recall": 0.15384615384615385,
-                  "f1": 0.26315789473684215,
+                  "accuracy": 0.8,
+                  "advantage": 0.30000000000000004,
+                  "precision": 0.8,
+                  "recall": 1,
+                  "f1": 0.888888888888889,
                   "confusion": {
-                    "tp": 10,
-                    "tn": 5,
-                    "fp": 1,
-                    "fn": 55
+                    "tp": 16,
+                    "tn": 0,
+                    "fp": 4,
+                    "fn": 0
                   },
-                  "auc": 0.391025641025641,
-                  "aucPermPValue": 0.8083832335329342
+                  "auc": 0.8125,
+                  "aucPermPValue": 0.031936127744510975
                 },
                 "weights": [
-                  0.14057161054184922,
+                  -0.4005194922739964,
                   0,
-                  -0.5645080758121475,
+                  -0.4026608210060946,
                   0,
                   0,
                   0,
@@ -464,19 +457,80 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.2676056338028169,
-                  "advantage": 0.23239436619718312,
+                  "accuracy": 0.4,
+                  "advantage": 0.09999999999999998,
                   "precision": 1,
-                  "recall": 0.2,
-                  "f1": 0.33333333333333337,
+                  "recall": 0.25,
+                  "f1": 0.4,
                   "confusion": {
-                    "tp": 13,
-                    "tn": 6,
+                    "tp": 4,
+                    "tn": 4,
                     "fp": 0,
-                    "fn": 52
+                    "fn": 12
                   },
-                  "auc": 0.5923076923076923,
-                  "aucPermPValue": 0.23952095808383234
+                  "auc": 0.9375,
+                  "aucPermPValue": 0.005988023952095809
+                },
+                "nTrees": 50
+              }
+            },
+            {
+              "targetAttribute": "predicateCombo",
+              "class0": "none",
+              "class1": "few",
+              "sampleCount": 210,
+              "originalCount0": 9,
+              "originalCount1": 201,
+              "balancedCount0": 8,
+              "balancedCount1": 8,
+              "imbalanceRatio": 22.333333333333332,
+              "balanceMethod": "undersample",
+              "trainSize": 16,
+              "testSize": 61,
+              "logisticRegression": {
+                "evaluation": {
+                  "accuracy": 0.9836065573770492,
+                  "advantage": 0.48360655737704916,
+                  "precision": 0.9836065573770492,
+                  "recall": 1,
+                  "f1": 0.9917355371900827,
+                  "confusion": {
+                    "tp": 60,
+                    "tn": 0,
+                    "fp": 1,
+                    "fn": 0
+                  },
+                  "auc": 0.7083333333333334,
+                  "aucPermPValue": 0.3473053892215569
+                },
+                "weights": [
+                  -0.2701796427959391,
+                  0,
+                  -0.2702977797756611,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "permutationTest": null
+              },
+              "randomForest": {
+                "evaluation": {
+                  "accuracy": 0.16393442622950818,
+                  "advantage": 0.33606557377049184,
+                  "precision": 1,
+                  "recall": 0.15,
+                  "f1": 0.2608695652173913,
+                  "confusion": {
+                    "tp": 9,
+                    "tn": 1,
+                    "fp": 0,
+                    "fn": 51
+                  },
+                  "auc": 0.5583333333333333,
+                  "aucPermPValue": 0.5149700598802395
                 },
                 "nTrees": 50
               }
@@ -488,32 +542,32 @@
               "sampleCount": 78,
               "originalCount0": 9,
               "originalCount1": 69,
-              "balancedCount0": 6,
-              "balancedCount1": 6,
+              "balancedCount0": 8,
+              "balancedCount1": 8,
               "imbalanceRatio": 7.666666666666667,
               "balanceMethod": "undersample",
-              "trainSize": 12,
-              "testSize": 27,
+              "trainSize": 16,
+              "testSize": 25,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.8888888888888888,
-                  "advantage": 0.38888888888888884,
-                  "precision": 0.8888888888888888,
+                  "accuracy": 0.96,
+                  "advantage": 0.45999999999999996,
+                  "precision": 0.96,
                   "recall": 1,
-                  "f1": 0.9411764705882353,
+                  "f1": 0.9795918367346939,
                   "confusion": {
                     "tp": 24,
                     "tn": 0,
-                    "fp": 3,
+                    "fp": 1,
                     "fn": 0
                   },
-                  "auc": 0.375,
-                  "aucPermPValue": 0.7664670658682635
+                  "auc": 0.75,
+                  "aucPermPValue": 0.31137724550898205
                 },
                 "weights": [
-                  -0.3451317558728579,
+                  -0.2700720653950512,
                   0,
-                  -0.3455001202481448,
+                  -0.2688725997159842,
                   0,
                   0,
                   0,
@@ -525,19 +579,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.48148148148148145,
-                  "advantage": 0.018518518518518545,
-                  "precision": 0.9166666666666666,
-                  "recall": 0.4583333333333333,
-                  "f1": 0.611111111111111,
+                  "accuracy": 0.36,
+                  "advantage": 0.14,
+                  "precision": 1,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.5,
                   "confusion": {
-                    "tp": 11,
-                    "tn": 2,
-                    "fp": 1,
-                    "fn": 13
+                    "tp": 8,
+                    "tn": 1,
+                    "fp": 0,
+                    "fn": 16
                   },
-                  "auc": 0.6736111111111112,
-                  "aucPermPValue": 0.1996007984031936
+                  "auc": 1,
+                  "aucPermPValue": 0.04790419161676647
                 },
                 "nTrees": 50
               }
@@ -549,32 +603,32 @@
               "sampleCount": 264,
               "originalCount0": 63,
               "originalCount1": 201,
-              "balancedCount0": 44,
-              "balancedCount1": 44,
+              "balancedCount0": 43,
+              "balancedCount1": 43,
               "imbalanceRatio": 3.1904761904761907,
               "balanceMethod": "undersample",
-              "trainSize": 88,
+              "trainSize": 86,
               "testSize": 76,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.7763157894736842,
-                  "advantage": 0.2763157894736842,
-                  "precision": 0.8846153846153846,
-                  "recall": 0.8070175438596491,
-                  "f1": 0.8440366972477065,
+                  "accuracy": 0.7368421052631579,
+                  "advantage": 0.23684210526315785,
+                  "precision": 0.7727272727272727,
+                  "recall": 0.9107142857142857,
+                  "f1": 0.8360655737704916,
                   "confusion": {
-                    "tp": 46,
-                    "tn": 13,
-                    "fp": 6,
-                    "fn": 11
+                    "tp": 51,
+                    "tn": 5,
+                    "fp": 15,
+                    "fn": 5
                   },
-                  "auc": 0.7197599261311173,
-                  "aucPermPValue": 0.003992015968063872
+                  "auc": 0.7816964285714286,
+                  "aucPermPValue": 0.001996007984031936
                 },
                 "weights": [
-                  -0.12461399513712233,
+                  -0.032681920949488935,
                   0,
-                  0.3462992508629885,
+                  0.31623391354061425,
                   0,
                   0,
                   0,
@@ -586,18 +640,18 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.5789473684210527,
-                  "advantage": 0.07894736842105265,
-                  "precision": 0.8787878787878788,
-                  "recall": 0.5087719298245614,
-                  "f1": 0.6444444444444445,
+                  "accuracy": 0.7631578947368421,
+                  "advantage": 0.26315789473684215,
+                  "precision": 0.8392857142857143,
+                  "recall": 0.8392857142857143,
+                  "f1": 0.8392857142857143,
                   "confusion": {
-                    "tp": 29,
-                    "tn": 15,
-                    "fp": 4,
-                    "fn": 28
+                    "tp": 47,
+                    "tn": 11,
+                    "fp": 9,
+                    "fn": 9
                   },
-                  "auc": 0.7160664819944599,
+                  "auc": 0.7245535714285715,
                   "aucPermPValue": 0.003992015968063872
                 },
                 "nTrees": 50
@@ -610,32 +664,32 @@
               "sampleCount": 132,
               "originalCount0": 63,
               "originalCount1": 69,
-              "balancedCount0": 44,
-              "balancedCount1": 44,
+              "balancedCount0": 42,
+              "balancedCount1": 42,
               "imbalanceRatio": 1.0952380952380953,
               "balanceMethod": "undersample",
-              "trainSize": 88,
+              "trainSize": 84,
               "testSize": 43,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.7906976744186046,
-                  "advantage": 0.2906976744186046,
-                  "precision": 0.8,
-                  "recall": 0.8333333333333334,
-                  "f1": 0.816326530612245,
+                  "accuracy": 0.627906976744186,
+                  "advantage": 0.12790697674418605,
+                  "precision": 0.6571428571428571,
+                  "recall": 0.8518518518518519,
+                  "f1": 0.7419354838709677,
                   "confusion": {
-                    "tp": 20,
-                    "tn": 14,
-                    "fp": 5,
+                    "tp": 23,
+                    "tn": 4,
+                    "fp": 12,
                     "fn": 4
                   },
-                  "auc": 0.8980263157894737,
-                  "aucPermPValue": 0.001996007984031936
+                  "auc": 0.6122685185185185,
+                  "aucPermPValue": 0.09780439121756487
                 },
                 "weights": [
-                  -0.12701922223454204,
+                  -0.20528886928446963,
                   0,
-                  0.339656573888697,
+                  0.4401845575882101,
                   0,
                   0,
                   0,
@@ -647,19 +701,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.7906976744186046,
-                  "advantage": 0.2906976744186046,
-                  "precision": 0.9411764705882353,
-                  "recall": 0.6666666666666666,
-                  "f1": 0.7804878048780487,
+                  "accuracy": 0.6976744186046512,
+                  "advantage": 0.19767441860465118,
+                  "precision": 0.85,
+                  "recall": 0.6296296296296297,
+                  "f1": 0.723404255319149,
                   "confusion": {
-                    "tp": 16,
-                    "tn": 18,
-                    "fp": 1,
-                    "fn": 8
+                    "tp": 17,
+                    "tn": 13,
+                    "fp": 3,
+                    "fn": 10
                   },
-                  "auc": 0.875,
-                  "aucPermPValue": 0.001996007984031936
+                  "auc": 0.75,
+                  "aucPermPValue": 0.005988023952095809
                 },
                 "nTrees": 50
               }
@@ -671,32 +725,32 @@
               "sampleCount": 270,
               "originalCount0": 201,
               "originalCount1": 69,
-              "balancedCount0": 50,
-              "balancedCount1": 50,
+              "balancedCount0": 47,
+              "balancedCount1": 47,
               "imbalanceRatio": 2.9130434782608696,
               "balanceMethod": "undersample",
-              "trainSize": 100,
-              "testSize": 76,
+              "trainSize": 94,
+              "testSize": 80,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.5526315789473685,
-                  "advantage": 0.052631578947368474,
-                  "precision": 0.3170731707317073,
-                  "recall": 0.6842105263157895,
-                  "f1": 0.43333333333333335,
+                  "accuracy": 0.4375,
+                  "advantage": 0.0625,
+                  "precision": 0.2830188679245283,
+                  "recall": 0.6818181818181818,
+                  "f1": 0.39999999999999997,
                   "confusion": {
-                    "tp": 13,
-                    "tn": 29,
-                    "fp": 28,
-                    "fn": 6
+                    "tp": 15,
+                    "tn": 20,
+                    "fp": 38,
+                    "fn": 7
                   },
-                  "auc": 0.605724838411819,
-                  "aucPermPValue": 0.08383233532934131
+                  "auc": 0.5141065830721003,
+                  "aucPermPValue": 0.4111776447105788
                 },
                 "weights": [
-                  -0.049480940736010996,
+                  -0.07271623793988266,
                   0,
-                  0.0786457372318242,
+                  0.1475145188848647,
                   0,
                   0,
                   0,
@@ -708,19 +762,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.75,
-                  "advantage": 0.25,
-                  "precision": 0.5,
-                  "recall": 0.15789473684210525,
-                  "f1": 0.23999999999999996,
+                  "accuracy": 0.6375,
+                  "advantage": 0.13749999999999996,
+                  "precision": 0.29411764705882354,
+                  "recall": 0.22727272727272727,
+                  "f1": 0.25641025641025644,
                   "confusion": {
-                    "tp": 3,
-                    "tn": 54,
-                    "fp": 3,
-                    "fn": 16
+                    "tp": 5,
+                    "tn": 46,
+                    "fp": 12,
+                    "fn": 17
                   },
-                  "auc": 0.636657433056325,
-                  "aucPermPValue": 0.03792415169660679
+                  "auc": 0.5231191222570533,
+                  "aucPermPValue": 0.3932135728542914
                 },
                 "nTrees": 50
               }
@@ -744,32 +798,32 @@
               "sampleCount": 68,
               "originalCount0": 9,
               "originalCount1": 59,
-              "balancedCount0": 6,
-              "balancedCount1": 6,
+              "balancedCount0": 8,
+              "balancedCount1": 8,
               "imbalanceRatio": 6.555555555555555,
               "balanceMethod": "undersample",
-              "trainSize": 12,
+              "trainSize": 16,
               "testSize": 20,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.85,
-                  "advantage": 0.35,
-                  "precision": 0.85,
+                  "accuracy": 0.95,
+                  "advantage": 0.44999999999999996,
+                  "precision": 0.95,
                   "recall": 1,
-                  "f1": 0.9189189189189189,
+                  "f1": 0.9743589743589743,
                   "confusion": {
-                    "tp": 17,
+                    "tp": 19,
                     "tn": 0,
-                    "fp": 3,
+                    "fp": 1,
                     "fn": 0
                   },
-                  "auc": 0.8627450980392157,
-                  "aucPermPValue": 0.013972055888223553
+                  "auc": 0.8421052631578947,
+                  "aucPermPValue": 0.20159680638722555
                 },
                 "weights": [
-                  -0.34489212722595747,
+                  -0.2704595182293422,
                   0,
-                  -0.34530669107345674,
+                  -0.27202871999580674,
                   0,
                   0,
                   0,
@@ -781,19 +835,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.7,
-                  "advantage": 0.19999999999999996,
+                  "accuracy": 0.45,
+                  "advantage": 0.04999999999999999,
                   "precision": 1,
-                  "recall": 0.6470588235294118,
-                  "f1": 0.7857142857142858,
+                  "recall": 0.42105263157894735,
+                  "f1": 0.5925925925925926,
                   "confusion": {
-                    "tp": 11,
-                    "tn": 3,
+                    "tp": 8,
+                    "tn": 1,
                     "fp": 0,
-                    "fn": 6
+                    "fn": 11
                   },
-                  "auc": 0.8725490196078431,
-                  "aucPermPValue": 0.021956087824351298
+                  "auc": 0.7631578947368421,
+                  "aucPermPValue": 0.4411177644710579
                 },
                 "nTrees": 50
               }
@@ -805,32 +859,32 @@
               "sampleCount": 202,
               "originalCount0": 9,
               "originalCount1": 193,
-              "balancedCount0": 8,
-              "balancedCount1": 8,
+              "balancedCount0": 6,
+              "balancedCount1": 6,
               "imbalanceRatio": 21.444444444444443,
               "balanceMethod": "undersample",
-              "trainSize": 16,
+              "trainSize": 12,
               "testSize": 58,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.603448275862069,
-                  "advantage": 0.10344827586206895,
-                  "precision": 0.9722222222222222,
-                  "recall": 0.6140350877192983,
-                  "f1": 0.7526881720430108,
+                  "accuracy": 0.9482758620689655,
+                  "advantage": 0.4482758620689655,
+                  "precision": 0.9482758620689655,
+                  "recall": 1,
+                  "f1": 0.9734513274336283,
                   "confusion": {
-                    "tp": 35,
+                    "tp": 55,
                     "tn": 0,
-                    "fp": 1,
-                    "fn": 22
+                    "fp": 3,
+                    "fn": 0
                   },
-                  "auc": 0,
-                  "aucPermPValue": 1
+                  "auc": 0.5515151515151515,
+                  "aucPermPValue": 0.405189620758483
                 },
                 "weights": [
-                  0.16393991818334636,
+                  -0.3454081721308237,
                   0,
-                  0.12928233146705922,
+                  -0.3449434685288243,
                   0,
                   0,
                   0,
@@ -842,19 +896,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.5517241379310345,
-                  "advantage": 0.051724137931034475,
-                  "precision": 0.9696969696969697,
-                  "recall": 0.5614035087719298,
-                  "f1": 0.711111111111111,
+                  "accuracy": 0.4827586206896552,
+                  "advantage": 0.017241379310344807,
+                  "precision": 1,
+                  "recall": 0.45454545454545453,
+                  "f1": 0.625,
                   "confusion": {
-                    "tp": 32,
-                    "tn": 0,
-                    "fp": 1,
-                    "fn": 25
+                    "tp": 25,
+                    "tn": 3,
+                    "fp": 0,
+                    "fn": 30
                   },
-                  "auc": 0.12280701754385964,
-                  "aucPermPValue": 1
+                  "auc": 0.7636363636363637,
+                  "aucPermPValue": 0.06986027944111776
                 },
                 "nTrees": 50
               }
@@ -866,32 +920,32 @@
               "sampleCount": 90,
               "originalCount0": 9,
               "originalCount1": 81,
-              "balancedCount0": 4,
-              "balancedCount1": 4,
+              "balancedCount0": 8,
+              "balancedCount1": 8,
               "imbalanceRatio": 9,
               "balanceMethod": "undersample",
-              "trainSize": 8,
-              "testSize": 26,
+              "trainSize": 16,
+              "testSize": 24,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.8076923076923077,
-                  "advantage": 0.3076923076923077,
-                  "precision": 0.8076923076923077,
+                  "accuracy": 0.9583333333333334,
+                  "advantage": 0.45833333333333337,
+                  "precision": 0.9583333333333334,
                   "recall": 1,
-                  "f1": 0.8936170212765957,
+                  "f1": 0.9787234042553191,
                   "confusion": {
-                    "tp": 21,
+                    "tp": 23,
                     "tn": 0,
-                    "fp": 5,
+                    "fp": 1,
                     "fn": 0
                   },
-                  "auc": 0.4238095238095238,
-                  "aucPermPValue": 0.7345309381237525
+                  "auc": 0.6739130434782609,
+                  "aucPermPValue": 0.36926147704590817
                 },
                 "weights": [
-                  -0.47796240734320844,
+                  -0.27024923429062736,
                   0,
-                  -0.4763113045223671,
+                  -0.26908410435792934,
                   0,
                   0,
                   0,
@@ -903,19 +957,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.7692307692307693,
-                  "advantage": 0.2692307692307693,
-                  "precision": 0.8260869565217391,
-                  "recall": 0.9047619047619048,
-                  "f1": 0.8636363636363636,
+                  "accuracy": 0.375,
+                  "advantage": 0.125,
+                  "precision": 1,
+                  "recall": 0.34782608695652173,
+                  "f1": 0.5161290322580645,
                   "confusion": {
-                    "tp": 19,
+                    "tp": 8,
                     "tn": 1,
-                    "fp": 4,
-                    "fn": 2
+                    "fp": 0,
+                    "fn": 15
                   },
-                  "auc": 0.5380952380952381,
-                  "aucPermPValue": 0.37325349301397204
+                  "auc": 0.8913043478260869,
+                  "aucPermPValue": 0.281437125748503
                 },
                 "nTrees": 50
               }
@@ -927,32 +981,32 @@
               "sampleCount": 252,
               "originalCount0": 59,
               "originalCount1": 193,
-              "balancedCount0": 44,
-              "balancedCount1": 44,
+              "balancedCount0": 42,
+              "balancedCount1": 42,
               "imbalanceRatio": 3.2711864406779663,
               "balanceMethod": "undersample",
-              "trainSize": 88,
-              "testSize": 73,
+              "trainSize": 84,
+              "testSize": 77,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.7808219178082192,
-                  "advantage": 0.2808219178082192,
-                  "precision": 0.8088235294117647,
-                  "recall": 0.9482758620689655,
-                  "f1": 0.873015873015873,
+                  "accuracy": 0.7922077922077922,
+                  "advantage": 0.29220779220779225,
+                  "precision": 0.8235294117647058,
+                  "recall": 0.9333333333333333,
+                  "f1": 0.8749999999999999,
                   "confusion": {
-                    "tp": 55,
-                    "tn": 2,
-                    "fp": 13,
-                    "fn": 3
+                    "tp": 56,
+                    "tn": 5,
+                    "fp": 12,
+                    "fn": 4
                   },
-                  "auc": 0.7775862068965518,
-                  "aucPermPValue": 0.001996007984031936
+                  "auc": 0.7279411764705882,
+                  "aucPermPValue": 0.003992015968063872
                 },
                 "weights": [
-                  0.052950885710913935,
+                  0.0953863485422735,
                   0,
-                  0.23644547255653475,
+                  0.20219771302702755,
                   0,
                   0,
                   0,
@@ -964,19 +1018,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.7534246575342466,
-                  "advantage": 0.2534246575342466,
+                  "accuracy": 0.7402597402597403,
+                  "advantage": 0.24025974025974028,
                   "precision": 0.8846153846153846,
-                  "recall": 0.7931034482758621,
-                  "f1": 0.8363636363636363,
+                  "recall": 0.7666666666666667,
+                  "f1": 0.8214285714285715,
                   "confusion": {
                     "tp": 46,
-                    "tn": 9,
+                    "tn": 11,
                     "fp": 6,
-                    "fn": 12
+                    "fn": 14
                   },
-                  "auc": 0.6385057471264368,
-                  "aucPermPValue": 0.03592814371257485
+                  "auc": 0.7485294117647059,
+                  "aucPermPValue": 0.001996007984031936
                 },
                 "nTrees": 50
               }
@@ -988,32 +1042,32 @@
               "sampleCount": 140,
               "originalCount0": 59,
               "originalCount1": 81,
-              "balancedCount0": 32,
-              "balancedCount1": 32,
+              "balancedCount0": 43,
+              "balancedCount1": 43,
               "imbalanceRatio": 1.3728813559322033,
               "balanceMethod": "undersample",
-              "trainSize": 64,
-              "testSize": 43,
+              "trainSize": 86,
+              "testSize": 39,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.5813953488372093,
-                  "advantage": 0.08139534883720934,
-                  "precision": 0.46875,
-                  "recall": 0.9375,
-                  "f1": 0.625,
+                  "accuracy": 0.7692307692307693,
+                  "advantage": 0.2692307692307693,
+                  "precision": 0.7692307692307693,
+                  "recall": 0.8695652173913043,
+                  "f1": 0.8163265306122449,
                   "confusion": {
-                    "tp": 15,
+                    "tp": 20,
                     "tn": 10,
-                    "fp": 17,
-                    "fn": 1
+                    "fp": 6,
+                    "fn": 3
                   },
-                  "auc": 0.8888888888888888,
+                  "auc": 0.8328804347826086,
                   "aucPermPValue": 0.001996007984031936
                 },
                 "weights": [
-                  -0.02201012811294702,
+                  -0.04951274405212973,
                   0,
-                  0.3304143472329811,
+                  0.45559456371565754,
                   0,
                   0,
                   0,
@@ -1025,19 +1079,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.6976744186046512,
-                  "advantage": 0.19767441860465118,
-                  "precision": 0.6,
-                  "recall": 0.5625,
-                  "f1": 0.5806451612903225,
+                  "accuracy": 0.717948717948718,
+                  "advantage": 0.21794871794871795,
+                  "precision": 0.8333333333333334,
+                  "recall": 0.6521739130434783,
+                  "f1": 0.7317073170731708,
                   "confusion": {
-                    "tp": 9,
-                    "tn": 21,
-                    "fp": 6,
-                    "fn": 7
+                    "tp": 15,
+                    "tn": 13,
+                    "fp": 3,
+                    "fn": 8
                   },
-                  "auc": 0.6226851851851852,
-                  "aucPermPValue": 0.10978043912175649
+                  "auc": 0.717391304347826,
+                  "aucPermPValue": 0.005988023952095809
                 },
                 "nTrees": 50
               }
@@ -1054,27 +1108,27 @@
               "imbalanceRatio": 2.382716049382716,
               "balanceMethod": "undersample",
               "trainSize": 120,
-              "testSize": 78,
+              "testSize": 76,
               "logisticRegression": {
                 "evaluation": {
-                  "accuracy": 0.2948717948717949,
-                  "advantage": 0.20512820512820512,
-                  "precision": 0.24242424242424243,
-                  "recall": 0.7619047619047619,
-                  "f1": 0.367816091954023,
+                  "accuracy": 0.42105263157894735,
+                  "advantage": 0.07894736842105265,
+                  "precision": 0.27450980392156865,
+                  "recall": 0.6666666666666666,
+                  "f1": 0.38888888888888895,
                   "confusion": {
-                    "tp": 16,
-                    "tn": 7,
-                    "fp": 50,
-                    "fn": 5
+                    "tp": 14,
+                    "tn": 18,
+                    "fp": 37,
+                    "fn": 7
                   },
-                  "auc": 0.5167084377610693,
-                  "aucPermPValue": 0.41317365269461076
+                  "auc": 0.5017316017316017,
+                  "aucPermPValue": 0.530938123752495
                 },
                 "weights": [
-                  -0.04598737949280638,
+                  -0.08502898154393823,
                   0,
-                  0.18692345106365005,
+                  0.2630488389724976,
                   0,
                   0,
                   0,
@@ -1086,19 +1140,19 @@
               },
               "randomForest": {
                 "evaluation": {
-                  "accuracy": 0.5128205128205128,
-                  "advantage": 0.012820512820512775,
-                  "precision": 0.2571428571428571,
-                  "recall": 0.42857142857142855,
-                  "f1": 0.3214285714285714,
+                  "accuracy": 0.4868421052631579,
+                  "advantage": 0.01315789473684209,
+                  "precision": 0.21875,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.2641509433962264,
                   "confusion": {
-                    "tp": 9,
-                    "tn": 31,
-                    "fp": 26,
-                    "fn": 12
+                    "tp": 7,
+                    "tn": 30,
+                    "fp": 25,
+                    "fn": 14
                   },
-                  "auc": 0.518796992481203,
-                  "aucPermPValue": 0.4251497005988024
+                  "auc": 0.5,
+                  "aucPermPValue": 0.49700598802395207
                 },
                 "nTrees": 50
               }
@@ -2397,44 +2451,44 @@
               "ari": null,
               "iterations": 2,
               "clusterSizes": [
-                341,
-                1
+                1,
+                341
               ]
             },
             {
               "k": 3,
               "silhouette": 0.5558595933548999,
               "ari": null,
-              "iterations": 3,
+              "iterations": 5,
               "clusterSizes": [
                 162,
-                179,
-                1
+                1,
+                179
               ]
             },
             {
               "k": 4,
-              "silhouette": 0.5289574094292816,
-              "ari": 0.0665931923351332,
-              "iterations": 2,
+              "silhouette": 0.5059354937054192,
+              "ari": 0.054649909811846475,
+              "iterations": 4,
               "clusterSizes": [
-                106,
-                138,
+                43,
+                119,
                 1,
-                97
+                179
               ]
             },
             {
               "k": 5,
-              "silhouette": 0.5008099951478757,
+              "silhouette": 0.49977582681696797,
               "ari": null,
-              "iterations": 5,
+              "iterations": 6,
               "clusterSizes": [
-                106,
-                59,
-                134,
-                42,
-                1
+                73,
+                1,
+                119,
+                43,
+                106
               ]
             }
           ]
@@ -2449,8 +2503,8 @@
               "ari": null,
               "iterations": 2,
               "clusterSizes": [
-                341,
-                1
+                1,
+                341
               ]
             },
             {
@@ -2459,34 +2513,34 @@
               "ari": null,
               "iterations": 6,
               "clusterSizes": [
+                162,
                 1,
-                179,
-                162
+                179
               ]
             },
             {
               "k": 4,
-              "silhouette": 0.5090322232621128,
-              "ari": 0.026604478776499803,
-              "iterations": 2,
+              "silhouette": 0.5289574094292816,
+              "ari": 0.053778135884197296,
+              "iterations": 4,
               "clusterSizes": [
-                162,
+                97,
                 1,
-                49,
-                130
+                106,
+                138
               ]
             },
             {
               "k": 5,
-              "silhouette": 0.458650279803969,
+              "silhouette": 0.5126736854291593,
               "ari": null,
-              "iterations": 4,
+              "iterations": 7,
               "clusterSizes": [
-                91,
+                31,
                 1,
-                62,
-                88,
-                100
+                106,
+                97,
+                107
               ]
             }
           ]
@@ -2509,35 +2563,35 @@
               "k": 3,
               "silhouette": 0.5558595933548999,
               "ari": null,
-              "iterations": 3,
+              "iterations": 7,
               "clusterSizes": [
+                1,
                 179,
-                162,
-                1
+                162
               ]
             },
             {
               "k": 4,
-              "silhouette": 0.5157368355082638,
-              "ari": 0.052407830102829005,
-              "iterations": 7,
+              "silhouette": 0.5289574094292816,
+              "ari": 0.05000456715414484,
+              "iterations": 4,
               "clusterSizes": [
+                97,
                 1,
-                25,
-                137,
-                179
+                106,
+                138
               ]
             },
             {
               "k": 5,
-              "silhouette": 0.5008099951478757,
+              "silhouette": 0.49926044913738676,
               "ari": null,
-              "iterations": 6,
+              "iterations": 2,
               "clusterSizes": [
-                134,
-                59,
-                1,
                 42,
+                1,
+                73,
+                120,
                 106
               ]
             }
@@ -2554,63 +2608,63 @@
               "comparison": "and_only vs or_only",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.21739130434782605,
+              "value": 0.1875,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "and_only vs negation_heavy",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.1724137931034483,
               "threshold": 0.05
             },
             {
               "comparison": "and_only vs negation_heavy",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.16000000000000003,
+              "value": 0.2068965517241379,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "and_only vs negation_heavy",
+              "attack": "Permutation Test",
+              "metric": "p-value",
+              "value": 0.001996007984031936,
               "threshold": 0.05
             },
             {
               "comparison": "and_only vs and_or_mixed",
-              "attack": "Random Forest",
-              "metric": "advantage",
-              "value": 0.21111111111111114,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "or_only vs negation_heavy",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.05357142857142855,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "or_only vs negation_heavy",
-              "attack": "Random Forest",
-              "metric": "advantage",
-              "value": 0.07142857142857145,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "or_only vs and_or_mixed",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.12222222222222223,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "or_only vs and_or_mixed",
-              "attack": "Permutation Test",
-              "metric": "p-value",
-              "value": 0.01996007984031936,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "negation_heavy vs and_or_mixed",
               "attack": "Logistic Regression",
               "metric": "advantage",
               "value": 0.09999999999999998,
               "threshold": 0.05
             },
             {
-              "comparison": "negation_heavy vs and_or_mixed",
+              "comparison": "and_only vs and_or_mixed",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.16000000000000003,
+              "value": 0.23333333333333328,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "or_only vs and_or_mixed",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.13414634146341464,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "or_only vs and_or_mixed",
+              "attack": "Random Forest",
+              "metric": "advantage",
+              "value": 0.13414634146341464,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "negation_heavy vs and_or_mixed",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.07999999999999996,
               "threshold": 0.05
             }
           ]
@@ -2619,80 +2673,101 @@
           "passed": false,
           "failures": [
             {
+              "comparison": "none vs single",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.30000000000000004,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "none vs single",
+              "attack": "Random Forest",
+              "metric": "advantage",
+              "value": 0.09999999999999998,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "none vs single",
+              "attack": "Permutation Test",
+              "metric": "p-value",
+              "value": 0.031936127744510975,
+              "threshold": 0.05
+            },
+            {
               "comparison": "none vs few",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.2887323943661972,
+              "value": 0.48360655737704916,
               "threshold": 0.05
             },
             {
               "comparison": "none vs few",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.23239436619718312,
+              "value": 0.33606557377049184,
               "threshold": 0.05
             },
             {
               "comparison": "none vs many",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.38888888888888884,
+              "value": 0.45999999999999996,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "none vs many",
+              "attack": "Random Forest",
+              "metric": "advantage",
+              "value": 0.14,
               "threshold": 0.05
             },
             {
               "comparison": "single vs few",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.2763157894736842,
+              "value": 0.23684210526315785,
               "threshold": 0.05
             },
             {
               "comparison": "single vs few",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.07894736842105265,
+              "value": 0.26315789473684215,
               "threshold": 0.05
             },
             {
               "comparison": "single vs few",
-              "attack": "Permutation Test",
-              "metric": "p-value",
-              "value": 0.003992015968063872,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "single vs many",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.2906976744186046,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "single vs many",
-              "attack": "Random Forest",
-              "metric": "advantage",
-              "value": 0.2906976744186046,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "single vs many",
               "attack": "Permutation Test",
               "metric": "p-value",
               "value": 0.001996007984031936,
               "threshold": 0.05
             },
             {
+              "comparison": "single vs many",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.12790697674418605,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "single vs many",
+              "attack": "Random Forest",
+              "metric": "advantage",
+              "value": 0.19767441860465118,
+              "threshold": 0.05
+            },
+            {
               "comparison": "few vs many",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.052631578947368474,
+              "value": 0.0625,
               "threshold": 0.05
             },
             {
               "comparison": "few vs many",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.25,
+              "value": 0.13749999999999996,
               "threshold": 0.05
             }
           ]
@@ -2704,84 +2779,63 @@
               "comparison": "none vs small",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.35,
+              "value": 0.44999999999999996,
               "threshold": 0.05
             },
             {
-              "comparison": "none vs small",
+              "comparison": "none vs medium",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.4482758620689655,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "none vs large",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.45833333333333337,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "none vs large",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.19999999999999996,
+              "value": 0.125,
               "threshold": 0.05
             },
             {
-              "comparison": "none vs small",
+              "comparison": "small vs medium",
+              "attack": "Logistic Regression",
+              "metric": "advantage",
+              "value": 0.29220779220779225,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "small vs medium",
+              "attack": "Random Forest",
+              "metric": "advantage",
+              "value": 0.24025974025974028,
+              "threshold": 0.05
+            },
+            {
+              "comparison": "small vs medium",
               "attack": "Permutation Test",
               "metric": "p-value",
-              "value": 0.013972055888223553,
+              "value": 0.003992015968063872,
               "threshold": 0.05
             },
             {
-              "comparison": "none vs medium",
+              "comparison": "small vs large",
               "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.10344827586206895,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "none vs medium",
-              "attack": "Random Forest",
-              "metric": "advantage",
-              "value": 0.051724137931034475,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "none vs large",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.3076923076923077,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "none vs large",
-              "attack": "Random Forest",
               "metric": "advantage",
               "value": 0.2692307692307693,
               "threshold": 0.05
             },
             {
-              "comparison": "small vs medium",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.2808219178082192,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "small vs medium",
-              "attack": "Random Forest",
-              "metric": "advantage",
-              "value": 0.2534246575342466,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "small vs medium",
-              "attack": "Permutation Test",
-              "metric": "p-value",
-              "value": 0.001996007984031936,
-              "threshold": 0.05
-            },
-            {
-              "comparison": "small vs large",
-              "attack": "Logistic Regression",
-              "metric": "advantage",
-              "value": 0.08139534883720934,
-              "threshold": 0.05
-            },
-            {
               "comparison": "small vs large",
               "attack": "Random Forest",
               "metric": "advantage",
-              "value": 0.19767441860465118,
+              "value": 0.21794871794871795,
               "threshold": 0.05
             },
             {
@@ -2795,7 +2849,7 @@
               "comparison": "medium vs large",
               "attack": "Logistic Regression",
               "metric": "advantage",
-              "value": 0.20512820512820512,
+              "value": 0.07894736842105265,
               "threshold": 0.05
             }
           ]
@@ -2909,13 +2963,13 @@
             {
               "k": 4,
               "metric": "silhouette",
-              "value": 0.5289574094292816,
+              "value": 0.5059354937054192,
               "threshold": 0.3
             },
             {
               "k": 5,
               "metric": "silhouette",
-              "value": 0.5008099951478757,
+              "value": 0.49977582681696797,
               "threshold": 0.3
             }
           ]
@@ -2938,13 +2992,13 @@
             {
               "k": 4,
               "metric": "silhouette",
-              "value": 0.5090322232621128,
+              "value": 0.5289574094292816,
               "threshold": 0.3
             },
             {
               "k": 5,
               "metric": "silhouette",
-              "value": 0.458650279803969,
+              "value": 0.5126736854291593,
               "threshold": 0.3
             }
           ]
@@ -2967,13 +3021,13 @@
             {
               "k": 4,
               "metric": "silhouette",
-              "value": 0.5157368355082638,
+              "value": 0.5289574094292816,
               "threshold": 0.3
             },
             {
               "k": 5,
               "metric": "silhouette",
-              "value": 0.5008099951478757,
+              "value": 0.49926044913738676,
               "threshold": 0.3
             }
           ]
@@ -2983,23 +3037,17 @@
     }
   },
   "multiseedVerdict": {
-    "overallPassed": null,
-    "controlsPresent": true,
-    "controlsValid": false,
-    "missingPositiveControlKeys": [
-      "CONTROL: gas>median"
-    ],
+    "overallPassed": false,
+    "controlsPresent": false,
+    "controlsValid": null,
+    "missingPositiveControlKeys": [],
     "criterion": {
       "seeds": 30,
       "aucMax": 0.55,
       "permAlpha": 0.05,
       "sigFractionMax": 0.5,
       "minTestSamples": 20,
-      "positiveControlKeys": [
-        "CONTROL: gas>median"
-      ],
       "nonGatingKeys": [],
-      "gateOnControlValidity": true,
       "permutationIterations": 500
     },
     "tasks": [
@@ -3008,7 +3056,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 50,
@@ -3488,7 +3535,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 58,
@@ -3968,7 +4014,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 47,
@@ -4448,7 +4493,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 56,
@@ -4928,7 +4972,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 45,
@@ -5408,7 +5451,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 50,
@@ -5888,7 +5930,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 22,
@@ -6356,7 +6397,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 61,
@@ -6800,7 +6840,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 21,
@@ -7256,7 +7295,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 80,
@@ -7736,7 +7774,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 37,
@@ -8216,7 +8253,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 78,
@@ -8696,7 +8732,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 20,
@@ -9152,7 +9187,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 60,
@@ -9608,7 +9642,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 26,
@@ -10028,7 +10061,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 75,
@@ -10508,7 +10540,6 @@
         "passed": false,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 41,
@@ -10988,7 +11019,6 @@
         "passed": true,
         "skipped": false,
         "underpowered": false,
-        "positiveControl": false,
         "diagnostic": false,
         "nonGating": false,
         "medianTestN": 84,
@@ -30547,6 +30577,6 @@
       }
     ]
   },
-  "overallPassed": null,
-  "conclusion": "INCONCLUSIVE: the positive control was not separable, so the attack pipeline shows no discriminative power — a PASS cannot be distinguished from a powerless attack. No privacy claim is made."
+  "overallPassed": false,
+  "conclusion": "Potential leakage detected in structure or parameters. Further hardening recommended."
 }

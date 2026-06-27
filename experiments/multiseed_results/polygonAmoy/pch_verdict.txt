@@ -2,7 +2,6 @@
 Policy Content Hiding — multi-seed verdict (30 seeds, policy-disjoint)
 Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Advantage reported, not gating.
 Underpowered tasks (median test n < 20) are reported but do not gate.
-Positive-control tasks are reported but do not gate (expected to be distinguishable).
 Task                                  | AUC mean±std    | adv mean±std    | perm p mean | %sig | medN | verdict
 --------------------------------------+-----------------+-----------------+-------------+------+------+--------
 DUO GR                                | 0.517 ± 0.038   | 0.033 ± 0.025   | 0.348       | 17%  | 584  | ✓ PASS
@@ -21,7 +20,5 @@ ICD ch6                               | 0.591 ± 0.089   | 0.112 ± 0.061   | 0.
 ICD ch7                               | 0.493 ± 0.052   | 0.036 ± 0.038   | 0.492       | 3%   | 271  | ✓ PASS
 ICD ch8                               | 0.509 ± 0.034   | 0.024 ± 0.025   | 0.446       | 0%   | 271  | ✓ PASS
 ICD ch9                               | 0.531 ± 0.050   | 0.045 ± 0.038   | 0.370       | 0%   | 271  | ✓ PASS
-CONTROL: gas>median                   | 0.994 ± 0.002   | 0.494 ± 0.002   | 0.005       | 100% | 584  | — (control)
-                                      |   P/R/F1: 0.92 / 0.98 / 0.95 (attack-validity)
 --------------------------------------+-----------------+-----------------+-------------+------+--------
 Overall: ✓ PASS
