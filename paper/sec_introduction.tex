@@ -1,0 +1,115 @@
+\section{Introduction}
+\label{sec:introduction}
+
+\IEEEPARstart{B}{lockchain} technology has emerged as a promising foundation
+for decentralized and auditable healthcare data sharing~\cite{kakarlapudi2021systematic,
+welzel2025enabling, li2024you}. Its transparency and immutability enable
+verifiable consent enforcement and traceable authorization decisions, supporting
+cross-institutional accountability. At the same time, consent enforcement on
+public blockchains may expose policy-dependent contextual information, even
+when the underlying health data remain encrypted~\cite{beres2021blockchain, li2025privacy}.
+
+Consent policies in healthcare are often privacy-sensitive
+\cite{lawson2021data}. They may encode research purposes, disease scopes, requester
+eligibility, institutional restrictions, ethics approval requirements, or
+other contextual conditions. For example, a policy based on biomedical data-use
+terms may reveal whether a dataset is restricted to disease-specific
+research, whether ethics approval is required, or whether access is limited
+to particular institutions or projects. If such policies are directly represented
+in smart contracts, embedded in verification logic, or reflected in public execution
+traces, unauthorized observers may infer information about the protected
+resource, the data owner's constraints, or the requester's authorization
+context.
+
+Existing privacy-preserving blockchain systems mainly protect data contents,
+user identities, or transaction details~\cite{rondelet2019zeth, williamson2018aztec,
+nadler2023tornado}. Encrypted data-sharing mechanisms such as attribute-based
+encryption and proxy re-encryption protect access to data~\cite{ibraimi2009ciphertext,
+ullah2023survey}, while zero-knowledge transaction systems hide asset
+ownership, values, or participant relationships~\cite{zhou2024leveraging}. These
+mechanisms are important, but they do not directly address the
+confidentiality of the policies that govern access decisions. In blockchain-based
+consent management, policy leakage may arise not only from explicit policy
+disclosure, but also from policy-dependent artifacts such as calldata size,
+public-input layout, emitted events, verifier interfaces, and gas usage.
+Therefore, policy-private consent enforcement requires more than hiding data
+or proving correctness in zero knowledge; it also requires controlling what
+the public-chain transcript reveals about the hidden policy.
+
+This paper studies policy-private consent enforcement for blockchain-based
+healthcare data sharing under public-chain observability.
+The core problem is how to make consent enforcement publicly verifiable while preventing metadata-only public-chain observers from inferring the governing policy or requester authorization evidence from policy-dependent execution artifacts. In particular, an on-chain verifier should be able to check that a requester satisfies a provider-defined
+consent policy, while a metadata-only public-chain adversary learns minimal
+information from the resulting public verification transcript. We focus on Boolean-based
+consent policies, including policies derived from biomedical data-use
+conditions such as Data Use Ontology (DUO) terms~\cite{lawson2021data} and
+disease-scope constraints.
+
+To address this problem, we propose the Trusted Proof Service-assisted Zero-Knowledge
+Policy Interpreter (TPS-ZKPI). In TPS-ZKPI, the data provider commits to a hidden
+consent policy on-chain and provisions the corresponding policy-bound proving
+material to a Trusted Proof Service (TPS). The requester submits policy-relevant
+authorization evidence, such as attributes, credentials, and access context,
+to the TPS. The TPS constructs the private witness and generates a zero-knowledge
+proof showing that the requester satisfies the committed policy. The proof
+is then verified on-chain against the provider's policy commitment and fixed-format
+public inputs, allowing the system to record an auditable authorization outcome
+without exposing the policy logic in public smart-contract execution.
+
+TPS-ZKPI combines the following design elements. First, it uses TPS-assisted
+proof generation to keep confidentiality-sensitive policy material and requester
+evidence outside the public blockchain transcript. Second, it compiles heterogeneous
+Boolean-based consent policies into fixed-length Reverse Polish Notation (RPN)
+programs. Third, it evaluates these programs through a reusable zero-knowledge
+policy interpreter, avoiding policy-specific verifier contracts and
+supporting policy evolution without changing the public verification
+interface. Fourth, it applies observability-aware transcript normalization
+to reduce policy-dependent variation in calldata, logs, public parameters, and
+gas-related behavior.
+
+We evaluate TPS-ZKPI using attack-driven empirical analysis under a metadata-only
+adversarial model. The evaluation operationalizes policy privacy through
+three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI),
+and Structure and Parameter Privacy (SPP). Supervised and unsupervised
+attacks are used to test whether observable blockchain artifacts allow
+adversaries to recover hidden policy semantics, distinguish policy families,
+or infer structural properties. The results show that, after transcript
+normalization, no modeled attack recovers hidden policy information above the
+chance baseline under a multi-seed permutation criterion, and a paired
+ablation isolates gas-transcript normalization as the mechanism responsible.
+
+This paper makes the following contributions:
+
+\begin{itemize}
+    \item We formulate policy-private consent enforcement as a public-chain observability
+        problem in blockchain-based healthcare data sharing, focusing on
+        leakage of policy content, policy distinguishability, and policy
+        structure from public verification artifacts.
+
+    \item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach that
+        supports publicly verifiable and auditable consent enforcement while
+        keeping policy-bound proving material and requester authorization
+        evidence off-chain.
+
+    \item We design a reusable zero-knowledge policy interpreter for fixed-length
+        Boolean policy programs, combining policy commitment binding with a
+        stable on-chain verification interface.
+
+    \item We provide an attack-driven empirical evaluation of residual policy-dependent
+        leakage from normalized public-chain metadata, covering supervised
+        classification and unsupervised clustering attacks under a multi-seed
+        permutation-test criterion.
+
+    \item We conduct a paired gas-padding ablation on a public testnet that
+        isolates transcript normalization as the mechanism responsible for the
+        observed protection and quantifies its gas-cost overhead.
+\end{itemize}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:related-work}
+discusses related work and positions TPS-ZKPI against existing privacy-preserving
+blockchain, hidden-policy, reusable proving, and metadata-leakage approaches.
+Section~\ref{sec:problem} defines the system model, trust assumptions,
+adversarial model, and privacy objectives. Section~\ref{sec:design} presents
+the TPS-ZKPI design. Section~\ref{sec:eval} reports the empirical evaluation.
+Section~\ref{sec:discussion} discusses limitations and future work, and Section~\ref{sec:conclusion}
+concludes the paper.

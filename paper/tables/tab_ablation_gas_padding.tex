@@ -1,30 +1,41 @@
-% Expected source once generated:
-%   experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.{md,json}
-% B1 artifacts currently live under experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/.
-% B2 artifacts reuse experiments/ablation/gas_padding/polygonAmoy/b2_padded/.
+% Source of record:
+%   experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
+% B1 artifacts: experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/.
+% B2 artifacts: experiments/ablation/gas_padding/polygonAmoy/b2_padded/ (reuses deployed run).
+% Bootstrap: 500 iterations, seed 20260625; effect = |AUC_B1-0.5| - |AUC_B2-0.5|.
+% Rows selected so that the bootstrap 95% CI of dLeak excludes zero (genuine reduction).
 \begin{table}[t]
   \centering
-  \caption{Gas-padding ablation design. B1 and B2 are aligned on the same selected policy
-    set. $\Delta_{\text{leak}}>0$ means padding reduces classifier leakage. Numeric B1/B2
-    leakage and gas-overhead entries should be filled from the paired comparison report
-    once \texttt{ablation\_report.json} is generated.}
+  \caption{Gas-padding ablation on Polygon Amoy. B1 (no commit/access gas padding) and B2
+    (deployed, randomized access-gas padding) are aligned on the same policy set.
+    Supervised AUC is the calibrated random-forest score; clustering reports K-Means
+    ARI. $\Delta_{\text{leak}}=|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|>0$
+    means padding moved the attacker toward chance; $\Delta_{\text{leak}}$ rows show the
+    bootstrap mean with $95\%$ CI ($500$ iterations). Padding collapses every recoverable
+    signal to the chance baseline.}
   \label{tab:ablation-gas-padding}
-  \begin{tabular}{p{0.20\linewidth}p{0.36\linewidth}p{0.16\linewidth}p{0.16\linewidth}}
+  \begin{tabular}{lp{0.30\linewidth}cc}
     \toprule
-    Profile / metric & Mechanism & Leakage summary & Gas overhead \\
+    Attack & Target & B1 (unpad.) & B2 (pad.) \\
     \midrule
-    B1 unpadded
-      & Fixed circuit + commitment-only interface + TPS; no commit/access gas padding
-      & pending report
-      & baseline \\
-    B2 padded
-      & Full mechanism with randomized access-gas padding
-      & pending report
-      & pending report \\
-    $\Delta_{\text{leak}}$
-      & $|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|$
-      & pending report
-      & -- \\
+    \multicolumn{4}{l}{\emph{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ CI)} \\
+    SPP   & \texttt{paramType none/small}    & $0.812$ & $0.414$ \\
+          & \quad $\Delta_{\text{leak}}=0.127$ CI$[0.055,0.201]$ & & \\
+    SPP   & \texttt{structure and/neg-heavy} & $0.759$ & $0.465$ \\
+          & \quad $\Delta_{\text{leak}}=0.195$ CI$[0.173,0.217]$ & & \\
+    PCH   & DUO POA                          & $0.616$ & $0.491$ \\
+          & \quad $\Delta_{\text{leak}}=0.092$ CI$[0.071,0.114]$ & & \\
+    PI    & \texttt{controlled\_difference}  & $0.611$ & $0.515$ \\
+          & \quad $\Delta_{\text{leak}}=0.102$ CI$[0.076,0.129]$ & & \\
+    \midrule
+    \multicolumn{4}{l}{\emph{Unsupervised} (K-Means ARI)} \\
+    PCH   & ICD-10 chapter                   & $0.064$ & $-0.005$ \\
+    SPP   & logic structure                  & $0.067$ & $-0.006$ \\
+    SPP   & predicate count                  & $0.054$ & $0.001$  \\
+    \midrule
+    \multicolumn{4}{l}{\emph{Gas cost} (mean, B1 $\to$ B2)} \\
+    \multicolumn{2}{l}{Commit gas} & $216{,}562$ & $303{,}556$ ($+40.2\%$) \\
+    \multicolumn{2}{l}{Access gas} & $546{,}876$ & $753{,}310$ ($+37.7\%$) \\
     \bottomrule
   \end{tabular}
 \end{table}

@@ -1,4 +1,6 @@
-% Source of record: experiments/multiseed_results/polygonAmoy/pch_verdict.txt.
+% Source of record: experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json
+%   (multiseedVerdict; deterministic per-seed RNG; supersedes the older
+%    multiseed_results/polygonAmoy/pch_verdict.txt batch).
 % Policy Content Hiding -- supervised attack, multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5
 % (perm alpha=0.05); both legs required, else PASS.
@@ -13,12 +15,12 @@
     \toprule
     Term & AUC (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ & verdict \\
     \midrule
-    DUO GR  & $0.517 \pm 0.038$ & $0.348$ & $17\%$ & $584$ & \checkmark \\
-    DUO DS  & $0.492 \pm 0.022$ & $0.579$ & $0\%$  & $584$ & \checkmark \\
-    DUO RS  & $0.540 \pm 0.017$ & $0.099$ & $50\%$ & $584$ & \checkmark \\
-    DUO POA & $0.485 \pm 0.021$ & $0.678$ & $0\%$  & $584$ & \checkmark \\
-    DUO GS  & $0.515 \pm 0.023$ & $0.327$ & $10\%$ & $584$ & \checkmark \\
-    DUO CC  & $0.500 \pm 0.025$ & $0.490$ & $3\%$  & $584$ & \checkmark \\
+    DUO GR  & $0.497 \pm 0.024$ & $0.535$ & $0\%$  & $613$ & \checkmark \\
+    DUO DS  & $0.490 \pm 0.021$ & $0.624$ & $3\%$  & $613$ & \checkmark \\
+    DUO RS  & $0.527 \pm 0.019$ & $0.191$ & $13\%$ & $613$ & \checkmark \\
+    DUO POA & $0.493 \pm 0.023$ & $0.579$ & $0\%$  & $613$ & \checkmark \\
+    DUO GS  & $0.521 \pm 0.018$ & $0.251$ & $13\%$ & $613$ & \checkmark \\
+    DUO CC  & $0.501 \pm 0.018$ & $0.479$ & $0\%$  & $613$ & \checkmark \\
     \midrule
     \multicolumn{6}{l}{Overall: \checkmark\ PASS} \\
     \bottomrule

@@ -1,0 +1,139 @@
+\section{TPS-ZKPI Design}
+\label{sec:design}
+
+\subsection{Overview}
+
+TPS-ZKPI follows a Trusted Proof Service-assisted architecture for policy-private
+and auditable consent enforcement. As shown in Figure~\ref{fig:tps-zkpi-workflow},
+the workflow binds a provider-committed hidden policy to requester-submitted
+authorization evidence through TPS-side proof generation and on-chain proof
+verification. The provider registers only a policy commitment on-chain and sends
+policy-bound proving material to the TPS off-chain. For each access request,
+the TPS constructs the private witness from the hidden policy material and requester
+evidence, generates a zero-knowledge proof of policy compliance, and submits
+a fixed-format proof statement for ACM verification. The ACM records the
+authorization outcome, which is then consumed by the resource access layer.
+
+This design separates confidentiality-sensitive proof generation from public
+verification. Policy material and requester evidence remain within the
+provider--TPS--requester off-chain boundary, while the blockchain verifies only
+a fixed-format proof statement against the provider's policy commitment and session-binding
+public inputs.
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.6\textwidth]{PP-TPS.png}
+    \caption{TPS-assisted policy-compliance workflow.}
+    \label{fig:tps-zkpi-workflow}
+\end{figure*}
+
+\subsection{Policy Representation and Interpretation}
+
+TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length,
+circuit-friendly format. Let
+\begin{equation}
+    X = \{0,1\}^{N}, \qquad Y = \{0,1\}^{M}
+\end{equation}
+denote the requester-attribute space and the external-predicate space,
+respectively. The unified operand space is
+\begin{equation}
+    O = X \times Y,
+\end{equation}
+where $a \in X$ encodes requester attributes and $p \in Y$ encodes externally
+attested predicate outcomes, such as credential validity, ontology-linked checks,
+or obligation-related conditions. TPS-ZKPI does not itself solve credential issuance,
+revocation, or external attestation; it consumes these outcomes and, where applicable,
+verifies auxiliary witnesses inside the proof relation.
+
+Consent policies are expressed as Boolean formulas:
+\begin{equation}
+    P ::= atom \mid (P \land P) \mid (P \lor P) \mid \neg P .
+\end{equation}
+Each policy is compiled into a Reverse Polish Notation (RPN) program over operand
+tokens, Boolean operators, and deterministic no-op tokens. To support
+reusable verification, each program is padded to a fixed length:
+\begin{equation}
+    P_{enc}= [t_{1},\ldots,t_{\mathsf{DEPTH}}],
+\end{equation}
+where shorter policies are padded with no-op tokens. We denote the set of fixed-length
+programs by $\mathsf{Prog}$.
+
+The reusable policy interpreter is a zero-knowledge circuit
+\begin{equation}
+    C : \mathsf{Prog}\times O \rightarrow \{0,1\}.
+\end{equation}
+Given an encoded policy and operand values, the interpreter evaluates the
+RPN program using deterministic stack semantics and enforces well-formedness
+constraints inside the circuit. The circuit outputs $1$ only if the program is
+syntactically valid and the requester evidence satisfies the encoded policy.
+
+This design avoids policy-specific circuits and verifier contracts while supporting
+policy evolution through different fixed-length policy programs.
+
+\subsection{Commitment Binding and Proof Generation}
+
+To bind each proof to a provider-defined hidden policy, the provider samples
+commitment randomness $r$ and computes
+\begin{equation}
+    h = \mathsf{Com}(P_{enc}; r) = \mathsf{Poseidon}(P_{enc}\parallel r),
+\end{equation}
+where $h$ is stored on-chain as the public handle of the hidden policy. The
+commitment hides the policy representation while binding future proofs to
+the committed policy instance.
+
+For an access request, the TPS constructs the private witness
+\begin{equation}
+    w = (P_{enc}, a, p, r, \omega),
+\end{equation}
+where $P_{enc}$ is the encoded policy, $a$ denotes requester attributes, $p$
+denotes external predicate outcomes, $r$ is the commitment randomness, and $\omega$
+denotes auxiliary witnesses for credential- or predicate-dependent checks. The
+public statement contains the policy commitment $h$, requester and resource
+identifiers, a session nonce, and fixed-format public parameters $pp$.
+
+The TPS generates a proof
+\begin{equation}
+    \pi \leftarrow \mathsf{Prove}\bigl(C, w; (h, id_{req}, id_{res}, nonce, p
+    p)\bigr).
+\end{equation}
+The proof certifies that: (i) the encoded policy is well formed, (ii) the
+requester evidence satisfies the policy under the interpreter, (iii) the hidden
+policy encoding is consistent with the on-chain commitment $h$, (iv)
+required credential or external-predicate checks are satisfied with respect
+to the supplied parameters, and (v) the proof is bound to the requester,
+resource, and session context.
+
+The ACM verifies $\pi$ on-chain against the public statement. If
+verification succeeds, it records a positive authorization outcome for the requester
+and resource. The policy encoding, commitment randomness, requester
+attributes, credential witnesses, and auxiliary proof material are not
+posted on-chain.
+
+\subsection{Transcript Normalization}
+
+Zero-knowledge proofs hide private witness values, but surrounding
+blockchain artifacts may still leak policy-dependent information. TPS-ZKPI therefore
+normalizes the public transcript so that different policies induce fixed or tightly
+bounded observable profiles. Table~\ref{tab:transcript-normalization}
+summarizes the mechanisms.
+
+\begin{table}[ht]
+    \centering
+    \caption{Transcript-normalization mechanisms in TPS-ZKPI.}
+    \label{tab:transcript-normalization} \footnotesize
+    \begin{tabular}{p{0.24\linewidth}p{0.66\linewidth}}
+        \hline
+        \textbf{Artifact} & \textbf{Normalization mechanism}                                          \\
+        \hline
+        Calldata          & Fixed verification interface and padded proof/public-input encoding.      \\
+        Logs              & Fixed event structure with constant topic and payload layout.             \\
+        Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses. \\
+        Gas usage         & Policy-independent verifier logic with bounded or padded gas profiles.    \\
+        \hline
+    \end{tabular}
+\end{table}
+
+These mechanisms do not eliminate all public observability. Rather, they reduce
+policy-dependent variation in calldata, logs, public parameters, and gas-related
+behavior that could otherwise serve as a fingerprint for the metadata-only
+adversary defined in Section~\ref{sec:problem}.

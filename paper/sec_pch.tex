@@ -22,11 +22,11 @@ identically to the terms we do not enumerate.
 \paragraph{Supervised attack.} We treat each of the six DUO terms (GR, DS, RS, POA, GS,
 CC) as a one-vs-rest binary recovery task and run the multi-seed pipeline of
 Section~\ref{sec:eval-method}. Table~\ref{tab:pch-terms} reports the authoritative
-per-term verdicts: every DUO task has $\mathrm{AUC}_{\text{mean}}\in[0.492,0.540]$, and
-the only seed fraction reaching $50\%$ (DUO~RS) sits at
-$\mathrm{AUC}_{\text{mean}}=0.540<0.55$, so it clears only one leg of the failure
+per-term verdicts: every DUO task has $\mathrm{AUC}_{\text{mean}}\in[0.490,0.527]$ and a
+significant-seed fraction of at most $13\%$, so none approaches either leg of the failure
 criterion. The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the
 ICD-bearing rows only; Table~\ref{tab:pch-icd10}) passes all ten. The single highest
-value is ch6 at $\mathrm{AUC}_{\text{mean}}=0.591\pm0.089$ with $40\%$ significant
-seeds; it clears the AUC leg but not the reproducibility leg, so it is a boundary case
-rather than a stable channel. We report such cases rather than suppress them.
+value is ch6 at $\mathrm{AUC}_{\text{mean}}=0.573\pm0.061$ with $17\%$ significant
+seeds; it clears the AUC leg ($0.573>0.55$) but not the reproducibility leg ($17\%<50\%$),
+so it is a boundary case rather than a stable channel. We report such cases rather than
+suppress them.

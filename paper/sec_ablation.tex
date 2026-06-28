@@ -23,9 +23,31 @@ synthetic label derived from an input feature. The paired leakage metric is
   |\mathrm{AUC}_{\mathrm{B2}} - 0.5|.
 \]
 %
-Positive values mean padding moved the attacker closer to chance. Table~\ref{tab:ablation-gas-padding}
-is intentionally separated from the main privacy verdicts: the main verdicts answer
-whether the full mechanism is private; this ablation attributes that privacy to a
-specific defense layer and reports its gas cost. The comparison report is not yet
-committed in this repository, so the table records the intended manuscript shape without
-inventing B1/B2 deltas.
+Positive values mean padding moved the attacker closer to chance, and we bound each
+$\Delta_{\text{leak}}$ with a $500$-iteration bootstrap $95\%$ confidence interval.
+Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main privacy
+verdicts: the main verdicts answer whether the full mechanism is private; this ablation
+attributes that privacy to a specific defense layer and reports its gas cost.
+
+\paragraph{Padding removes otherwise-recoverable signal.} With padding disabled, attacks
+that are non-informative on the deployed system become measurably effective. The
+random-forest distinguisher on B1 reaches AUC up to $0.81$ on SPP parameter-magnitude
+contrasts (\texttt{paramType none/small}) and $0.76$ on structural contrasts
+(\texttt{and\_only/negation\_heavy}), while the corresponding B2 AUCs fall back to
+$0.41$--$0.47$; the bootstrap $\Delta_{\text{leak}}$ is positive with a $95\%$ CI that
+excludes zero. The clustering attacker shows the same pattern: PI pairwise clustering
+reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$
+under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.067$
+(B1) to $-0.006$ (B2). This establishes randomized access-gas padding as the defense
+layer responsible for the protection reported in
+Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}, rather than weak attacks or
+insufficient sample size.
+
+\paragraph{Cost.} Padding is not free: it raises mean commit gas from $216{,}562$ (B1)
+to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to
+$753{,}310$, a $37.7\%$ increase. This overhead is the principal efficiency tradeoff of
+the design.
+
+\paragraph{Scope.} B2 reuses the existing deployed Polygon Amoy run, so B1 and B2 are
+non-contemporaneous; \texttt{blockDifference} is excluded from every attack model to
+avoid confounding the comparison with timing rather than policy-dependent structure.

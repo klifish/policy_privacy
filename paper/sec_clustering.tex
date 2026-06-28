@@ -1,12 +1,8 @@
 % Cross-property unsupervised clustering section (consolidated view + PI rebalancing).
-% Figures live under the gitignored python/results/ tree. \graphicspath lets them resolve
-% whether you compile from the repo root or copy the PNGs next to these .tex files in Overleaf.
-\graphicspath{%
-  {python/results/pch_clustering_analysis/}%
-  {python/results/pi_clustering_analysis/}%
-  {python/results/spp_clustering_analysis/}%
-  {figures/}{./}%
-}
+% Figures are tracked under figures/ (copied from the gitignored python/results/ tree).
+% main.tex sets \graphicspath{{figures/}{./}}; this local \graphicspath is a fallback so
+% the chapter also resolves figures when compiled on its own (e.g. via _smoke.tex).
+\graphicspath{{figures/}{./}}
 \subsection{Unsupervised clustering: a label-free cross-check}
 \label{sec:eval-clustering}
 

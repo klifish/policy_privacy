@@ -1,7 +1,8 @@
 % Sources of record:
-%   PCH: experiments/multiseed_results/polygonAmoy/pch_verdict.txt
-%   PI:  experiments/multiseed_results/polygonAmoy/pi_verdict.txt
-%   SPP: experiments/multiseed_results/polygonAmoy/spp_verdict.txt
+%   PCH: experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json
+%   PI:  experiments/policy_indistinguishability/results/polygonAmoy/pi_report.json
+%   SPP: experiments/structure_and_parameter_privacy/results/polygonAmoy/report.json
+% (all multiseedVerdict, deterministic per-seed RNG.)
 % Dataset: Polygon Amoy, fixed circuit + commitment-only interface + access-gas padding.
 \begin{table}[t]
   \centering
@@ -14,7 +15,7 @@
     Property & Hidden target & Headline supervised result & Verdict \\
     \midrule
     PCH & DUO terms and ICD-10 chapters
-        & 16 content-recovery tasks pass; DUO AUCs $0.492$--$0.540$, ICD AUCs $0.467$--$0.591$
+        & 16 content-recovery tasks pass; DUO AUCs $0.490$--$0.527$, ICD AUCs $0.458$--$0.573$
         & \checkmark \\
     PI & Related policy-pair identity
        & Overall AUC $0.516\pm0.030$, permutation $p=0.367$, $10\%$ significant seeds

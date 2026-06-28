@@ -1,0 +1,95 @@
+\section{Problem and Threat Model}
+\label{sec:problem}
+
+\subsection{System and Trust Model}
+
+We consider a blockchain-based healthcare data-sharing system in which
+access to protected resources is governed by provider-defined consent
+policies. The system involves five roles: a data provider or data owner, a data
+requester, a Trusted Proof Service (TPS), an on-chain access-control manager
+(ACM), and a resource access layer. The provider defines a consent policy $P$
+for a protected resource and registers an on-chain commitment $h$ to the encoded
+policy. The requester seeks access by submitting policy-relevant
+authorization evidence, such as attributes, credentials, and access context.
+The TPS constructs the private witness and generates a zero-knowledge proof
+of policy compliance. The ACM verifies the proof on-chain and records the authorization
+outcome, while the resource access layer grants access according to the
+recorded decision.
+
+TPS-ZKPI relies on the following assumptions. First, policies are provider-controlled:
+the provider is responsible for defining the applicable consent policy and committing
+the corresponding policy instance on-chain. Second, the TPS is trusted to preserve
+the confidentiality of policy-bound proving material and requester-submitted
+authorization evidence, and to follow the prescribed proof-generation
+workflow. Hidden policies and requester evidence are therefore protected from
+the public blockchain transcript, but they are visible to the TPS. Third,
+the commitment scheme is assumed to be hiding and binding, and the zero-knowledge
+proof system is assumed to satisfy completeness, soundness, and zero knowledge
+with respect to the implemented policy-compliance relation. Credential
+issuance, revocation, and real-world identity verification are treated as
+external functions.
+
+\subsection{Public-Chain Adversary}
+
+The primary adversary is a passive public-chain observer. The adversary can
+inspect smart-contract code and monitor public blockchain artifacts across
+multiple authorization sessions, including policy commitments, submitted
+proofs, public inputs, emitted events, calldata, timestamps, and gas usage.
+The adversary does not observe provider-to-TPS policy material, commitment-opening
+randomness, requester-submitted authorization evidence, credential witnesses,
+or TPS-side witness construction.
+
+Each policy-enforcement instance corresponds to an authorization session, in
+which a requester seeks access to a protected resource under a committed policy.
+For each such session, the adversary observes a public view
+\begin{equation}
+    view_{\mathsf{pub}}= (h, \pi, pp, meta),
+\end{equation}
+where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-knowledge
+proof submitted for on-chain verification, $pp$ denotes fixed-format public parameters
+or public handles, and $meta$ denotes transaction-level metadata exposed by
+the enforcement layer, such as calldata footprint, event structure, public-input
+layout, timing, and gas usage. The adversary's goal is to infer hidden
+information about the committed policy or the authorization interaction from
+this public view.
+
+In addition to the public-chain observer, we treat the requester as untrusted
+with respect to policy confidentiality. The requester may initiate access
+requests, observe its own submitted evidence and authorization outcome, and
+inspect the public transcript. However, the requester does not receive the
+encoded policy, commitment-opening randomness, or policy-bound proving
+material, which remain within the provider-to-TPS proof-generation boundary.
+
+\subsection{Privacy Objectives}
+
+We define policy privacy through three attack-oriented objectives.
+
+\textit{Policy Content Hiding (PCH).} PCH requires that public-chain artifacts
+should not reveal the semantic content of the hidden consent policy, such as
+data-use terms, disease categories, research purposes, institutional restrictions,
+or ethics-related requirements.
+
+\textit{Policy Indistinguishability (PI).} PI requires that different candidate
+policies should not become distinguishable from their public verification artifacts
+when they are compiled into the same fixed public interface. This captures
+whether two policies can be told apart from commitments, proofs, public
+parameters, or metadata even when their direct representations are hidden.
+
+\textit{Structure and Parameter Privacy (SPP).} SPP requires that public-chain
+artifacts should not reveal structural or parametric properties of the
+hidden policy, such as logical structure, nesting depth, predicate count,
+set size, or threshold-like parameters.
+
+\subsection{Problem Statement}
+
+Given a provider-defined consent policy $P$, requester authorization evidence,
+and an untrusted public blockchain, the problem is to enforce access to a protected
+healthcare resource while satisfying three requirements. First, authorization
+must be publicly verifiable: the ACM should be able to verify that the
+requester satisfies the committed policy without learning or executing the
+policy in plaintext. Second, policy-dependent information should remain
+hidden from unauthorized observers, including policy content, policy
+distinguishability, structural properties, requester evidence, and metadata-level
+enforcement fingerprints. Third, authorization outcomes should remain auditable,
+so that successful access decisions can be recorded and checked without
+exposing the hidden policy logic.
