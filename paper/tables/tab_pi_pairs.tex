@@ -1,8 +1,10 @@
-% Source of record: experiments/multiseed_results/polygonAmoy/pi_verdict.txt
+% Source of record: experiments/policy_indistinguishability/results/polygonAmoy/pi_report.json
+%   (multiseedVerdict; matches the pi_verdict.txt batch).
 % Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 % controlled_difference is diagnostic, non-gating.
-\begin{table}[t]
+% table* spans both columns (the 7-column row is too wide for a single column).
+\begin{table*}[t]
   \centering
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
     policy-disjoint seeds, by policy-pair archetype. \texttt{controlled\_difference} is
@@ -21,4 +23,4 @@
     \multicolumn{7}{l}{Overall: \checkmark\ PASS} \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}

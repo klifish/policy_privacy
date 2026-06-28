@@ -1,8 +1,10 @@
-% Source of record: experiments/multiseed_results/polygonAmoy/spp_verdict.txt
+% Source of record: experiments/structure_and_parameter_privacy/results/polygonAmoy/report.json
+%   (multiseedVerdict; matches the spp_verdict.txt batch).
 % Structure & Parameter Privacy — supervised attack, multi-seed (30 policy-disjoint seeds).
 % AUC uses random forest (LR over-separates on near-constant features).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
-\begin{table}[t]
+% table* spans both columns (the 6-column rows with two mean+-std columns overflow a single column).
+\begin{table*}[t]
   \centering
   \caption{Structure \& Parameter Privacy: 18 pairwise contrasts across three annotation
     axes, each over 30 policy-disjoint seeds. AUC is the calibrated random-forest score.
@@ -39,4 +41,4 @@
     \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 18 contrasts)} \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}
