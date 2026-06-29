@@ -1,5 +1,5 @@
 % Gas-padding ablation / mechanism attribution.
-\subsection{Ablation: contribution of access-gas padding}
+\subsection{Ablation: gas-normalization positive control}
 \label{sec:eval-ablation}
 
 The main results show that the full mechanism hides content, policy identity, and
@@ -11,11 +11,13 @@ channels.
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile
 without commit/access gas padding. \textbf{B2} is the full mechanism used in the main
-evaluation, with randomized access-gas padding. This paired design also validates the
-attack pipeline directly: the same features, splits, and classifiers produce
-well-above-chance AUCs on B1 when padding is absent, while B2 returns the attacker toward
-chance. Thus the main privacy claim rests on a real ablation contrast rather than on a
-synthetic label derived from an input feature. The paired leakage metric is
+evaluation, with randomized access-gas padding. This is the positive control for the
+gas channel: calldata, proof size, and event-log shape are already fixed, so B1 is an
+un-padded gas-transcript control rather than a run with every normalization layer
+removed. The same features, splits, and classifiers produce well-above-chance AUCs on
+B1 when padding is absent, while B2 returns the attacker toward chance. Thus the main
+privacy claim rests on a real ablation contrast rather than on a synthetic label
+derived from an input feature. The paired leakage metric is
 %
 \[
   \Delta_{\text{leak}} =
@@ -39,14 +41,20 @@ excludes zero. The clustering attacker shows the same pattern: PI pairwise clust
 reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$
 under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.067$
 (B1) to $-0.006$ (B2). This establishes randomized access-gas padding as the defense
-layer responsible for the protection reported in
+layer responsible for the gas-channel protection reported in
 Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}, rather than weak attacks or
 insufficient sample size.
 
 \paragraph{Cost.} Padding is not free: it raises mean commit gas from $216{,}562$ (B1)
 to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to
 $753{,}310$, a $37.7\%$ increase. This overhead is the principal efficiency tradeoff of
-the design.
+the design. Table~\ref{tab:cost-profile} adds a single-point DEPTH=20 cost
+characterization. Gas, logs, and transaction objects are taken from the Polygon Amoy
+executed datasets; transaction hashes are stored in the B1/B2 executed datasets. The
+captured transaction \texttt{dataLength} values are reported instead of
+\texttt{accessCalldataLength}, which is null in these artifacts. Proving time is local
+prover timing from the B1 run, not an on-chain measurement. Cost-vs-DEPTH scaling is
+left to future work because only DEPTH=20 is compiled and evaluated here.
 
 \paragraph{Scope.} B2 reuses the existing deployed Polygon Amoy run, so B1 and B2 are
 non-contemporaneous; \texttt{blockDifference} is excluded from every attack model to

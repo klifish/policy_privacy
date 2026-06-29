@@ -18,10 +18,12 @@ attacker never appear in the test set, so a high score cannot come from memorizi
 individual policies. For each seed we run a label-permutation test and record whether
 the AUC is significant at $\alpha{=}0.05$.
 
-The honest headline metrics are the AUC, its distance from chance $|\mathrm{AUC}-0.5|$,
-and the permutation $p$-value. Raw accuracy advantage is retained only as a legacy
-diagnostic field because, on imbalanced test sets, a majority-class predictor can score
-large apparent gains with $F_1\approx 0$. The unified verdict
+The honest headline metrics are the AUC, its sample-estimated distance from chance
+$|\mathrm{AUC}-0.5|$ (reported as the AUC gap), and the permutation $p$-value. This AUC
+gap is an empirical diagnostic, not the advantage of a formal cryptographic
+distinguisher and not a proven security bound. Raw accuracy gain is retained only as a
+legacy diagnostic field because, on imbalanced test sets, a majority-class predictor
+can score large apparent gains with $F_1\approx 0$. The unified verdict
 (\texttt{experiments/core/multiseed\_criterion.js}) is:
 %
 \begin{quote}
@@ -37,6 +39,14 @@ excluded from gating, so a tiny subclass's noise cannot decide the verdict. The 
 tables report the AUC selected by the committed verdict file for each task. SPP uses the
 calibrated random-forest score for its AUC leg because logistic regression
 over-separates on the near-constant SPP features and yields a degenerate AUC.
+
+The LR/RF feature set is deliberately small because the transcript normalization fixes
+calldata footprint, proof size, public-input layout, and event-log shape by
+construction. The live modeled channel is therefore gas, which the on-chain observer
+sees completely. To distinguish a genuine defense from a weak attacker, we pair the
+near-chance main results with the gas-normalization positive control in
+Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover
+signal on the un-padded gas transcript and collapse after padding.
 
 \subsubsection{Unsupervised clustering attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features

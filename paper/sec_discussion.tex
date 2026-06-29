@@ -31,7 +31,11 @@ confidentiality-sensitive proof generation to the TPS, TPS-ZKPI avoids exposing
 policy-bound proving material to requesters or public smart contracts, while
 preserving on-chain verifiability through zero-knowledge proof verification.
 However, this shifts part of the confidentiality burden to the service layer.
-Future work should investigate reduced-trust TPS designs, including
-distributed proof services, hardware-assisted isolation, accountable logging,
-or cryptographic protocols that further reduce what any single proof service
-can observe.
+The current provider-operated instantiation also leaves liveness and accountability
+unchanged: the TPS or provider can refuse to produce a proof, which may be
+indistinguishable from a legitimate denial at the on-chain interface. Future work
+should investigate accountable proof obligations, such as on-chain commitments to serve
+requests plus timeout-with-evidence mechanisms, as well as reduced-trust TPS designs.
+A distributed proof service is essentially a collaborative-SNARK direction in which no
+single service sees both inputs, while a TEE-backed service makes the word ``trusted''
+concrete through hardware attestation.

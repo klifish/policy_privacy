@@ -18,4 +18,6 @@ the permutation test. Single-split accuracy-style diagnostics can run large on i
 contrasts, but this is the majority-class artifact described in
 Section~\ref{sec:eval-method}---a near-constant predictor scoring apparent gains
 without genuine separation---which the AUC-plus-permutation criterion correctly reads
-as chance.
+as chance. Section~\ref{sec:eval-ablation} provides the corresponding positive control:
+when gas padding is removed, the same random-forest SPP attacker recovers structural and
+parameter-magnitude signal, and that signal collapses under the full normalization.

@@ -1,0 +1,28 @@
+% Single-point DEPTH=20 cost profile.
+% R1CS source: npx snarkjs r1cs info build/circuits/policy_privacy_main_instance.r1cs
+% Gas source: experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
+% Transaction dataLength/log/prover timing source:
+%   experiments/ablation/gas_padding/polygonAmoy/{b1_unpadded,b2_padded}/executed_dataset.json
+\begin{table}[t]
+  \centering
+  \caption{Single-point cost profile at DEPTH=20. Gas, logs, and transaction objects are
+    measured from Polygon Amoy executed datasets; proving time is local prover timing
+    from the B1 run. Transaction data length reports captured \texttt{dataLength}
+    values because \texttt{accessCalldataLength} is null in these artifacts.}
+  \label{tab:cost-profile}
+  \footnotesize
+  \begin{tabular}{p{0.34\linewidth}p{0.54\linewidth}}
+    \toprule
+    Metric & Value / source \\
+    \midrule
+    Circuit size & $75{,}097$ R1CS constraints; $74{,}834$ wires; DEPTH=20 \\
+    Public interface & $2$ public inputs plus $1$ output \\
+    Verifier gas, unpadded B1 & Commit $216{,}562$; access $546{,}876$ mean gas \\
+    Verifier gas, padded B2 & Commit $303{,}556$; access $753{,}310$ mean gas \\
+    Event logs & Commit: $1$ log / $180$ bytes; access: $2$ logs / $296$ bytes \\
+    Transaction data length & B1 unique values: $330$ and $0$ bytes; B2 unique values: $394$ and $0$ bytes \\
+    Local witness time & $190.8$ ms mean (B1) \\
+    Local prove time & $3881.5$ ms mean (B1) \\
+    \bottomrule
+  \end{tabular}
+\end{table}

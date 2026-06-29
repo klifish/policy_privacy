@@ -39,6 +39,8 @@ Thumbs.db
 
 # LaTeX build products (paper/ sources are tracked; compiled output is not)
 paper/_smoke_preview.pdf
+paper/RESPONSE_TO_REVIEW.md
+output/pdf/
 paper/*.aux
 paper/*.fls
 paper/*.fdb_latexmk
@@ -53,6 +55,7 @@ yarn-error.log*
 # Experiment results are tracked in git for reproducibility.
 # Only the bulky, regenerable pi_pairs intermediate is excluded.
 experiments/**/results/**/pi_pairs.json
+experiments/**/pi/pi_pairs.json
 experiments/**/test_results/
 experiments/unified_dataset_artifacts/
 # Local smoke-run dataset (transient; Amoy datasets are committed for reproducibility)

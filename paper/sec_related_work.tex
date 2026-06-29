@@ -15,11 +15,18 @@ target asset ownership, values, or participant relationships rather than complia
 with a data-owner-controlled consent policy.
 
 Hidden-policy access-control work reduces direct policy exposure by using encrypted
-policies, off-chain matching, or policy-holder components~\cite{wu2023blockchain,
-hu2023access}. However, such designs may still leak policy-shaped artifacts through
-ciphertext structures, policy-update transactions, authorization workflows,
-repeated interactions, or privileged policy-holder behavior. Moreover, many such
-systems are designed for permissioned or off-chain settings, where the
+policies, hidden-policy ABE variants, off-chain matching, or policy-holder
+components~\cite{bethencourt2007ciphertext,wu2023blockchain,hu2023access}. Functional
+encryption gives a more general cryptographic abstraction for revealing function
+outputs while hiding inputs~\cite{boneh2011functional}. Private-state blockchain
+systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or
+execution through encrypted state and trusted execution environments~\cite{secretnetwork2020,cheng2019ekiden}.
+These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI's
+gap is narrower: hiding consent policies on a public chain while retaining public
+verifiability of each authorization decision. Moreover, existing designs may still
+leak policy-shaped artifacts through ciphertext structures, policy-update
+transactions, authorization workflows, repeated interactions, or privileged
+policy-holder behavior, and many target permissioned or off-chain settings where the
 observability assumptions are weaker than those of public blockchains.
 
 Privacy-preserving access-control and policy-evaluation mechanisms have been
@@ -65,7 +72,8 @@ verification interface for evolving Boolean-based consent policies.
     \caption{Positioning of representative approaches against policy-private
     consent enforcement under public-chain observability. ``Yes'' indicates explicit
     support, ``Partial'' indicates indirect or incomplete support, and ``No''
-    indicates that the dimension is not addressed.}
+    indicates that the dimension is not addressed; assumptions in parentheses are
+    part of the claim.}
     \label{tab:related-work-gap} \footnotesize
     \begin{tabular}{p{0.2\linewidth}p{0.1\linewidth}p{0.1\linewidth}p{0.1\linewidth}p{0.4\linewidth}}
         \hline
@@ -76,7 +84,7 @@ verification interface for evolving Boolean-based consent policies.
         MPC / HE policy evaluation~\cite{ardagna2009xacml,sheikhalishahi2019privacy}                                                             & Yes                             & No                                   & Partial                          & Supports confidential computation, but usually lacks public-chain-verifiable authorization evidence.                                      \\
         Universal SNARKs / zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}                                                     & No                              & Partial                              & Yes                              & Supports proof reuse and public verification, but does not by itself hide policy-dependent public artifacts.                              \\
         Metadata-leakage defenses~\cite{miller2023vtbc}                                                                                          & No                              & Yes                                  & No                               & Models or mitigates observable signals, but does not provide hidden-policy consent enforcement.                                           \\
-        TPS-ZKPI                                                                                                                                 & Yes                             & Yes                                  & Yes                              & Provides policy-private, metadata-aware, verifiable consent enforcement under the stated TPS trust assumption.                            \\
+        TPS-ZKPI                                                                                                                                 & Yes (under TPS trust)           & Yes                                  & Yes                              & Provides policy-private, metadata-aware, verifiable consent enforcement under the stated TPS trust assumption.                            \\
         \hline
     \end{tabular}
 \end{table*}

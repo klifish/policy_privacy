@@ -2,7 +2,8 @@
 \label{sec:conclusion}
 
 This paper studied policy-private consent enforcement in blockchain-based
-healthcare data sharing under public-chain observability. We proposed TPS-ZKPI,
+healthcare data sharing under public-chain observability and an explicit TPS trust
+assumption. We proposed TPS-ZKPI,
 a Trusted Proof Service-assisted zero-knowledge approach that binds hidden
 provider-defined policies to on-chain commitments, evaluates Boolean-based consent
 policies through a reusable policy interpreter, and normalizes public
@@ -10,7 +11,7 @@ verification artifacts to reduce metadata-level leakage. Across supervised and
 unsupervised attacks on PCH, PI, and SPP, no modeled adversary recovered hidden
 policy information above the chance baseline under a multi-seed permutation
 criterion, and a paired gas-padding ablation attributed this protection
-specifically to transcript normalization---at a $38$--$40\%$ gas overhead.
+specifically to gas-transcript normalization---at a $38$--$40\%$ gas overhead.
 Future work will extend the analysis to stronger adaptive adversaries, off-chain
 leakage, richer policy languages, reduced-trust proof generation, and privacy-preserving
 resource discovery.

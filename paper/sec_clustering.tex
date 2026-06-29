@@ -11,7 +11,9 @@ adversary who can train on labeled executions. A weaker but assumption-free atta
 simply asks whether the on-chain gas features \emph{cluster} along the hidden property
 with no supervision at all. Table~\ref{tab:clustering-summary} consolidates this attack
 across all three properties: K-Means recovers essentially nothing, with ARI and NMI
-within $\pm 0.02$ of zero for every DUO, PI, and SPP target. The unsupervised attacker
+within $\pm 0.02$ of zero for every DUO, PI, and SPP target. NMI values are interpreted
+against the null finite-sample simulation in Section~\ref{sec:eval-nmi-sensitivity}.
+The unsupervised attacker
 agrees with the supervised verdict---privacy holds---as a second, label-free attack family
 on the same dataset (Figures~\ref{fig:clust-spp} and~\ref{fig:clust-pi}).
 
@@ -20,7 +22,7 @@ on the same dataset (Figures~\ref{fig:clust-spp} and~\ref{fig:clust-pi}).
   \includegraphics[width=\linewidth]{spp_detailed_analysis.png}
   \caption{SPP unsupervised clustering: ARI and NMI by structural target. All four
     targets sit at the zero line---gas clusters carry no structure or parameter
-    information.}
+    information; NMI is read against Section~\ref{sec:eval-nmi-sensitivity}.}
   \label{fig:clust-spp}
 \end{figure}
 
@@ -28,7 +30,8 @@ on the same dataset (Figures~\ref{fig:clust-spp} and~\ref{fig:clust-pi}).
   \centering
   \includegraphics[width=\linewidth]{pi_analysis_by_type.png}
   \caption{PI unsupervised clustering by pair archetype: per-pair ARI/NMI stay at chance
-    across all archetypes, matching the supervised distinguisher.}
+    across all archetypes, matching the supervised distinguisher and the NMI null
+    sensitivity analysis in Section~\ref{sec:eval-nmi-sensitivity}.}
   \label{fig:clust-pi}
 \end{figure}
 
@@ -39,4 +42,6 @@ meaningless. We rebuild the pairs into balanced $30$-vs-$30$ contrasts, and guar
 result with a permutation baseline---NMI under shuffled labels, where no true signal can
 exist---reporting the debiased NMI (observed minus baseline) and its empirical $p$-value.
 The conclusion is unchanged (Section~\ref{sec:eval-pi}): the indistinguishability is a
-property of the protocol, not of a degenerate measurement.
+property of the protocol, not of a degenerate measurement. The ablation in
+Section~\ref{sec:eval-ablation} supplies the positive control: clustering significance
+appears on the un-padded gas transcript and disappears after normalization.

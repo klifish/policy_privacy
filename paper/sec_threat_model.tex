@@ -21,8 +21,12 @@ transaction) the adversary observes the following nine on-chain features:
 %
 By design, calldata length, proof size, and log counts/sizes are content-independent
 (constant across policies), so any residual signal can only flow through the gas
-features. The defenses (commitment-only interface, randomized access-gas padding) target
-exactly this channel.
+features in the modeled public transcript. The defenses (commitment-only interface,
+randomized access-gas padding) target exactly this channel. We do not claim to flatten
+timing, transaction ordering, mempool or broadcast patterns, or off-chain TPS
+communication; compromised TPS behavior, adaptive requester probing, and off-chain side
+channels remain outside this evaluation model, matching the system model in
+Section~\ref{sec:problem}.
 
 We consider three increasingly fine-grained attacker tasks, one per privacy property:
 (i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~tell two
