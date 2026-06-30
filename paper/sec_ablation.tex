@@ -49,7 +49,9 @@ insufficient sample size.
 to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to
 $753{,}310$, a $37.7\%$ increase. This overhead is the principal efficiency tradeoff of
 the design. Table~\ref{tab:cost-profile} adds a single-point DEPTH=20 cost
-characterization. Gas, logs, and transaction objects are taken from the Polygon Amoy
+characterization: the circuit compiles to $75{,}097$ R1CS constraints, and mean local
+proof generation takes $3{,}881.5$ ms, preceded by $190.8$ ms of witness generation
+(about $4.1$ s end to end). Gas, logs, and transaction objects are taken from the Polygon Amoy
 executed datasets; transaction hashes are stored in the B1/B2 executed datasets. The
 captured transaction \texttt{dataLength} values are reported instead of
 \texttt{accessCalldataLength}, which is null in these artifacts. Proving time is local

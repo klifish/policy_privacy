@@ -2,6 +2,7 @@
 \label{sec:problem}
 
 \subsection{System and Trust Model}
+\label{subsec:trust-model}
 
 We consider a blockchain-based healthcare data-sharing system in which
 access to protected resources is governed by provider-defined consent
@@ -25,18 +26,22 @@ workflow. Third, the commitment scheme is assumed to be hiding and binding, and 
 issuance, revocation, and real-world identity verification are treated as
 external functions.
 
-The evaluated instantiation uses a provider-operated TPS. This choice avoids exposing
-the policy encoding or commitment-opening randomness to requesters and keeps public
-verification stable, but it also concentrates trust at the provider-side proof service:
-a compromised or colluding TPS can see both the policy and requester evidence, and a
-provider-operated TPS can reintroduce fabrication and stonewalling risks similar to a
-provider-prove design. The commitment and zero-knowledge proof machinery mainly buys
-public verifiability and correctness against a TPS that submits an invalid proof; it
-does not provide confidentiality against a compromised TPS. Reduced-trust alternatives
-include an independent proof service, which becomes a high-value honeypot, a TEE-backed
-proof service, which makes the trust assumption hardware-attested, or MPC/collaborative
-SNARK proof generation, where no single party sees both policy material and requester
-evidence.
+Conceptually, the TPS is an independent proof service, distinct from the provider; this
+separation is what makes relocating trust meaningful, since it prevents the provider from
+being the single party that holds both the policy and the requester evidence. Possible
+instantiations of such an independent service include a third-party proof service, a
+TEE-backed proof service that makes the trust assumption hardware-attested, or
+MPC/collaborative SNARK proof generation in which no single party sees both policy
+material and requester evidence.
+
+For implementation simplicity, the current evaluation co-locates the TPS with the
+provider (a provider-operated TPS) rather than deploying an independent service. This is
+a simplification of the evaluated prototype, not the intended deployment: it concentrates
+trust at the provider side, so a compromised or colluding TPS can see both the policy and
+requester evidence, and it can reintroduce fabrication and stonewalling risks similar to
+a provider-prove design. Regardless of instantiation, the commitment and zero-knowledge
+proof machinery mainly buys public verifiability and correctness against a TPS that
+submits an invalid proof; it does not provide confidentiality against a compromised TPS.
 
 \subsection{Public-Chain Adversary}
 
@@ -76,6 +81,13 @@ witness it is given; it does not prove that the private attribute vector is the
 requester's real-world attribute set. Binding a proof to $id_{req}$ ties the proof to
 an identifier and session context, but without an issuer-verification layer it does
 not by itself bind every private attribute value to an external source of truth.
+Because the TPS constructs the witness, a compromised TPS, or a TPS colluding with the
+provider, can substitute attribute values and still produce a verifying proof.
+Enforcing attribute-origin binding in-circuit would require the requester to reveal
+attributes in clear to the TPS for issuer-signature verification, which reintroduces the
+same confidentiality concession. Reconciling attribute-origin binding with attribute
+confidentiality under a single TPS is therefore a structural limitation, which the
+reduced-trust instantiations are intended to address.
 
 \subsection{Privacy Objectives}
 

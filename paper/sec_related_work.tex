@@ -20,14 +20,14 @@ components~\cite{bethencourt2007ciphertext,wu2023blockchain,hu2023access}. Funct
 encryption gives a more general cryptographic abstraction for revealing function
 outputs while hiding inputs~\cite{boneh2011functional}. Private-state blockchain
 systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or
-execution through encrypted state and trusted execution environments~\cite{secretnetwork2020,cheng2019ekiden}.
-These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI's
-gap is narrower: hiding consent policies on a public chain while retaining public
-verifiability of each authorization decision. Moreover, existing designs may still
-leak policy-shaped artifacts through ciphertext structures, policy-update
-transactions, authorization workflows, repeated interactions, or privileged
-policy-holder behavior, and many target permissioned or off-chain settings where the
-observability assumptions are weaker than those of public blockchains.
+execution through encrypted state and trusted execution environments~\cite{secretnetwork_docs,cheng2019ekiden}.
+These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI
+targets a more specific setting: hiding consent policies on a public chain while
+retaining public verifiability of each authorization decision. Even where policies are
+hidden, existing designs may still leak policy-dependent artifacts through ciphertext
+structures, policy-update transactions, authorization workflows, or repeated
+interactions. Moreover, many target permissioned or off-chain settings, where the
+observability assumptions are weaker than on public blockchains.
 
 Privacy-preserving access-control and policy-evaluation mechanisms have been
 studied in credential-based and XACML/SAML settings~\cite{ardagna2009xacml},
@@ -57,15 +57,15 @@ timing and volume patterns~\cite{miller2023vtbc}. Techniques such as batching,
 decoys, and traffic shaping can reduce some observable signals, but they are
 usually designed for payment privacy, anonymity sets, or transaction-linkability
 settings. They do not directly provide hidden-policy compliance verification
-or auditable consent enforcement. TPS-ZKPI incorporates this insight by
-treating metadata leakage as part of policy privacy and by normalizing
-calldata, logs, public parameters, and gas-related behavior.
+or auditable consent enforcement. In contrast, TPS-ZKPI treats metadata leakage as
+part of the policy-privacy objective rather than as a separate transaction-level concern.
 
-Table~\ref{tab:related-work-gap} summarizes the positioning of TPS-ZKPI.
 Existing approaches protect data, transactions, authorization computation, proof
-reuse, or metadata in isolation. In contrast, TPS-ZKPI combines policy
-confidentiality, metadata-leakage control, verifiable auditability, and a stable
-verification interface for evolving Boolean-based consent policies.
+reuse, or metadata in isolation, whereas policy-private consent enforcement under
+public-chain observability requires policy confidentiality, metadata-leakage control,
+verifiable auditability, and a stable verification interface for evolving
+Boolean-based consent policies to hold together. Table~\ref{tab:related-work-gap}
+summarizes this positioning.
 
 \begin{table*}[t]
     \centering

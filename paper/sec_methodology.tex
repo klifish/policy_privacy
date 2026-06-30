@@ -65,7 +65,9 @@ severely imbalanced pairs (one policy with $1$ execution against another with up
 $30$), where K-Means cannot cut the data and ARI/NMI $\approx 0$ is an artifact rather
 than evidence of privacy. We therefore rebuild the PI pairs from policies with
 $\ge 30$ executions into balanced $30$-vs-$30$ contrasts before clustering. To rule out
-residual finite-sample inflation, we add a \emph{permutation baseline}: we shuffle the
+residual finite-sample inflation, which the null simulation in
+Section~\ref{sec:eval-nmi-sensitivity} shows can raise NMI above zero while ARI stays at
+chance, we add a \emph{permutation baseline}: we shuffle the
 pair labels $200$ times and recompute the clustering NMI, giving the NMI distribution
 under zero true signal. The debiased NMI is the observed value minus this baseline, and
 the empirical $p$-value is the fraction of permutations whose NMI meets or exceeds the
