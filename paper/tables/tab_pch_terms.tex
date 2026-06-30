@@ -4,7 +4,7 @@
 % Policy Content Hiding -- supervised attack, multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5
 % (perm alpha=0.05); both legs required, else PASS.
-\begin{table}[t]
+\begin{table*}[t]
   \centering
   \caption{Policy Content Hiding: per-term supervised attack over 30 policy-disjoint
     seeds. Each DUO term is a one-vs-rest binary task. \emph{\%sig} is the fraction of
@@ -13,16 +13,16 @@
   \label{tab:pch-terms}
   \begin{tabular}{lccccc}
     \toprule
-    Term & AUC (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ & verdict \\
+    Term & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ \\
     \midrule
-    DUO GR  & $0.497 \pm 0.024$ & $0.535$ & $0\%$  & $613$ & \checkmark \\
-    DUO DS  & $0.490 \pm 0.021$ & $0.624$ & $3\%$  & $613$ & \checkmark \\
-    DUO RS  & $0.527 \pm 0.019$ & $0.191$ & $13\%$ & $613$ & \checkmark \\
-    DUO POA & $0.493 \pm 0.023$ & $0.579$ & $0\%$  & $613$ & \checkmark \\
-    DUO GS  & $0.521 \pm 0.018$ & $0.251$ & $13\%$ & $613$ & \checkmark \\
-    DUO CC  & $0.501 \pm 0.018$ & $0.479$ & $0\%$  & $613$ & \checkmark \\
+    DUO GR  & $0.497 \pm 0.024$ & $0.020 \pm 0.014$ & $0.535$ & $0\%$  & $613$ \\
+    DUO DS  & $0.490 \pm 0.021$ & $0.019 \pm 0.014$ & $0.624$ & $3\%$  & $613$ \\
+    DUO RS  & $0.527 \pm 0.019$ & $0.029 \pm 0.017$ & $0.191$ & $13\%$ & $613$ \\
+    DUO POA & $0.493 \pm 0.023$ & $0.019 \pm 0.016$ & $0.579$ & $0\%$  & $613$ \\
+    DUO GS  & $0.521 \pm 0.018$ & $0.023 \pm 0.016$ & $0.251$ & $13\%$ & $613$ \\
+    DUO CC  & $0.501 \pm 0.018$ & $0.013 \pm 0.012$ & $0.479$ & $0\%$  & $613$ \\
     \midrule
     \multicolumn{6}{l}{Overall: \checkmark\ PASS} \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}

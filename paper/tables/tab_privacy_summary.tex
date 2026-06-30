@@ -4,7 +4,7 @@
 %   SPP: experiments/structure_and_parameter_privacy/results/polygonAmoy/report.json
 % (all multiseedVerdict, deterministic per-seed RNG.)
 % Dataset: Polygon Amoy, fixed circuit + commitment-only interface + access-gas padding.
-\begin{table}[t]
+\begin{table*}[t]
   \centering
   \caption{Headline privacy results on the Polygon Amoy dataset. The supervised attacker
     uses 30 policy-disjoint seeds and a permutation test. A task passes unless both
@@ -21,8 +21,8 @@
        & Overall AUC $0.516\pm0.030$, permutation $p=0.367$, $10\%$ significant seeds
        & \checkmark \\
     SPP & Structure, predicate, and parameter buckets
-        & 18 pairwise contrasts pass; AUCs $0.428$--$0.521$, max $27\%$ significant seeds
+        & 18 pairwise contrasts pass; AUCs $0.421$--$0.530$, max $20\%$ significant seeds
         & \checkmark \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}

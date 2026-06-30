@@ -4,13 +4,12 @@
 \section{Privacy Evaluation}
 \label{sec:eval}
 
-We evaluate the three privacy properties of our system---Policy Content Hiding,
+We evaluate the three privacy properties of our approach---Policy Content Hiding,
 Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive
-on-chain observer (Section~\ref{sec:eval-threat}). The primary evidence is a
-supervised, multi-seed attack evaluation with policy-disjoint splits and permutation
-tests (Section~\ref{sec:eval-method}); unsupervised clustering provides a label-free
-cross-check on the same executions. All three properties pass the supervised criterion,
-and the clustering attack finds no natural grouping by hidden labels.
+on-chain observer (Section~\ref{sec:eval-threat}).
+The primary evidence is a supervised, multi-seed attack evaluation with policy-disjoint splits and permutation tests (Section~\ref{sec:eval-method}); unsupervised clustering provides a label-free
+cross-check on the same executions.
+All three properties pass the supervised criterion, and the clustering attack finds no natural grouping by hidden labels.
 
 \input{sec_threat_model.tex}
 \input{sec_methodology.tex}

@@ -15,24 +15,19 @@ within $\pm 0.02$ of zero for every DUO, PI, and SPP target. NMI values are inte
 against the null finite-sample simulation in Section~\ref{sec:eval-nmi-sensitivity}.
 The unsupervised attacker
 agrees with the supervised verdict---privacy holds---as a second, label-free attack family
-on the same dataset (Figures~\ref{fig:clust-spp} and~\ref{fig:clust-pi}).
+on the same dataset (Figure~\ref{fig:clust-summary}).
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{spp_detailed_analysis.png}
-  \caption{SPP unsupervised clustering: ARI and NMI by structural target. All four
-    targets sit at the zero line---gas clusters carry no structure or parameter
-    information; NMI is read against Section~\ref{sec:eval-nmi-sensitivity}.}
-  \label{fig:clust-spp}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{pi_analysis_by_type.png}
-  \caption{PI unsupervised clustering by pair archetype: per-pair ARI/NMI stay at chance
-    across all archetypes, matching the supervised distinguisher and the NMI null
-    sensitivity analysis in Section~\ref{sec:eval-nmi-sensitivity}.}
-  \label{fig:clust-pi}
+  \includegraphics[width=\linewidth]{clustering_summary_unified.png}
+  \caption{Unsupervised K-Means clustering across all three properties on a common
+    axis: ARI (top) and NMI (bottom) for every PCH, PI, and SPP target. Every bar sits
+    at the zero line---the natural gas clusters carry no information about the hidden
+    label. SPP targets are abbreviated (logic: \texttt{logicStructure}; depth:
+    \texttt{nestingDepth}; preds: \texttt{predicateCount}; setSize: \texttt{setSize}).
+    NMI is read against the null finite-sample simulation in
+    Section~\ref{sec:eval-nmi-sensitivity}.}
+  \label{fig:clust-summary}
 \end{figure}
 
 \paragraph{Removing sample-size confounds.} The clustering inputs are constructed to

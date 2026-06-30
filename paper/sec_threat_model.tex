@@ -3,34 +3,25 @@
 \label{sec:eval-threat}
 
 We evaluate against a \emph{passive on-chain observer}: an adversary who sees every
-transaction and event our protocol emits, but never the plaintext policy, the witness,
+transaction and event our approach emits, but never the plaintext policy, the witness,
 or any client-side timing. This is the strongest realistic attacker for a public
 blockchain---it has unrestricted, perpetual read access to the ledger.
 
 Concretely, for each policy execution (a commit transaction followed by an access
-transaction) the adversary observes the following nine on-chain features (of which
-\texttt{blockDifference} is observed but excluded from the attack models, as noted below):
+transaction) the adversary observes the following on-chain features:
 %
 \begin{itemize}
   \item \textbf{Gas:} \texttt{commitGasUsed}, \texttt{accessGasUsed}.
-  \item \textbf{Calldata size:} \texttt{commitCalldataLength} (\texttt{accessCalldataLength}
-        is not captured in our artifacts and is excluded).
+  \item \textbf{Calldata size:} \texttt{commitCalldataLength}. \texttt{accessCalldataLength}.
   \item \textbf{Proof size:} \texttt{proofSize}.
   \item \textbf{Event logs:} \texttt{commitLogsCount}, \texttt{commitLogsSize},
-        \texttt{accessLogsCount}, \texttt{accessLogsSize}.
-  \item \textbf{Timing:} \texttt{blockDifference} (blocks between commit and access),
-        observed but excluded from every attack model because B1 and B2 are
-        non-contemporaneous, so it would confound the comparison with timing rather than
-        policy-dependent structure (Section~\ref{sec:eval-ablation}).
+    \texttt{accessLogsCount}, \texttt{accessLogsSize}.
 \end{itemize}
 %
 By design, calldata length, proof size, and log counts/sizes are content-independent
 (constant across policies), so any residual signal can only flow through the gas
 features in the modeled public transcript. The effective feature set the attacker can
-exploit therefore reduces to the two gas measurements
-(\texttt{commitGasUsed}, \texttt{accessGasUsed}); the remaining observables are retained
-in the pipeline but carry no policy-dependent variation. The defenses (commitment-only
-interface, randomized access-gas padding) target exactly this channel. We do not claim to flatten
+exploit therefore reduces to the two gas measurements (\texttt{commitGasUsed}, \texttt{accessGasUsed}); the remaining observables are retained in the pipeline but carry no policy-dependent variation. The defenses (commitment-only interface, randomized access-gas padding) target exactly this channel. We do not model other potential side channels such as block
 timing, transaction ordering, mempool or broadcast patterns, or off-chain TPS
 communication; compromised TPS behavior, adaptive requester probing, and off-chain side
 channels remain outside this evaluation model, matching the system model in

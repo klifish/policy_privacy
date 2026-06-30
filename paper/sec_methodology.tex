@@ -18,13 +18,11 @@ attacker never appear in the test set, so a high score cannot come from memorizi
 individual policies. For each seed we run a label-permutation test and record whether
 the AUC is significant at $\alpha{=}0.05$.
 
-The honest headline metrics are the AUC, its sample-estimated distance from chance
-$|\mathrm{AUC}-0.5|$ (reported as the AUC gap), and the permutation $p$-value. This AUC
-gap is an empirical diagnostic, not the advantage of a formal cryptographic
-distinguisher and not a proven security bound. Raw accuracy gain is retained only as a
-legacy diagnostic field because, on imbalanced test sets, a majority-class predictor
-can score large apparent gains with $F_1\approx 0$. The unified verdict
-(\texttt{experiments/core/multiseed\_criterion.js}) is:
+The headline metrics are the AUC, its distance from chance averaged over seeds,
+$\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap), and the
+permutation $p$-value. Because the gap averages per-seed absolute deviations, it is
+generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
+The unified verdict is:
 %
 \begin{quote}
   \textbf{FAIL} iff $\mathrm{AUC}_{\text{mean}}>0.55$ \textbf{and} the
@@ -34,27 +32,25 @@ can score large apparent gains with $F_1\approx 0$. The unified verdict
 %
 Both legs are required: high classification power that is not statistically reproducible
 across seeds (or reproducible significance with chance-level AUC) does not constitute a
-leak. Subclasses whose median test size is $n<20$ are \emph{underpowered}---reported but
-excluded from gating, so a tiny subclass's noise cannot decide the verdict. The result
-tables report the AUC selected by the committed verdict file for each task. SPP uses the
-calibrated random-forest score for its AUC leg because logistic regression
-over-separates on the near-constant SPP features and yields a degenerate AUC.
+leak.
+Subclasses whose median test size is $n<20$ are \emph{underpowered}---reported but
+excluded from gating, so a tiny subclass's noise cannot decide the verdict.
+The result tables report the AUC selected by the committed verdict file for each task.
+SPP gates on both a logistic-regression and a random-forest classifier, and a task fails
+if either classifier clears the double criterion. Because logistic regression
+over-separates on the near-constant SPP features and yields a degenerate AUC, the
+operative AUC signal comes from the calibrated random-forest score.
 
 The LR/RF feature set is deliberately small because the transcript normalization fixes
 calldata footprint, proof size, public-input layout, and event-log shape by
 construction. The live modeled channel is therefore gas, which the on-chain observer
-sees completely. To distinguish a genuine defense from a weak attacker, we pair the
-near-chance main results with the gas-normalization positive control in
-Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover
-signal on the un-padded gas transcript and collapse after padding.
+sees completely.
+To distinguish a genuine defense from a weak attacker, we pair the near-chance main results with the gas-normalization positive control in Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover signal on the un-padded gas transcript and collapse after padding.
 
 \subsubsection{Unsupervised clustering attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features
-\emph{naturally} group along the hidden property. We run K-Means (with $K$ set to the
-number of classes, or $K{=}2$ for policy pairs) and DBSCAN on the on-chain gas features,
-and score the recovered clusters against the true labels with the Adjusted Rand Index
-(ARI) and Normalized Mutual Information (NMI). Values near $0$ mean the clusters carry no
-information about the hidden label; values near $1$ mean full leakage.
+\emph{naturally} group along the hidden property.
+We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI). Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
 PCH clusters all executions globally (no per-layer splitting), so the large-sample
 ARI/NMI are read directly. For the PI pairs we additionally guard against two
@@ -79,8 +75,6 @@ access-gas-padded \emph{Polygon~Amoy} dataset: the supervised verdicts read
 \texttt{experiments/multiseed\_results/polygonAmoy/} (numbers of record), and the
 clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. The
 supervised and unsupervised attacks therefore constitute two independent attack families
-applied to one dataset, rather than two datasets. Per-task sample sizes vary and are
-listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI
-pairs); the PI debiasing averages each observed NMI over $20$ K-Means seeds against a
-$200$-permutation baseline. Provenance for every table and figure is listed in
-\texttt{paper/README.md}.
+applied to one dataset.
+Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs); the PI debiasing averages each observed NMI over $20$ K-Means seeds against a $200$-permutation baseline.
+The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review); the paths above are relative to its root, and provenance for every table and figure is listed in its \texttt{README.md}.

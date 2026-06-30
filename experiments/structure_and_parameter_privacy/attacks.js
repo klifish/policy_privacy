@@ -492,9 +492,10 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       const rfPredictions = rf.predict(test.map(d => d.features));
       const rfEval = evaluateClassifier(rfPredictions, test.map(d => d.label));
-      // RF AUC from the tree-vote fraction — the unified verdict's AUC leg for
-      // SPP (the LR over-separates on near-constant features, giving degenerate
-      // AUC, so RF's calibrated score is used instead).
+      // RF AUC from the tree-vote fraction. The per-classifier verdict gates on
+      // both LR and RF, but on the near-constant SPP features the LR over-separates
+      // and yields a degenerate AUC, so RF's calibrated score carries the operative
+      // AUC signal for SPP.
       const rfProba = rf.predictProba(test.map(d => d.features));
       const rfLabels = test.map(d => d.label);
       rfEval.auc = calculateAUC(rfLabels, rfProba);
