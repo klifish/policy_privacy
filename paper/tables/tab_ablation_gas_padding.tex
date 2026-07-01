@@ -3,16 +3,25 @@
 % B1 artifacts: experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/.
 % B2 artifacts: experiments/ablation/gas_padding/polygonAmoy/b2_padded/ (reuses deployed run).
 % Bootstrap: 500 iterations, seed 20260625; effect = |AUC_B1-0.5| - |AUC_B2-0.5|.
-% Rows selected so that the bootstrap 95% CI of dLeak excludes zero (genuine reduction).
+% This table is ILLUSTRATIVE: the four supervised rows are representative contrasts whose
+% bootstrap 95% CI of dLeak excludes zero (genuine reduction). They are NOT the full set.
+% The full per-contrast distribution (all 39 rf + 39 lr contrasts, colored by dLeak CI
+% sign) is the primary evidence and lives in Fig. fig:ablation-paired
+% (python/clustering_analysis/plot_ablation_paired.py). Full-set counts, for reference:
+%   RF: 19 reduce / 14 no-eff / 6 neg;  LR: 26 reduce / 11 no-eff / 2 neg.
 \begin{table}[t]
   \centering
-  \caption{Gas-padding ablation on Polygon Amoy. B1 (no commit/access gas padding) and B2
-    (deployed, randomized access-gas padding) are aligned on the same policy set.
-    Supervised AUC is the calibrated random-forest score; clustering reports K-Means
-    ARI. $\Delta_{\text{leak}}=|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|>0$
+  \caption{Gas-padding ablation on Polygon Amoy: representative contrasts illustrating the
+    padding effect. B1 (no commit/access gas padding) and B2 (deployed, randomized
+    access-gas padding) are aligned on the same policy set. Supervised AUC is the calibrated
+    random-forest score; clustering reports K-Means ARI.
+    $\Delta_{\text{leak}}=|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|>0$
     means padding moved the attacker toward chance; $\Delta_{\text{leak}}$ rows show the
-    bootstrap mean with $95\%$ CI ($500$ iterations). Padding collapses every recoverable
-    signal to the chance baseline.}
+    bootstrap mean with $95\%$ CI ($500$ iterations). The four supervised rows are examples
+    on which B1 carries a genuine gas-channel signal (bootstrap $\Delta_{\text{leak}}$ CI
+    excludes zero), where a padding effect can be measured; the full per-contrast
+    distribution over \emph{all} contrasts is in Figure~\ref{fig:ablation-paired}. Where a
+    recoverable signal is present, padding drives it back toward the chance baseline.}
   \label{tab:ablation-gas-padding}
   \begin{tabular}{lp{0.30\linewidth}cc}
     \toprule
