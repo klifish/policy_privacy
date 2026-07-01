@@ -1,0 +1,211 @@
+// Double-column overview figure for the policy-privacy evaluation.
+// Render:  dot -Gdpi=300 -Tpng experiment_flow.dot -o experiment_flow.png
+//          dot -Tpdf experiment_flow.dot -o experiment_flow.pdf
+digraph experiment_flow {
+    graph [
+        rankdir=TB,
+        fontname="Helvetica",
+        margin=0.02,
+        pad=0.02,
+        size="7,2.52!",
+        bgcolor="white"
+    ];
+
+    node [
+        shape=plain,
+        fontname="Helvetica",
+        fontsize=22
+    ];
+
+    figure [
+        label=<
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="9" CELLPADDING="0">
+          <TR>
+            <TD VALIGN="MIDDLE">
+              <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="7" CELLPADDING="8"
+                     COLOR="#8db5dc" BGCOLOR="#f3f8fd" STYLE="ROUNDED">
+                <TR>
+                  <TD COLSPAN="5" ALIGN="CENTER">
+                    <FONT POINT-SIZE="30"><B>Unified Dataset Generation</B></FONT><BR ALIGN="CENTER"/>
+                    <FONT POINT-SIZE="19">one fixed circuit and contract on Polygon Amoy</FONT>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD COLSPAN="5" ALIGN="CENTER" BGCOLOR="#e4eff9" BORDER="1" COLOR="#4b5563" STYLE="ROUNDED">
+                    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="8" CELLPADDING="5">
+                      <TR>
+                        <TD WIDTH="150" ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Generate policies</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">constraint-aware</FONT></TD>
+                        <TD><FONT POINT-SIZE="26">&#8594;</FONT></TD>
+                        <TD WIDTH="150" ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Deploy once</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">fixed circuit</FONT></TD>
+                        <TD><FONT POINT-SIZE="26">&#8594;</FONT></TD>
+                        <TD WIDTH="150" ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Execute on-chain</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">TPS profile</FONT></TD>
+                      </TR>
+                    </TABLE>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD COLSPAN="5" ALIGN="CENTER"><FONT POINT-SIZE="28">&#8595;</FONT></TD>
+                </TR>
+                <TR>
+                  <TD COLSPAN="5" ALIGN="CENTER" BGCOLOR="#d7e8f7" BORDER="1" COLOR="#4b5563" STYLE="ROUNDED">
+                    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="8" CELLPADDING="5">
+                      <TR>
+                        <TD WIDTH="210" ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Gas normalization</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">commit + access padding</FONT></TD>
+                        <TD><FONT POINT-SIZE="26">&#8594;</FONT></TD>
+                        <TD WIDTH="210" ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Export slices</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">shared source for all attacks</FONT></TD>
+                      </TR>
+                    </TABLE>
+                  </TD>
+                </TR>
+              </TABLE>
+            </TD>
+
+            <TD WIDTH="55" VALIGN="MIDDLE">
+              <FONT POINT-SIZE="62" COLOR="#374151"><B>&#8594;</B></FONT>
+            </TD>
+
+            <TD VALIGN="MIDDLE">
+              <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="7" CELLPADDING="8"
+                     COLOR="#9ca3af" BGCOLOR="#f8fafc" STYLE="ROUNDED">
+                <TR>
+                  <TD COLSPAN="3" ALIGN="CENTER">
+                    <FONT POINT-SIZE="30"><B>Privacy Attacks</B></FONT>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD COLSPAN="3" ALIGN="CENTER" BGCOLOR="#fff7d6" BORDER="1" COLOR="#b59b45" STYLE="ROUNDED">
+                    <FONT POINT-SIZE="22"><B>Shared test protocol</B></FONT><BR ALIGN="CENTER"/>
+                    <FONT POINT-SIZE="18">supervised LR/RF + clustering cross-check</FONT><BR ALIGN="CENTER"/>
+                    <FONT POINT-SIZE="18">unified PASS/FAIL rule</FONT>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD COLSPAN="3" ALIGN="CENTER"><FONT POINT-SIZE="28">&#8595;</FONT></TD>
+                </TR>
+                <TR>
+                  <TD>
+                    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="4" CELLPADDING="6"
+                           COLOR="#d7a06d" BGCOLOR="#fff5ec" STYLE="ROUNDED">
+                      <TR><TD WIDTH="220" ALIGN="CENTER"><FONT POINT-SIZE="24"><B>PCH</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">Policy Content Hiding</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#fde7cf" BORDER="1" COLOR="#d7a06d" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Dataset</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">2,005 DUO executions</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#fde7cf" BORDER="1" COLOR="#d7a06d" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Attack tests</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">DUO terms + ICD-10</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#dcf3dc" BORDER="1" COLOR="#4f8b4f" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>PASS</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">AUC 0.490-0.573</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                    </TABLE>
+                  </TD>
+                  <TD>
+                    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="4" CELLPADDING="6"
+                           COLOR="#a78bd4" BGCOLOR="#f5f0fb" STYLE="ROUNDED">
+                      <TR><TD WIDTH="220" ALIGN="CENTER"><FONT POINT-SIZE="24"><B>PI</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">Policy Indistinguishability</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#e9ddf5" BORDER="1" COLOR="#a78bd4" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Dataset</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">133 balanced pairs</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#e9ddf5" BORDER="1" COLOR="#a78bd4" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Attack tests</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">single-sample</FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">distinguisher</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#dcf3dc" BORDER="1" COLOR="#4f8b4f" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>PASS</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">AUC 0.516 +/- 0.030</FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">p=0.367</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                    </TABLE>
+                  </TD>
+                  <TD>
+                    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="4" CELLPADDING="6"
+                           COLOR="#87ad70" BGCOLOR="#f0f8ed" STYLE="ROUNDED">
+                      <TR><TD WIDTH="220" ALIGN="CENTER"><FONT POINT-SIZE="24"><B>SPP</B></FONT><BR ALIGN="CENTER"/><FONT POINT-SIZE="18">Structure &amp; Parameter Privacy</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#e0efd6" BORDER="1" COLOR="#87ad70" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Dataset</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">18 bucket contrasts</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#e0efd6" BORDER="1" COLOR="#87ad70" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Attack tests</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">structure, predicates,</FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">params</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="24">&#8595;</FONT></TD></TR>
+                      <TR><TD WIDTH="220" ALIGN="CENTER" BGCOLOR="#dcf3dc" BORDER="1" COLOR="#4f8b4f" STYLE="ROUNDED">
+                        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>PASS</B></FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">18 contrasts</FONT></TD></TR>
+                          <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">AUC 0.421-0.530</FONT></TD></TR>
+                        </TABLE>
+                      </TD></TR>
+                    </TABLE>
+                  </TD>
+                </TR>
+              </TABLE>
+            </TD>
+          </TR>
+
+          <TR>
+            <TD COLSPAN="3" VALIGN="MIDDLE">
+              <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="6" CELLPADDING="7"
+                     COLOR="#cc6b68" BGCOLOR="#fff0f0" STYLE="ROUNDED">
+                <TR>
+                  <TD COLSPAN="5" ALIGN="CENTER">
+                    <FONT POINT-SIZE="28"><B>Positive Control</B></FONT><BR ALIGN="CENTER"/>
+                    <FONT POINT-SIZE="18">gas-normalization ablation of the padding layer</FONT>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD WIDTH="300" ALIGN="CENTER" BGCOLOR="#f8dada" BORDER="1" COLOR="#b84e4b" STYLE="ROUNDED">
+                    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Ablation setup</B></FONT></TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">Padding OFF vs. ON</FONT></TD></TR>
+                    </TABLE>
+                  </TD>
+                  <TD WIDTH="42" ALIGN="CENTER"><FONT POINT-SIZE="24">&#8594;</FONT></TD>
+                  <TD WIDTH="300" ALIGN="CENTER" BGCOLOR="#f8dada" BORDER="1" COLOR="#b84e4b" STYLE="ROUNDED">
+                    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Replay attacks</B></FONT></TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">same PCH/PI/SPP tests</FONT></TD></TR>
+                    </TABLE>
+                  </TD>
+                  <TD WIDTH="42" ALIGN="CENTER"><FONT POINT-SIZE="24">&#8594;</FONT></TD>
+                  <TD WIDTH="430" ALIGN="CENTER" BGCOLOR="#fde3e3" BORDER="1" COLOR="#b84e4b" STYLE="ROUNDED">
+                    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="22"><B>Signal collapses</B></FONT></TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">median Delta: +0.099 SPP</FONT></TD></TR>
+                      <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="18">median Delta: +0.052 PI</FONT></TD></TR>
+                    </TABLE>
+                  </TD>
+                </TR>
+              </TABLE>
+            </TD>
+          </TR>
+        </TABLE>>
+    ];
+}
