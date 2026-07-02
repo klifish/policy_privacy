@@ -25,7 +25,13 @@ import numpy as np
 from collections import defaultdict
 from pathlib import Path
 
-DEFAULT_DATA_DIR = Path(__file__).parents[1] / "data"
+# 读源: 权威 unified 导出 (pi_dataset.json)。派生的 pi_pairs_balanced.json 不能写进
+# git 跟踪的 experiments/ 目录, 所以写出默认落到可写的 python/data/polygonAmoy。
+DEFAULT_DATA_DIR = (
+    Path(__file__).resolve().parents[2]
+    / "experiments" / "unified" / "artifacts_data" / "polygonAmoy"
+)
+DEFAULT_OUTPUT_DIR = Path(__file__).parents[1] / "data" / "polygonAmoy"
 MIN_EXEC = 30            # 只用执行数 >= 30 的策略 (那 32 个)
 MAX_PAIRS_PER_TYPE = 60  # 每类配对采样上限, 避免某结构家族膨胀
 
@@ -133,7 +139,10 @@ def main():
     args = ap.parse_args()
 
     ds_path = find_pi_dataset(args.data_dir)
-    out_path = args.output or (ds_path.parent / "pi_pairs_balanced.json")
+    # Never write next to the source (that would land in the git-tracked unified
+    # export); default the derived pairs to python/data/polygonAmoy.
+    out_path = args.output or (DEFAULT_OUTPUT_DIR / "pi_pairs_balanced.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     assert out_path.name != "pi_pairs.json", "拒绝覆盖 pi_pairs.json"
 
     print(f"Loading {ds_path} ...")

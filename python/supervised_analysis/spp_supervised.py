@@ -62,7 +62,12 @@ MIN_TEST_SAMPLES = 20     # below this median test size -> non-gating
 PERM_ITERS = 500
 TEST_RATIO = 0.3
 
-DEFAULT_DATA_DIR = Path(__file__).parents[1] / "data"
+# Read the authoritative unified export directly (not the derived python/data
+# copy, which can lag behind dataset regenerations such as the trivial split).
+DEFAULT_DATA_DIR = (
+    Path(__file__).resolve().parents[2]
+    / "experiments" / "unified" / "artifacts_data" / "polygonAmoy"
+)
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "supervised_analysis"
 
 # Parallelism (set from CLI). The 30 seeds per contrast are independent, so we

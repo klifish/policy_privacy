@@ -24,7 +24,12 @@ from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mu
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
-DEFAULT_DATA_DIR = Path(__file__).parents[1] / "data"
+# Read the authoritative unified export directly (not the derived python/data
+# copy, which can lag behind dataset regenerations such as the trivial split).
+DEFAULT_DATA_DIR = (
+    Path(__file__).resolve().parents[2]
+    / "experiments" / "unified" / "artifacts_data" / "polygonAmoy"
+)
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "spp_clustering_analysis"
 
 # Target Definitions based on user input and report
