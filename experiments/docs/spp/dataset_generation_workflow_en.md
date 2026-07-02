@@ -42,6 +42,7 @@ SPP treats policies as objects with **5 independent classification dimensions**:
 
 ```javascript
 const LOGIC_STRUCTURES = {
+  TRIVIAL: 'trivial',             // No connectives (single atom/predicate, e.g. A)
   AND_ONLY: 'and_only',          // Only AND connectives (e.g., A & B & C)
   OR_ONLY: 'or_only',            // Only OR connectives (e.g., A | B | C)
   AND_OR_MIXED: 'and_or_mixed',  // Both AND and OR (e.g., (A & B) | C)
@@ -49,7 +50,7 @@ const LOGIC_STRUCTURES = {
 };
 ```
 
-**Classification Logic** ([data_generator.js:176](../data_generator.js#L176)):
+**Classification Logic** ([data_generator.js:181](../data_generator.js#L181)):
 ```javascript
 function classifyLogicStructure(stats) {
   const { hasAnd, hasOr, hasNot, notCount } = stats;
@@ -74,15 +75,15 @@ function classifyLogicStructure(stats) {
     return LOGIC_STRUCTURES.AND_OR_MIXED;
   }
 
-  // Default: Single atom → AND_ONLY
-  return LOGIC_STRUCTURES.AND_ONLY;
+  // No connective at all: single atom, optionally negated (e.g. "GR" or "!GR")
+  return LOGIC_STRUCTURES.TRIVIAL;
 }
 ```
 
 **Examples**:
 | Logic Expression | AND | OR | NOT | Classification |
 |------------------|-----|----|----|----------------|
-| `DS` | No | No | No | `and_only` (default) |
+| `DS` | No | No | No | `trivial` |
 | `DS & RS` | Yes | No | No | `and_only` |
 | `DS \| RS` | No | Yes | No | `or_only` |
 | `(DS & RS) \| GR` | Yes | Yes | No | `and_or_mixed` |
@@ -785,9 +786,9 @@ rangeWidth = classifyRangeWidth(policy); // Uses merkleDepth (for ranges)
 structureType: simple | nested | complex
 ```
 
-**New Design** (5 dimensions × 4 categories = 20 total):
+**New Design** (5 dimensions, mostly 4 categories; `logicStructure` has 5):
 ```
-logicStructure: and_only | or_only | and_or_mixed | negation_heavy
+logicStructure: trivial | and_only | or_only | and_or_mixed | negation_heavy
 nestingDepth: flat | shallow | medium | deep
 predicateCount: none | single | few | many
 setSize: none | small | medium | large
@@ -991,24 +992,33 @@ SPP Dataset
 ┌─────────────────────────────────────────────────────────────────┐
 │ Attack: Multi-Dimensional Classification                         │
 │                                                                  │
-│ For each dimension D in [logic, depth, predicates, set, range]: │
+│ For each dimension D in [structureType, predicateCombo,          │
+│                           paramType]:                             │
 │   1. Extract feature vectors:                                   │
 │      X = [gas, calldata, proof size, ...]                       │
 │                                                                  │
 │   2. Train classifier:                                           │
 │      C_D(X) → class in dimension D                              │
 │                                                                  │
-│   3. Evaluate per-dimension accuracy                            │
+│   3. Evaluate per-dimension AUC over 30 policy-disjoint seeds    │
 └────────────────────┬────────────────────────────────────────────┘
                      ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ Evaluation Metrics                                               │
-│   - Accuracy by dimension                                        │
+│   - AUC (mean±std) and permutation significance, per dimension  │
 │   - Confusion matrices                                           │
-│   - Feature importance per dimension                             │
-│   - Cross-dimension correlation                                  │
+│   - Cross-dimension correlation (diagnostic)                     │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**Note**: Only 3 of the 5 generation-time dimensions are currently fed to the attack suite —
+`structureType` (=Logic Structure), `predicateCombo` (=Predicate Count), and `paramType`
+(=Set Size). `nestingDepth` and `rangeWidth` are computed and tracked at generation time
+(used for dataset-balance diagnostics — see `dataset.__meta.sppSummary`/`balanceMetrics`)
+but are not currently passed to `runSupervisedAttacks`/statistical/clustering attacks (see
+`targetAttributes` in `run_experiment.js`). The authoritative PASS/FAIL verdict for the 3
+attacked dimensions is the 30-seed policy-disjoint double criterion in
+`experiments/core/multiseed_criterion.js`, not a single-split accuracy/threshold check.
 
 See [attacks.js](../attacks.js) for implementation details.
 
@@ -1018,7 +1028,9 @@ See [attacks.js](../attacks.js) for implementation details.
 
 The Structure and Parameter Privacy dataset generator provides:
 
-1. **Multi-dimensional classification**: 5 independent axes for granular evaluation
+1. **Multi-dimensional classification at generation time**: 5 independent axes are labeled
+   during dataset generation, of which 3 (`structureType`, `predicateCombo`, `paramType`) are
+   currently attacked; `nestingDepth` and `rangeWidth` remain generation-time diagnostics only
 2. **Dimension decoupling**: Reduced correlation between classification dimensions
 3. **Balance metrics**: Quality assessment before expensive execution
 4. **PCH integration**: Reuses proven policy generation infrastructure

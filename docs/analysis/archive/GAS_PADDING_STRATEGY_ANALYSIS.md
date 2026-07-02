@@ -1,5 +1,13 @@
 # Gas Padding Strategy Analysis
 
+> ⚠️ **ARCHIVED — describes a superseded implementation.** This document analyzes an
+> older gas-padding design with a fixed `TX_OVERHEAD` constant and 6M/7.1M gas targets.
+> The current implementation (`contracts/PolicyPrivacy.sol`'s `_padGasToTarget`) already
+> does dynamic per-byte calldata-cost compensation — exactly what this document proposed
+> as a future fix — and the current pad targets are 750,000 (access) / 300,000 (commit)
+> gas (see `experiments/core/data_generator.js` and `experiments/unified/run.js`), not the
+> values quoted here. Root-cause narrative and recommendations below are historical.
+
 ## Executive Summary
 
 This document provides a comprehensive analysis of the current gas padding strategy implemented in the Policy Privacy system. The gas padding mechanism aims to achieve **Policy Content Hiding** by equalizing observable gas consumption across different policy types, preventing adversaries from inferring policy content through gas usage patterns.

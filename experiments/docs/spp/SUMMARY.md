@@ -6,7 +6,8 @@
 - ✅ Policies execute against the real `PolicyPrivacy` contract; no synthetic traces
 - ✅ Each execution is annotated with structure/predicate/parameter buckets before deployment
 - ✅ Attack suite (supervised/statistical/clustering) consumes the on-chain metadata
-- ✅ Reports/thresholds line up with the PI/PCH experiments
+- ✅ Verdict engine (`experiments/core/multiseed_criterion.js`) is shared with PI/PCH: 30-seed
+  policy-disjoint double criterion, not a single-split fixed-threshold check
 
 ## Key Components
 
@@ -20,20 +21,32 @@
 
 ## Structure Buckets
 
-1. `simple_and` – conjunction-only policies with low depth
-2. `with_or` – contains ORs but no predicates
-3. `nested` – deep attribute-only expressions
-4. `with_sets` – predicates present but no ORs
-5. `complex` – ORs + predicates and/or deep nesting
+`structureType` (from `classifyLogicStructure`):
 
-`predicateCombo` buckets tell whether predicates are absent, single-namespace, mixed with attributes, or spanning multiple ontologies. `paramType` combines whitelist size and Merkle depth to approximate “set size” vs “range width” leakages.
+1. `trivial` – single atom/predicate, no boolean connective (e.g. author-level logic `"GR"`)
+2. `and_only` – conjunction-only policies
+3. `or_only` – disjunction-only policies
+4. `and_or_mixed` – both AND and OR connectives
+5. `negation_heavy` – has 2+ NOT operators
+
+`predicateCombo` buckets (from `classifyPredicateCount`) tell whether predicates are absent, single-namespace, mixed with attributes, or spanning multiple ontologies.
+
+`paramType` (from `classifySetSize`) buckets **only the whitelist-size (set-size) dimension** —
+it no longer conflates set size with Merkle depth / range width. Range width is now a
+separate, independently-tracked axis (`rangeWidth`, from `classifyRangeWidth`) used for
+dataset-balance diagnostics; it is not currently one of the three axes fed to the attack
+suite (`structureType`, `predicateCombo`, `paramType` — see `run_experiment.js`'s
+`targetAttributes`). Same for `nestingDepth`.
 
 ## Pipeline Recap
 
 1. **Generation** – Build ~60 base policies (configurable) with realistic DUO combinations. Annotate structure stats per execution.
 2. **Execution** – Deploy verifier + PolicyPrivacy, ensure funded signer, run every commit/access pair, store metadata.
 3. **Attacks** – Run logistic regression + random forest with permutation tests, KS/MMD per pair, and k-means with silhouette + ARI.
-4. **Evaluation** – Compare against fixed thresholds; fail if any metric suggests distinguishability.
+4. **Evaluation** – The authoritative PASS/FAIL verdict is the 30-seed policy-disjoint double
+   criterion (`FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5`) in
+   `experiments/core/multiseed_criterion.js`, gating on LR and RF independently. Single-split
+   MMD/KS/silhouette metrics are reported as diagnostics but do not gate.
 
 Outputs live in `results/<name>/` and include both JSON + Markdown reports.
 

@@ -1,5 +1,11 @@
 # 隐私保护同意管理系统功能缺口分析与实现建议
 
+> ⚠️ **ARCHIVED — out of scope for the current paper/codebase.** This document brainstorms
+> generic consent-management features (DID identity, FHIR/EHR integration, emergency
+> access, differential privacy) that are not part of this repository's actual scope (the
+> PCH/PI/SPP on-chain privacy-attack evaluation in `experiments/` and `paper/`). None of
+> these items appear in the current paper or code. Kept for historical context only.
+
 ## 概述
 
 本文档分析了当前 `policy_privacy` 仓库与全面的区块链医疗隐私保护同意管理系统之间的功能差距，并提供了详细的实现建议。

@@ -1,5 +1,13 @@
 # Testnet 实验结果分析总结
 
+> ⚠️ **ARCHIVED — superseded.** This document describes the pre-multiseed, single-split
+> PASS/FAIL design (a single AUC≤0.55-and-Advantage≤5% threshold check). The current
+> authoritative privacy verdict is a 30-seed policy-disjoint double criterion
+> (`FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5`), implemented in
+> `experiments/core/multiseed_criterion.js`. Some file/API references below (e.g.
+> `evaluator.js`, `classifiers.js`, `mock_demo.js`) no longer exist as standalone files.
+> Kept for historical context only — do not use as a spec of current behavior.
+
 **日期**: 2025-11-08
 **数据集**: 200 样本 (Polygon Amoy Testnet)
 **状态**: 🔴 发现隐私泄露

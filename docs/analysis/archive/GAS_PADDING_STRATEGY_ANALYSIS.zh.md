@@ -1,5 +1,12 @@
 # Gas Padding 策略分析报告
 
+> ⚠️ **已归档——描述的是已被取代的旧实现。** 本文档分析的是早期 gas-padding 设计（固定
+> `TX_OVERHEAD` 常量、6M/7.1M gas 目标值）。当前实现（`contracts/PolicyPrivacy.sol` 的
+> `_padGasToTarget`）已经实现了按字节动态计算的 calldata 成本补偿——正是本文档当时提议
+> 的修复方向；当前的 padding 目标值是 750,000（access）/ 300,000（commit）gas
+> （见 `experiments/core/data_generator.js` 与 `experiments/unified/run.js`），与本文档
+> 引用的数值不同。下文的根因分析和修复建议均为历史记录。
+
 ## 执行摘要
 
 本文档全面分析了 Policy Privacy 系统中当前实施的 gas padding（燃料填充）策略。该机制旨在通过平衡不同政策类型的可观测 gas 消耗来实现**政策内容隐藏**，防止攻击者通过 gas 使用模式推断政策内容。

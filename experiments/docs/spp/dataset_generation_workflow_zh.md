@@ -991,24 +991,31 @@ SPP数据集
 ┌─────────────────────────────────────────────────────────────────┐
 │ 攻击: 多维度分类                                                 │
 │                                                                  │
-│ 对于每个维度D in [logic, depth, predicates, set, range]:       │
+│ 对于每个维度D in [structureType, predicateCombo, paramType]:    │
 │   1. 提取特征向量:                                               │
 │      X = [gas, calldata, proof size, ...]                       │
 │                                                                  │
 │   2. 训练分类器:                                                 │
 │      C_D(X) → 维度D中的类别                                      │
 │                                                                  │
-│   3. 评估每个维度的准确率                                        │
+│   3. 在30个policy-disjoint seed上评估AUC                        │
 └────────────────────┬────────────────────────────────────────────┘
                      ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ 评估指标                                                         │
-│   - 按维度的准确率                                               │
+│   - 按维度的AUC(mean±std)与置换检验显著性                       │
 │   - 混淆矩阵                                                     │
-│   - 每个维度的特征重要性                                         │
-│   - 跨维度相关性                                                 │
+│   - 跨维度相关性(诊断性)                                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**注意**：生成阶段的5个维度里，目前只有3个被实际喂给攻击套件——`structureType`(对应Logic
+Structure)、`predicateCombo`(对应Predicate Count)、`paramType`(对应Set Size)。
+`nestingDepth`和`rangeWidth`只在生成阶段计算并用于数据平衡诊断（见
+`dataset.__meta.sppSummary`/`balanceMetrics`），并未传入`runSupervisedAttacks`/统计/聚类攻击
+（见`run_experiment.js`里的`targetAttributes`）。这3个被攻击维度的权威PASS/FAIL判决是
+`experiments/core/multiseed_criterion.js`里的30-seed policy-disjoint双重判据，不是单次切分的
+准确率阈值判断。
 
 详见 [attacks.js](../attacks.js) 实现细节。
 
@@ -1018,7 +1025,9 @@ SPP数据集
 
 结构与参数隐私数据集生成器提供：
 
-1. **多维度分类**：5个独立轴用于细粒度评估
+1. **生成阶段的多维度分类**：生成时标注5个独立轴，其中3个（`structureType`、
+   `predicateCombo`、`paramType`）目前被实际攻击；`nestingDepth`和`rangeWidth`仍只是
+   生成阶段的诊断量
 2. **维度解耦**：降低分类维度间的相关性
 3. **平衡度指标**：在昂贵执行前进行质量评估
 4. **PCH集成**：复用已验证的策略生成基础设施

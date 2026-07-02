@@ -11,7 +11,11 @@ overlap), and \texttt{controlled\_difference} (small targeted deltas; a regressi
 control).
 
 \paragraph{Supervised attack.} The distinguisher's task is to decide, from the on-chain
-features of a single execution, which policy of the pair produced it. We evaluate this
+features of a single execution, which policy of the pair produced it. We train both a
+logistic-regression and a random-forest classifier and, per archetype, report the one
+with the higher mean AUC across seeds---the stronger of the two attackers, matching the
+SPP convention (Section~\ref{sec:eval-method}); the random forest leads on all archetypes
+except the non-gating \texttt{controlled\_difference} control. We evaluate this
 single-sample classifier over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}). The
 overall AUC is $0.516\pm0.030$ with permutation $p=0.367$ and only $10\%$ of seeds
 significant. All three gating archetypes---\texttt{semantic\_equivalent},

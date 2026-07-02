@@ -1,5 +1,13 @@
 # Policy Content Hiding - 改进建议
 
+> ⚠️ **ARCHIVED — superseded.** This document describes the pre-multiseed, single-split
+> PASS/FAIL design (a single AUC≤0.55-and-Advantage≤5% threshold check). The current
+> authoritative privacy verdict is a 30-seed policy-disjoint double criterion
+> (`FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5`), implemented in
+> `experiments/core/multiseed_criterion.js`. Some file/API references below (e.g.
+> `evaluator.js`, `classifiers.js`, `mock_demo.js`) no longer exist as standalone files.
+> Kept for historical context only — do not use as a spec of current behavior.
+
 ## 当前实验结果总结
 
 ### 🎯 实验指标
