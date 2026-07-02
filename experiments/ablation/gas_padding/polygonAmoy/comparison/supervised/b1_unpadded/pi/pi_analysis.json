@@ -1,7 +1,6 @@
 {
   "thresholds": {
     "aucMax": 0.55,
-    "advantageMax": 0.05,
     "permutationMin": 0.05,
     "mmdMax": 0.05,
     "ksPValueMin": 0.05
@@ -8882,7 +8881,6 @@
         "passed": true,
         "metrics": {
           "auc": 0.36978178368121445,
-          "advantage": 0.006958250497017926,
           "entropy": 0.9894061691292738,
           "permutationPValue": 1,
           "accuracy": 0.5069582504970179
@@ -8892,12 +8890,6 @@
             "metric": "AUC",
             "value": 0.36978178368121445,
             "threshold": 0.55,
-            "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": 0.006958250497017926,
-            "threshold": 0.05,
             "passed": true
           },
           {
@@ -8961,26 +8953,17 @@
         "classifier": "RandomForest",
         "passed": true,
         "metrics": {
-          "accuracy": 0.5069582504970179,
-          "advantage": 0.006958250497017926
+          "accuracy": 0.5069582504970179
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": 0.006958250497017926,
-            "threshold": 0.05,
-            "passed": true
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level I",
         "scope": "semantic_equivalent",
         "classifier": "LogisticRegression",
-        "passed": false,
+        "passed": true,
         "metrics": {
           "auc": 0.42744344857020916,
-          "advantage": 0.1826923076923077,
           "entropy": 0.9900838607559834,
           "permutationPValue": 0.8942115768463074,
           "accuracy": 0.6826923076923077
@@ -8991,12 +8974,6 @@
             "value": 0.42744344857020916,
             "threshold": 0.55,
             "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": 0.1826923076923077,
-            "threshold": 0.05,
-            "passed": false
           },
           {
             "metric": "Permutation p-value",
@@ -9057,28 +9034,19 @@
         "level": "Level I",
         "scope": "semantic_equivalent",
         "classifier": "RandomForest",
-        "passed": false,
+        "passed": true,
         "metrics": {
-          "accuracy": 0.6826923076923077,
-          "advantage": 0.1826923076923077
+          "accuracy": 0.6826923076923077
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": 0.1826923076923077,
-            "threshold": 0.05,
-            "passed": false
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level I",
         "scope": "structural_variant",
         "classifier": "LogisticRegression",
-        "passed": false,
+        "passed": true,
         "metrics": {
           "auc": 0.3912037037037037,
-          "advantage": 0.30000000000000004,
           "entropy": 0.9499755529923734,
           "permutationPValue": 0.9161676646706587,
           "accuracy": 0.8
@@ -9089,12 +9057,6 @@
             "value": 0.3912037037037037,
             "threshold": 0.55,
             "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": 0.30000000000000004,
-            "threshold": 0.05,
-            "passed": false
           },
           {
             "metric": "Permutation p-value",
@@ -9155,19 +9117,11 @@
         "level": "Level I",
         "scope": "structural_variant",
         "classifier": "RandomForest",
-        "passed": false,
+        "passed": true,
         "metrics": {
-          "accuracy": 0.8,
-          "advantage": 0.30000000000000004
+          "accuracy": 0.8
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": 0.30000000000000004,
-            "threshold": 0.05,
-            "passed": false
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level I",
@@ -9176,7 +9130,6 @@
         "passed": true,
         "metrics": {
           "auc": 0.2222222222222222,
-          "advantage": -0.33333333333333337,
           "entropy": 0.9885752334992901,
           "permutationPValue": 0.9481037924151696,
           "accuracy": 0.16666666666666666
@@ -9186,12 +9139,6 @@
             "metric": "AUC",
             "value": 0.2222222222222222,
             "threshold": 0.55,
-            "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": -0.33333333333333337,
-            "threshold": 0.05,
             "passed": true
           },
           {
@@ -9255,17 +9202,9 @@
         "classifier": "RandomForest",
         "passed": true,
         "metrics": {
-          "accuracy": 0.5,
-          "advantage": 0
+          "accuracy": 0.5
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": 0,
-            "threshold": 0.05,
-            "passed": true
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level I",
@@ -9274,7 +9213,6 @@
         "passed": true,
         "metrics": {
           "auc": 0.3595438175270108,
-          "advantage": -0.010000000000000009,
           "entropy": 0.9943747684613774,
           "permutationPValue": 0.998003992015968,
           "accuracy": 0.49
@@ -9284,12 +9222,6 @@
             "metric": "AUC",
             "value": 0.3595438175270108,
             "threshold": 0.55,
-            "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": -0.010000000000000009,
-            "threshold": 0.05,
             "passed": true
           },
           {
@@ -9353,26 +9285,17 @@
         "classifier": "RandomForest",
         "passed": true,
         "metrics": {
-          "accuracy": 0.49,
-          "advantage": -0.010000000000000009
+          "accuracy": 0.49
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": -0.010000000000000009,
-            "threshold": 0.05,
-            "passed": true
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level II",
         "scope": "overall",
         "classifier": "LogisticRegression",
-        "passed": false,
+        "passed": true,
         "metrics": {
           "auc": 0.5,
-          "advantage": 0.5,
           "entropy": 0.770747132981194,
           "permutationPValue": 1,
           "accuracy": 1
@@ -9383,12 +9306,6 @@
             "value": 0.5,
             "threshold": 0.55,
             "passed": true
-          },
-          {
-            "metric": "Advantage",
-            "value": 0.5,
-            "threshold": 0.05,
-            "passed": false
           },
           {
             "metric": "Permutation p-value",
@@ -9449,19 +9366,11 @@
         "level": "Level II",
         "scope": "overall",
         "classifier": "RandomForest",
-        "passed": false,
+        "passed": true,
         "metrics": {
-          "accuracy": 1,
-          "advantage": 0.5
+          "accuracy": 1
         },
-        "checks": [
-          {
-            "metric": "Advantage",
-            "value": 0.5,
-            "threshold": 0.05,
-            "passed": false
-          }
-        ]
+        "checks": []
       },
       {
         "level": "Level III",

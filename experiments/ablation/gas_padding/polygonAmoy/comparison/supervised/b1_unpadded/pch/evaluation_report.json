@@ -1,6 +1,6 @@
 {
   "experiment": "Policy Content Hiding Evaluation",
-  "timestamp": "2026-06-27T14:27:12.591Z",
+  "timestamp": "2026-07-02T09:17:27.626Z",
   "config": {
     "numDuoTermsRequested": 6,
     "numDuoTermsObserved": 6,
@@ -12,114 +12,114 @@
   "diagnostics": {
     "note": "Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.",
     "evaluation": {
-      "timestamp": "2026-06-27T14:27:07.237Z",
+      "timestamp": "2026-07-02T09:17:23.322Z",
       "results": [
         {
           "task": "DUO Term 0 Presence",
           "type": "binary",
-          "accuracy": 0.8724637681159421,
+          "accuracy": 0.7344913151364765,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.22074146783449108,
-          "advantage": 0.37246376811594206,
+          "auc": 0.3385008840616317,
+          "advantage": 0.23449131513647647,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 44,
-            "testTotal": 345,
-            "testRatio": 0.12753623188405797
+            "testPositive": 107,
+            "testTotal": 403,
+            "testRatio": 0.2655086848635236
           }
         },
         {
           "task": "DUO Term 1 Presence",
           "type": "binary",
-          "accuracy": 0.3101449275362319,
-          "precision": 0.4339622641509434,
-          "recall": 0.20535714285714285,
-          "f1": 0.2787878787878788,
-          "auc": 0.47271620425029515,
-          "advantage": -0.1898550724637681,
+          "accuracy": 0.47642679900744417,
+          "precision": 0.47642679900744417,
+          "recall": 1,
+          "f1": 0.6453781512605041,
+          "auc": 0.5361744668246445,
+          "advantage": -0.02357320099255583,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 224,
-            "testTotal": 345,
-            "testRatio": 0.6492753623188405
+            "testPositive": 192,
+            "testTotal": 403,
+            "testRatio": 0.47642679900744417
           }
         },
         {
           "task": "DUO Term 2 Presence",
           "type": "binary",
-          "accuracy": 0.5130434782608696,
-          "precision": 0.5130434782608696,
+          "accuracy": 0.6600496277915633,
+          "precision": 0.6600496277915633,
           "recall": 1,
-          "f1": 0.6781609195402298,
-          "auc": 0.8255145278450363,
-          "advantage": 0.013043478260869601,
+          "f1": 0.7952167414050823,
+          "auc": 0.5903078865045827,
+          "advantage": 0.1600496277915633,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 177,
-            "testTotal": 345,
-            "testRatio": 0.5130434782608696
+            "testPositive": 266,
+            "testTotal": 403,
+            "testRatio": 0.6600496277915633
           }
         },
         {
           "task": "DUO Term 3 Presence",
           "type": "binary",
-          "accuracy": 0.6550724637681159,
+          "accuracy": 0.7146401985111662,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.535770060236484,
-          "advantage": 0.1550724637681159,
+          "auc": 0.40618961352657007,
+          "advantage": 0.21464019851116622,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 119,
-            "testTotal": 345,
-            "testRatio": 0.34492753623188405
+            "testPositive": 115,
+            "testTotal": 403,
+            "testRatio": 0.2853598014888337
           }
         },
         {
           "task": "DUO Term 4 Presence",
           "type": "binary",
-          "accuracy": 0.34202898550724636,
+          "accuracy": 0.4466501240694789,
           "precision": 0,
           "recall": 0,
           "f1": 0,
-          "auc": 0.5722392294482193,
-          "advantage": -0.15797101449275364,
+          "auc": 0.671898355754858,
+          "advantage": -0.053349875930521096,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 227,
-            "testTotal": 345,
-            "testRatio": 0.6579710144927536
+            "testPositive": 223,
+            "testTotal": 403,
+            "testRatio": 0.5533498759305211
           }
         },
         {
           "task": "DUO Term 5 Presence",
           "type": "binary",
-          "accuracy": 0.5246376811594203,
-          "precision": 0.573170731707317,
-          "recall": 0.705,
-          "f1": 0.6322869955156951,
-          "auc": 0.457948275862069,
-          "advantage": 0.024637681159420333,
+          "accuracy": 0.48883374689826303,
+          "precision": 0.48883374689826303,
+          "recall": 1,
+          "f1": 0.6566666666666666,
+          "auc": 0.36503868710265636,
+          "advantage": -0.011166253101736967,
           "randomBaseline": 0.5,
           "classDistribution": {
-            "testPositive": 200,
-            "testTotal": 345,
-            "testRatio": 0.5797101449275363
+            "testPositive": 197,
+            "testTotal": 403,
+            "testRatio": 0.48883374689826303
           }
         },
         {
           "task": "ICD-10 Chapter Prediction (RandomForest)",
           "type": "multi-class",
-          "accuracy": 0.013392857142857142,
-          "macroF1": 0.013794553272814142,
+          "accuracy": 0.026041666666666668,
+          "macroF1": 0.02089701305337483,
           "perClassMetrics": {
             "0": {
-              "precision": 0.14285714285714285,
-              "recall": 0.0625,
-              "f1": 0.08695652173913043
+              "precision": 0.5,
+              "recall": 0.058823529411764705,
+              "f1": 0.10526315789473684
             },
             "1": {
               "precision": 0,
@@ -132,14 +132,14 @@
               "f1": 0
             },
             "3": {
+              "precision": 0.030612244897959183,
+              "recall": 0.6,
+              "f1": 0.058252427184466014
+            },
+            "4": {
               "precision": 0,
               "recall": 0,
               "f1": 0
-            },
-            "4": {
-              "precision": 0.0056179775280898875,
-              "recall": 0.25,
-              "f1": 0.010989010989010988
             },
             "5": {
               "precision": 0,
@@ -152,14 +152,14 @@
               "f1": 0
             },
             "7": {
-              "precision": 0.02857142857142857,
-              "recall": 0.06666666666666667,
-              "f1": 0.04
-            },
-            "8": {
               "precision": 0,
               "recall": 0,
               "f1": 0
+            },
+            "8": {
+              "precision": 0.023255813953488372,
+              "recall": 1,
+              "f1": 0.04545454545454545
             },
             "9": {
               "precision": 0,
@@ -167,7 +167,7 @@
               "f1": 0
             }
           },
-          "advantage": -0.08660714285714287,
+          "advantage": -0.07395833333333333,
           "randomBaseline": 0.1,
           "numClasses": 10
         }
@@ -178,19 +178,13 @@
       "results": [
         {
           "task": "DUO Term 0 Presence",
-          "passed": false,
+          "passed": true,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.22074146783449108,
+              "value": 0.3385008840616317,
               "threshold": 0.55,
               "passed": true
-            },
-            {
-              "metric": "Advantage",
-              "value": 0.37246376811594206,
-              "threshold": 0.05,
-              "passed": false
             }
           ]
         },
@@ -200,14 +194,8 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.47271620425029515,
+              "value": 0.5361744668246445,
               "threshold": 0.55,
-              "passed": true
-            },
-            {
-              "metric": "Advantage",
-              "value": -0.1898550724637681,
-              "threshold": 0.05,
               "passed": true
             }
           ]
@@ -218,33 +206,21 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.8255145278450363,
+              "value": 0.5903078865045827,
               "threshold": 0.55,
               "passed": false
-            },
-            {
-              "metric": "Advantage",
-              "value": 0.013043478260869601,
-              "threshold": 0.05,
-              "passed": true
             }
           ]
         },
         {
           "task": "DUO Term 3 Presence",
-          "passed": false,
+          "passed": true,
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.535770060236484,
+              "value": 0.40618961352657007,
               "threshold": 0.55,
               "passed": true
-            },
-            {
-              "metric": "Advantage",
-              "value": 0.1550724637681159,
-              "threshold": 0.05,
-              "passed": false
             }
           ]
         },
@@ -254,15 +230,9 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.5722392294482193,
+              "value": 0.671898355754858,
               "threshold": 0.55,
               "passed": false
-            },
-            {
-              "metric": "Advantage",
-              "value": -0.15797101449275364,
-              "threshold": 0.05,
-              "passed": true
             }
           ]
         },
@@ -272,14 +242,8 @@
           "checks": [
             {
               "metric": "AUC",
-              "value": 0.457948275862069,
+              "value": 0.36503868710265636,
               "threshold": 0.55,
-              "passed": true
-            },
-            {
-              "metric": "Advantage",
-              "value": 0.024637681159420333,
-              "threshold": 0.05,
               "passed": true
             }
           ]
@@ -287,19 +251,11 @@
         {
           "task": "ICD-10 Chapter Prediction (RandomForest)",
           "passed": true,
-          "checks": [
-            {
-              "metric": "Advantage",
-              "value": -0.08660714285714287,
-              "threshold": 0.05,
-              "passed": true
-            }
-          ]
+          "checks": []
         }
       ],
       "thresholds": {
-        "aucMax": 0.55,
-        "advantageMax": 0.05
+        "aucMax": 0.55
       }
     }
   },

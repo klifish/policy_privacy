@@ -1139,15 +1139,15 @@
         {
           "task": "structureType: and_only/and_or_mixed",
           "classifier": "lr",
-          "b1AucMean": 0.5388552510098422,
-          "b2AucMean": 0.46213235227976984,
-          "b1SignificantSeedFraction": 0.5666666666666667,
+          "b1AucMean": 0.709806064754308,
+          "b2AucMean": 0.4398670722464995,
+          "b1SignificantSeedFraction": 0.6666666666666666,
           "b2SignificantSeedFraction": 0.0,
           "deltaLeakage": {
-            "mean": 0.21097697713158142,
+            "mean": 0.12827866975494714,
             "ci95": [
-              0.18251289308285237,
-              0.23673732613061374
+              0.08623848058709736,
+              0.16713279751949
             ],
             "n": 30
           },
@@ -1156,83 +1156,49 @@
         {
           "task": "structureType: and_only/and_or_mixed",
           "classifier": "rf",
-          "b1AucMean": 0.7410677136011635,
-          "b2AucMean": 0.4941711851729395,
-          "b1SignificantSeedFraction": 0.9,
+          "b1AucMean": 0.655270595833006,
+          "b2AucMean": 0.4677863301182175,
+          "b1SignificantSeedFraction": 0.4,
+          "b2SignificantSeedFraction": 0.03333333333333333,
+          "deltaLeakage": {
+            "mean": 0.07371269773934844,
+            "ci95": [
+              0.04230991483768171,
+              0.10695752912164405
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: negation_heavy/and_only",
+          "classifier": "lr",
+          "b1AucMean": 0.7433899340815749,
+          "b2AucMean": 0.4505922975473959,
+          "b1SignificantSeedFraction": 0.8666666666666667,
           "b2SignificantSeedFraction": 0.0,
           "deltaLeakage": {
-            "mean": 0.19425352415244615,
+            "mean": 0.17059761787630112,
             "ci95": [
-              0.16976712587234166,
-              0.2180793059568969
+              0.1313187284741045,
+              0.20329949852110352
             ],
             "n": 30
           },
           "interpretation": "padding_reduces_leakage"
         },
         {
-          "task": "structureType: and_only/negation_heavy",
-          "classifier": "lr",
-          "b1AucMean": 0.3428176022480417,
-          "b2AucMean": 0.5219947383817488,
-          "b1SignificantSeedFraction": 0.23333333333333334,
-          "b2SignificantSeedFraction": 0.03333333333333333,
-          "deltaLeakage": {
-            "mean": 0.22967904797044275,
-            "ci95": [
-              0.208403404406804,
-              0.2518162672918535
-            ],
-            "n": 30
-          },
-          "interpretation": "padding_reduces_leakage"
-        },
-        {
-          "task": "structureType: and_only/negation_heavy",
+          "task": "structureType: negation_heavy/and_only",
           "classifier": "rf",
-          "b1AucMean": 0.7592025891774916,
-          "b2AucMean": 0.46536508468601057,
-          "b1SignificantSeedFraction": 1.0,
-          "b2SignificantSeedFraction": 0.03333333333333333,
-          "deltaLeakage": {
-            "mean": 0.19549576684398648,
-            "ci95": [
-              0.1725020599960175,
-              0.2174761036221366
-            ],
-            "n": 30
-          },
-          "interpretation": "padding_reduces_leakage"
-        },
-        {
-          "task": "structureType: and_only/or_only",
-          "classifier": "lr",
-          "b1AucMean": 0.41213765341721204,
-          "b2AucMean": 0.5219294669548844,
-          "b1SignificantSeedFraction": 0.3,
-          "b2SignificantSeedFraction": 0.06666666666666667,
-          "deltaLeakage": {
-            "mean": 0.16779171390780945,
-            "ci95": [
-              0.14016503947942732,
-              0.19178588163379753
-            ],
-            "n": 30
-          },
-          "interpretation": "padding_reduces_leakage"
-        },
-        {
-          "task": "structureType: and_only/or_only",
-          "classifier": "rf",
-          "b1AucMean": 0.6913972931932676,
-          "b2AucMean": 0.4997381788303761,
+          "b1AucMean": 0.7040837828558207,
+          "b2AucMean": 0.41885098605337984,
           "b1SignificantSeedFraction": 0.7333333333333333,
           "b2SignificantSeedFraction": 0.0,
           "deltaLeakage": {
-            "mean": 0.1496982746912117,
+            "mean": 0.11239801078318262,
             "ci95": [
-              0.1273142160561663,
-              0.1755667634073964
+              0.06613513442387058,
+              0.15820850184055543
             ],
             "n": 30
           },
@@ -1248,8 +1214,8 @@
           "deltaLeakage": {
             "mean": 0.007595034040183516,
             "ci95": [
-              -0.012963841674824462,
-              0.027125241658613682
+              -0.012137341590499338,
+              0.02858454841218847
             ],
             "n": 30
           },
@@ -1265,8 +1231,42 @@
           "deltaLeakage": {
             "mean": -0.0021969977232298987,
             "ci95": [
-              -0.029406556718520133,
-              0.02603059913824502
+              -0.026952504667163046,
+              0.02725922215843266
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect"
+        },
+        {
+          "task": "structureType: or_only/and_only",
+          "classifier": "lr",
+          "b1AucMean": 0.6485427537319651,
+          "b2AucMean": 0.43045348868442157,
+          "b1SignificantSeedFraction": 0.43333333333333335,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.06673621929404498,
+            "ci95": [
+              0.025420499462863805,
+              0.11372083284838919
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: or_only/and_only",
+          "classifier": "rf",
+          "b1AucMean": 0.593292644194153,
+          "b2AucMean": 0.4410352911762197,
+          "b1SignificantSeedFraction": 0.2,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.015105026420611851,
+            "ci95": [
+              -0.017860888008411603,
+              0.04841504065293595
             ],
             "n": 30
           },
@@ -1339,6 +1339,142 @@
             "n": 30
           },
           "interpretation": "no_detectable_incremental_effect"
+        },
+        {
+          "task": "structureType: trivial/and_only",
+          "classifier": "lr",
+          "b1AucMean": 0.518522818176763,
+          "b2AucMean": 0.5928362625744903,
+          "b1SignificantSeedFraction": 0.16666666666666666,
+          "b2SignificantSeedFraction": 0.13333333333333333,
+          "deltaLeakage": {
+            "mean": 0.03808777157820084,
+            "ci95": [
+              -0.0064006358609766025,
+              0.08001666159181327
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect"
+        },
+        {
+          "task": "structureType: trivial/and_only",
+          "classifier": "rf",
+          "b1AucMean": 0.6216522778356953,
+          "b2AucMean": 0.49589966339840363,
+          "b1SignificantSeedFraction": 0.26666666666666666,
+          "b2SignificantSeedFraction": 0.03333333333333333,
+          "deltaLeakage": {
+            "mean": 0.05015401403828978,
+            "ci95": [
+              -5.856421558513654e-05,
+              0.09611000575072144
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect"
+        },
+        {
+          "task": "structureType: trivial/and_or_mixed",
+          "classifier": "lr",
+          "b1AucMean": 0.3928878648891068,
+          "b2AucMean": 0.5556401804114323,
+          "b1SignificantSeedFraction": 0.3333333333333333,
+          "b2SignificantSeedFraction": 0.1,
+          "deltaLeakage": {
+            "mean": 0.22079289211561068,
+            "ci95": [
+              0.19075146322938807,
+              0.2535495293165249
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: trivial/and_or_mixed",
+          "classifier": "rf",
+          "b1AucMean": 0.8136592667324917,
+          "b2AucMean": 0.54456706874506,
+          "b1SignificantSeedFraction": 0.9333333333333333,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.23231946570599468,
+            "ci95": [
+              0.2028748678768941,
+              0.2616089227572778
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: trivial/negation_heavy",
+          "classifier": "lr",
+          "b1AucMean": 0.34615988843291906,
+          "b2AucMean": 0.5714369825307022,
+          "b1SignificantSeedFraction": 0.26666666666666666,
+          "b2SignificantSeedFraction": 0.1,
+          "deltaLeakage": {
+            "mean": 0.22794771323532392,
+            "ci95": [
+              0.1956607460114365,
+              0.2588318833205951
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: trivial/negation_heavy",
+          "classifier": "rf",
+          "b1AucMean": 0.8311238275597836,
+          "b2AucMean": 0.5217674186459623,
+          "b1SignificantSeedFraction": 1.0,
+          "b2SignificantSeedFraction": 0.06666666666666667,
+          "deltaLeakage": {
+            "mean": 0.2640765640634232,
+            "ci95": [
+              0.23829424182031417,
+              0.2901619827799301
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: trivial/or_only",
+          "classifier": "lr",
+          "b1AucMean": 0.3165815350886627,
+          "b2AucMean": 0.5612839633948742,
+          "b1SignificantSeedFraction": 0.1,
+          "b2SignificantSeedFraction": 0.16666666666666666,
+          "deltaLeakage": {
+            "mean": 0.14283159205525137,
+            "ci95": [
+              0.10671919661569354,
+              0.17469505968865423
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
+        },
+        {
+          "task": "structureType: trivial/or_only",
+          "classifier": "rf",
+          "b1AucMean": 0.7624090350866368,
+          "b2AucMean": 0.5216475457267798,
+          "b1SignificantSeedFraction": 0.9333333333333333,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.1847392064297088,
+            "ci95": [
+              0.1578845672214936,
+              0.2095585552456442
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage"
         }
       ]
     }
@@ -1358,16 +1494,16 @@
           "ari": {
             "mean": 0.015449097167191107,
             "ci95": [
-              -0.01488794449403566,
-              0.08051951071105687
+              -0.0083971115024538,
+              0.08055042330653812
             ],
             "n": 500
           },
           "nmi": {
             "mean": 0.0408376229073255,
             "ci95": [
-              0.015488589878971268,
-              0.15908281003045102
+              0.014530016466387907,
+              0.16233825246160366
             ],
             "n": 500
           }
@@ -1386,16 +1522,16 @@
           "ari": {
             "mean": 0.06890678919440459,
             "ci95": [
-              0.03713040289624802,
-              0.17309699228094338
+              0.03602711914726783,
+              0.1667789040618436
             ],
             "n": 500
           },
           "nmi": {
             "mean": 0.13540688327359038,
             "ci95": [
-              0.06831446549103759,
-              0.22702884193413406
+              0.08045205121577005,
+              0.22611827131606918
             ],
             "n": 500
           }
@@ -1403,27 +1539,27 @@
       },
       "logicStructure": {
         "b1": {
-          "ari": 0.0665931923351332,
-          "nmi": 0.08448206388078798
+          "ari": 0.043278560918091506,
+          "nmi": 0.09585838326418121
         },
         "b2": {
-          "ari": -0.005678890685512143,
-          "nmi": 0.0033280879893987105
+          "ari": -0.0009756184508538972,
+          "nmi": 0.013560761579563865
         },
         "deltaB1MinusB2": {
           "ari": {
-            "mean": 0.07227208302064533,
+            "mean": 0.04425417936894541,
             "ci95": [
-              0.027945194274535557,
-              0.116625642902224
+              0.015475417934296234,
+              0.08942752713387095
             ],
             "n": 500
           },
           "nmi": {
-            "mean": 0.08115397589138927,
+            "mean": 0.08229762168461735,
             "ci95": [
-              0.03764198273540749,
-              0.1231156311610733
+              0.032865228444855565,
+              0.11744242556413624
             ],
             "n": 500
           }
@@ -1442,16 +1578,16 @@
           "ari": {
             "mean": 0.04601506348998096,
             "ci95": [
-              0.007388779698190504,
-              0.08296218196586241
+              0.004899848192773222,
+              0.08108392661073054
             ],
             "n": 500
           },
           "nmi": {
             "mean": 0.06650037394185723,
             "ci95": [
-              0.01625276351197846,
-              0.11031717549576003
+              0.015467765852464838,
+              0.10723996806716386
             ],
             "n": 500
           }
@@ -1470,16 +1606,16 @@
           "ari": {
             "mean": 0.052451071951092235,
             "ci95": [
-              0.010142567199629169,
-              0.09687655804608587
+              0.007954806089538493,
+              0.1005040044132071
             ],
             "n": 500
           },
           "nmi": {
             "mean": 0.06748708989877578,
             "ci95": [
-              0.014000870024692899,
-              0.10401884148032317
+              0.015618756587797579,
+              0.11155910298166917
             ],
             "n": 500
           }
@@ -1498,16 +1634,16 @@
           "ari": {
             "mean": 0.05183358476941424,
             "ci95": [
-              0.004626287220941662,
-              0.09325335829890082
+              0.006665786038587111,
+              0.09381607355482154
             ],
             "n": 500
           },
           "nmi": {
             "mean": 0.06850307287404658,
             "ci95": [
-              0.006879182311154653,
-              0.10978432550915293
+              0.007261288611702591,
+              0.11027589966590477
             ],
             "n": 500
           }
@@ -1518,24 +1654,24 @@
       "observed_ari": {
         "mean": 0.5003007518796991,
         "ci95": [
-          0.4239926691729323,
-          0.5753403759398497
+          0.4339420864661654,
+          0.5741201127819548
         ],
         "n": 133
       },
       "observed_nmi": {
         "mean": 0.48203684210526315,
         "ci95": [
-          0.4113179511278196,
-          0.5567381203007519
+          0.40572719924812034,
+          0.5564165977443609
         ],
         "n": 133
       },
       "debiased_nmi": {
         "mean": 0.48152255639097746,
         "ci95": [
-          0.4183207894736842,
-          0.5554300939849625
+          0.40652714285714286,
+          0.5611144736842104
         ],
         "n": 133
       },
@@ -1546,8 +1682,8 @@
     "commitGasUsed": {
       "mean": 86994.33416252072,
       "ci95": [
-        86044.96088308457,
-        87940.92222222222
+        86042.87481343283,
+        87973.26674958541
       ],
       "n": 1206,
       "b1Mean": 216561.78109452737,
@@ -1557,8 +1693,8 @@
     "accessGasUsed": {
       "mean": 206434.1791044776,
       "ci95": [
-        203983.4272180763,
-        208779.85402155886
+        203854.2891376451,
+        209015.99096185737
       ],
       "n": 1206,
       "b1Mean": 546876.1990049751,

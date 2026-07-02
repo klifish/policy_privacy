@@ -39,20 +39,20 @@ $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are contrasts w
 padding moved the attacker back toward chance. The distribution is asymmetric in exactly
 the way an effective defense predicts. Every contrast on which B1 carries a sizable signal
 ($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses to near the padded axis under B2: the
-strongest SPP contrasts fall from AUC $0.81$ and $0.76$ (\texttt{paramType none/small},
-\texttt{and\_only/negation\_heavy}) to $0.41$--$0.47$, with bootstrap $\Delta_{\text{leak}}$
-positive and a $95\%$ CI excluding zero. Across the $39$ random-forest contrasts the median
-unpadded deviation of $0.073$ drops to $0.021$ under padding, and the per-family median
-$\Delta_{\text{leak}}$ is $+0.099$ (SPP) and $+0.052$ (PI). The clustering attacker shows
-the same pattern on a second, label-free attack family: PI pairwise clustering reaches
-debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$ under B2
-(mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.067$ (B1) to
-$-0.006$ (B2). This attributes the gas-channel protection reported in
-Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering} to randomized access-gas padding,
-rather than to weak attacks or insufficient sample size.
+strongest SPP contrasts fall from AUC $0.83$ and $0.81$ (\texttt{structureType
+trivial/negation\_heavy}, \texttt{structureType trivial/and\_or\_mixed}) to $0.52$--$0.55$,
+with bootstrap $\Delta_{\text{leak}}$ positive and a $95\%$ CI excluding zero. Across the
+$43$ random-forest contrasts the median unpadded deviation of $0.074$ drops to $0.022$
+under padding, and the per-family median $\Delta_{\text{leak}}$ is $+0.086$ (SPP) and
+$+0.052$ (PI). The clustering attacker shows the same pattern on a second, label-free
+attack family: PI pairwise clustering reaches debiased significance on $68\%$ of pairs
+under B1 (mean ARI $0.50$) versus $5\%$ under B2 (mean ARI $0.0015$), and SPP
+logic-structure clustering drops from ARI $0.043$ (B1) to $-0.001$ (B2). This attributes
+the gas-channel protection reported in Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}
+to randomized access-gas padding, rather than to weak attacks or insufficient sample size.
 
 The effect is conditional, and we report it as such. Padding reduces leakage wherever a
-recoverable gas-channel signal exists and is otherwise inert: the $14$ random-forest
+recoverable gas-channel signal exists and is otherwise inert: the $16$ random-forest
 contrasts with no detectable effect ($\Delta_{\text{leak}}$ CI spanning zero) sit in the
 lower-left of Figure~\ref{fig:ablation-paired}, where B1 is already at chance so there is
 nothing to remove. This is most visible for PCH, whose gas-channel signal is weak even

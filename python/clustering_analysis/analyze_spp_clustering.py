@@ -6,7 +6,7 @@ Goal: Determine if an attacker can infer structural properties (Logic, Depth, et
 purely based on Gas costs.
 
 Targets:
-1. Logic Structure (3 classes: and_only, and_or_mixed, negation_heavy)
+1. Logic Structure (5 classes: and_only, and_or_mixed, negation_heavy, or_only, trivial)
 2. Nesting Depth (4 classes: deep, flat, medium, shallow)
 3. Predicate Count (4 classes: few, many, none, single)
 4. Set Size (4 classes: large, medium, none, small)
@@ -29,7 +29,7 @@ OUTPUT_DIR = Path(__file__).parents[1] / "results" / "spp_clustering_analysis"
 
 # Target Definitions based on user input and report
 TARGETS = {
-    "logicStructure": ["and_only", "and_or_mixed", "negation_heavy", "or_only"],
+    "logicStructure": ["and_only", "and_or_mixed", "negation_heavy", "or_only", "trivial"],
     "nestingDepth": ["deep", "flat", "medium", "shallow"],
     "predicateCount": ["few", "many", "none", "single"],
     "setSize": ["large", "medium", "none", "small"]

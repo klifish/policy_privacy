@@ -6,18 +6,22 @@
 structure, nesting depth, predicate coverage) nor the \emph{magnitude} of its parameters
 (whitelist/set sizes) leaks to the observer. The supervised attack organizes the test
 along three annotation axes---logical structure type, predicate count, and parameter
-magnitude---and attacks each pair of buckets within an axis.
+magnitude---and attacks each pair of buckets within an axis. \texttt{structureType} has
+five buckets: \texttt{trivial} (a single predicate with no boolean connective, e.g.\
+policy logic \texttt{"GR"}), \texttt{and\_only}, \texttt{or\_only}, \texttt{and\_or\_mixed},
+and \texttt{negation\_heavy}.
 
-\paragraph{Supervised attack.} Table~\ref{tab:spp-contrasts} reports all 18 pairwise
+\paragraph{Supervised attack.} Table~\ref{tab:spp-contrasts} reports all 22 pairwise
 contrasts over 30 policy-disjoint seeds across \texttt{structureType},
-\texttt{predicateCombo}, and \texttt{paramType}. AUC is the calibrated random-forest
-score, since logistic regression over-separates on the near-constant SPP features.
+\texttt{predicateCombo}, and \texttt{paramType}. AUC is the higher-scoring of logistic
+regression and random forest per contrast, since either can be the stronger attacker
+depending on the pair and both are checked for gating.
 Every contrast has $\mathrm{AUC}_{\text{mean}}\in[0.421,0.530]$ and a significant-seed
-fraction at or below $20\%$, so all 18 pass and SPP passes overall. We gate on AUC and
+fraction at or below $20\%$, so all 22 pass and SPP passes overall. We gate on AUC and
 the permutation test. Single-split accuracy-style diagnostics can run large on imbalanced
 contrasts, but this is the majority-class artifact described in
 Section~\ref{sec:eval-method}---a near-constant predictor scoring apparent gains
 without genuine separation---which the AUC-plus-permutation criterion correctly reads
 as chance. Section~\ref{sec:eval-ablation} provides the corresponding positive control:
-when gas padding is removed, the same random-forest SPP attacker recovers structural and
+when gas padding is removed, the same SPP attacker recovers structural and
 parameter-magnitude signal, and that signal collapses under the full normalization.

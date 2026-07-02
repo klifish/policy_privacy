@@ -1,6 +1,6 @@
 # Structure & Parameter Privacy Evaluation Report
 
-**Date:** 6/27/2026, 3:49:38 PM
+**Date:** 7/2/2026, 11:16:31 AM
 
 ## Objective
 
@@ -24,11 +24,14 @@ after applying postfix interpreter + padding protections.
 **Status:** ✗ FAIL
 
 **Failures:**
-- and_only vs negation_heavy / Permutation Test: p-value=0.0379 (threshold: 0.05)
+- or_only vs negation_heavy / Permutation Test: p-value=0.0419 (threshold: 0.05)
 
 #### Target: predicateCombo
 
-**Status:** ✓ PASS
+**Status:** ✗ FAIL
+
+**Failures:**
+- none vs many / Permutation Test: p-value=0.0339 (threshold: 0.05)
 
 #### Target: paramType
 
@@ -56,9 +59,9 @@ after applying postfix interpreter + padding protections.
 
 **Failures:**
 - k=2 / silhouette: 0.5245 (threshold: 0.3)
-- k=3 / silhouette: 0.4126 (threshold: 0.3)
-- k=4 / silhouette: 0.3724 (threshold: 0.3)
-- k=5 / silhouette: 0.3373 (threshold: 0.3)
+- k=3 / silhouette: 0.4124 (threshold: 0.3)
+- k=4 / silhouette: 0.3553 (threshold: 0.3)
+- k=5 / silhouette: 0.3727 (threshold: 0.3)
 
 #### Target: predicateCombo
 
@@ -67,18 +70,18 @@ after applying postfix interpreter + padding protections.
 **Failures:**
 - k=2 / silhouette: 0.5244 (threshold: 0.3)
 - k=3 / silhouette: 0.4126 (threshold: 0.3)
-- k=4 / silhouette: 0.3670 (threshold: 0.3)
-- k=5 / silhouette: 0.3523 (threshold: 0.3)
+- k=4 / silhouette: 0.3555 (threshold: 0.3)
+- k=5 / silhouette: 0.3727 (threshold: 0.3)
 
 #### Target: paramType
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5245 (threshold: 0.3)
-- k=3 / silhouette: 0.4126 (threshold: 0.3)
-- k=4 / silhouette: 0.3553 (threshold: 0.3)
-- k=5 / silhouette: 0.3758 (threshold: 0.3)
+- k=2 / silhouette: 0.5244 (threshold: 0.3)
+- k=3 / silhouette: 0.4124 (threshold: 0.3)
+- k=4 / silhouette: 0.3673 (threshold: 0.3)
+- k=5 / silhouette: 0.3727 (threshold: 0.3)
 
 ## Conclusion
 
