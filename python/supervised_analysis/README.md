@@ -72,5 +72,6 @@ cd python/supervised_analysis
 (`-1` = all cores). With `--jobs 1` a single RandomForest fit uses all cores;
 with `--jobs > 1` each fit is single-threaded to avoid oversubscription. Results
 are identical regardless of `--jobs` (each seed is independently seeded).
-`run_ablation_supervised.py` checkpoints each row to its CSV as it is computed,
-so an interrupted run keeps its completed contrasts.
+Both `spp_supervised.py` and `run_ablation_supervised.py` checkpoint after each
+completed contrast (CSV row appended + flushed, JSON verdict rewritten), so an
+interrupted run keeps all contrasts finished so far.

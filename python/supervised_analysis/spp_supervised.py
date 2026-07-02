@@ -20,13 +20,13 @@ Framing (mirrors the JS pipeline):
   * Overall PASS iff all gating contrasts pass and at least one is judgeable.
 """
 import argparse
+import csv
 import json
 import itertools
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -187,6 +187,12 @@ def evaluate_seed(X, y, groups, seed: int, models: List[str], rf_n_jobs: int = -
     return out
 
 
+CSV_FIELDS = [
+    "dataset", "target", "class0", "class1", "model", "aucMean", "aucStd",
+    "advantageMean", "sigFraction", "medianTestN", "majorityBaselineAcc",
+    "nSeeds", "passed", "nonGating",
+]
+
 # --- Multi-seed aggregation & verdict -----------------------------------------
 
 def _mean_std(vals):
@@ -247,27 +253,9 @@ def analyze_contrast(X, y, groups, seeds: int, models: List[str]) -> Dict:
     return result
 
 
-def run_dataset(dataset: List[dict], seeds: int, models: List[str], dataset_tag: str) -> Dict:
-    X, groups, labels_by_target = build_feature_matrix(dataset)
-    contrasts = []
-
-    for target in TARGET_ATTRS:
-        labels = labels_by_target[target]
-        classes = sorted(set(labels.tolist()))
-        for c0, c1 in itertools.combinations(classes, 2):
-            mask = (labels == c0) | (labels == c1)
-            y = (labels[mask] == c1).astype(int)
-            res = analyze_contrast(X[mask], y, groups[mask], seeds, models)
-            res.update({"dataset": dataset_tag, "target": target, "class0": c0, "class1": c1})
-            contrasts.append(res)
-            _print_contrast(res, models)
-
+def _build_verdict(dataset_tag: str, seeds: int, contrasts: List[Dict]) -> Dict:
     judged = [c for c in contrasts if not c["nonGating"] and c["passed"] is not None]
-    if not judged:
-        overall = None
-    else:
-        overall = all(c["passed"] for c in judged)
-
+    overall = all(c["passed"] for c in judged) if judged else None
     return {
         "dataset": dataset_tag,
         "criterion": {
@@ -282,6 +270,47 @@ def run_dataset(dataset: List[dict], seeds: int, models: List[str], dataset_tag:
         "overallPassed": overall,
         "contrasts": contrasts,
     }
+
+
+def run_dataset(dataset: List[dict], seeds: int, models: List[str], dataset_tag: str,
+                 csv_path: Optional[Path] = None, json_path: Optional[Path] = None) -> Dict:
+    """Run all SPP contrasts, checkpointing to csv_path/json_path after each one
+    so an interrupted run keeps its completed contrasts (mirrors the ablation
+    driver's incremental checkpointing)."""
+    X, groups, labels_by_target = build_feature_matrix(dataset)
+    contrasts = []
+
+    writer = None
+    csv_file = None
+    if csv_path is not None:
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        csv_file = open(csv_path, "w", newline="")
+        writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
+        writer.writeheader()
+
+    for target in TARGET_ATTRS:
+        labels = labels_by_target[target]
+        classes = sorted(set(labels.tolist()))
+        for c0, c1 in itertools.combinations(classes, 2):
+            mask = (labels == c0) | (labels == c1)
+            y = (labels[mask] == c1).astype(int)
+            res = analyze_contrast(X[mask], y, groups[mask], seeds, models)
+            res.update({"dataset": dataset_tag, "target": target, "class0": c0, "class1": c1})
+            contrasts.append(res)
+            _print_contrast(res, models)
+
+            if writer is not None:
+                for row in verdict_to_rows({"contrasts": [res]}, models):
+                    writer.writerow(row)
+                csv_file.flush()
+            if json_path is not None:
+                with open(json_path, "w") as f:
+                    json.dump(_build_verdict(dataset_tag, seeds, contrasts), f, indent=2)
+
+    if csv_file is not None:
+        csv_file.close()
+
+    return _build_verdict(dataset_tag, seeds, contrasts)
 
 
 def _print_contrast(res: Dict, models: List[str]):
@@ -349,15 +378,11 @@ def main():
     dataset = load_json(dataset_path)
     print(f"{len(dataset)} executions, {len(set(e.get('policyId') for e in dataset))} policies.\n")
 
-    verdict = run_dataset(dataset, args.seeds, args.models, tag)
-
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    rows = verdict_to_rows(verdict, args.models)
     csv_path = args.output_dir / "spp_supervised_summary.csv"
-    pd.DataFrame(rows).to_csv(csv_path, index=False)
     json_path = args.output_dir / "spp_supervised_verdict.json"
-    with open(json_path, "w") as f:
-        json.dump(verdict, f, indent=2)
+    verdict = run_dataset(dataset, args.seeds, args.models, tag,
+                           csv_path=csv_path, json_path=json_path)
 
     print(f"\nOverall SPP supervised verdict [{tag}]: "
           f"{'PASS' if verdict['overallPassed'] else verdict['overallPassed']}")
