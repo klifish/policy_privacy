@@ -82,6 +82,15 @@ def find_or_generate_pairs(data_dir: Path, output_dir: Path, seed: int) -> Tuple
 
 
 def _policy_feature_runs(policy: dict) -> List[dict]:
+    """Execution runs for one PI policy side.
+
+    Uses only ``policy.features`` — matching the of-record JS attack
+    (attacks.js reads ``policy.features`` exclusively).  ``rawExecutions`` is the
+    same executions stored a second time (identical feature vectors, gas as
+    strings), so including it double-counts every run and leaks the test set into
+    training.  Every policy side across all pairs files carries ``features``, so
+    this drops no data.
+    """
     runs = []
     for run in policy.get("features") or []:
         if isinstance(run, dict):
@@ -89,9 +98,6 @@ def _policy_feature_runs(policy: dict) -> List[dict]:
                 runs.append(run)
             else:
                 runs.append({"features": run, "policyId": policy.get("policyId")})
-    for run in policy.get("rawExecutions") or []:
-        if isinstance(run, dict):
-            runs.append(run)
     return runs
 
 

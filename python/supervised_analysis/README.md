@@ -91,7 +91,40 @@ cd python/supervised_analysis
 ../.venv/bin/python compare_with_js_verdict.py --experiment pch
 ../.venv/bin/python compare_with_js_verdict.py --experiment pi
 ../.venv/bin/python compare_with_js_verdict.py --experiment spp
+
+# Refresh an interactive protocol dashboard (probe + build HTML in one step,
+# then open it). One command to remember per experiment.
+./refresh_viz.sh                 # PCH, 30 seeds (default)
+./refresh_viz.sh spp             # SPP, 30 seeds
+./refresh_viz.sh pi              # PI, 30 seeds (prefers of-record pi_pairs.json)
+./refresh_viz.sh pch --seeds 10  # any probe flag passes through
+# from the repo root, equivalently: npm run viz:pch / viz:spp / viz:pi
 ```
+
+The dashboards (`../results/supervised_analysis/{pch,spp,pi}_protocol_viz.html`,
+gitignored) are self-contained debug views of the attack protocol: the
+double-criterion decision space, permutation null distributions, per-seed AUC
+spread, a training-data health panel, and the raw per-execution rows (including
+each policy's human-readable logic expression). Supporting/diagnostic only; they
+never touch the of-record outputs.
+
+Architecture: `viz_common.py` holds the task-agnostic framework (per-seed probe,
+permutation histogram, training-data inspection, shared row pool, `run_probe`
+driver). Each experiment is a thin adapter that supplies a loader and a
+`build_tasks` returning tasks tagged with dataset `indices`:
+- `viz_probe.py` — PCH; delegates to `pch_supervised.build_tasks`.
+- `spp_viz_probe.py` — SPP; within-attribute pairwise contrasts.
+- `pi_viz_probe.py` — PI; pairs (not a flat dataset), so it builds its own row
+  pool of pair-side executions and passes `row_pool=` to `run_probe`. Label =
+  pair side (0/1), grouped by policyId; scopes are `overall` + each pairType;
+  `controlled_difference` is a diagnostic positive control (non-gating via the
+  task's `diagnostic` flag). Prefers the of-record `pi_pairs.json`, else runs
+  `scripts/generate_pi_pairs.js`.
+
+`build_viz_html.py` inlines any `viz_data*.json` into the shared
+`pch_protocol_viz.template.html` (data-driven; titles itself from
+`DATA.experiment`). `refresh_viz.sh <pch|spp|pi>` chains probe + build; run it
+after the dataset or criterion changes.
 
 `--jobs` parallelizes the independent per-seed evaluations across processes
 (`-1` = all cores). With `--jobs 1` a single RandomForest fit uses all cores;

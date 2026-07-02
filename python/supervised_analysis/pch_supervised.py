@@ -108,6 +108,7 @@ def build_base_arrays(dataset: List[dict]):
 def build_tasks(dataset: List[dict]):
     X, groups = build_base_arrays(dataset)
     tasks = []
+    all_indices = np.arange(len(dataset), dtype=int)
 
     for term_id, code in DUO_TERM_ORDER:
         y_values = []
@@ -125,6 +126,9 @@ def build_tasks(dataset: List[dict]):
             "X": X,
             "y": y,
             "groups": groups,
+            # Original dataset row indices for this task (diagnostics only; the
+            # of-record pipeline ignores this key).
+            "indices": all_indices,
         })
 
     icd_rows = [(i, _icd_chapter(record)) for i, record in enumerate(dataset)]
@@ -148,6 +152,7 @@ def build_tasks(dataset: List[dict]):
                 "X": X[indices],
                 "y": y,
                 "groups": groups[indices],
+                "indices": indices,
             })
     return tasks
 
