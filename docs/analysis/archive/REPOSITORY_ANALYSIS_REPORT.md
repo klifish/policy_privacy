@@ -1,5 +1,11 @@
 # 仓库功能分析报告
 
+> ⚠️ **ARCHIVED — describes an early project snapshot.** This document was written before
+> the `experiments/` (PCH/PI/SPP attack-simulation) tree and `paper/` (manuscript) existed,
+> and before the unified main circuit (`circuits/policy_privacy_main.circom`) and
+> `contracts/PolicyPrivacyMainVerifier.sol` were implemented. It does not reflect the
+> current repository structure or completeness. Kept for historical context only.
+
 ## 执行摘要
 
 **仓库名称**：`klifish/policy_privacy`  

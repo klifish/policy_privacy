@@ -1,5 +1,13 @@
 # Privacy Leak Analysis Report - Testnet Experiment
 
+> ⚠️ **ARCHIVED — superseded.** This document describes the pre-multiseed, single-split
+> PASS/FAIL design (a single AUC≤0.55-and-Advantage≤5% threshold check). The current
+> authoritative privacy verdict is a 30-seed policy-disjoint double criterion
+> (`FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5`), implemented in
+> `experiments/core/multiseed_criterion.js`. Some file/API references below (e.g.
+> `evaluator.js`, `classifiers.js`, `mock_demo.js`) no longer exist as standalone files.
+> Kept for historical context only — do not use as a spec of current behavior.
+
 **Date**: 2025-11-08
 **Dataset**: 200 samples (testnet)
 **Status**: ⚠️ Privacy leak detected in DUO Term 0

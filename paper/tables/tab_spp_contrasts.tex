@@ -2,25 +2,34 @@
 %   (multiseedVerdict, deterministic per-seed RNG; this is the current of-record run.
 %    The older experiments/multiseed_results/polygonAmoy/spp_verdict.txt batch is superseded.)
 % Structure & Parameter Privacy — supervised attack, multi-seed (30 policy-disjoint seeds).
-% AUC uses random forest (LR over-separates on near-constant features).
+% AUC is the higher of logistic regression / random forest per contrast (top-level
+% multiseedVerdict field = the "stronger attacker" leg used for gating).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
+% structureType has a 5th category, "trivial": single-atom policies with no boolean
+% connective (e.g. logicOriginal "GR" or "DS"), previously misclassified as and_only.
 % table* spans both columns (the 6-column rows with two mean+-std columns overflow a single column).
 \begin{table*}[t]
   \centering
-  \caption{Structure \& Parameter Privacy: 18 pairwise contrasts across three annotation
-    axes, each over 30 policy-disjoint seeds. AUC is the calibrated random-forest score.
-    Every contrast satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and} \%sig${}<50\%$.}
+  \caption{Structure \& Parameter Privacy: 22 pairwise contrasts across three annotation
+    axes, each over 30 policy-disjoint seeds. AUC is the higher-scoring of logistic
+    regression and random forest per contrast (the stronger-attacker leg used for
+    gating). Every contrast satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and}
+    \%sig${}<50\%$.}
   \label{tab:spp-contrasts}
   \begin{tabular}{lccccc}
     \toprule
     Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ \\
     \midrule
     \multicolumn{6}{l}{\textit{structureType}} \\
-    and\_only / or\_only              & $0.493 \pm 0.041$ & $0.030 \pm 0.029$ & $0.532$ & $3\%$  & $185$ \\
-    and\_only / negation\_heavy       & $0.507 \pm 0.045$ & $0.034 \pm 0.030$ & $0.432$ & $7\%$  & $173$ \\
-    and\_only / and\_or\_mixed        & $0.500 \pm 0.037$ & $0.031 \pm 0.019$ & $0.499$ & $0\%$  & $141$ \\
+    trivial / or\_only                & $0.498 \pm 0.043$ & $0.036 \pm 0.024$ & $0.519$ & $3\%$  & $154$ \\
+    trivial / and\_only                & $0.479 \pm 0.040$ & $0.036 \pm 0.028$ & $0.607$ & $0\%$  & $78$  \\
+    trivial / negation\_heavy          & $0.516 \pm 0.031$ & $0.028 \pm 0.021$ & $0.399$ & $3\%$  & $139$ \\
+    trivial / and\_or\_mixed           & $0.511 \pm 0.039$ & $0.035 \pm 0.022$ & $0.425$ & $0\%$  & $107$ \\
+    and\_only / or\_only              & $0.472 \pm 0.032$ & $0.034 \pm 0.026$ & $0.666$ & $0\%$  & $139$ \\
     or\_only / negation\_heavy        & $0.530 \pm 0.033$ & $0.034 \pm 0.029$ & $0.295$ & $20\%$ & $199$ \\
     or\_only / and\_or\_mixed         & $0.489 \pm 0.039$ & $0.034 \pm 0.021$ & $0.573$ & $0\%$  & $171$ \\
+    and\_only / negation\_heavy       & $0.485 \pm 0.050$ & $0.045 \pm 0.027$ & $0.575$ & $0\%$  & $125$ \\
+    and\_only / and\_or\_mixed        & $0.492 \pm 0.049$ & $0.040 \pm 0.030$ & $0.553$ & $0\%$  & $93$  \\
     negation\_heavy / and\_or\_mixed  & $0.516 \pm 0.036$ & $0.034 \pm 0.020$ & $0.392$ & $0\%$  & $154$ \\
     \midrule
     \multicolumn{6}{l}{\textit{predicateCombo}} \\
@@ -39,7 +48,7 @@
     small / large   & $0.527 \pm 0.036$ & $0.037 \pm 0.027$ & $0.336$ & $3\%$  & $139$ \\
     medium / large  & $0.499 \pm 0.031$ & $0.025 \pm 0.017$ & $0.510$ & $3\%$  & $277$ \\
     \midrule
-    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 18 contrasts)} \\
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 22 contrasts)} \\
     \bottomrule
   \end{tabular}
 \end{table*}

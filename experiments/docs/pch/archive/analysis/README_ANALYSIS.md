@@ -1,5 +1,13 @@
 # Gas 消耗和数据分布分析工具
 
+> ⚠️ **ARCHIVED — superseded.** This document describes the pre-multiseed, single-split
+> PASS/FAIL design (a single AUC≤0.55-and-Advantage≤5% threshold check). The current
+> authoritative privacy verdict is a 30-seed policy-disjoint double criterion
+> (`FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5`), implemented in
+> `experiments/core/multiseed_criterion.js`. Some file/API references below (e.g.
+> `evaluator.js`, `classifiers.js`, `mock_demo.js`) no longer exist as standalone files.
+> Kept for historical context only — do not use as a spec of current behavior.
+
 本目录包含用于分析 Policy Content Hiding 实验结果的工具和报告。
 
 ## 📁 文件说明

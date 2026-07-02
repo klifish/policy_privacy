@@ -1,5 +1,11 @@
 # Policy Privacy Paper Implementation Gap Analysis
 
+> ⚠️ **ARCHIVED — describes an early project snapshot.** This document was written before
+> the `experiments/` (PCH/PI/SPP attack-simulation) tree and `paper/` (manuscript) existed,
+> and before the unified main circuit (`circuits/policy_privacy_main.circom`) and
+> `contracts/PolicyPrivacyMainVerifier.sol` were implemented. It does not reflect the
+> current repository structure or completeness. Kept for historical context only.
+
 ## Executive Summary
 
 Based on the paper's proposed zero-knowledge approach for privacy-preserving consent management in blockchain healthcare systems, this analysis compares the current repository implementation with the paper's specification and identifies the remaining work required for complete implementation.

@@ -1,5 +1,13 @@
 # Gas Padding Strategy Analysis Documentation
 
+> ⚠️ **ARCHIVED — describes a superseded implementation.** This document analyzes an
+> older gas-padding design with a fixed `TX_OVERHEAD` constant and 6M/7.1M gas targets.
+> The current implementation (`contracts/PolicyPrivacy.sol`'s `_padGasToTarget`) already
+> does dynamic per-byte calldata-cost compensation — exactly what this document proposed
+> as a future fix — and the current pad targets are 750,000 (access) / 300,000 (commit)
+> gas (see `experiments/core/data_generator.js` and `experiments/unified/run.js`), not the
+> values quoted here. Root-cause narrative and recommendations below are historical.
+
 **Analysis Date**: 2024-11-06  
 **Repository**: klifish/policy_privacy  
 **Branch**: copilot/analyze-gas-padding-strategy

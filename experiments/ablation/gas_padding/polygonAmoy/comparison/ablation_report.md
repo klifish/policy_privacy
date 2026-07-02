@@ -72,18 +72,26 @@ Positive Δleakage means B2 padding reduced |AUC−0.5| relative to B1.
 | SPP | predicateCombo: single/few | rf | 0.715 | 0.489 | 0.157 [0.124, 0.192] | padding_reduces_leakage |
 | SPP | predicateCombo: single/many | lr | 0.784 | 0.521 | 0.215 [0.183, 0.248] | padding_reduces_leakage |
 | SPP | predicateCombo: single/many | rf | 0.740 | 0.535 | 0.174 [0.133, 0.214] | padding_reduces_leakage |
-| SPP | structureType: and_only/and_or_mixed | lr | 0.539 | 0.462 | 0.211 [0.183, 0.237] | padding_reduces_leakage |
-| SPP | structureType: and_only/and_or_mixed | rf | 0.741 | 0.494 | 0.194 [0.170, 0.218] | padding_reduces_leakage |
-| SPP | structureType: and_only/negation_heavy | lr | 0.343 | 0.522 | 0.230 [0.208, 0.252] | padding_reduces_leakage |
-| SPP | structureType: and_only/negation_heavy | rf | 0.759 | 0.465 | 0.195 [0.173, 0.217] | padding_reduces_leakage |
-| SPP | structureType: and_only/or_only | lr | 0.412 | 0.522 | 0.168 [0.140, 0.192] | padding_reduces_leakage |
-| SPP | structureType: and_only/or_only | rf | 0.691 | 0.500 | 0.150 [0.127, 0.176] | padding_reduces_leakage |
-| SPP | structureType: negation_heavy/and_or_mixed | lr | 0.515 | 0.455 | 0.008 [-0.013, 0.027] | no_detectable_incremental_effect |
-| SPP | structureType: negation_heavy/and_or_mixed | rf | 0.488 | 0.493 | -0.002 [-0.029, 0.026] | no_detectable_incremental_effect |
+| SPP | structureType: and_only/and_or_mixed | lr | 0.710 | 0.440 | 0.128 [0.086, 0.167] | padding_reduces_leakage |
+| SPP | structureType: and_only/and_or_mixed | rf | 0.655 | 0.468 | 0.074 [0.042, 0.107] | padding_reduces_leakage |
+| SPP | structureType: negation_heavy/and_only | lr | 0.743 | 0.451 | 0.171 [0.131, 0.203] | padding_reduces_leakage |
+| SPP | structureType: negation_heavy/and_only | rf | 0.704 | 0.419 | 0.112 [0.066, 0.158] | padding_reduces_leakage |
+| SPP | structureType: negation_heavy/and_or_mixed | lr | 0.515 | 0.455 | 0.008 [-0.012, 0.029] | no_detectable_incremental_effect |
+| SPP | structureType: negation_heavy/and_or_mixed | rf | 0.488 | 0.493 | -0.002 [-0.027, 0.027] | no_detectable_incremental_effect |
+| SPP | structureType: or_only/and_only | lr | 0.649 | 0.430 | 0.067 [0.025, 0.114] | padding_reduces_leakage |
+| SPP | structureType: or_only/and_only | rf | 0.593 | 0.441 | 0.015 [-0.018, 0.048] | no_detectable_incremental_effect |
 | SPP | structureType: or_only/and_or_mixed | lr | 0.544 | 0.492 | 0.010 [-0.015, 0.033] | no_detectable_incremental_effect |
 | SPP | structureType: or_only/and_or_mixed | rf | 0.499 | 0.529 | -0.009 [-0.035, 0.016] | no_detectable_incremental_effect |
 | SPP | structureType: or_only/negation_heavy | lr | 0.570 | 0.463 | 0.022 [-0.006, 0.051] | no_detectable_incremental_effect |
 | SPP | structureType: or_only/negation_heavy | rf | 0.549 | 0.446 | -0.000 [-0.023, 0.024] | no_detectable_incremental_effect |
+| SPP | structureType: trivial/and_only | lr | 0.519 | 0.593 | 0.038 [-0.006, 0.080] | no_detectable_incremental_effect |
+| SPP | structureType: trivial/and_only | rf | 0.622 | 0.496 | 0.050 [-0.000, 0.096] | no_detectable_incremental_effect |
+| SPP | structureType: trivial/and_or_mixed | lr | 0.393 | 0.556 | 0.221 [0.191, 0.254] | padding_reduces_leakage |
+| SPP | structureType: trivial/and_or_mixed | rf | 0.814 | 0.545 | 0.232 [0.203, 0.262] | padding_reduces_leakage |
+| SPP | structureType: trivial/negation_heavy | lr | 0.346 | 0.571 | 0.228 [0.196, 0.259] | padding_reduces_leakage |
+| SPP | structureType: trivial/negation_heavy | rf | 0.831 | 0.522 | 0.264 [0.238, 0.290] | padding_reduces_leakage |
+| SPP | structureType: trivial/or_only | lr | 0.317 | 0.561 | 0.143 [0.107, 0.175] | padding_reduces_leakage |
+| SPP | structureType: trivial/or_only | rf | 0.762 | 0.522 | 0.185 [0.158, 0.210] | padding_reduces_leakage |
 
 ## Gas overhead
 
@@ -92,13 +100,13 @@ Positive Δleakage means B2 padding reduced |AUC−0.5| relative to B1.
 
 ## Clustering
 
-- pch_duo: NMI B1−B2 0.0408 [0.0155, 0.1591] (policy-group bootstrap).
-- pch_icd10: NMI B1−B2 0.1354 [0.0683, 0.2270] (policy-group bootstrap).
-- logicStructure: NMI B1−B2 0.0812 [0.0376, 0.1231] (policy-group bootstrap).
-- nestingDepth: NMI B1−B2 0.0665 [0.0163, 0.1103] (policy-group bootstrap).
-- predicateCount: NMI B1−B2 0.0675 [0.0140, 0.1040] (policy-group bootstrap).
-- setSize: NMI B1−B2 0.0685 [0.0069, 0.1098] (policy-group bootstrap).
-- PI balanced pairs: debiased NMI B1−B2 0.4815 [0.4183, 0.5554] across 133 pairs.
+- pch_duo: NMI B1−B2 0.0408 [0.0145, 0.1623] (policy-group bootstrap).
+- pch_icd10: NMI B1−B2 0.1354 [0.0805, 0.2261] (policy-group bootstrap).
+- logicStructure: NMI B1−B2 0.0823 [0.0329, 0.1174] (policy-group bootstrap).
+- nestingDepth: NMI B1−B2 0.0665 [0.0155, 0.1072] (policy-group bootstrap).
+- predicateCount: NMI B1−B2 0.0675 [0.0156, 0.1116] (policy-group bootstrap).
+- setSize: NMI B1−B2 0.0685 [0.0073, 0.1103] (policy-group bootstrap).
+- PI balanced pairs: debiased NMI B1−B2 0.4815 [0.4065, 0.5611] across 133 pairs.
 
 ## Limitation
 

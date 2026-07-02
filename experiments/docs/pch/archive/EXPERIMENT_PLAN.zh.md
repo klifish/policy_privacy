@@ -1,5 +1,11 @@
 # Policy Content Hiding 实验方案梳理
 
+> ⚠️ **已归档——内容已过时。** 本文档描述的是旧版单次切分判据(单一 AUC≤0.55 且 Advantage≤5% 阈值检查)。
+> 当前权威的隐私判决是 30-seed policy-disjoint 双重判据
+> (`FAIL iff AUC_mean > 0.55 且 显著seed比例 >= 0.5`)，实现于 `experiments/core/multiseed_criterion.js`。
+> 文中部分文件/数据引用（如具体日期的跑分结果、已合并进 core/ 的模块）已不是当前状态。
+> 仅作历史记录保留，不代表当前行为。
+
 ## 实验目标
 - 评估 Policy Privacy 系统是否实现 Policy Content Hiding：观察者仅凭上链交易元数据无法优于随机猜测地恢复政策内容（DUO 条款、ICD-10 范围）。
 - 在真实 Hardhat 执行环境中端到端跑通政策生成、合约交互、零知识证明以及攻击建模，量化潜在信息泄露。

@@ -31,19 +31,57 @@ Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main pr
 verdicts: the main verdicts answer whether the full mechanism is private; this ablation
 attributes that privacy to a specific defense layer and reports its gas cost.
 
-\paragraph{Padding removes otherwise-recoverable signal.} With padding disabled, attacks
-that are non-informative on the deployed system become measurably effective. The
-random-forest distinguisher on B1 reaches AUC up to $0.81$ on SPP parameter-magnitude
-contrasts (\texttt{paramType none/small}) and $0.76$ on structural contrasts
-(\texttt{and\_only/negation\_heavy}), while the corresponding B2 AUCs fall back to
-$0.41$--$0.47$; the bootstrap $\Delta_{\text{leak}}$ is positive with a $95\%$ CI that
-excludes zero. The clustering attacker shows the same pattern: PI pairwise clustering
-reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$
-under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.067$
-(B1) to $-0.006$ (B2). This establishes randomized access-gas padding as the defense
-layer responsible for the gas-channel protection reported in
-Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}, rather than weak attacks or
-insufficient sample size.
+\paragraph{Padding removes otherwise-recoverable signal.}
+Figure~\ref{fig:ablation-paired} reports the \emph{full} set of supervised contrasts, not
+a hand-picked subset: each point places a contrast at its unpadded deviation from chance
+$|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ against its padded deviation
+$|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are contrasts where
+padding moved the attacker back toward chance. The distribution is asymmetric in exactly
+the way an effective defense predicts. Every contrast on which B1 carries a sizable signal
+($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses to near the padded axis under B2: the
+strongest SPP contrasts fall from AUC $0.83$ and $0.81$ (\texttt{structureType
+trivial/negation\_heavy}, \texttt{structureType trivial/and\_or\_mixed}) to $0.52$--$0.55$,
+with bootstrap $\Delta_{\text{leak}}$ positive and a $95\%$ CI excluding zero. Across the
+$43$ random-forest contrasts the median unpadded deviation of $0.074$ drops to $0.022$
+under padding, and the per-family median $\Delta_{\text{leak}}$ is $+0.086$ (SPP) and
+$+0.052$ (PI). The clustering attacker shows the same pattern on a second, label-free
+attack family: PI pairwise clustering reaches debiased significance on $68\%$ of pairs
+under B1 (mean ARI $0.50$) versus $5\%$ under B2 (mean ARI $0.0015$), and SPP
+logic-structure clustering drops from ARI $0.043$ (B1) to $-0.001$ (B2). This attributes
+the gas-channel protection reported in Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}
+to randomized access-gas padding, rather than to weak attacks or insufficient sample size.
+
+The effect is conditional, and we report it as such. Padding reduces leakage wherever a
+recoverable gas-channel signal exists and is otherwise inert: the $16$ random-forest
+contrasts with no detectable effect ($\Delta_{\text{leak}}$ CI spanning zero) sit in the
+lower-left of Figure~\ref{fig:ablation-paired}, where B1 is already at chance so there is
+nothing to remove. This is most visible for PCH, whose gas-channel signal is weak even
+unpadded (per-family median $\Delta_{\text{leak}}=-0.012$); padding neither helps nor hurts
+there. Six random-forest contrasts have a $\Delta_{\text{leak}}$ CI on the negative side;
+all are rare ICD-10 chapters on which B1 already sits near chance (AUC $0.48$--$0.54$), so
+the negative value reflects finite-sample movement of an already-uninformative attacker
+rather than padding creating leakage, and none of these tasks is flagged as a leak by the
+multi-seed verdict. These per-contrast counts are descriptive, not multiplicity-corrected;
+the causal claim rests on the direction and magnitude of the shift where a signal is
+present, corroborated by the independent clustering attacker. The logistic-regression panel
+(shown for robustness only, since it over-separates on the near-constant execution
+features) exhibits the same below-diagonal shift.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{ablation_paired_scatter.png}
+  \caption{Gas-padding ablation over \emph{all} supervised contrasts. Each point is one
+    contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$
+    (x) versus its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$ (y); points below
+    the $y=x$ diagonal are cases where randomized access-gas padding moved the attacker
+    back toward chance. Color encodes the sign of the bootstrap $95\%$ CI of
+    $\Delta_{\text{leak}}$: reduce (CI$>0$), no effect (CI spans $0$), negative (CI$<0$).
+    Every contrast with a sizable unpadded signal collapses toward the padded axis, while
+    the few negative cases sit in the lower-left, where B1 is already near chance. The
+    random-forest panel is the reference criterion; logistic regression is shown only for
+    robustness, as it over-separates on the near-constant execution features.}
+  \label{fig:ablation-paired}
+\end{figure}
 
 \paragraph{Cost.} Padding is not free: it raises mean commit gas from $216{,}562$ (B1)
 to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to
