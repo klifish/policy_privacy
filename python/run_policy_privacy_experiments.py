@@ -5,6 +5,11 @@ Structure & Parameter Privacy (SPP) experiments with scikit-learn models.
 
 The script performs attack modeling with Logistic Regression and
 Random Forest classifiers and emits privacy metrics for each experiment.
+
+This is a broad legacy sanity-check/visualization runner. For Python
+cross-checks that intentionally mirror the JavaScript source-of-record
+multiseed verdicts, prefer the focused scripts under
+``python/supervised_analysis/``.
 """
 from __future__ import annotations
 from sklearn.preprocessing import StandardScaler
