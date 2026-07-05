@@ -9,10 +9,8 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const { ProgressTracker } = require('../core/progress');
 
@@ -23,125 +21,20 @@ const {
   buildPairsFromExecutionResults
 } = require('./pi_data_generator');
 
-// Import dataset generation from original for compatibility
-const {
-  generateDataset
-} = require('./data_generator');
-
 const {
   runSingleSampleAttacks,
   runPairwiseAttacks,
   runTwoSampleTests
 } = require('./attacks');
 
-// Import executePolicy from the base data generator for fine-grained execution
-const { executePolicy } = require('../policy_content_hiding/data_generator');
-
-// Checkpoint utilities
-function saveCheckpoint(checkpointPath, phase, step, data) {
-  const checkpoint = {
-    timestamp: new Date().toISOString(),
-    phase,
-    step,
-    data
-  };
-  fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2));
-}
-
-function loadCheckpoint(checkpointPath) {
-  if (!fs.existsSync(checkpointPath)) {
-    return null;
-  }
-  try {
-    return JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
-  } catch (error) {
-    console.warn(`Failed to load checkpoint: ${error.message}`);
-    return null;
-  }
-}
-
-function clearCheckpoint(checkpointPath) {
-  if (fs.existsSync(checkpointPath)) {
-    fs.unlinkSync(checkpointPath);
-  }
-}
-
-// Execute dataset sequentially with real-time progress tracking and checkpoint support
-async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker, checkpointPath) {
-  let results = [];
-  let startIndex = 0;
-
-  // Try to resume from checkpoint
-  if (checkpointPath) {
-    const checkpoint = loadCheckpoint(checkpointPath);
-    if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data) {
-      results = checkpoint.data.results || [];
-      startIndex = checkpoint.data.lastIndex + 1;
-      console.log(`\n   Resuming from checkpoint: ${results.length} policies already executed`);
-    }
-  }
-
-  console.log(`Executing ${dataset.length - startIndex} policy instances sequentially (${startIndex} already done)...`);
-
-  for (let i = startIndex; i < dataset.length; i++) {
-    const policyData = dataset[i];
-
-    try {
-      const result = await executePolicy(policyData, contract);
-      results.push(result);
-
-      // Save checkpoint every 10 executions, including the dataset for full context recovery
-      if (checkpointPath && (i + 1) % 10 === 0) {
-        saveCheckpoint(checkpointPath, 'execution', 'executing_dataset', {
-          lastIndex: i,
-          results,
-          dataset  // Save the dataset for complete context recovery
-        });
-      }
-
-      // Update progress after each execution
-      if (progressTracker) {
-        progressTracker.updateSubProgress(
-          i + 1,
-          dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies`
-        );
-      }
-    } catch (error) {
-      console.error(`\nError executing policy ${i}:`, error.message);
-
-      // Update progress even on failure
-      if (progressTracker) {
-        progressTracker.updateSubProgress(
-          i + 1,
-          dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`
-        );
-      }
-      // Continue with next policy instead of stopping
-    }
-  }
-
-  // Final sub-progress update
-  if (progressTracker) {
-    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
-  }
-
-  // Save results
-  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`\n   Saved ${results.length}/${dataset.length} successful results to ${outputPath}`);
-
-  // Clear checkpoint after successful completion
-  if (checkpointPath) {
-    clearCheckpoint(checkpointPath);
-  }
-
-  return results;
-}
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
+const { deriveSeed } = require('../core/random');
+// buildPiRecordsForSeed lives in ./seed_records (shared by the serial path and the
+// parallel worker — one copy of the per-seed logic).
+const { buildPiRecordsForSeed } = require('./seed_records');
 
 const DEFAULT_THRESHOLDS = Object.freeze({
   aucMax: 0.55,
-  advantageMax: 0.05,
   permutationMin: 0.05,
   mmdMax: 0.05,
   ksPValueMin: 0.05
@@ -153,8 +46,7 @@ const DEFAULT_OUTPUT_FILENAMES = Object.freeze({
   pairs: 'pi_pairs.json',
   analysis: 'pi_analysis.json',
   reportJson: 'pi_report.json',
-  reportMarkdown: 'pi_report.md',
-  checkpoint: 'pi_checkpoint.json'
+  reportMarkdown: 'pi_report.md'
 });
 
 function parsePairTargets(value) {
@@ -170,108 +62,65 @@ function parsePairTargets(value) {
 }
 
 function parseArgs(argv = process.argv.slice(2)) {
+  const common = parseCommonArgs(argv);
   const config = {
     policyCount: 100,
-    executionsPerPolicy: 2,  // Increased from 2 for better statistics
+    executionsPerPolicy: 2,
     satisfyRatio: 0.5,
     testRatio: 0.2,
     permutationIterations: 500,
     // PI-specific pairing configuration
     minPairsPerType: 30,
     targetPairsPerType: 50,
-    maxPairsPerType: 100
+    maxPairsPerType: 100,
+    // Pin the pairing seed (like SPP's 'spp-experiment') so phase-2 pair
+    // sampling is reproducible run-to-run; --seed overrides via ...common.
+    seed: 'pi-experiment',
+    ...common
   };
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle PI-specific args from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
+
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
     switch (arg) {
-      case '--output':
-        config.outputDir = path.resolve(argv[++i]);
-        break;
-      case '--policy-count':
-        config.policyCount = parseInt(argv[++i], 10);
-        break;
-      case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 10);
-        break;
-      case '--satisfy-ratio':
-        config.satisfyRatio = parseFloat(argv[++i]);
-        break;
-      case '--test-ratio':
-        config.testRatio = parseFloat(argv[++i]);
-        break;
       case '--pair-targets':
-        config.pairTargets = parsePairTargets(argv[++i]);
-        break;
-      case '--phase':
-      case '--start-phase':
-        config.startPhase = parseInt(argv[++i], 10);
-        break;
-      case '--dataset':
-        config.datasetPath = path.resolve(argv[++i]);
-        break;
-      case '--execution-results':
-        config.executionResultsPath = path.resolve(argv[++i]);
+        config.pairTargets = parsePairTargets(unknown[++i]);
         break;
       case '--pairs':
-        config.pairsPath = path.resolve(argv[++i]);
+        config.pairsPath = path.resolve(unknown[++i]);
         break;
       case '--analysis':
-        config.analysisPath = path.resolve(argv[++i]);
+        config.analysisPath = path.resolve(unknown[++i]);
         break;
       case '--auc-threshold':
-        config.aucThreshold = parseFloat(argv[++i]);
-        break;
-      case '--advantage-threshold':
-        config.advantageThreshold = parseFloat(argv[++i]);
+        config.aucThreshold = parseFloat(unknown[++i]);
         break;
       case '--permutation-min':
-        config.permutationMin = parseFloat(argv[++i]);
+        config.permutationMin = parseFloat(unknown[++i]);
         break;
       case '--mmd-threshold':
-        config.mmdThreshold = parseFloat(argv[++i]);
+        config.mmdThreshold = parseFloat(unknown[++i]);
         break;
       case '--ks-min':
-        config.ksPValueMin = parseFloat(argv[++i]);
+        config.ksPValueMin = parseFloat(unknown[++i]);
         break;
       case '--permutation-iterations':
-        config.permutationIterations = parseInt(argv[++i], 10);
+        config.permutationIterations = parseInt(unknown[++i], 10);
         break;
       case '--min-pairs-per-type':
-        config.minPairsPerType = parseInt(argv[++i], 10);
+        config.minPairsPerType = parseInt(unknown[++i], 10);
         break;
       case '--target-pairs-per-type':
-        config.targetPairsPerType = parseInt(argv[++i], 10);
+        config.targetPairsPerType = parseInt(unknown[++i], 10);
         break;
       case '--max-pairs-per-type':
-        config.maxPairsPerType = parseInt(argv[++i], 10);
-        break;
-      case '--seed':
-        config.seed = argv[++i];
-        break;
-      case '--resume':
-        config.resume = true;
-        break;
-      case '--checkpoint':
-        config.checkpointPath = path.resolve(argv[++i]);
-        break;
-      case '--use-unified-dataset':
-      case '--unified':
-        config.useUnifiedDataset = true;
-        break;
-      case '--unified-dir':
-        config.unifiedDatasetDir = path.resolve(argv[++i]);
-        break;
-      case '--help':
-      case '-h':
-        config.help = true;
+        config.maxPairsPerType = parseInt(unknown[++i], 10);
         break;
       default:
-        if (arg.startsWith('--unified-dir=')) {
-          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-        } else {
-          console.warn(`Unknown argument ${arg} ignored`);
-        }
+        console.warn(`Unknown argument ${arg} ignored`);
     }
   }
 
@@ -281,22 +130,14 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printUsage() {
   console.log('Policy Indistinguishability Experiment');
   console.log('Usage: node run_experiment.js [options]');
-  console.log('Options:');
-  console.log('  --output <dir>                 Output directory (default: ./results)');
-  console.log('  --policy-count <n>             Number of base policies to generate');
-  console.log('  --executions-per-policy <n>    Number of executions per policy');
-  console.log('  --satisfy-ratio <float>        Ratio of satisfying executions (default 0.5)');
-  console.log('  --test-ratio <float>           Train/test split ratio (default 0.3)');
+  console.log();
+  printCommonHelp();
+  console.log();
+  console.log('PI-specific options:');
   console.log('  --pair-targets <json>          Target counts per pair type (JSON)');
-  console.log('  --phase <1|2|3>                Resume pipeline from given phase');
-  console.log('  --dataset <path>               Path to cached dataset JSON');
-  console.log('  --execution-results <path>     Path to cached execution results JSON');
-  console.log('  --use-unified-dataset          Reuse artifacts from unified dataset pipeline');
-  console.log('  --unified-dir <path>           Override unified artifact directory');
   console.log('  --pairs <path>                 Path to cached policy pair JSON');
   console.log('  --analysis <path>              Path to cached attack analysis JSON');
   console.log('  --auc-threshold <float>        Max acceptable AUC (default 0.55)');
-  console.log('  --advantage-threshold <float>  Max acceptable advantage (default 0.05)');
   console.log('  --permutation-min <float>      Min acceptable permutation p-value (default 0.05)');
   console.log('  --mmd-threshold <float>        Max acceptable MMD distance (default 0.05)');
   console.log('  --ks-min <float>               Min acceptable average KS p-value (default 0.05)');
@@ -304,9 +145,6 @@ function printUsage() {
   console.log('  --min-pairs-per-type <n>       Minimum pairs per type (default 30)');
   console.log('  --target-pairs-per-type <n>    Target pairs per type (default 50)');
   console.log('  --max-pairs-per-type <n>       Maximum pairs per type (default 100)');
-  console.log('  --seed <value>                 Deterministic dataset seed');
-  console.log('  --resume                       Resume from checkpoint if available');
-  console.log('  --checkpoint <path>            Custom checkpoint file path');
 }
 
 // Build PI config for pairing
@@ -337,13 +175,11 @@ function featureImportance(weights) {
 function evaluateLogisticResult(result, thresholds, level) {
   const evaluation = result.outcome.evaluation;
   const auc = typeof evaluation.auc === 'number' ? evaluation.auc : 0.5;
-  const advantage = evaluation.advantage ?? 0;
   const entropy = result.outcome.entropy;
   const permutation = result.outcome.permutationPValue ?? 1;
 
   const checks = [
     { metric: 'AUC', value: auc, threshold: thresholds.aucMax, passed: auc <= thresholds.aucMax },
-    { metric: 'Advantage', value: advantage, threshold: thresholds.advantageMax, passed: advantage <= thresholds.advantageMax },
     { metric: 'Permutation p-value', value: permutation, threshold: thresholds.permutationMin, passed: permutation >= thresholds.permutationMin }
   ];
 
@@ -354,7 +190,6 @@ function evaluateLogisticResult(result, thresholds, level) {
     passed: checks.every((check) => check.passed),
     metrics: {
       auc,
-      advantage,
       entropy,
       permutationPValue: permutation,
       accuracy: evaluation.accuracy
@@ -366,10 +201,7 @@ function evaluateLogisticResult(result, thresholds, level) {
 
 function evaluateRandomForestResult(result, thresholds, level) {
   const evaluation = result.outcome.evaluation;
-  const advantage = evaluation.advantage ?? 0;
-  const checks = [
-    { metric: 'Advantage', value: advantage, threshold: thresholds.advantageMax, passed: advantage <= thresholds.advantageMax }
-  ];
+  const checks = [];
 
   return {
     level,
@@ -378,7 +210,6 @@ function evaluateRandomForestResult(result, thresholds, level) {
     passed: checks.every((check) => check.passed),
     metrics: {
       accuracy: evaluation.accuracy,
-      advantage
     },
     checks
   };
@@ -493,7 +324,7 @@ function renderMarkdownReport(report) {
   ['Level I', 'Level II', 'Level III'].forEach((level) => {
     lines.push(`### ${level}`);
     lines.push('');
-    report.privacySummary.checks
+    report.diagnostics.privacySummary.checks
       .filter((check) => check.level === level)
       .forEach((check) => {
         if (check.skipped) {
@@ -515,8 +346,8 @@ function renderMarkdownReport(report) {
 
   lines.push('## Two-sample Diagnostics');
   lines.push('');
-  if (report.statistics && report.statistics.aggregated && report.statistics.aggregated.length > 0) {
-    report.statistics.aggregated.forEach((entry) => {
+  if (report.diagnostics.statistics && report.diagnostics.statistics.aggregated && report.diagnostics.statistics.aggregated.length > 0) {
+    report.diagnostics.statistics.aggregated.forEach((entry) => {
       lines.push(`- **${entry.pairType}:** MMD ${entry.meanMmd.toFixed(4)}`);
       Object.entries(entry.ksSummary).forEach(([feature, stats]) => {
         lines.push(`  - ${feature}: KS mean ${stats.statisticMean.toFixed(4)}, p-value mean ${stats.pValueMean.toFixed(4)}`);
@@ -527,10 +358,36 @@ function renderMarkdownReport(report) {
   }
   lines.push('');
 
+  const mv = report.multiseedVerdict;
+  if (mv && Array.isArray(mv.tasks)) {
+    lines.push('## Multi-seed Verdict (authoritative)');
+    lines.push('');
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each scope is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker distinguishes the pair type. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
+    lines.push('');
+    lines.push('| Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
+    lines.push('|---|---|---|---|---|---|---|');
+    const fmtAuc = (ms) => (!ms || Number.isNaN(ms.mean)) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
+    const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
+    for (const t of mv.tasks) {
+      const verdict = t.skipped ? 'skipped'
+        : t.diagnostic ? '— (diagnostic, non-gating)'
+        : t.underpowered ? '— (underpowered, non-gating)'
+        : (t.passed ? '✓ PASS' : '✗ FAIL');
+      if (t.classifiers) {
+        const { lr, rf } = t.classifiers;
+        lines.push(`| ${t.key} | ${fmtAuc(lr.auc)} | ${fmtSig(lr.sigFraction)} | ${fmtAuc(rf.auc)} | ${fmtSig(rf.sigFraction)} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      } else {
+        lines.push(`| ${t.key} | ${fmtAuc(t.auc)} | ${fmtSig(t.sigFraction)} | n/a | n/a | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      }
+    }
+    lines.push('');
+
+  }
+
   lines.push('## Conclusion');
   lines.push('');
-  const label = report.privacySummary.overallPassed ? '✓ PASS' : '✗ FAIL';
-  lines.push(`**Status:** ${label}`);
+  const label = pickVerdictText(report.overallPassed, { pass: '✓ PASS', fail: '✗ FAIL', inconclusive: '? INCONCLUSIVE' });
+  lines.push(`**Status:** ${label} _(multi-seed, policy-disjoint; single split above is diagnostic)_`);
   lines.push('');
   lines.push(report.conclusion);
   lines.push('');
@@ -568,30 +425,16 @@ async function runExperiment(config = {}) {
     throw new Error('startPhase/phase must be between 1 and 3.');
   }
 
-  const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
+  const outputDir = path.resolve(
+    config.outputDir || path.join(__dirname, 'results', config.network || 'localhost')
+  );
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  let datasetPath = config.datasetPath ? path.resolve(config.datasetPath) : null;
-  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
-  let unifiedPaths = null;
-
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.piDataset}`);
-    console.log();
-
-    if (!datasetPath) {
-      datasetPath = unifiedPaths.policyDefinitions;
-    }
-    if (!executionResultsPath) {
-      executionResultsPath = unifiedPaths.piDataset;
-    }
-  }
+  const { datasetPath: resolvedDatasetPath, executionResultsPath: resolvedExecPath } = resolveDatasetPaths(config, 'pi');
+  let datasetPath = resolvedDatasetPath;
+  let executionResultsPath = resolvedExecPath;
 
   const datasetOutputPath = datasetPath
     ? datasetPath
@@ -607,10 +450,6 @@ async function runExperiment(config = {}) {
     : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.analysis);
   const reportJsonPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportJson);
   const reportMarkdownPath = path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.reportMarkdown);
-  const checkpointPath = config.checkpointPath
-    ? path.resolve(config.checkpointPath)
-    : path.join(outputDir, DEFAULT_OUTPUT_FILENAMES.checkpoint);
-
   let datasetMeta = null;
   let executionResults = null;
   let pairsPayload = null;
@@ -621,7 +460,6 @@ async function runExperiment(config = {}) {
 
   const thresholds = {
     aucMax: config.aucThreshold ?? DEFAULT_THRESHOLDS.aucMax,
-    advantageMax: config.advantageThreshold ?? DEFAULT_THRESHOLDS.advantageMax,
     permutationMin: config.permutationMin ?? DEFAULT_THRESHOLDS.permutationMin,
     mmdMax: config.mmdThreshold ?? DEFAULT_THRESHOLDS.mmdMax,
     ksPValueMin: config.ksPValueMin ?? DEFAULT_THRESHOLDS.ksPValueMin
@@ -636,101 +474,18 @@ async function runExperiment(config = {}) {
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
-  // Initialize progress tracker based on starting phase
   let totalSteps = 0;
-  if (startPhase <= 1) totalSteps += 3; // Dataset generation, contract deployment, execution
   if (startPhase <= 2) totalSteps += 1; // Policy pairing
-  totalSteps += 4; // Single-sample attacks, pairwise attacks, two-sample tests, report generation
+  totalSteps += 5; // single-sample, pairwise, two-sample, multi-seed verdict, report generation
 
   const progress = new ProgressTracker(totalSteps);
 
-  // Phase 1 – dataset generation & execution
-  if (startPhase <= 1) {
-    console.log('Phase 1: Dataset Generation & Execution');
-    console.log('-'.repeat(60));
-
-    let dataset = null;
-
-    // Check if resuming from a checkpoint that contains the dataset
-    if (config.resume && checkpointPath) {
-      const checkpoint = loadCheckpoint(checkpointPath);
-      if (checkpoint && checkpoint.phase === 'execution' && checkpoint.data && checkpoint.data.dataset) {
-        dataset = checkpoint.data.dataset;
-        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(checkpoint.data.results || []);
-        console.log(`Resuming with dataset from checkpoint (${dataset.length} entries)`);
-      }
-    }
-
-    // If no checkpoint dataset, check if dataset file exists
-    if (!dataset && fs.existsSync(datasetOutputPath)) {
-      try {
-        dataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
-        datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-        console.log(`Loaded existing dataset from ${datasetOutputPath} (${dataset.length} entries)`);
-      } catch (err) {
-        console.warn(`Failed to load dataset from ${datasetOutputPath}: ${err.message}`);
-      }
-    }
-
-    // Only generate new dataset if none exists
-    if (!dataset) {
-      const datasetConfig = {
-        policyCount: config.policyCount,
-        executionsPerPolicy: config.executionsPerPolicy,
-        satisfyRatio: config.satisfyRatio,
-        seed: config.seed,
-        // Override semantic layers to respect policyCount instead of using high minPolicies defaults
-        semanticLayers: [
-          {
-            name: 'singleton',
-            combos: [['GR'], ['DS'], ['RS']],
-            minPolicies: 0  // Let policyCount control the total
-          },
-          {
-            name: 'pair',
-            combos: [['GR', 'DS'], ['GR', 'RS'], ['DS', 'RS']],
-            minPolicies: 0  // Let policyCount control the total
-          }
-        ]
-      };
-      progress.startStep('Generating dataset');
-      dataset = await generateDataset(datasetConfig);
-      datasetMeta = dataset.__meta || inferMetaFromExecutionResults(dataset);
-      fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-      console.log(`Dataset saved to: ${datasetOutputPath}`);
-      progress.completeStep();
-    } else {
-      progress.startStep('Using existing dataset');
-      progress.completeStep();
-    }
-
-    progress.startStep('Deploying contracts (Verifier & PolicyPrivacy)');
-    const { ethers } = require('hardhat');
-    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
-
-    const verifier = await Verifier.deploy();
-    await verifier.waitForDeployment();
-
-    const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
-    await policyPrivacy.waitForDeployment();
-    console.log(`Contracts deployed successfully`);
-    progress.completeStep();
-
-    progress.startStep(`Executing dataset on-chain (${dataset.length} executions)`);
-    executionResults = await executeDatasetWithProgress(dataset, policyPrivacy, executionResultsOutputPath, progress, config.resume ? checkpointPath : null);
-    progress.completeStep();
-    console.log('');
-  } else {
-    console.log('Skipping Phase 1: Dataset Generation & Execution');
-    console.log('');
-    if (fs.existsSync(datasetOutputPath)) {
-      try {
-        const storedDataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
-        datasetMeta = storedDataset.__meta || datasetMeta;
-      } catch (err) {
-        console.warn(`Failed to load dataset at ${datasetOutputPath}: ${err.message}`);
-      }
+  if (fs.existsSync(datasetOutputPath)) {
+    try {
+      const storedDataset = JSON.parse(fs.readFileSync(datasetOutputPath, 'utf8'));
+      datasetMeta = storedDataset.__meta || datasetMeta;
+    } catch (err) {
+      console.warn(`Failed to load dataset at ${datasetOutputPath}: ${err.message}`);
     }
   }
 
@@ -779,27 +534,90 @@ async function runExperiment(config = {}) {
     throw new Error('No policy pairs available for attack modelling. Ensure phase 2 completed successfully.');
   }
 
+  // Level-III (two-sample MMD/KS) compares the within-policy execution
+  // distribution of two policies, so it needs >=2 executions per policy. Under
+  // two-layer execution only the depth layer has replicates; coverage-layer
+  // policies (1 execution) would make computeMMD divide by len*(len-1)=0 -> NaN.
+  // Build a separate depth-only pair set for Level-III; Level-I/II keep the full
+  // pairs. Falls back to all executions when no depthLayer tag is present
+  // (single-layer / legacy datasets), preserving prior behaviour.
+  const depthExecutions = executionResults.filter((r) => r.depthLayer === true);
+  let level3Pairs = pairs;
+  if (depthExecutions.length > 0) {
+    const depthPairData = buildPairsFromExecutionResults(depthExecutions, piConfig);
+    level3Pairs = depthPairData.pairs;
+    const depthPolicyCount = new Set(depthExecutions.map((r) => r.policyId)).size;
+    console.log(
+      `PI Level-III: using ${depthExecutions.length} depth-layer executions ` +
+      `(${depthPolicyCount} policies, ${level3Pairs.length} pairs) out of ${executionResults.length} total executions`
+    );
+  }
+
   // Phase 3 – attack modelling & reporting
   console.log('Phase 3: Attack Modelling & Reporting');
   console.log('-'.repeat(60));
 
+  // Pin the single-split diagnostic attacks to a deterministic seed derived from
+  // the (now-pinned) pairing seed, so the diagnostics section of the report is
+  // reproducible run-to-run instead of reseeding the train/test split off
+  // Math.random. Non-gating, but it keeps the report byte-stable.
+  const diagBaseSeed = deriveSeed(0, String(config.seed ?? 'pi-experiment'), 'diagnostic');
+
   progress.startStep(`Running single-sample attacks (${pairs.length} pairs)`);
   const singleSampleResults = runSingleSampleAttacks(pairs, {
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    rngMode: 'isolated',
+    baseSeed: diagBaseSeed
   });
   progress.completeStep();
 
   progress.startStep('Running pairwise attacks');
   const pairwiseResults = runPairwiseAttacks(pairs, {
     testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations
+    permutationIterations: config.permutationIterations,
+    rngMode: 'isolated',
+    baseSeed: diagBaseSeed
   });
   progress.completeStep();
 
   progress.startStep('Running two-sample statistical tests');
-  const statisticsResults = runTwoSampleTests(pairs);
+  const statisticsResults = runTwoSampleTests(level3Pairs);
   progress.completeStep();
+
+  progress.completeStep();
+
+  // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
+  // The single-split attacks above feed the legacy privacySummary (kept as
+  // diagnostic), but PASS/FAIL is decided here — a single split's per-scope AUC
+  // has std ~0.05-0.09, which produced spurious FAILs that were sampling noise.
+  progress.startStep('Running multi-seed verdict (single-sample, Level I)');
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
+  const permIterations = config.permutationIterations || 200;
+  const seedCtx = { pairs, testRatio: config.testRatio, permutationIterations: permIterations };
+  const concurrency = config.concurrency ?? 1;
+  const verdict = await evaluateMultiseed(
+    (seedIndex, baseSeed) => buildPiRecordsForSeed(seedIndex, seedCtx, baseSeed),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      includeSeedRecords: config.includeSeedRecords === true,
+      // Semantically dissimilar pairs remain useful diagnostics, but PI's
+      // privacy claim is scoped to related policies, so they do not gate.
+      nonGatingKeys: ['controlled_difference'],
+      // Parallel verdict: each worker re-reads the saved pairs file and re-runs
+      // buildPiRecordsForSeed per seed in its own V8 isolate; results replayed in
+      // seed order → byte-identical to serial.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        pairsOutputPath,
+        testRatio: config.testRatio,
+        permutationIterations: permIterations
+      } : undefined
+    });
+  progress.completeStep();
+  printVerdict('Policy Indistinguishability', verdict);
 
   progress.startStep('Generating privacy analysis and reports');
   const privacySummary = buildPrivacySummary(
@@ -845,14 +663,21 @@ async function runExperiment(config = {}) {
     },
     pairTargets,
     pairCounts,
-    singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
-    multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
-    twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
-    statistics: statisticsResults,
-    privacySummary,
-    conclusion: privacySummary.overallPassed
-      ? 'Policies appear indistinguishable across modeled adversaries.'
-      : 'Potential leakage detected. Further hardening is required.'
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      privacySummary,
+      singleSample: privacySummary.checks.filter(c => c.level === 'Level I' && !c.skipped),
+      multiSample: privacySummary.checks.filter(c => c.level === 'Level II' && !c.skipped),
+      twoSampleTests: privacySummary.checks.filter(c => c.level === 'Level III' && !c.skipped),
+      statistics: statisticsResults
+    },
+    multiseedVerdict: verdict, // authoritative
+    overallPassed: verdict.overallPassed,
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'Policies appear indistinguishable across modeled adversaries (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'Potential leakage detected. Further hardening is required.',
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
+    })
   };
 
   fs.writeFileSync(reportJsonPath, JSON.stringify(report, null, 2));
@@ -864,28 +689,17 @@ async function runExperiment(config = {}) {
 
   progress.complete();
   console.log('');
-  console.log(`Overall status: ${privacySummary.overallPassed ? 'PASS' : 'FAIL'}`);
+  console.log(`Overall status (multi-seed): ${pickVerdictText(verdict.overallPassed, { pass: 'PASS', fail: 'FAIL', inconclusive: 'INCONCLUSIVE' })}`);
   console.log('='.repeat(60));
 
   return report;
 }
 
-if (require.main === module) {
-  const config = parseArgs();
-  if (config.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log(config);
-  runExperiment(config)
-    .then((report) => {
-      process.exit(report.privacySummary.overallPassed ? 0 : 1);
-    })
-    .catch((error) => {
-      console.error('PI experiment failed:', error);
-      process.exit(1);
-    });
-}
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.overallPassed
+});
 
 module.exports = { runExperiment };

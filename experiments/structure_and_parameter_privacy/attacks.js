@@ -7,7 +7,9 @@
  * 3. Unsupervised clustering (k-means, silhouette analysis)
  */
 
-const { LogisticRegression, RandomForest } = require('../policy_content_hiding/classifiers');
+const { LogisticRegression, RandomForest } = require('../core/classifiers');
+const { calculateAUC, permutationTestAUC } = require('../core/evaluator');
+const { createRng, shuffleInPlace } = require('../core/random');
 
 // Feature keys for side-channel analysis
 const FEATURE_KEYS = [
@@ -19,8 +21,9 @@ const FEATURE_KEYS = [
   'commitLogsCount',
   'commitLogsSize',
   'accessLogsCount',
-  'accessLogsSize',
-  'blockDifference'
+  'accessLogsSize'
+  // blockDifference EXCLUDED: confounded harness artifact (execution order ×
+  // network drift), not a real policy-content channel. See core/feature_extractor.js.
 ];
 
 /**
@@ -40,6 +43,34 @@ function extractFeatures(execution) {
  */
 function featuresToArray(features) {
   return FEATURE_KEYS.map(key => features[key] || 0);
+}
+
+/**
+ * Min-max standardize feature vectors for logistic regression, matching the
+ * PCH/PI pipelines (core/feature_extractor.normalizeFeatures): fit the per-column
+ * min/max on the TRAINING rows only, then map both train and test into [0, 1].
+ * Columns with zero training range map to 0. Without this, raw gas values
+ * (~1e5–1e6) saturate the logistic sigmoid and collapse its AUC to 0.5; RF is
+ * scale-invariant and does not need it.
+ */
+function standardizeForLR(trainVectors, testVectors) {
+  const n = trainVectors.length ? trainVectors[0].length : 0;
+  const mins = new Array(n).fill(Infinity);
+  const maxs = new Array(n).fill(-Infinity);
+  for (const v of trainVectors) {
+    for (let j = 0; j < n; j++) {
+      if (v[j] < mins[j]) mins[j] = v[j];
+      if (v[j] > maxs[j]) maxs[j] = v[j];
+    }
+  }
+  const scale = (v) => v.map((x, j) => {
+    const range = maxs[j] - mins[j];
+    return range > 0 ? (x - mins[j]) / range : 0;
+  });
+  return {
+    train: trainVectors.map(scale),
+    test: testVectors.map(scale)
+  };
 }
 
 /**
@@ -71,23 +102,27 @@ function aggregateByFamily(executionResults) {
  * @param {number} targetCount - Target number of samples
  * @returns {Array} Balanced dataset
  */
-function oversampleMinorityClass(minorityData, targetCount) {
+function oversampleMinorityClass(minorityData, targetCount, rng = Math.random) {
   const syntheticSamples = [];
   const originalCount = minorityData.length;
   const needed = targetCount - originalCount;
 
-  if (needed <= 0) {
+  // No samples to draw from (a policy-disjoint split can empty a class for some
+  // seeds): nothing to oversample, so return as-is rather than indexing undefined.
+  if (needed <= 0 || originalCount === 0) {
     return minorityData;
   }
 
   // Simple oversampling: duplicate with small random noise
   for (let i = 0; i < needed; i++) {
-    const sourceIdx = Math.floor(Math.random() * originalCount);
+    // Clamp to the last valid index: Math.floor(Math.random()*n) can equal n
+    // when the (patched) PRNG returns a value at the top of [0,1).
+    const sourceIdx = Math.min(originalCount - 1, Math.floor(rng() * originalCount));
     const source = minorityData[sourceIdx];
 
     // Add small random noise to features
     const noisyFeatures = source.features.map(f => {
-      const noise = (Math.random() - 0.5) * 0.02 * f; // ±1% noise
+      const noise = (rng() - 0.5) * 0.02 * f; // ±1% noise
       return f + noise;
     });
 
@@ -106,13 +141,13 @@ function oversampleMinorityClass(minorityData, targetCount) {
  * @param {number} targetCount - Target number of samples
  * @returns {Array} Undersampled dataset
  */
-function undersampleMajorityClass(majorityData, targetCount) {
+function undersampleMajorityClass(majorityData, targetCount, rng = Math.random) {
   if (targetCount >= majorityData.length) {
     return majorityData;
   }
 
   // Random undersampling
-  const shuffled = [...majorityData].sort(() => Math.random() - 0.5);
+  const shuffled = shuffleInPlace([...majorityData], rng);
   return shuffled.slice(0, targetCount);
 }
 
@@ -123,7 +158,7 @@ function undersampleMajorityClass(majorityData, targetCount) {
  * @param {string} method - 'oversample', 'undersample', 'both', 'none'
  * @returns {Object} Balanced dataset {class0, class1}
  */
-function balanceDataset(class0Data, class1Data, method = 'both') {
+function balanceDataset(class0Data, class1Data, method = 'both', rng = Math.random) {
   const count0 = class0Data.length;
   const count1 = class1Data.length;
 
@@ -140,26 +175,43 @@ function balanceDataset(class0Data, class1Data, method = 'both') {
 
   if (count0 < count1) {
     // Class 0 is minority
-    balanced0 = method === 'undersample' ? class0Data : oversampleMinorityClass(class0Data, targetCount);
-    balanced1 = method === 'oversample' ? class1Data : undersampleMajorityClass(class1Data, targetCount);
+    balanced0 = method === 'undersample' ? class0Data : oversampleMinorityClass(class0Data, targetCount, rng);
+    balanced1 = method === 'oversample' ? class1Data : undersampleMajorityClass(class1Data, targetCount, rng);
   } else {
     // Class 1 is minority
-    balanced0 = method === 'oversample' ? class0Data : undersampleMajorityClass(class0Data, targetCount);
-    balanced1 = method === 'undersample' ? class1Data : oversampleMinorityClass(class1Data, targetCount);
+    balanced0 = method === 'oversample' ? class0Data : undersampleMajorityClass(class0Data, targetCount, rng);
+    balanced1 = method === 'undersample' ? class1Data : oversampleMinorityClass(class1Data, targetCount, rng);
   }
 
   return { class0: balanced0, class1: balanced1 };
 }
 
 /**
- * Split data into train/test sets
+ * Split data into train/test sets.
+ *
+ * When rows carry a policyIndex, the split is policy-disjoint (all executions of
+ * one policy land on the same side) so the attack measures structure inference
+ * on unseen policies rather than re-identifying policies seen in training.
+ * Falls back to a plain row-level split when no policyIndex is present.
  */
-function trainTestSplit(data, testRatio = 0.3) {
-  const shuffled = [...data].sort(() => Math.random() - 0.5);
-  const testSize = Math.floor(data.length * testRatio);
+function trainTestSplit(data, testRatio = 0.3, rng = Math.random) {
+  const hasGroups = data.length > 0 && data[0].policyIndex !== undefined;
+
+  if (!hasGroups) {
+    const shuffled = shuffleInPlace([...data], rng);
+    const testSize = Math.floor(data.length * testRatio);
+    return {
+      train: shuffled.slice(testSize),
+      test: shuffled.slice(0, testSize)
+    };
+  }
+
+  const groups = shuffleInPlace([...new Set(data.map(d => d.policyIndex))], rng);
+  const testGroupCount = Math.floor(groups.length * testRatio);
+  const testGroups = new Set(groups.slice(0, testGroupCount));
   return {
-    train: shuffled.slice(testSize),
-    test: shuffled.slice(0, testSize)
+    train: data.filter(d => !testGroups.has(d.policyIndex)),
+    test: data.filter(d => testGroups.has(d.policyIndex))
   };
 }
 
@@ -194,39 +246,43 @@ function evaluateClassifier(predictions, labels) {
 /**
  * Permutation test for classifier significance
  */
-function permutationTest(features, labels, iterations = 500) {
+function permutationTest(features, labels, iterations = 500, rng = Math.random) {
   const n = labels.length;
   const { train, test } = trainTestSplit(
     features.map((f, i) => ({ features: f, label: labels[i] })),
-    0.3
+    0.3,
+    rng
   );
 
-  // Train on actual labels
-  const classifier = new LogisticRegression();
-  classifier.train(
+  // Train on actual labels (features standardized on train, matching the main LR)
+  const actualScaled = standardizeForLR(
     train.map(d => d.features),
-    train.map(d => d.label)
+    test.map(d => d.features)
   );
+  const classifier = new LogisticRegression();
+  classifier.train(actualScaled.train, train.map(d => d.label));
 
-  const actualPredictions = classifier.predict(test.map(d => d.features));
+  const actualPredictions = classifier.predict(actualScaled.test);
   const actualAccuracy = evaluateClassifier(actualPredictions, test.map(d => d.label)).accuracy;
 
   // Permutation tests
   let betterCount = 0;
   for (let i = 0; i < iterations; i++) {
-    const permutedLabels = [...labels].sort(() => Math.random() - 0.5);
+    const permutedLabels = shuffleInPlace([...labels], rng);
     const permSplit = trainTestSplit(
       features.map((f, idx) => ({ features: f, label: permutedLabels[idx] })),
-      0.3
+      0.3,
+      rng
     );
 
-    const permClassifier = new LogisticRegression();
-    permClassifier.train(
+    const permScaled = standardizeForLR(
       permSplit.train.map(d => d.features),
-      permSplit.train.map(d => d.label)
+      permSplit.test.map(d => d.features)
     );
+    const permClassifier = new LogisticRegression();
+    permClassifier.train(permScaled.train, permSplit.train.map(d => d.label));
 
-    const permPredictions = permClassifier.predict(permSplit.test.map(d => d.features));
+    const permPredictions = permClassifier.predict(permScaled.test);
     const permAccuracy = evaluateClassifier(permPredictions, permSplit.test.map(d => d.label)).accuracy;
 
     if (permAccuracy >= actualAccuracy) {
@@ -250,8 +306,26 @@ function runSupervisedAttacks(executionResults, config = {}) {
     targetAttribute = 'structureType',  // 'structureType', 'predicateCombo', 'paramType'
     testRatio = 0.3,
     permutationIterations = 500,
-    balanceMethod = 'both'  // 'oversample', 'undersample', 'both', 'none'
+    balanceMethod = 'both',  // 'oversample', 'undersample', 'both', 'none'
+    // When true, also attach an AUC-based permutation p-value to BOTH the LR and
+    // RF evaluations, each computed from that classifier's OWN test probabilities
+    // (label-shuffle, no retrain — the shared core/evaluator.permutationTestAUC,
+    // as used by PCH/PI). This makes each classifier self-consistent (its AUC and
+    // its significance test describe one model) so the unified per-classifier
+    // verdict can gate on LR and RF independently. Off by default: the legacy
+    // single-split path keeps using only the LR-retrain permutationTest below.
+    // Isolated mode derives one deterministic stream per task and purpose.
+    perClassifierPermutation = false,
+    rngMode = 'legacy',
+    baseSeed,
+    skipLegacyPermutation = false
   } = config;
+  if (rngMode !== 'legacy' && rngMode !== 'isolated') {
+    throw new Error(`Unsupported rngMode: ${rngMode}`);
+  }
+  if (rngMode === 'isolated' && !Number.isInteger(baseSeed)) {
+    throw new TypeError('runSupervisedAttacks: isolated rngMode requires an integer baseSeed');
+  }
 
   console.log(`\nRunning supervised classification attack on: ${targetAttribute}`);
   console.log(`Balance method: ${balanceMethod}`);
@@ -276,6 +350,9 @@ function runSupervisedAttacks(executionResults, config = {}) {
     for (let j = i + 1; j < classes.length; j++) {
       const class0 = classes[i];
       const class1 = classes[j];
+      const rng = (purpose) => rngMode === 'isolated'
+        ? createRng(baseSeed, 'spp', targetAttribute, class0, class1, purpose)
+        : Math.random;
 
       const data0Raw = groups.get(class0);
       const data1Raw = groups.get(class1);
@@ -286,15 +363,17 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       console.log(`\nClassifying ${class0} vs ${class1} (${originalCount0} vs ${originalCount1} samples, ratio ${imbalanceRatio.toFixed(2)}:1)`);
 
-      // Prepare data for balancing
+      // Prepare data, carrying policyIndex so the split can be policy-disjoint.
       const class0Data = data0Raw.map(r => ({
         features: featuresToArray(extractFeatures(r)),
-        label: 0
+        label: 0,
+        policyIndex: r.policyIndex
       }));
 
       const class1Data = data1Raw.map(r => ({
         features: featuresToArray(extractFeatures(r)),
-        label: 1
+        label: 1,
+        policyIndex: r.policyIndex
       }));
 
       // Skip if insufficient data
@@ -313,45 +392,99 @@ function runSupervisedAttacks(executionResults, config = {}) {
         continue;
       }
 
-      // Apply balancing
-      const balanced = balanceDataset(class0Data, class1Data, balanceMethod);
-      const balancedData = [...balanced.class0, ...balanced.class1];
+      // Split FIRST (policy-disjoint), then balance ONLY the training set.
+      // Order matters: balancing before splitting would let oversampled copies
+      // of the same row land in both train and test, leaking the test set. We
+      // also keep the test set at its natural class distribution so reported
+      // metrics reflect real prevalence rather than an artificially balanced one.
+      const allData = [...class0Data, ...class1Data];
+      const { train: rawTrain, test } = trainTestSplit(
+        allData,
+        testRatio,
+        rng('split')
+      );
 
-      const balancedCount0 = balanced.class0.length;
-      const balancedCount1 = balanced.class1.length;
+      const trainByClass = balanceDataset(
+        rawTrain.filter(d => d.label === 0),
+        rawTrain.filter(d => d.label === 1),
+        balanceMethod,
+        rng('balance')
+      );
+      const train = [...trainByClass.class0, ...trainByClass.class1];
 
-      if (balanceMethod !== 'none') {
-        console.log(`  Balanced: ${balancedCount0} vs ${balancedCount1} samples (from ${originalCount0} vs ${originalCount1})`);
+      const balancedCount0 = trainByClass.class0.length;
+      const balancedCount1 = trainByClass.class1.length;
+
+      // A policy-disjoint split can leave one class with no training (or test)
+      // rows for some seeds; training a classifier on that throws. Skip the pair
+      // for this seed (the multi-seed verdict tolerates missing records).
+      if (balancedCount0 === 0 || balancedCount1 === 0 ||
+          test.filter(d => d.label === 0).length === 0 ||
+          test.filter(d => d.label === 1).length === 0) {
+        console.log('  Skipping: empty train/test class after policy-disjoint split');
+        results.push({
+          targetAttribute,
+          class0,
+          class1,
+          skipped: true,
+          reason: 'Empty train/test class after split'
+        });
+        continue;
       }
 
-      // Extract features and labels from balanced data
-      const features = balancedData.map(d => d.features);
-      const labels = balancedData.map(d => d.label);
+      if (balanceMethod !== 'none') {
+        console.log(`  Train balanced: ${balancedCount0} vs ${balancedCount1}; test left natural (${test.filter(d => d.label === 0).length} vs ${test.filter(d => d.label === 1).length})`);
+      }
 
-      // Train/test split
-      const { train, test } = trainTestSplit(
-        features.map((f, i) => ({ features: f, label: labels[i] })),
-        testRatio
-      );
+      // Permutation-test inputs use the (unbalanced) full pool for diagnostics.
+      const features = allData.map(d => d.features);
+      const labels = allData.map(d => d.label);
 
-      // Logistic Regression
-      const lr = new LogisticRegression();
-      lr.train(
+      // Logistic Regression (features min-max standardized on train, as in PCH/PI)
+      const lrScaled = standardizeForLR(
         train.map(d => d.features),
-        train.map(d => d.label)
+        test.map(d => d.features)
       );
+      const lr = new LogisticRegression();
+      lr.train(lrScaled.train, train.map(d => d.label));
 
-      const lrPredictions = lr.predict(test.map(d => d.features));
+      const lrPredictions = lr.predict(lrScaled.test);
       const lrEval = evaluateClassifier(lrPredictions, test.map(d => d.label));
+      // AUC from probabilities — used by the unified multi-seed verdict. Unlike
+      // accuracy/advantage it is threshold-free and stable on imbalanced sets.
+      const lrProba = lr.predictProba(lrScaled.test);
+      const lrLabels = test.map(d => d.label);
+      lrEval.auc = calculateAUC(lrLabels, lrProba);
+      // Self-consistent significance test for the unified per-classifier verdict:
+      // permute the LR's own probabilities (no retrain). Kept separate from the
+      // LR-retrain permTest below, which the legacy single-split path still uses.
+      if (perClassifierPermutation) {
+        lrEval.aucPermPValue = permutationTestAUC(
+          lrLabels,
+          lrProba,
+          permutationIterations,
+          rng('lr-permutation')
+        ).pValue;
+      }
 
-      console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}`);
+      console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}, auc=${lrEval.auc.toFixed(3)}`);
 
-      // Permutation test
-      const permTest = permutationTest(features, labels, permutationIterations);
-      console.log(`  Permutation p-value: ${permTest.pValue.toFixed(4)}`);
+      // Legacy retrain permutation is retained for single-split diagnostics, but
+      // authoritative multiseed callers skip it because it does not gate verdicts.
+      const permTest = skipLegacyPermutation
+        ? null
+        : permutationTest(
+          features,
+          labels,
+          permutationIterations,
+          rng('legacy-retrain-permutation')
+        );
+      if (permTest) {
+        console.log(`  Permutation p-value: ${permTest.pValue.toFixed(4)}`);
+      }
 
       // Random Forest
-      const rf = new RandomForest(50, 10);
+      const rf = new RandomForest(50, 10, rng('rf-bootstrap'));
       rf.train(
         train.map(d => d.features),
         train.map(d => d.label)
@@ -359,8 +492,26 @@ function runSupervisedAttacks(executionResults, config = {}) {
 
       const rfPredictions = rf.predict(test.map(d => d.features));
       const rfEval = evaluateClassifier(rfPredictions, test.map(d => d.label));
+      // RF AUC from the tree-vote fraction. The per-classifier verdict gates on
+      // both LR and RF, but on the near-constant SPP features the LR over-separates
+      // and yields a degenerate AUC, so RF's calibrated score carries the operative
+      // AUC signal for SPP.
+      const rfProba = rf.predictProba(test.map(d => d.features));
+      const rfLabels = test.map(d => d.label);
+      rfEval.auc = calculateAUC(rfLabels, rfProba);
+      // RF significance test for the unified verdict: permute the RF's own vote-
+      // fraction probabilities (no retrain), so RF gets the same {AUC, perm p}
+      // pair as LR and the per-classifier verdict can gate on it independently.
+      if (perClassifierPermutation) {
+        rfEval.aucPermPValue = permutationTestAUC(
+          rfLabels,
+          rfProba,
+          permutationIterations,
+          rng('rf-permutation')
+        ).pValue;
+      }
 
-      console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}`);
+      console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}, auc=${rfEval.auc.toFixed(3)}`);
 
       results.push({
         targetAttribute,

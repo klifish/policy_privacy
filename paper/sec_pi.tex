@@ -1,0 +1,35 @@
+% Policy Indistinguishability section body.
+\subsection{Policy Indistinguishability (PI)}
+\label{sec:eval-pi}
+
+\paragraph{Property.} PI strengthens PCH: even when two policies are \emph{semantically
+related}, the observer must not tell which one was executed---formally,
+$\Pr[\hat b = b]\approx \tfrac12$. We test four pair archetypes: \texttt{semantic\_%
+equivalent} (identical normalized logic), \texttt{structural\_variant} (same semantics,
+different execution protections), \texttt{weak\_equivalent} ($\ge 0.95$ semantic
+overlap), and \texttt{controlled\_difference} (small targeted deltas; a regression
+control).
+
+\paragraph{Supervised attack.} The distinguisher's task is to decide, from the on-chain
+features of a single execution, which policy of the pair produced it. We train both a
+logistic-regression and a random-forest classifier and, per archetype, report the one
+with the higher mean AUC across seeds---the stronger of the two attackers, matching the
+SPP convention (Section~\ref{sec:eval-method}); the random forest leads on all archetypes
+except the non-gating \texttt{controlled\_difference} control. We evaluate this
+single-sample classifier over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}). The
+overall AUC is $0.516\pm0.030$ with permutation $p=0.367$ and only $10\%$ of seeds
+significant. All three gating archetypes---\texttt{semantic\_equivalent},
+\texttt{structural\_variant}, and \texttt{weak\_equivalent}---remain within noise of
+chance. \texttt{controlled\_difference} is reported as a diagnostic regression control
+but does not gate the PI verdict.
+
+\paragraph{Why multi-seed matters.} Earlier three-seed diagnostics made the
+\texttt{structural\_variant} archetype look separable, but the 30-seed policy-disjoint
+run in Table~\ref{tab:pi-pairs} gives AUC $0.524\pm0.071$ with $0\%$ significant seeds.
+This is precisely the failure mode the multi-seed criterion of
+Section~\ref{sec:eval-method} is designed to reject: a single split can create an
+apparently meaningful spike that does not reproduce across independent policy splits.
+The gas-normalization positive control in Section~\ref{sec:eval-ablation} shows that
+the same PI attack pipeline does recover signal before padding, so the residual
+structural-variant fluctuation is a measured limit of the normalized transcript rather
+than evidence of an incapable attacker.

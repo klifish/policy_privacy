@@ -17,7 +17,7 @@
 
 const {
   generateDataset: generatePolicyDataset
-} = require('../policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const DEFAULT_DATASET_CONFIG = Object.freeze({
   policyCount: 120,
@@ -35,6 +35,7 @@ const DEFAULT_DATASET_CONFIG = Object.freeze({
  * Focus: Boolean connectives, independent of predicates
  */
 const LOGIC_STRUCTURES = Object.freeze({
+  TRIVIAL: 'trivial',             // No boolean connectives (single atom/predicate)
   AND_ONLY: 'and_only',          // Only AND connectives
   OR_ONLY: 'or_only',            // Only OR connectives
   AND_OR_MIXED: 'and_or_mixed',  // Both AND and OR
@@ -172,7 +173,11 @@ function analyzeLogicShape(logic = '') {
 // ============================================================================
 
 /**
- * Classify logic structure (independent of predicates)
+ * Classify logic structure (independent of predicates).
+ * Callers must pass stats computed from the author-level expression
+ * (logicOriginal): predicate normalization injects '&' for each
+ * (ATTR & P[namespace]) binding, which would misclassify pure-OR policies
+ * as and_or_mixed.
  */
 function classifyLogicStructure(stats) {
   const { hasAnd, hasOr, hasNot, notCount } = stats;
@@ -196,8 +201,10 @@ function classifyLogicStructure(stats) {
     return LOGIC_STRUCTURES.AND_OR_MIXED;
   }
 
-  // Default: single atom, treat as AND_ONLY
-  return LOGIC_STRUCTURES.AND_ONLY;
+  // No AND/OR connective at all: single atom, optionally negated (e.g. "GR" or "!GR").
+  // Distinct from AND_ONLY, whose name implies a (possibly trivial) conjunction of
+  // multiple terms; a bare atom carries no structural information to classify.
+  return LOGIC_STRUCTURES.TRIVIAL;
 }
 
 /**
@@ -291,11 +298,17 @@ const classifyParameterType = classifySetSize;
  * Annotate a policy with all classification dimensions
  */
 function annotatePolicy(policy) {
-  const logic = policy?.semantics?.logicNormalized || policy?.semantics?.logicOriginal || '';
-  const stats = analyzeLogicShape(logic);
+  // Two-level classification scheme:
+  // - logicStructure: author-level (logicOriginal) — predicate bindings such as
+  //   (DS & P[ICD10]) are atomic units, so the injected '&' must not affect it
+  // - nestingDepth / predicateCount: execution-level (logicNormalized)
+  const normalized = policy?.semantics?.logicNormalized || policy?.semantics?.logicOriginal || '';
+  const original = policy?.semantics?.logicOriginal || normalized;
+  const stats = analyzeLogicShape(normalized);
+  const statsOriginal = analyzeLogicShape(original);
 
   // Apply all classifications
-  policy.logicStructure = classifyLogicStructure(stats);
+  policy.logicStructure = classifyLogicStructure(statsOriginal);
   policy.nestingDepth = classifyNestingDepth(stats);
   policy.predicateCount = classifyPredicateCount(stats);
   policy.setSize = classifySetSize(policy);

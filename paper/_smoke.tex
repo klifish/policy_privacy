@@ -1,0 +1,17 @@
+% Standalone smoke-test wrapper to verify the Evaluation chapter compiles in isolation.
+% For the FULL manuscript build, compile main.tex instead (IEEEtran).
+% Build from the paper/ directory so the \input{...} and \graphicspath paths resolve:
+%   cd paper && latexmk -pdf _smoke.tex
+% or:
+%   cd paper && pdflatex _smoke.tex   (run twice for \ref)
+% This file is NOT part of the manuscript; it only checks LaTeX validity of the
+% evaluation chapter (including sec_nmi_sensitivity.tex and the filled ablation table).
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\graphicspath{{figures/}{./}}
+\begin{document}
+\input{evaluation.tex}
+\end{document}

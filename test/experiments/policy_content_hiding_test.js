@@ -20,7 +20,7 @@ const {
   POLICY_ATTRIBUTE_ORDER,
   POLICY_PREDICATE_SLOTS,
   evaluatePolicyTokens
-} = require('../../experiments/policy_content_hiding/data_generator');
+} = require('../../experiments/core/data_generator');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 
 const {
@@ -35,12 +35,12 @@ const {
   splitTrainTest,
   prepareClassificationData,
   calculateFeatureStats
-} = require('../../experiments/policy_content_hiding/feature_extractor');
+} = require('../../experiments/core/feature_extractor');
 
 const {
   LogisticRegression,
   RandomForest
-} = require('../../experiments/policy_content_hiding/classifiers');
+} = require('../../experiments/core/classifiers');
 
 const {
   calculateAccuracy,
@@ -49,7 +49,7 @@ const {
   evaluateBinaryClassification,
   evaluateMultiClassification,
   checkPrivacyThresholds
-} = require('../../experiments/policy_content_hiding/evaluator');
+} = require('../../experiments/core/evaluator');
 
 describe('Policy Content Hiding Evaluation', function () {
   this.timeout(300000); // 5 minutes for full experiment
@@ -481,12 +481,13 @@ describe('Policy Content Hiding Evaluation', function () {
       };
 
       const check = checkPrivacyThresholds(evaluation, {
-        aucMax: 0.55,
-        advantageMax: 0.05
+        aucMax: 0.55
       });
 
       expect(check).to.have.property('overallPassed', true);
       expect(check.results).to.be.an('array').with.lengthOf(2);
+      expect(check.results[0].checks.map(c => c.metric)).to.deep.equal(['AUC']);
+      expect(check.results[1].checks).to.deep.equal([]);
     });
   });
 

@@ -1,0 +1,32 @@
+% Policy Content Hiding section body.
+\subsection{Policy Content Hiding (PCH)}
+\label{sec:eval-pch}
+
+\paragraph{Property.} PCH requires that the on-chain observer cannot recover the
+\emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes it
+references---better than chance.
+
+\paragraph{Scope of the labels.} We do not attack the full Data Use Ontology and its
+linked ontologies. The complete DUO has 23 data-use terms, and ICD-10 has tens of
+thousands of individual codes; most never appear in our generated policies, and those
+that do are too rare to support a statistically powered one-vs-rest attack. We therefore
+evaluate the six DUO terms that occur with enough support in the dataset (GR, DS, RS,
+POA, GS, CC; smallest class $n{=}30$) and aggregate disease codes to the ten ICD-10
+chapters. This is the right granularity for the privacy question---the observer cares
+whether the \emph{category} of permitted use or disease leaks, not which leaf code is
+used---and it is also a conservative choice: attacks on coarser, better-supported labels
+are \emph{easier} than on rare leaf terms, so passing here does not understate the leak.
+The defenses (commitment-only interface, gas padding) are content-agnostic and apply
+identically to the terms we do not enumerate.
+
+\paragraph{Supervised attack.} We treat each of the six DUO terms (GR, DS, RS, POA, GS,
+CC) as a one-vs-rest binary recovery task and run the multi-seed pipeline of
+Section~\ref{sec:eval-method}. Table~\ref{tab:pch-terms} reports the authoritative
+per-term verdicts: every DUO task has $\mathrm{AUC}_{\text{mean}}\in[0.490,0.527]$ and a
+significant-seed fraction of at most $13\%$, so none approaches either leg of the failure
+criterion. The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the
+ICD-bearing rows only; Table~\ref{tab:pch-icd10}) passes all ten. The single highest
+value is ch6 at $\mathrm{AUC}_{\text{mean}}=0.573\pm0.061$ with $17\%$ significant
+seeds; it clears the AUC leg ($0.573>0.55$) but not the reproducibility leg ($17\%<50\%$),
+so it is a boundary case rather than a stable channel. We report such cases rather than
+suppress them.

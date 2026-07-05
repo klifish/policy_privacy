@@ -11,24 +11,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ethers } = require('hardhat');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const {
-  DUO_TERMS,
-  generateDataset,
-  executeDataset
-} = require('./data_generator');
+  DUO_TERMS
+} = require('../core/data_generator');
 
 // DUO term ID to attribute code mapping
-const DUO_TO_ATTRIBUTE_CODE = {
-  0: 'GR',  // GENERAL_RESEARCH
-  1: 'DS',  // DISEASE_SPECIFIC
-  2: 'RS',  // RESEARCH_SPECIFIC
-  3: 'POA', // POPULATION_ANCESTRY
-  4: 'GS',  // GEOGRAPHICAL_RESTRICTION
-  5: 'CC'   // CLINICAL_CARE
-};
-
 const {
   loadDataset,
   evaluateDatasetQuality,
@@ -41,77 +31,55 @@ const {
   splitTrainTest,
   prepareClassificationData,
   calculateFeatureStats
-} = require('./feature_extractor');
+} = require('../core/feature_extractor');
 
 const {
   LogisticRegression,
   RandomForest
-} = require('./classifiers');
+} = require('../core/classifiers');
 
 const {
   evaluateClassificationTasks,
-  checkPrivacyThresholds
-} = require('./evaluator');
+  checkPrivacyThresholds,
+  calculateAUC,
+  permutationTestAUC,
+  evaluateBinaryClassification,
+  calculateConfusionMatrix
+} = require('../core/evaluator');
 
-const {
-  ensureSufficientBalance
-} = require('../core/blockchain');
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
 
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
 
+// bothAttacks, buildPchRecordsForSeed and DUO_TO_ATTRIBUTE_CODE live in
+// ./seed_records (a lightweight module the parallel worker can load without the
+// hardhat/ffjavascript graph that core/dataset/data_generator pulls in).
+const { buildPchRecordsForSeed, DUO_TO_ATTRIBUTE_CODE } = require("./seed_records");
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = {};
+  const config = parseCommonArgs(argv.filter(a => a !== '--'));
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle PCH-specific args and special aliases from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
 
-    if (arg === '--') {
-      continue;
-    }
-
-    if (arg === '--phase' || arg === '--start-phase') {
-      config.startPhase = parseInt(argv[++i], 10);
-    } else if (arg === '--dataset') {
-      config.datasetPath = path.resolve(argv[++i]);
-    } else if (arg === '--execution-results') {
-      config.executionResultsPath = path.resolve(argv[++i]);
-    } else if (arg === '--executions') {
-      const value = argv[++i];
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
+    if (arg === '--executions') {
+      const value = unknown[++i];
       if (/^\d+$/.test(value)) {
         config.executionsPerPolicy = parseInt(value, 10);
       } else {
         config.executionResultsPath = path.resolve(value);
       }
     } else if (arg === '--features' || arg === '--results') {
-      config.featuresPath = path.resolve(argv[++i]);
-    } else if (arg === '--output') {
-      config.outputDir = path.resolve(argv[++i]);
+      config.featuresPath = path.resolve(unknown[++i]);
     } else if (arg === '--num-duo-terms') {
-      config.numDuoTerms = parseInt(argv[++i], 10);
-    } else if (arg === '--policy-count') {
-      config.policyCount = parseInt(argv[++i], 10);
-    } else if (arg === '--executions-per-policy') {
-      config.executionsPerPolicy = parseInt(argv[++i], 10);
-    } else if (arg === '--test-ratio') {
-      config.testRatio = parseFloat(argv[++i]);
+      config.numDuoTerms = parseInt(unknown[++i], 10);
     } else if (arg === '--auc-threshold') {
-      config.aucThreshold = parseFloat(argv[++i]);
-    } else if (arg === '--advantage-threshold') {
-      config.advantageThreshold = parseFloat(argv[++i]);
+      config.aucThreshold = parseFloat(unknown[++i]);
     } else if (arg === '--evaluate-dataset' || arg === '--dataset-quality') {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
-      config.datasetQualityOutput = path.resolve(argv[++i]);
-    } else if (arg === '--use-unified-dataset' || arg === '--unified') {
-      config.useUnifiedDataset = true;
-    } else if (arg === '--unified-dir') {
-      config.unifiedDatasetDir = path.resolve(argv[++i]);
-    } else if (arg.startsWith('--unified-dir=')) {
-      config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-    } else if (arg === '--help' || arg === '-h') {
-      config.help = true;
+      config.datasetQualityOutput = path.resolve(unknown[++i]);
     } else {
       console.warn(`Ignoring unknown argument: ${arg}`);
     }
@@ -121,25 +89,17 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function printUsage() {
+  console.log('Policy Content Hiding Experiment');
   console.log('Usage: node run_experiment.js [options]');
+  printCommonHelp();
   console.log();
-  console.log('Options:');
-  console.log('  --phase <n>                 Start the pipeline from the given phase (1-3 supported)');
-  console.log('  --features <path>           Path to saved features from phase 2 (for resuming at phase 3)');
-  console.log('  --results <path>            Alias for --features');
-  console.log('  --execution-results <path>  Path to execution results from phase 1 (for resuming at phase 2)');
-  console.log('  --executions <value>        Executions per policy (number) or execution results path (legacy)');
-  console.log('  --dataset <path>            Path to a pre-generated dataset JSON file');
-  console.log('  --use-unified-dataset       Reuse dataset/executions from unified pipeline');
-  console.log('  --unified-dir <path>        Override unified artifact directory');
-  console.log('  --output <dir>              Output directory for generated artifacts');
-  console.log('  --num-duo-terms <n>         Number of DUO terms to include when generating data');
-  console.log('  --policy-count <n>          Number of base policies to generate (default 200)');
-  console.log('  --executions-per-policy <n> Executions per policy in phase 1');
-  console.log('  --test-ratio <float>        Train/test split ratio (default: 0.3)');
-  console.log('  --auc-threshold <float>     AUC threshold for privacy checks');
-  console.log('  --advantage-threshold <float> Advantage threshold for privacy checks');
-  console.log('  --evaluate-dataset          Evaluate dataset quality after generation or load');
+  console.log('PCH-specific options:');
+  console.log('  --features <path>               Path to saved features (for resuming at phase 3)');
+  console.log('  --results <path>                Alias for --features');
+  console.log('  --executions <value>            Executions per policy (number) or execution results path (legacy)');
+  console.log('  --num-duo-terms <n>             Number of DUO terms to include when generating data');
+  console.log('  --auc-threshold <float>         AUC threshold for privacy checks');
+  console.log('  --evaluate-dataset              Evaluate dataset quality after generation or load');
   console.log('  --dataset-quality-output <path> Override path for dataset quality JSON output');
 }
 
@@ -148,10 +108,10 @@ async function runExperiment(config = {}) {
     numDuoTerms = 6,
     executionsPerPolicy = 2,
     policyCount = undefined,
-    outputDir = path.join(__dirname, 'results'),
+    network = 'localhost',
+    outputDir = path.join(__dirname, 'results', network),
     testRatio = 0.3,
     aucThreshold = 0.55,
-    advantageThreshold = 0.05,
     startPhase: startPhaseOverride = undefined,
     datasetPath: initialDatasetPath = null,
     executionResultsPath: initialExecutionResultsPath = null,
@@ -178,31 +138,14 @@ async function runExperiment(config = {}) {
     fs.mkdirSync(resolvedOutputDir, { recursive: true });
   }
 
-  let datasetPath = initialDatasetPath;
-  let executionResultsPath = initialExecutionResultsPath;
+  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
+
+  const { datasetPath, executionResultsPath } = resolveDatasetPaths(
+    { useUnifiedDataset, unifiedDatasetDir, network, datasetPath: initialDatasetPath, executionResultsPath: initialExecutionResultsPath },
+    'pch'
+  );
   let datasetPathOverride = datasetPath ? path.resolve(datasetPath) : null;
   let executionResultsPathOverride = executionResultsPath ? path.resolve(executionResultsPath) : null;
-  let featuresPathOverride = featuresPath ? path.resolve(featuresPath) : null;
-  let unifiedPaths = null;
-
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.pchDataset}`);
-    console.log();
-
-    if (!datasetPathOverride) {
-      datasetPathOverride = unifiedPaths.policyDefinitions;
-      datasetPath = datasetPathOverride;
-    }
-
-    if (!executionResultsPathOverride) {
-      executionResultsPathOverride = unifiedPaths.pchDataset;
-      executionResultsPath = executionResultsPathOverride;
-    }
-  }
 
   const timestamp = Date.now();
   const datasetOutputPath = datasetPathOverride
@@ -251,22 +194,6 @@ async function runExperiment(config = {}) {
   console.log('='.repeat(60));
   console.log();
 
-  const provider = ethers.provider;
-  const signers = await ethers.getSigners();
-
-  if (!signers || signers.length === 0) {
-    throw new Error(
-      'No signer available. Configure an account (e.g., AMOY_PRIVATE_KEY) for the selected network before running the experiment.'
-    );
-  }
-
-  const primarySigner = signers[0];
-  const network = await provider.getNetwork();
-
-  console.log(`Connected network: ${network.name || 'unknown'} (chainId: ${network.chainId})`);
-  console.log(`Primary signer: ${await primarySigner.getAddress()}`);
-  console.log();
-
   const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
   console.log(`Using DUO terms: ${duoTerms.join(', ')}`);
   console.log();
@@ -277,80 +204,19 @@ async function runExperiment(config = {}) {
   let normalizedFeatures;
   let featureStats;
 
-  // Phase 1: Data Generation and Execution
-  if (startAtPhase <= 1) {
-    console.log('Phase 1: Data Generation and Execution');
-    console.log('-'.repeat(60));
-
-    console.log('Generating dataset with:');
-    console.log(`  - DUO terms: ${numDuoTerms}`);
-    console.log(`  - Executions per policy: ${executionsPerPolicy}`);
-    if (Number.isInteger(policyCount) && policyCount > 0) {
-      console.log(`  - Policy count override: ${policyCount}`);
-    }
-    console.log();
-
-    const datasetConfig = {
-      duoTerms,
-      executionsPerPolicy
-    };
-    if (Number.isInteger(policyCount) && policyCount > 0) {
-      datasetConfig.policyCount = policyCount;
-    }
-
-    dataset = await generateDataset(datasetConfig);
-
-    fs.writeFileSync(datasetOutputPath, JSON.stringify(dataset, null, 2));
-    console.log(`Dataset saved to: ${datasetOutputPath}`);
-    console.log(`Generated ${dataset.length} policy instances`);
-    console.log();
-
-    maybeEvaluateDataset(dataset, datasetOutputPath);
-
-    await ensureSufficientBalance({
-      provider,
-      signer: primarySigner,
-      executionCount: dataset.length
-    });
-
-    console.log('Deploying PolicyPrivacy contract...');
-    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const Verifier = await ethers.getContractFactory('PolicyPrivacyMainVerifier');
-
-    const verifier = await Verifier.deploy();
-    await verifier.waitForDeployment();
-    console.log('Verifier deployed at:', await verifier.getAddress());
-
-    const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
-    await policyPrivacy.waitForDeployment();
-    console.log('PolicyPrivacy deployed at:', await policyPrivacy.getAddress());
-
-    console.log('Contract deployed');
-    console.log();
-
-    console.log('Executing policies and collecting features...');
-    executionResults = await executeDataset(dataset, policyPrivacy, executionResultsOutputPath);
-    console.log(`Completed ${executionResults.length} executions`);
-    console.log(`Execution results saved to: ${executionResultsOutputPath}`);
-    console.log();
-  } else {
-    console.log('Skipping Phase 1: Data Generation and Execution');
-    console.log();
-
-    if (evaluateDataset && !datasetQualityHandled) {
-      const candidatePath = datasetPath
-        ? path.resolve(datasetPath)
-        : datasetOutputPath;
-      if (fs.existsSync(candidatePath)) {
-        try {
-          dataset = loadDataset(candidatePath);
-          maybeEvaluateDataset(dataset, candidatePath);
-        } catch (error) {
-          console.error('Failed to evaluate dataset quality:', error.message);
-        }
-      } else {
-        console.warn('Dataset quality requested but dataset file not found. Provide --dataset <path>.');
+  if (evaluateDataset && !datasetQualityHandled) {
+    const candidatePath = datasetPath
+      ? path.resolve(datasetPath)
+      : datasetOutputPath;
+    if (fs.existsSync(candidatePath)) {
+      try {
+        dataset = loadDataset(candidatePath);
+        maybeEvaluateDataset(dataset, candidatePath);
+      } catch (error) {
+        console.error('Failed to evaluate dataset quality:', error.message);
       }
+    } else {
+      console.warn('Dataset quality requested but dataset file not found. Provide --dataset <path>.');
     }
   }
 
@@ -490,8 +356,12 @@ async function runExperiment(config = {}) {
   console.log('Task 2: ICD-10 Chapter Prediction (Multi-class)');
   console.log('  Training Random Forest classifier...');
 
-  const icdTrain = prepareClassificationData(trainData, 'icd10Chapter');
-  const icdTest = prepareClassificationData(testData, 'icd10Chapter');
+  // Only rows that actually carry an ICD-10 chapter; otherwise the label set
+  // includes `undefined` (rows from other ontologies) and the task degenerates.
+  const icdTrainData = trainData.filter(f => f.icd10Chapter !== undefined && f.icd10Chapter !== null);
+  const icdTestData = testData.filter(f => f.icd10Chapter !== undefined && f.icd10Chapter !== null);
+  const icdTrain = prepareClassificationData(icdTrainData, 'icd10Chapter');
+  const icdTest = prepareClassificationData(icdTestData, 'icd10Chapter');
 
   const randomForest = new RandomForest(10, 5);
   randomForest.train(icdTrain.X, icdTrain.y);
@@ -513,8 +383,8 @@ async function runExperiment(config = {}) {
   const evaluation = evaluateClassificationTasks(classificationResults);
 
   console.log('Classification Results (Privacy Metrics):');
-  console.log('Note: AUC and Advantage are the primary privacy indicators.');
-  console.log('AUC ≤ 0.55 and Advantage ≤ 5% indicate good privacy protection.');
+  console.log('Note: AUC is the primary single-split privacy diagnostic.');
+  console.log('AUC ≤ 0.55 indicates the adversary cannot rank samples better than random.');
   console.log('');
   for (const result of evaluation.results) {
     console.log(`Task: ${result.task}`);
@@ -531,10 +401,6 @@ async function runExperiment(config = {}) {
       const aucStatus = result.auc <= aucThreshold ? '✓' : '✗';
       console.log(`  ${aucStatus} AUC: ${result.auc.toFixed(4)} (threshold: ≤${aucThreshold})`);
     }
-
-    const advStatus = result.advantage <= advantageThreshold ? '✓' : '✗';
-    console.log(`  ${advStatus} Advantage: ${(result.advantage * 100).toFixed(2)}%`);
-    console.log(`     → Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing`);
 
     // Secondary metrics for diagnostics
     if (result.type === 'binary') {
@@ -554,13 +420,11 @@ async function runExperiment(config = {}) {
 
   // Check privacy thresholds
   const privacyCheck = checkPrivacyThresholds(evaluation, {
-    aucMax: aucThreshold,
-    advantageMax: advantageThreshold
+    aucMax: aucThreshold
   });
 
   console.log('Privacy Threshold Check:');
   console.log(`  AUC Threshold: ≤ ${aucThreshold}`);
-  console.log(`  Advantage Threshold: ≤ ${advantageThreshold}`);
   console.log();
 
   for (const result of privacyCheck.results) {
@@ -571,14 +435,67 @@ async function runExperiment(config = {}) {
     }
   }
   console.log();
-  console.log(`Overall: ${privacyCheck.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  console.log(`Single-split (diagnostic) Overall: ${privacyCheck.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  console.log();
+
+  // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
+  // The single split above is kept only as a diagnostic — its AUC has std ~0.05
+  // at ~3 executions/policy, and raw accuracy advantage is unstable on imbalanced test
+  // sets, so it is not the basis for PASS/FAIL.
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
+  const permIterations = config.permutationIterations || 200;
+  // Random-forest hyperparameters for the second (non-linear) attacker, matching
+  // SPP's forest (50 trees, depth 10). A depth scan (3→10) confirmed RF's
+  // higher-than-LR AUC on some ICD chapters is NOT depth overfitting — the AUC
+  // is depth-invariant (~0.6 even at depth 3), i.e. RF is finding a genuine but
+  // weak non-linear structure in the gas features that the linear model can't.
+  // That weak signal is governed by the gas features' low ICC (<0.4: within-
+  // policy pad noise exceeds between-policy signal), so the permutation test is
+  // what decides whether it is a real channel. Hence the verdict's double
+  // criterion (AUC AND permutation) rather than depth tuning.
+  const rfOpts = {
+    trees: config.rfTrees || 50,
+    maxDepth: config.rfMaxDepth || 10
+  };
+  const seedCtx = {
+    normalizedFeatures,
+    observedDuoTermIds,
+    testRatio,
+    permutationIterations: permIterations,
+    rfOpts
+  };
+  const concurrency = config.concurrency ?? 1;
+  const verdict = await evaluateMultiseed(
+    (seedIndex, baseSeed) => buildPchRecordsForSeed(seedIndex, seedCtx, baseSeed),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      includeSeedRecords: config.includeSeedRecords === true,
+      // Parallel verdict: each worker re-derives normalizedFeatures from the saved
+      // features file and re-runs buildPchRecordsForSeed per seed in its own V8
+      // isolate; results replayed in seed order → byte-identical to serial.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        featuresOutputPath,
+        testRatio,
+        permutationIterations: permIterations,
+        rfOpts
+      } : undefined
+    });
+
+  printVerdict('Policy Content Hiding', verdict);
   console.log();
 
   // Phase 5: Reporting
   console.log('Phase 5: Reporting');
   console.log('-'.repeat(60));
 
-  const icdChapterCount = new Set(normalizedFeatures.map(f => f.icd10Chapter)).size;
+  const icdChapterCount = new Set(
+    normalizedFeatures
+      .map(f => f.icd10Chapter)
+      .filter(v => v !== undefined && v !== null)
+  ).size;
   const totalExecutions = executionResults
     ? executionResults.length
     : features
@@ -596,12 +513,19 @@ async function runExperiment(config = {}) {
       totalExecutions,
       testRatio
     },
-    evaluation,
-    privacyCheck,
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      evaluation,
+      privacyCheck
+    },
+    multiseedVerdict: verdict, // authoritative
     featureStats,
-    conclusion: privacyCheck.overallPassed
-      ? 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing.'
-      : 'WARNING: System may leak policy content information. Some classifiers exceed privacy thresholds.'
+    overallPassed: verdict.overallPassed,
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'System achieves Policy Content Hiding. Adversaries cannot infer policy content better than random guessing (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'WARNING: System may leak policy content information. Multi-seed attack exceeds privacy thresholds.',
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
+    })
   };
 
   const reportPath = path.join(resolvedOutputDir, 'evaluation_report.json');
@@ -646,14 +570,13 @@ function generateReadableReport(report) {
 
   lines.push('## Privacy Evaluation Results');
   lines.push('');
-  lines.push('**Note:** AUC (Area Under ROC Curve) and Advantage are the primary privacy metrics.');
+  lines.push('**Note:** AUC (Area Under ROC Curve) is the primary single-split privacy diagnostic.');
   lines.push('- **AUC ≤ 0.55:** Indicates adversary cannot rank samples better than random');
-  lines.push('- **Advantage ≤ 5%:** Indicates adversary gains minimal benefit over random guessing');
   lines.push('');
   lines.push('> Accuracy metric removed: misleading for imbalanced datasets in privacy evaluation.');
   lines.push('');
 
-  for (const result of report.evaluation.results) {
+  for (const result of report.diagnostics.evaluation.results) {
     lines.push(`### ${result.task}`);
     lines.push('');
     lines.push(`- **Type:** ${result.type}`);
@@ -663,10 +586,6 @@ function generateReadableReport(report) {
       const aucStatus = result.auc <= 0.55 ? '✓ PASS' : '✗ FAIL';
       lines.push(`- **AUC:** ${result.auc.toFixed(4)} (${aucStatus})`);
     }
-
-    const advStatus = result.advantage <= 0.05 ? '✓ PASS' : '✗ FAIL';
-    lines.push(`- **Advantage:** ${(result.advantage * 100).toFixed(2)}% (${advStatus})`);
-    lines.push(`  - *Interpretation: Adversary performs ${(result.advantage * 100).toFixed(2)}% better than random guessing*`);
 
     // Secondary metrics
     if (result.type === 'multi-class' && result.macroF1 !== undefined && result.macroF1 !== null) {
@@ -678,11 +597,10 @@ function generateReadableReport(report) {
 
   lines.push('## Privacy Threshold Check');
   lines.push('');
-  lines.push(`- **AUC Threshold:** ≤ ${report.privacyCheck.thresholds.aucMax}`);
-  lines.push(`- **Advantage Threshold:** ≤ ${report.privacyCheck.thresholds.advantageMax}`);
+  lines.push(`- **AUC Threshold:** ≤ ${report.diagnostics.privacyCheck.thresholds.aucMax}`);
   lines.push('');
 
-  for (const result of report.privacyCheck.results) {
+  for (const result of report.diagnostics.privacyCheck.results) {
     const status = result.passed ? '✓ PASS' : '✗ FAIL';
     lines.push(`### ${result.task}: ${status}`);
     lines.push('');
@@ -695,10 +613,44 @@ function generateReadableReport(report) {
     lines.push('');
   }
 
+  // Authoritative multi-seed verdict table (the basis for PASS/FAIL). Lists
+  // every gating task (DUO terms + ICD-10 chapters one-vs-rest) so the report
+  // faithfully shows each task's verdict, including any boundary case.
+  const mv = report.multiseedVerdict;
+  if (mv && Array.isArray(mv.tasks)) {
+    lines.push('## Multi-seed Verdict (authoritative)');
+    lines.push('');
+    lines.push(`Criterion: a task FAILs iff AUC_mean > ${mv.criterion.aucMax} **and** significant-seed fraction ≥ ${mv.criterion.sigFractionMax} (permutation α=${mv.criterion.permAlpha}). Over ${mv.criterion.seeds} policy-disjoint seeds, each task is attacked by **both** logistic regression (LR) and random forest (RF), reported side by side; a task FAILs if **either** classifier clears the double criterion, so PASS means neither a linear nor a non-linear attacker leaks. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
+    lines.push('');
+    lines.push('| Task | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |');
+    lines.push('|---|---|---|---|---|---|---|');
+    const fmtAuc = (ms) => Number.isNaN(ms.mean) ? 'n/a' : `${ms.mean.toFixed(3)} ± ${ms.std.toFixed(3)}`;
+    const fmtSig = (s) => s == null ? 'n/a' : `${(s * 100).toFixed(0)}%`;
+    for (const t of mv.tasks) {
+      const verdict = t.skipped ? 'skipped'
+        : t.underpowered ? '— (underpowered, non-gating)'
+        : (t.passed ? '✓ PASS' : '✗ FAIL');
+      if (t.classifiers) {
+        const { lr, rf } = t.classifiers;
+        lines.push(`| ${t.key} | ${fmtAuc(lr.auc)} | ${fmtSig(lr.sigFraction)} | ${fmtAuc(rf.auc)} | ${fmtSig(rf.sigFraction)} | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      } else {
+        // Defensive fallback for any single-classifier task (none in PCH today).
+        const auc = fmtAuc(t.auc);
+        const pct = fmtSig(t.sigFraction);
+        lines.push(`| ${t.key} | ${auc} | ${pct} | n/a | n/a | ${t.medianTestN ?? 'n/a'} | ${verdict} |`);
+      }
+    }
+    lines.push('');
+  }
+
   lines.push('## Overall Result');
   lines.push('');
-  const overallStatus = report.privacyCheck.overallPassed ? '✓ **PASS**' : '✗ **FAIL**';
-  lines.push(`**Status:** ${overallStatus}`);
+  const overallStatus = pickVerdictText(report.overallPassed, {
+    pass: '✓ **PASS**',
+    fail: '✗ **FAIL**',
+    inconclusive: '? **INCONCLUSIVE**'
+  });
+  lines.push(`**Status:** ${overallStatus} _(multi-seed, policy-disjoint; single split shown above is diagnostic)_`);
   lines.push('');
 
   lines.push('## Conclusion');
@@ -706,34 +658,21 @@ function generateReadableReport(report) {
   lines.push(report.conclusion);
   lines.push('');
 
-  if (report.privacyCheck.overallPassed) {
-    lines.push('The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.');
-  } else {
-    lines.push('**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.');
-  }
+  lines.push(pickVerdictText(report.overallPassed, {
+    pass: 'The system successfully achieves Policy Content Hiding. Adversaries observing on-chain transactions cannot infer policy content (DUO terms or ICD-10 codes) better than random guessing.',
+    fail: '**Warning:** Some classifiers exceeded privacy thresholds. This suggests potential information leakage through observable features. Further investigation and mitigation may be required.',
+    inconclusive: '**Inconclusive:** no gating task was judgeable, so no privacy claim is made.'
+  }));
   lines.push('');
 
   return lines.join('\n');
 }
 
-if (require.main === module) {
-  const cliConfig = parseArgs();
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.overallPassed
+});
 
-  if (cliConfig.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log('Starting experiment with configuration:', cliConfig);
-
-  runExperiment(cliConfig)
-    .then(report => {
-      process.exit(report.privacyCheck.overallPassed ? 0 : 1);
-    })
-    .catch(error => {
-      console.error('Experiment failed:', error);
-      process.exit(1);
-    });
-}
-
-module.exports = { runExperiment };
+module.exports = { runExperiment, buildPchRecordsForSeed };

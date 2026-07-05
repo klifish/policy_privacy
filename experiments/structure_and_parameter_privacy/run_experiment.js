@@ -12,63 +12,18 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ethers } = require('hardhat');
-
-const {
-  generateDataset
-} = require('./data_generator');
+const { parseCommonArgs, printCommonHelp, runMain } = require('../core/cli');
+const { resolveDatasetPaths } = require('../core/dataset');
 
 const {
   runSupervisedAttacks,
   runStatisticalTests,
-  runClusteringAttack
+  runClusteringAttack,
+  extractFeatures
 } = require('./attacks');
 
-const {
-  executePolicy
-} = require('../policy_content_hiding/data_generator');
-
-const {
-  getArtifactPaths
-} = require('../unified/artifacts');
-
 const { ProgressTracker } = require('../core/progress');
-const {
-  ensureSufficientBalance,
-  deployPolicyPrivacyContracts
-} = require('../core/blockchain');
-
-async function executeDatasetWithProgress(dataset, contract, outputPath, progressTracker) {
-  const results = [];
-  console.log(`Executing ${dataset.length} policy instances sequentially...`);
-
-  for (let i = 0; i < dataset.length; i++) {
-    const policyData = dataset[i];
-    try {
-      const result = await executePolicy(policyData, contract);
-      results.push(result);
-      if (progressTracker) {
-        progressTracker.updateSubProgress(i + 1, dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies`);
-      }
-    } catch (error) {
-      console.error(`\nError executing policy ${i}:`, error.message);
-      if (progressTracker) {
-        progressTracker.updateSubProgress(i + 1, dataset.length,
-          ` | Executed ${i + 1}/${dataset.length} policies (1 failed)`);
-      }
-    }
-  }
-
-  if (progressTracker) {
-    progressTracker.updateSubProgress(dataset.length, dataset.length, ' | Complete');
-  }
-
-  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`\n   Saved ${results.length}/${dataset.length} execution results to ${outputPath}`);
-
-  return results;
-}
+const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../core/multiseed_criterion');
 
 /**
  * Default configuration
@@ -85,7 +40,6 @@ const DEFAULT_CONFIG = {
 };
 
 const DEFAULT_THRESHOLDS = {
-  maxAdvantage: 0.05,
   maxAUC: 0.55,
   minPermutationPValue: 0.05,
   maxMMD: 0.05,
@@ -93,65 +47,33 @@ const DEFAULT_THRESHOLDS = {
   minSilhouette: 0.3
 };
 
+// buildSppRecordsForSeed + buildPerClassifierRecords live in ./seed_records (a
+// lightweight module the parallel worker can load without the hardhat/ffjavascript
+// graph that core/dataset pulls in). Re-exported below for the worker + tests.
+const { buildSppRecordsForSeed } = require("./seed_records");
+
 /**
  * Parse command line arguments
  */
 function parseArgs(argv = process.argv.slice(2)) {
-  const config = { ...DEFAULT_CONFIG };
+  const common = parseCommonArgs(argv);
+  const config = { ...DEFAULT_CONFIG, ...common };
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  // Handle SPP-specific args from _unknown list
+  const unknown = config._unknown || [];
+  delete config._unknown;
+
+  for (let i = 0; i < unknown.length; i++) {
+    const arg = unknown[i];
     switch (arg) {
-      case '--output':
-        config.outputDir = path.resolve(argv[++i]);
-        break;
-      case '--policy-count':
-        config.policyCount = parseInt(argv[++i], 10);
-        break;
-      case '--executions-per-policy':
-        config.executionsPerPolicy = parseInt(argv[++i], 10);
-        break;
-      case '--satisfy-ratio':
-        config.satisfyRatio = parseFloat(argv[++i]);
-        break;
-      case '--test-ratio':
-        config.testRatio = parseFloat(argv[++i]);
-        break;
       case '--permutation-iterations':
-        config.permutationIterations = parseInt(argv[++i], 10);
-        break;
-      case '--phase':
-        config.startPhase = parseInt(argv[++i], 10);
-        break;
-      case '--dataset':
-        config.datasetPath = path.resolve(argv[++i]);
-        break;
-      case '--execution-results':
-        config.executionResultsPath = path.resolve(argv[++i]);
-        break;
-      case '--seed':
-        config.seed = argv[++i];
+        config.permutationIterations = parseInt(unknown[++i], 10);
         break;
       case '--balance-method':
-        config.balanceMethod = argv[++i];
-        break;
-      case '--use-unified-dataset':
-      case '--unified':
-        config.useUnifiedDataset = true;
-        break;
-      case '--unified-dir':
-        config.unifiedDatasetDir = path.resolve(argv[++i]);
-        break;
-      case '--help':
-      case '-h':
-        config.help = true;
+        config.balanceMethod = unknown[++i];
         break;
       default:
-        if (arg.startsWith('--unified-dir=')) {
-          config.unifiedDatasetDir = path.resolve(arg.split('=')[1]);
-        } else {
-          console.warn(`Unknown argument ${arg} ignored`);
-        }
+        console.warn(`Unknown argument ${arg} ignored`);
     }
   }
 
@@ -164,21 +86,12 @@ function parseArgs(argv = process.argv.slice(2)) {
 function printUsage() {
   console.log('Structure & Parameter Privacy Experiment');
   console.log('Usage: node run_experiment.js [options]');
-  console.log('Options:');
-  console.log('  --output <dir>                    Output directory (default: ./results)');
-  console.log('  --policy-count <n>                Number of base policies to generate (default: 120)');
-  console.log('  --executions-per-policy <n>       Executions per policy (default: 3)');
-  console.log('  --satisfy-ratio <float>           Ratio of satisfying executions (default: 0.5)');
-  console.log('  --test-ratio <float>              Train/test split ratio (default: 0.3)');
+  console.log();
+  printCommonHelp();
+  console.log();
+  console.log('SPP-specific options:');
   console.log('  --permutation-iterations <n>      Permutation test iterations (default: 500)');
   console.log('  --balance-method <method>         Dataset balancing: oversample|undersample|both|none (default: both)');
-  console.log('  --phase <1|2|3>                   Resume from given phase');
-  console.log('  --dataset <path>                  Use pre-generated dataset JSON (phase ≥2)');
-  console.log('  --execution-results <path>        Path to cached execution results');
-  console.log('  --use-unified-dataset             Reuse dataset/executions from unified pipeline');
-  console.log('  --unified-dir <path>              Override unified artifact directory');
-  console.log('  --seed <value>                    Random seed for reproducibility');
-  console.log('  --help, -h                        Show this help message');
 }
 
 /**
@@ -199,30 +112,11 @@ function evaluateResults(supervisedResults, statisticalResults, clusteringResult
     results.results.forEach(result => {
       if (result.skipped) return;
 
-      const lrAdv = result.logisticRegression?.evaluation?.advantage || 0;
-      const rfAdv = result.randomForest?.evaluation?.advantage || 0;
-      const permPValue = result.logisticRegression?.permutationTest?.pValue || 1;
-
-      if (lrAdv > thresholds.maxAdvantage) {
-        failures.push({
-          comparison: `${result.class0} vs ${result.class1}`,
-          attack: 'Logistic Regression',
-          metric: 'advantage',
-          value: lrAdv,
-          threshold: thresholds.maxAdvantage
-        });
-      }
-
-      if (rfAdv > thresholds.maxAdvantage) {
-        failures.push({
-          comparison: `${result.class0} vs ${result.class1}`,
-          attack: 'Random Forest',
-          metric: 'advantage',
-          value: rfAdv,
-          threshold: thresholds.maxAdvantage
-        });
-      }
-
+      // Single-split now uses the fixed-score AUC permutation (aucPermPValue);
+      // fall back to the legacy retrain permutationTest.pValue for older reports.
+      const permPValue = result.logisticRegression?.evaluation?.aucPermPValue
+        ?? result.logisticRegression?.permutationTest?.pValue
+        ?? 1;
       if (permPValue < thresholds.minPermutationPValue) {
         failures.push({
           comparison: `${result.class0} vs ${result.class1}`,
@@ -338,7 +232,7 @@ function generateMarkdownReport(report) {
   lines.push('');
   lines.push(`- **Policy count:** ${report.config.policyCount}`);
   lines.push(`- **Executions per policy:** ${report.config.executionsPerPolicy}`);
-  lines.push(`- **Satisfy ratio:** ${report.config.satisfyRatio.toFixed(2)}`);
+  lines.push(`- **Satisfy ratio:** ${typeof report.config.satisfyRatio === 'number' ? report.config.satisfyRatio.toFixed(2) : 'N/A'}`);
   lines.push(`- **Test ratio:** ${(report.config.testRatio * 100).toFixed(0)}%`);
   lines.push(`- **Balance method:** ${report.config.balanceMethod || 'both'}`);
   if (report.dataset.meta?.families !== undefined) {
@@ -365,17 +259,17 @@ function generateMarkdownReport(report) {
   // Supervised attacks
   lines.push('### Supervised Classification Attacks');
   lines.push('');
-  Object.entries(report.attacks.supervised).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.supervised).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.supervised[target].passed;
+    const passed = report.diagnostics.evaluation.supervised[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.supervised[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.supervised[target].failures.forEach(failure => {
         lines.push(`- ${failure.comparison} / ${failure.attack}: ${failure.metric}=${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
@@ -385,17 +279,17 @@ function generateMarkdownReport(report) {
   // Statistical tests
   lines.push('### Statistical Hypothesis Tests');
   lines.push('');
-  Object.entries(report.attacks.statistical).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.statistical).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.statistical[target].passed;
+    const passed = report.diagnostics.evaluation.statistical[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.statistical[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.statistical[target].failures.forEach(failure => {
         lines.push(`- ${failure.comparison} / ${failure.test}: ${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
@@ -405,26 +299,27 @@ function generateMarkdownReport(report) {
   // Clustering attacks
   lines.push('### Unsupervised Clustering Attacks');
   lines.push('');
-  Object.entries(report.attacks.clustering).forEach(([target, results]) => {
+  Object.entries(report.diagnostics.attacks.clustering).forEach(([target, results]) => {
     lines.push(`#### Target: ${target}`);
     lines.push('');
 
-    const passed = report.evaluation.clustering[target].passed;
+    const passed = report.diagnostics.evaluation.clustering[target].passed;
     lines.push(`**Status:** ${passed ? '✓ PASS' : '✗ FAIL'}`);
     lines.push('');
 
     if (!passed) {
       lines.push('**Failures:**');
-      report.evaluation.clustering[target].failures.forEach(failure => {
+      report.diagnostics.evaluation.clustering[target].failures.forEach(failure => {
         lines.push(`- k=${failure.k} / ${failure.metric}: ${failure.value.toFixed(4)} (threshold: ${failure.threshold})`);
       });
       lines.push('');
     }
   });
 
+
   lines.push('## Conclusion');
   lines.push('');
-  lines.push(`**Overall Status:** ${report.evaluation.overallPassed ? '✓ PASS' : '✗ FAIL'}`);
+  lines.push(`**Overall Status:** ${pickVerdictText(report.overallPassed, { pass: '✓ PASS', fail: '✗ FAIL', inconclusive: '? INCONCLUSIVE' })} _(multi-seed, policy-disjoint; single-split table below is diagnostic)_`);
   lines.push('');
   lines.push(report.conclusion);
   lines.push('');
@@ -440,40 +335,19 @@ async function runExperiment(config = {}) {
   const startPhase = Number.isInteger(config.startPhase)
     ? config.startPhase
     : (useUnifiedDataset ? 2 : 1);
-  const outputDir = path.resolve(config.outputDir || path.join(__dirname, 'results'));
+  const outputDir = path.resolve(
+    config.outputDir || path.join(__dirname, 'results', config.network || 'localhost')
+  );
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
   const outputDatasetPath = path.join(outputDir, 'dataset.json');
-  let datasetSourcePath = config.datasetPath ? path.resolve(config.datasetPath) : null;
-  let executionResultsPath = config.executionResultsPath ? path.resolve(config.executionResultsPath) : null;
 
-  let unifiedPaths = null;
-  if (useUnifiedDataset) {
-    unifiedPaths = getArtifactPaths(config.unifiedDatasetDir);
-    console.log('Using unified dataset artifacts:');
-    console.log(`  Base dir: ${unifiedPaths.dir}`);
-    console.log(`  Policies: ${unifiedPaths.policyDefinitions}`);
-    console.log(`  Executions: ${unifiedPaths.sppDataset}`);
-    console.log();
-
-    if (!datasetSourcePath) {
-      datasetSourcePath = unifiedPaths.policyDefinitions;
-    }
-    if (!executionResultsPath) {
-      executionResultsPath = unifiedPaths.sppDataset;
-    }
-  }
-
-  if (!datasetSourcePath) {
-    datasetSourcePath = outputDatasetPath;
-  }
-
-  if (!executionResultsPath) {
-    executionResultsPath = path.join(outputDir, 'execution_results.json');
-  }
+  const { datasetPath: resolvedDatasetPath, executionResultsPath: resolvedExecPath } = resolveDatasetPaths(config, 'spp');
+  let datasetSourcePath = resolvedDatasetPath || outputDatasetPath;
+  let executionResultsPath = resolvedExecPath || path.join(outputDir, 'execution_results.json');
   const reportJsonPath = path.join(outputDir, 'report.json');
   const reportMarkdownPath = path.join(outputDir, 'report.md');
 
@@ -487,93 +361,52 @@ async function runExperiment(config = {}) {
   console.log(`Starting from phase ${startPhase}`);
   console.log('');
 
-  const totalSteps = (startPhase <= 1 ? 4 : 0) + 4;
-  const progress = new ProgressTracker(totalSteps);
+  const progress = new ProgressTracker(4);
 
-  // Phase 1: Dataset generation & on-chain execution
-  if (startPhase <= 1) {
-    progress.startStep('Generating dataset with structure annotations');
-    dataset = await generateDataset({
-      policyCount: config.policyCount,
-      executionsPerPolicy: config.executionsPerPolicy,
-      satisfyRatio: config.satisfyRatio,
-      seed: config.seed,
-      duoTerms: config.duoTerms,
-      semanticLayers: config.semanticLayers
-    });
+  if (fs.existsSync(datasetSourcePath)) {
+    dataset = JSON.parse(fs.readFileSync(datasetSourcePath, 'utf8'));
     datasetMeta = dataset.__meta;
-
-    fs.writeFileSync(outputDatasetPath, JSON.stringify(dataset, null, 2));
-    datasetSourcePath = outputDatasetPath;
-    console.log(`Dataset saved to: ${outputDatasetPath}`);
-    if (datasetMeta?.sppSummary) {
-      console.log('Structure coverage:', datasetMeta.sppSummary.structureTypes);
-      console.log('Parameter coverage:', datasetMeta.sppSummary.parameterTypes);
-      console.log('Predicate coverage:', datasetMeta.sppSummary.predicateCombos);
-    }
-    progress.completeStep();
-
-    const provider = ethers.provider;
-    const [signer] = await ethers.getSigners();
-    await ensureSufficientBalance({
-      provider,
-      signer,
-      executionCount: dataset.length
-    });
-
-    progress.startStep('Deploying PolicyPrivacy contracts');
-    const policyPrivacy = await deployPolicyPrivacyContracts();
-    progress.completeStep();
-
-    progress.startStep(`Executing ${dataset.length} policies on-chain`);
-    executionResults = await executeDatasetWithProgress(
-      dataset,
-      policyPrivacy,
-      executionResultsPath,
-      progress
-    );
-    progress.completeStep();
+    console.log(`Loaded dataset metadata from: ${datasetSourcePath}`);
   } else {
-    if (fs.existsSync(datasetSourcePath)) {
-      dataset = JSON.parse(fs.readFileSync(datasetSourcePath, 'utf8'));
-      datasetMeta = dataset.__meta;
-      console.log(`Loaded dataset metadata from: ${datasetSourcePath}`);
-    } else {
-      console.warn(`Dataset file not found at ${datasetSourcePath}. Provide --dataset <path> if needed.`);
-    }
-
-    const resolvedExecPath = config.executionResultsPath || executionResultsPath;
-    if (!fs.existsSync(resolvedExecPath)) {
-      throw new Error(`Execution results not found at ${resolvedExecPath}`);
-    }
-    executionResults = JSON.parse(fs.readFileSync(resolvedExecPath, 'utf8'));
-    console.log(`Loaded execution results from: ${resolvedExecPath}`);
+    console.warn(`Dataset file not found at ${datasetSourcePath}. Provide --dataset <path> if needed.`);
   }
+
+  if (!fs.existsSync(executionResultsPath)) {
+    throw new Error(`Execution results not found at ${executionResultsPath}`);
+  }
+  executionResults = JSON.parse(fs.readFileSync(executionResultsPath, 'utf8'));
+  console.log(`Loaded execution results from: ${executionResultsPath}`);
 
   // Phase 2: Attack modeling
   console.log('\nPhase 2: Attack Modeling');
   console.log('-'.repeat(60));
 
   progress.startStep('Running supervised classification attacks');
+  // Single-split diagnostic: skip the expensive legacy LR-retrain permutation
+  // (500 retrains/pair) and instead attach the cheap fixed-score AUC permutation
+  // (perClassifierPermutation -> evaluation.aucPermPValue), the same significance
+  // test the authoritative multi-seed verdict uses. This diagnostic is non-gating
+  // (multiseedVerdict decides PASS/FAIL), so the legacy retrain only added cost.
+  const diagnosticSupervisedOpts = {
+    testRatio: config.testRatio,
+    permutationIterations: config.permutationIterations ?? 200,
+    balanceMethod: config.balanceMethod,
+    skipLegacyPermutation: true,
+    perClassifierPermutation: true
+  };
   const supervisedStructure = runSupervisedAttacks(executionResults, {
     targetAttribute: 'structureType',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
 
   const supervisedPredicate = runSupervisedAttacks(executionResults, {
     targetAttribute: 'predicateCombo',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
 
   const supervisedParam = runSupervisedAttacks(executionResults, {
     targetAttribute: 'paramType',
-    testRatio: config.testRatio,
-    permutationIterations: config.permutationIterations,
-    balanceMethod: config.balanceMethod
+    ...diagnosticSupervisedOpts
   });
   progress.completeStep();
 
@@ -639,6 +472,43 @@ async function runExperiment(config = {}) {
     DEFAULT_THRESHOLDS
   );
 
+  // Authoritative verdict: multi-seed, policy-disjoint, AUC + permutation test.
+  // The single-split `evaluation` above is kept as a diagnostic; PASS/FAIL is
+  // decided here. The single split's raw accuracy advantage was unstable on imbalanced
+  // test sets (degenerate majority-class predictors scored high advantage with
+  // f1=0 while the permutation test showed no signal), causing spurious FAILs.
+  const targetAttributes = ['structureType', 'predicateCombo', 'paramType'];
+  const multiseedSeeds = config.multiseedSeeds ?? 30;
+  const permIterations = config.permutationIterations || 200;
+  const seedCtx = {
+    executionResults,
+    targetAttributes,
+    testRatio: config.testRatio,
+    permutationIterations: permIterations,
+    balanceMethod: config.balanceMethod
+  };
+  const concurrency = config.concurrency ?? 1;
+  const verdict = await evaluateMultiseed(
+    (seedIndex, baseSeed) => buildSppRecordsForSeed(seedIndex, seedCtx, baseSeed),
+    {
+      seeds: multiseedSeeds,
+      permutationIterations: permIterations,
+      includeSeedRecords: config.includeSeedRecords === true,
+      // Parallel verdict: each worker re-reads the dataset and re-runs
+      // buildSppRecordsForSeed derives named RNG streams from each seed in either
+      // serial or worker mode; results replay in seed order.
+      concurrency,
+      workerEntry: concurrency > 1 ? path.join(__dirname, 'multiseed_worker.js') : undefined,
+      workerData: concurrency > 1 ? {
+        executionResultsPath,
+        targetAttributes,
+        testRatio: config.testRatio,
+        permutationIterations: permIterations,
+        balanceMethod: config.balanceMethod
+      } : undefined
+    });
+  printVerdict('Structure & Parameter Privacy', verdict);
+
   const report = {
     experiment: 'Structure & Parameter Privacy',
     timestamp: new Date().toISOString(),
@@ -655,16 +525,23 @@ async function runExperiment(config = {}) {
       datasetPath: datasetSourcePath,
       executionResultsPath
     },
-    thresholds: DEFAULT_THRESHOLDS,
-    attacks: {
-      supervised: supervisedResults,
-      statistical: statisticalResults,
-      clustering: clusteringResults
+    diagnostics: {
+      note: 'Single-split diagnostic only — superseded by multiseedVerdict for PASS/FAIL.',
+      thresholds: DEFAULT_THRESHOLDS,
+      attacks: {
+        supervised: supervisedResults,
+        statistical: statisticalResults,
+        clustering: clusteringResults
+      },
+      evaluation
     },
-    evaluation,
-    conclusion: evaluation.overallPassed
-      ? 'Policy structure and parameters appear well-protected against side-channel analysis.'
-      : 'Potential leakage detected in structure or parameters. Further hardening recommended.'
+    multiseedVerdict: verdict, // authoritative
+    overallPassed: verdict.overallPassed,
+    conclusion: pickVerdictText(verdict.overallPassed, {
+      pass: 'Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).',
+      fail: 'Potential leakage detected in structure or parameters. Further hardening recommended.',
+      inconclusive: 'INCONCLUSIVE: no gating task was judgeable, so no privacy claim is made.'
+    })
   };
 
   fs.writeFileSync(reportJsonPath, JSON.stringify(report, null, 2));
@@ -676,31 +553,17 @@ async function runExperiment(config = {}) {
 
   progress.complete();
   console.log('');
-  console.log(`Overall status: ${evaluation.overallPassed ? 'PASS' : 'FAIL'}`);
+  console.log(`Overall status (multi-seed): ${pickVerdictText(verdict.overallPassed, { pass: 'PASS', fail: 'FAIL', inconclusive: 'INCONCLUSIVE' })}`);
   console.log('='.repeat(60));
 
   return report;
 }
 
-// CLI entry point
-if (require.main === module) {
-  const config = parseArgs();
+runMain(module, {
+  runExperiment,
+  parseArgs,
+  printUsage,
+  getPassedFlag: (r) => r.overallPassed
+});
 
-  if (config.help) {
-    printUsage();
-    process.exit(0);
-  }
-
-  console.log('Configuration:', config);
-
-  runExperiment(config)
-    .then((report) => {
-      process.exit(report.evaluation.overallPassed ? 0 : 1);
-    })
-    .catch((error) => {
-      console.error('Experiment failed:', error);
-      process.exit(1);
-    });
-}
-
-module.exports = { runExperiment };
+module.exports = { runExperiment, buildSppRecordsForSeed };

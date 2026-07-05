@@ -1,0 +1,73 @@
+% Full manuscript assembly for TPS-ZKPI (BRAINS 2026).
+% Self-contained within this directory: build from the paper/ directory (or drop the
+% paper/ contents at an Overleaf project root and build main.tex there).
+%   cd paper && latexmk -pdf main.tex
+% or:
+%   cd paper && pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
+%
+% Front matter, intro, related work, problem/threat model, design, discussion, and
+% conclusion are modular .tex files. The Evaluation chapter is the authoritative modular
+% evaluation (evaluation.tex) with numbers transcribed from the deterministic
+% multi-seed result files; see README.md for provenance.
+\documentclass[journal]{IEEEtran}
+
+% --- math / symbols ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% --- tables ---
+\usepackage{booktabs}   % \toprule/\midrule/\bottomrule used by the modular evaluation tables
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% --- graphics ---
+\usepackage{graphicx}
+\graphicspath{{figures/}{./}}
+
+% --- misc ---
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\usepackage{cite}
+\usepackage{stfloats}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% --- theorem-like environments and shorthand macros (from the source manuscript) ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{experiment}{Experiment}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\Com}{\mathsf{Com}}
+\newcommand{\Eval}{\mathsf{Eval}}
+\newcommand{\Verify}{\mathsf{Verify}}
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Setup}{\mathsf{Setup}}
+\newcommand{\Prove}{\mathsf{Prove}}
+\newcommand{\DEPTH}{\mathsf{DEPTH}}
+\newcommand{\Pad}{\mathsf{Pad}}
+\newcommand{\Quantile}{\mathsf{Quantile}}
+\newcommand{\Acc}{\mathsf{Acc}}
+
+\begin{document}
+
+\input{sec_frontmatter.tex}
+
+\input{sec_introduction.tex}
+\input{sec_related_work.tex}
+\input{sec_problem.tex}
+\input{sec_design.tex}
+
+\input{evaluation.tex}
+
+\input{sec_discussion.tex}
+\input{sec_conclusion.tex}
+
+\bibliographystyle{IEEEtran}
+\bibliography{reference}
+
+\end{document}

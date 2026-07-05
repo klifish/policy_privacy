@@ -14,6 +14,17 @@ include "policy_privacy_main.circom";
     - RANGE_BITS=32: 32-bit range proofs
 */
 
+/*
+    Public interface (commitment-only):
+    pubSignals = [isAuthorized, policyCommitment, paramsCommitment]
+
+    Per-predicate parameters (merkleRoots, credPublicKeys, rangeMin/Max,
+    ontologyPolicyIds, ontologyEpochs) are private witness inputs. They are
+    bound to paramsCommitment in-circuit via the Poseidon digest chain, and
+    the contract compares paramsCommitment against the value committed at
+    commitPolicy time. Exposing them publicly leaks predicate-slot occupancy
+    through calldata zero-byte gas pricing (EIP-2028).
+*/
 component main {
-    public [policyCommitment, paramsCommitment, merkleRoots, credPublicKeys, rangeMin, rangeMax, ontologyPolicyIds, ontologyEpochs]
+    public [policyCommitment, paramsCommitment]
 } = PolicyPrivacyMain(6, 5, 20, 4, 8, 32);

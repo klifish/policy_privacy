@@ -37,16 +37,20 @@ node policy_indistinguishability/run_experiment.js --use-unified-dataset --phase
 experiments/
 ├── core/                              # 共享核心库
 │   ├── blockchain.js                  # 区块链交互工具
+│   ├── cli.js                         # 公共 CLI 参数解析与入口样板（parseCommonArgs, printCommonHelp, runMain）
+│   ├── dataset.js                     # 统一数据集路径解析（resolveDatasetPaths）
+│   ├── execution.js                   # 链上逐条执行循环（executeDatasetWithProgress，含 checkpoint 支持）
 │   └── progress.js                    # 进度追踪器
 │
 ├── scripts/                           # 开发/分析脚本
 │   ├── analyze/                       # 数据分析脚本
+│   │   └── pch/                       # PCH 专用分析脚本
 │   ├── test/                          # 测试脚本
 │   └── verify/                        # 验证脚本
 │
 ├── docs/                              # 文档中心
 │   ├── README.md                      # 文档索引
-│   ├── refactoring/                   # 重构文档
+│   ├── archive/                       # 历史文档归档
 │   ├── unified/                       # 统一数据集文档
 │   ├── pch/                           # PCH 实验文档
 │   ├── spp/                           # SPP 实验文档
@@ -58,19 +62,28 @@ experiments/
 │   ├── artifacts.js                   # Artifact 管理
 │   ├── constraint-generator.js        # 约束感知生成器
 │   ├── configs/                       # 配置文件
-│   └── artifacts_data/                # 生成的数据
+│   │   ├── unified_dataset_config_optimized.json
+│   │   ├── unified_dataset_config_smoke.json
+│   │   └── spp_pi_optimized_config.js # SPP/PI 专项优化配置
+│   ├── artifacts_data/                # 当前默认数据（最新一次运行）
+│   └── archive/                       # 历史运行数据归档
+│       ├── artifacts_data_testnet_01/ # testnet 01~05
+│       ├── ...
+│       ├── artifacts_data_testnet_random/
+│       └── artifacts_data_testnet_random_2/
 │
 ├── policy_content_hiding/             # PCH 实验
 │   ├── run_experiment.js              # 实验入口
-│   ├── data_generator.js              # 数据生成
+│   ├── data_generator.js              # 数据生成（基础生成器，其他实验复用）
 │   ├── feature_extractor.js           # 特征提取
-│   ├── classifiers.js                 # 分类器
-│   ├── evaluator.js                   # 评估器
-│   └── results/                       # 实验结果
+│   ├── classifiers.js                 # 分类器（其他实验复用）
+│   ├── evaluator.js                   # 评估器（其他实验复用）
+│   ├── results/                       # 实验结果
+│   └── results_archive/               # 历史结果快照
 │
 ├── structure_and_parameter_privacy/   # SPP 实验
 │   ├── run_experiment.js              # 实验入口
-│   ├── data_generator.js              # 数据生成
+│   ├── data_generator.js              # 数据生成（含 5 维度标注）
 │   ├── attacks.js                     # 攻击模型
 │   └── results/                       # 实验结果
 │
@@ -156,13 +169,25 @@ experiments/
 
 ## 最近更新
 
+### 2026-06-10 - 目录整理与代码重构
+- ✅ 新增 `core/cli.js`：提取三个实验公共 CLI 参数解析逻辑
+- ✅ 新增 `core/dataset.js`：提取统一数据集路径解析逻辑
+- ✅ 新增 `core/execution.js`：提取链上执行循环（含 checkpoint 支持）
+- ✅ 删除三个实验的 Phase 1 直接链上执行路径（仅保留 unified 流程）
+- ✅ `unified/run.js` 改用 `core/execution.js`，统一执行实现
+- ✅ 清理 `package.json` 中旧的 `experiment:policy:*` 脚本（均替换为 `exp:*`）
+- ✅ 移动 `spp_pi_optimized_config.js` → `unified/configs/`
+- ✅ 将 PCH analysis 脚本整合到 `scripts/analyze/pch/`
+- ✅ 将 7 个历史 `artifacts_data testnet *` 目录归档到 `unified/archive/`（去除路径空格）
+- ✅ 历史文档归档到 `docs/archive/`
+
 ### 2025-12-04 - 代码重构
 - ✅ 提取共享核心库 (`core/blockchain.js`, `core/progress.js`)
 - ✅ 消除 ~410 行重复代码
 - ✅ 整理临时脚本到 `scripts/` 目录
 - ✅ 整理所有文档到 `docs/` 目录
 
-**详情**: [docs/refactoring/REFACTORING_SUMMARY.md](docs/refactoring/REFACTORING_SUMMARY.md)
+**详情**: [docs/archive/refactoring/REFACTORING_SUMMARY.md](docs/archive/refactoring/REFACTORING_SUMMARY.md)
 
 ---
 

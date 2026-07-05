@@ -13,11 +13,18 @@ Each policy run is automatically labelled along three axes before execution:
 
 | Axis | Buckets |
 |------|---------|
-| **Structure type** | `simple_and`, `with_or`, `nested`, `with_sets`, `complex` |
-| **Predicate combo** | `attribute_only`, `single_predicate`, `single_predicate_mixed`, `multi_predicate` |
-| **Parameter type** | `no_sets`, `narrow_range`, `small_set`, `medium_set`, `large_set`, `wide_range` (derived from whitelist size + Merkle depth) |
+| **Structure type** (`structureType`) | `trivial`, `and_only`, `or_only`, `and_or_mixed`, `negation_heavy` |
+| **Predicate combo** (`predicateCombo`) | see `classifyPredicateCount` in `data_generator.js` |
+| **Parameter type** (`paramType`) | see `classifySetSize` in `data_generator.js` (set-size dimension only) |
 
-The attack suite tries to recover those labels using on-chain side channels only. Success would indicate information leakage.
+Two additional axes — **nesting depth** (`nestingDepth`) and **range width** (`rangeWidth`) — are
+computed and tracked at generation time (see `classifyNestingDepth` / `classifyRangeWidth`) for
+dataset-balance diagnostics, but are **not** currently fed to the attack suite: only
+`structureType`, `predicateCombo`, and `paramType` are passed to `runSupervisedAttacks` /
+statistical / clustering attacks in `run_experiment.js` (`targetAttributes = ['structureType',
+'predicateCombo', 'paramType']`). So SPP currently attacks 3 axes, not 5.
+
+The attack suite tries to recover those (3) labels using on-chain side channels only. Success would indicate information leakage.
 
 ## Threat Model
 
@@ -31,13 +38,29 @@ The attack suite tries to recover those labels using on-chain side channels only
 2. **Statistical tests** – pairwise KS tests per feature + RBF MMD over full vectors
 3. **Unsupervised clustering** – k-means, silhouette scores, ARI when k matches true class count
 
-Privacy thresholds mirror the PI/PCH experiments:
+**The authoritative PASS/FAIL verdict** comes from the shared multi-seed criterion in
+`experiments/core/multiseed_criterion.js` (identical engine to PCH/PI):
 
-| Metric | Threshold |
+```
+FAIL  iff  AUC_mean > 0.55 (over 30 policy-disjoint seeds)  AND  significant-seed fraction >= 0.5
+PASS  otherwise
+```
+
+SPP gates on **both** a logistic-regression and a random-forest classifier independently (a
+task fails if either classifier's double criterion fires). Because logistic regression tends
+to over-separate on SPP's near-constant features and yields a degenerate AUC, the operative
+signal in practice comes from the calibrated random-forest score. Raw "advantage"
+(`|accuracy − 0.5|`) is retained only as a legacy diagnostic field and does not gate.
+Tasks whose median test-set size is below 20 are reported but excluded from gating.
+
+The table below lists the **single-split diagnostic thresholds** still computed and reported
+per run (statistical/clustering legs, and the pre-multiseed supervised summary) — these are
+informative but do **not** decide the overall verdict:
+
+| Metric | Diagnostic threshold |
 |--------|-----------|
-| Classifier advantage | ≤ 0.05 |
-| AUC | ≤ 0.55 |
-| Permutation p-value | ≥ 0.05 |
+| AUC (single split) | ≤ 0.55 |
+| Permutation p-value (single split) | ≥ 0.05 |
 | MMD | ≤ 0.05 |
 | KS p-value | ≥ 0.05 |
 | Silhouette | ≤ 0.30 |
@@ -122,7 +145,7 @@ results/<name>/
   - Parses normalized logic from the compiler to detect OR depth, predicate diversity, etc.
   - Buckets Merkle depths to approximate “range width” padding
 - **Execution:** `run_experiment.js` deploys new contracts per run (same as PCH/PI)
-- **Attacks:** `attacks.js` is unchanged from the synthetic prototype but now operates on real metadata
+- **Attacks:** `attacks.js` implements the supervised (LR+RF), statistical (KS/MMD), and clustering (k-means/silhouette) attacks over real on-chain metadata; shuffling and RNG use the shared unbiased Fisher-Yates/seeded generators in `experiments/core/random.js`
 - **Tests:** `test/experiments/structure_parameter_privacy_test.js` covers annotation helpers + attack utilities
 
 ## Typical Workflow
@@ -143,9 +166,10 @@ npx hardhat run experiments/structure_and_parameter_privacy/run_experiment.js --
 
 ## Interpreting the Report
 
-- **Supervised PASS** – both classifiers stay near 50% accuracy and permutation p-values ≥ 0.05
-- **Statistical PASS** – MMD/KS never exceed thresholds, meaning feature distributions overlap
-- **Clustering PASS** – silhouette ≤ 0.30 and ARI low ⇒ unsupervised grouping fails
+- **Supervised verdict (authoritative)** – 30-seed policy-disjoint double criterion above:
+  AUC not meaningfully above chance, or not statistically reproducible across seeds
+- **Statistical PASS (diagnostic)** – MMD/KS never exceed thresholds, meaning feature distributions overlap
+- **Clustering PASS (diagnostic)** – silhouette ≤ 0.30 and ARI low ⇒ unsupervised grouping fails
 
 Any failure pinpoints the leaking attribute (structure/predicate/parameter) and the specific comparison (e.g., `with_sets vs complex`). Use that to inspect gas padding, proof sizes, or log differences for those families.
 

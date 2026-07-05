@@ -1,0 +1,29 @@
+% Top-level Evaluation chapter. \input this from the main manuscript.
+% Requires in the preamble: \usepackage{booktabs} \usepackage{amsmath} \usepackage{amssymb} \usepackage{graphicx}
+% If the main document uses a different graphics path for the figures, set it before \input.
+\section{Privacy Evaluation}
+\label{sec:eval}
+
+We evaluate the three privacy properties of our approach---Policy Content Hiding,
+Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive
+on-chain observer (Section~\ref{sec:eval-threat}).
+The primary evidence is a supervised, multi-seed attack evaluation with policy-disjoint splits and permutation tests (Section~\ref{sec:eval-method}); unsupervised clustering provides a label-free
+cross-check on the same executions.
+All three properties pass the supervised criterion, and the clustering attack finds no natural grouping by hidden labels.
+
+\input{sec_threat_model.tex}
+\input{sec_methodology.tex}
+\input{tables/tab_privacy_summary.tex}
+\input{sec_pch.tex}
+\input{tables/tab_pch_terms.tex}
+\input{tables/tab_pch_icd10.tex}
+\input{sec_pi.tex}
+\input{tables/tab_pi_pairs.tex}
+\input{sec_spp.tex}
+\input{tables/tab_spp_contrasts.tex}
+\input{sec_clustering.tex}
+\input{tables/tab_clustering_summary.tex}
+\input{sec_nmi_sensitivity.tex}
+\input{sec_ablation.tex}
+\input{tables/tab_ablation_gas_padding.tex}
+\input{tables/tab_cost_profile.tex}

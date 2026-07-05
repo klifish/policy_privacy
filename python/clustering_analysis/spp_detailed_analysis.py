@@ -2,14 +2,20 @@
 """
 详细分析SPP（Structure and Parameter Privacy）实验的聚类结果
 """
+import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# 读取结果
 results_dir = Path(__file__).parents[1] / "results" / "spp_clustering_analysis"
-df = pd.read_csv(results_dir / "spp_clustering_summary.csv")
+parser = argparse.ArgumentParser(description="Render the SPP clustering summary figure")
+parser.add_argument("--input", type=Path,
+                    default=results_dir / "spp_clustering_summary.csv")
+parser.add_argument("--output", type=Path,
+                    default=results_dir / "spp_detailed_analysis.png")
+args = parser.parse_args()
+df = pd.read_csv(args.input)
 
 print("=" * 80)
 print("SPP实验 - Structure and Parameter Privacy 聚类分析详细报告")
@@ -21,7 +27,7 @@ print()
 print("SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征")
 print()
 print("测试目标（4个隐私属性）:")
-print("  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy）")
+print("  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）")
 print("  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）")
 print("  3. predicateCount: 谓词数量（few, many, none, single）")
 print("  4. setSize: 集合大小（large, medium, none, small）")
@@ -315,6 +321,7 @@ for i, (n, ari, nmi) in enumerate(zip(n_classes, ari_values, nmi_values)):
     ax4.text(i, n, str(int(n)), ha='center', va='bottom')
 
 plt.tight_layout()
-output_path = results_dir / "spp_detailed_analysis.png"
-plt.savefig(output_path, dpi=150, bbox_inches='tight')
-print(f"可视化图表已保存到: {output_path}")
+args.output.parent.mkdir(parents=True, exist_ok=True)
+plt.savefig(args.output, dpi=150, bbox_inches='tight')
+plt.close()
+print(f"可视化图表已保存到: {args.output}")

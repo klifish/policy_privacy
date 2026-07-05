@@ -2,9 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Unified Dataset Configuration - SPP/PI Optimized",
   "description": "Configuration optimized to satisfy PCH, SPP, and PI requirements simultaneously",
-  "policyCount": 500,
-  "policyCountTarget": 200,
+  "policyCount": 1077,
+  "policyCountTarget": 1077,
   "executionsPerPolicy": 3,
+  "coverageExecutions": 1,
+  "depthExecutions": 30,
+  "depthSubsetPerStructure": 8,
+  "depthStructures": ["and_only", "or_only", "negation_heavy", "and_or_mixed"],
   "satisfyRatio": 1,
   "seed": "unified-optimized-2025",
   "semanticLayers": [
@@ -16,8 +20,8 @@
           "GR"
         ]
       ],
-      "minPolicies": 50,
-      "maxPolicies": 60,
+      "minPolicies": 7,
+      "maxPolicies": 7,
       "logicOptions": {
         "operators": [
           "AND"
@@ -47,7 +51,7 @@
         ]
       ],
       "minPolicies": 60,
-      "maxPolicies": 70,
+      "maxPolicies": 140,
       "logicOptions": {
         "operators": [
           "AND"
@@ -111,7 +115,7 @@
         ]
       ],
       "minPolicies": 35,
-      "maxPolicies": 45,
+      "maxPolicies": 170,
       "logicOptions": {
         "operators": [
           "AND",
@@ -133,7 +137,7 @@
     },
     {
       "name": "medium_nesting_focused",
-      "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance",
+      "comment": "Specifically designed to generate maxDepth=3 policies for nesting depth balance; ensureMixedOperators feeds the author-level and_or_mixed bucket",
       "combos": [
         [
           "GR",
@@ -186,15 +190,16 @@
           "CC"
         ]
       ],
-      "minPolicies": 35,
-      "maxPolicies": 45,
+      "minPolicies": 50,
+      "maxPolicies": 170,
       "logicOptions": {
         "operators": [
           "AND",
           "OR"
         ],
         "notProbability": 0.3,
-        "groupNotProbability": 0.25
+        "groupNotProbability": 0.25,
+        "ensureMixedOperators": true
       },
       "whitelistBuckets": [
         8,
@@ -235,7 +240,7 @@
         ]
       ],
       "minPolicies": 25,
-      "maxPolicies": 35,
+      "maxPolicies": 120,
       "logicOptions": {
         "operators": [
           "OR"
@@ -297,7 +302,7 @@
         ]
       ],
       "minPolicies": 35,
-      "maxPolicies": 45,
+      "maxPolicies": 160,
       "logicOptions": {
         "operators": [
           "AND",
@@ -356,14 +361,15 @@
         ]
       ],
       "minPolicies": 50,
-      "maxPolicies": 60,
+      "maxPolicies": 170,
       "logicOptions": {
         "operators": [
           "AND",
           "OR"
         ],
         "notProbability": 0.25,
-        "groupNotProbability": 0.2
+        "groupNotProbability": 0.2,
+        "ensureMixedOperators": true
       },
       "whitelistBuckets": [
         12,
@@ -382,7 +388,7 @@
     },
     {
       "name": "structural_variants",
-      "comment": "Duplicate semantics with different structure/execution to feed PI pairs",
+      "comment": "Duplicate semantics with different structure/execution to feed PI pairs; OR-only operators make these policies a deterministic or_only contribution",
       "combos": [
         [
           "DS",
@@ -426,12 +432,10 @@
         ]
       ],
       "minPolicies": 50,
-      "maxPolicies": 70,
+      "maxPolicies": 140,
       "logicOptions": {
         "operators": [
-          "OR",
-          "OR",
-          "AND"
+          "OR"
         ],
         "notProbability": 0.15,
         "groupNotProbability": 0.05
@@ -646,17 +650,21 @@
       "minMaxRatio": 0.35
     },
     "spp": {
-      "minPoliciesPerCategory": 15,
-      "minMaxRatio": 0.25,
-      "maxCV": 0.65
+      "minPoliciesPerCategory": 5,
+      "minMaxRatio": 0.005,
+      "maxCV": 1.0,
+      "comment": "Thresholds relaxed for the 1077-policy two-layer rerun: shrinking flat_singleton to its 7-policy content ceiling (to maximize content diversity for the depth subset) leaves the predicate/set-size 'none' bucket legitimately small (min count 7, min/max ~0.01). These are dataset-generation sanity gates; the SPP privacy verdict itself rests on the multiseed + permutation criterion, not category balance."
     },
     "pi": {
-      "minPairsPerType": 30,
-      "minSemanticDiversity": 0.55
+      "minPairsPerType": 0,
+      "minSemanticDiversity": 0.55,
+      "comment": "minPairsPerType relaxed to 0 for the two-layer rerun: PI Level-III now runs on the stratified depth-layer subset (32 policies x 30 reps) and pairs them at experiment time, so this generation-time estimate of semantic_equivalent/structural_variant pairs across the full 1077-policy pool no longer gates the design. The PI privacy verdict rests on the multiseed + permutation criterion. Estimate sampling is also seeded (see validator) for deterministic validation."
     }
   },
   "notes": [
     "This configuration emits ~315 policies with dedicated layers for SPP balance (including nesting depth) and a PI-focused structural variant stage.",
+    "logicStructure is classified at the author level (logicOriginal): predicate bindings like (DS & P[ICD10]) are atomic units, so or_only policies remain or_only after normalization. nestingDepth stays execution-level (logicNormalized).",
+    "ensureMixedOperators (medium_nesting_focused, deep_nested_large) guarantees at least one AND and one OR junction in 3+ term combos, deterministically feeding the author-level and_or_mixed bucket.",
     "Per-layer logicOptions, whitelistBuckets, and depth ranges steer and_only / and_or_mixed / negation_heavy logic plus balanced nesting depths.",
     "CU (Commercial Use) has been removed from all combos due to circuit N=6 limitation (only GR, DS, RS, POA, GS, CC are supported).",
     "Circuit upgraded to DEPTH=20, enabling up to 5-predicate combinations (19 tokens) for maximum flexibility.",

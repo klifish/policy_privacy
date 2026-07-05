@@ -30,7 +30,7 @@ const {
 const {
   generateDataset: generatePCHDataset,
   DUO_TERMS
-} = require('../policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const {
   annotatePolicy,
@@ -318,9 +318,20 @@ function validateSPPRequirements(dataset, config) {
   const allBalanceMetrics = {};
   const issues = [];
 
+  // Dimensions listed here are reported but not validated (e.g. rangeWidths
+  // when the config exercises no range predicates).
+  const skipDimensions = config.validation.spp.skipDimensions ?? ['rangeWidths'];
+
   dimensions.forEach(dim => {
     console.log(`\n  ${dim.name}:`);
-    const distribution = summary[dim.key] || {};
+
+    // Zero-fill from the category enum so empty categories are visible and
+    // counted — a missing category must fail the min-count check.
+    const observed = summary[dim.key] || {};
+    const distribution = {};
+    Object.values(dim.values).forEach(category => {
+      distribution[category] = observed[category] || 0;
+    });
 
     Object.entries(distribution).forEach(([category, count]) => {
       const pct = ((count / policies.length) * 100).toFixed(1);
@@ -332,6 +343,11 @@ function validateSPPRequirements(dataset, config) {
     allBalanceMetrics[dim.key] = metrics;
 
     console.log(`    Balance: min/max=${metrics.minMaxRatio}, CV=${metrics.coefficientOfVariation}`);
+
+    if (skipDimensions.includes(dim.key)) {
+      console.log(`    (validation skipped for this dimension)`);
+      return;
+    }
 
     // Validation
     const minThreshold = config.validation.spp.minPoliciesPerCategory;
@@ -374,11 +390,22 @@ function validatePIRequirements(dataset, config) {
   // Aggregate by policy
   const policies = aggregatePoliciesByDefinition(dataset);
 
-  // Sample subset of policies (without replacement) to estimate pair distribution
+  // Sample subset of policies (without replacement) to estimate pair distribution.
+  // Use a seeded RNG (derived from the config seed) so validation is deterministic
+  // — otherwise the pair-type estimate (and hence pass/fail) varies run to run.
   const sampleSize = Math.min(80, policies.length);
+  let piSeed = 0;
+  const seedStr = String(config.seed ?? 'pi-validation');
+  for (let k = 0; k < seedStr.length; k++) {
+    piSeed = (piSeed * 31 + seedStr.charCodeAt(k)) >>> 0;
+  }
+  const piRng = () => {
+    piSeed = (piSeed * 1103515245 + 12345) & 0x7fffffff;
+    return piSeed / 0x7fffffff;
+  };
   const shuffled = policies.slice();
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(piRng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   const sampledPolicies = shuffled.slice(0, sampleSize);
@@ -512,6 +539,10 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   const dataset = await generatePCHDataset({
     policyCount: normalizedConfig.policyCount,
     executionsPerPolicy: normalizedConfig.executionsPerPolicy,
+    coverageExecutions: normalizedConfig.coverageExecutions ?? null,
+    depthExecutions: normalizedConfig.depthExecutions ?? null,
+    depthSubsetPerStructure: normalizedConfig.depthSubsetPerStructure ?? 8,
+    depthStructures: normalizedConfig.depthStructures,
     satisfyRatio: normalizedConfig.satisfyRatio,
     seed: normalizedConfig.seed,
     semanticLayers: normalizedConfig.semanticLayers,

@@ -24,7 +24,13 @@ from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mu
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
-DEFAULT_DATA_DIR = Path(__file__).parents[1] / "data"
+# Read the authoritative unified export directly (not the derived python/data
+# copy, which can lag behind dataset regenerations such as the trivial split).
+# pch_icd10_debias.py imports this DEFAULT_DATA_DIR, so it inherits the change.
+DEFAULT_DATA_DIR = (
+    Path(__file__).resolve().parents[2]
+    / "experiments" / "unified" / "artifacts_data" / "polygonAmoy"
+)
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "pch_clustering_analysis"
 
 

@@ -1,0 +1,41 @@
+\section{Discussion}
+\label{sec:discussion}
+
+The evaluation indicates that TPS-ZKPI removes recoverable policy-dependent
+signals from normalized public-chain artifacts. Across all PCH, PI, and SPP
+tasks, supervised classifiers stay below the multi-seed permutation-test
+leakage criterion, and clustering ARI is statistically indistinguishable from
+zero. The gas-padding ablation (Section~\ref{sec:eval-ablation})
+sharpens this conclusion: the same attacks become measurably effective once
+normalization is disabled, which attributes the protection specifically to
+transcript normalization rather than to weak attacks or insufficient sample
+size. Together with fixed-length policy representation, reusable interpretation,
+and commitment binding, these mechanisms limit the extent to which public-chain
+observers infer hidden policy content or structural properties from
+authorization transactions.
+
+These results support a scoped privacy claim. The evaluation focuses on a
+metadata-only public-chain adversary that observes commitments, proofs,
+public parameters, calldata, events, and gas-related artifacts, but not TPS-side
+witness construction or off-chain policy material. Within this scope,
+transcript normalization eliminates the recoverable policy-dependent signals
+we are able to measure across PCH, PI, and SPP, at a gas-cost overhead of
+roughly $38$--$40\%$. We do not claim distinguishability is information-theoretically
+zero; rather, no modeled attacker recovers it above the chance baseline.
+Stronger adversaries, such as compromised proof services, adaptive
+requester-side probing, or off-chain side channels, remain outside the current
+evaluation scope and motivate the reduced-trust extensions discussed below.
+
+The TPS trust assumption is the main architectural tradeoff. By moving
+confidentiality-sensitive proof generation to the TPS, TPS-ZKPI avoids exposing
+policy-bound proving material to requesters or public smart contracts, while
+preserving on-chain verifiability through zero-knowledge proof verification.
+However, this shifts part of the confidentiality burden to the service layer, and the
+provider-operated TPS used in the current evaluation concentrates that burden at the
+provider rather than at an independent service. Independently of how the TPS is
+instantiated, liveness and accountability remain unchanged: the TPS or provider can
+refuse to produce a proof, which may be indistinguishable from a legitimate denial at
+the on-chain interface. Future work should investigate accountable proof obligations, such as on-chain commitments to serve requests plus timeout-with-evidence mechanisms, as well as reduced-trust TPS designs.
+A distributed proof service is essentially a collaborative-SNARK direction in which no
+single service sees both inputs, while a TEE-backed service makes the word ``trusted''
+concrete through hardware attestation.

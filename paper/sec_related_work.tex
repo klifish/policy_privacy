@@ -1,0 +1,90 @@
+\section{Related Work}
+\label{sec:related-work}
+
+Existing work addresses important fragments of policy-private consent
+enforcement, but not their combination under public-chain observability.
+Encrypted data-sharing mechanisms, such as Ciphertext-Policy Attribute-Based
+Encryption (CP-ABE) and proxy re-encryption (PRE)~\cite{bethencourt2007ciphertext,ateniese2006improved},
+protect access to data. However, CP-ABE-style ciphertext policies may expose
+policy-related structures, while PRE-based delegation may reveal authorization
+patterns outside the protection target of data encryption. Transaction-privacy
+systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented
+systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec},
+provide public verification over private transaction witnesses, but they mainly
+target asset ownership, values, or participant relationships rather than compliance
+with a data-owner-controlled consent policy.
+
+Hidden-policy access-control work reduces direct policy exposure by using encrypted
+policies, hidden-policy ABE variants, off-chain matching, or policy-holder
+components~\cite{bethencourt2007ciphertext,wu2023blockchain,hu2023access}. Functional
+encryption gives a more general cryptographic abstraction for revealing function
+outputs while hiding inputs~\cite{boneh2011functional}. Private-state blockchain
+systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or
+execution through encrypted state and trusted execution environments~\cite{secretnetwork_docs,cheng2019ekiden}.
+These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI
+targets a more specific setting: hiding consent policies on a public chain while
+retaining public verifiability of each authorization decision. Even where policies are
+hidden, existing designs may still leak policy-dependent artifacts through ciphertext
+structures, policy-update transactions, authorization workflows, or repeated
+interactions. Moreover, many target permissioned or off-chain settings, where the
+observability assumptions are weaker than on public blockchains.
+
+Privacy-preserving access-control and policy-evaluation mechanisms have been
+studied in credential-based and XACML/SAML settings~\cite{ardagna2009xacml},
+as well as in multi-party policy evaluation using homomorphic encryption and
+secure function evaluation~\cite{sheikhalishahi2019privacy}. These
+approaches support confidential authorization computation, but they are not primarily
+designed for settings where policy-evaluation artifacts are permanently and globally
+visible through a public blockchain. In public-blockchain consent
+enforcement, calldata, public inputs, emitted events, timing, and gas usage are
+observable to any party. In addition, these approaches do not directly provide
+compact evidence that a smart contract can verify against a committed, data-owner-controlled
+policy instance.
+
+Reusable proving systems, including universal-setup SNARKs, composable proof
+systems, and zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno},
+improve maintainability by reducing the need for policy-specific circuits or
+verifier contracts. However, when deployed for public-chain consent
+enforcement, reusable proving alone does not guarantee policy privacy:
+policy-dependent program representations, public inputs, calldata layouts, logs,
+or gas profiles may still remain observable. This motivates TPS-ZKPI's use of
+a domain-specific reusable policy interpreter, which preserves proof reuse
+while exposing only a constrained public verification interface.
+
+Public-chain metadata-leakage studies show that cryptographic privacy
+guarantees may be weakened by observable transaction-level artifacts such as
+timing and volume patterns~\cite{miller2023vtbc}. Techniques such as batching,
+decoys, and traffic shaping can reduce some observable signals, but they are
+usually designed for payment privacy, anonymity sets, or transaction-linkability
+settings. They do not directly provide hidden-policy compliance verification
+or auditable consent enforcement. In contrast, TPS-ZKPI treats metadata leakage as
+part of the policy-privacy objective rather than as a separate transaction-level concern.
+
+Existing approaches protect data, transactions, authorization computation, proof
+reuse, or metadata in isolation, whereas policy-private consent enforcement under
+public-chain observability requires policy confidentiality, metadata-leakage control,
+verifiable auditability, and a stable verification interface for evolving
+Boolean-based consent policies to hold together. Table~\ref{tab:related-work-gap}
+summarizes this positioning.
+
+\begin{table*}[t]
+    \centering
+    \caption{Positioning of representative approaches against policy-private
+    consent enforcement under public-chain observability. ``Yes'' indicates explicit
+    support, ``Partial'' indicates indirect or incomplete support, and ``No''
+    indicates that the dimension is not addressed; assumptions in parentheses are
+    part of the claim.}
+    \label{tab:related-work-gap} \footnotesize
+    \begin{tabular}{p{0.2\linewidth}p{0.1\linewidth}p{0.1\linewidth}p{0.1\linewidth}p{0.4\linewidth}}
+        \hline
+        \textbf{Approach}                                                                                                                        & \textbf{Policy confidentiality} & \textbf{Metadata-leakage mitigation} & \textbf{Verifiable auditability} & \textbf{Main limitation}                                                                                                                  \\
+        \hline
+        Data / transaction privacy~\cite{bethencourt2007ciphertext,ateniese2006improved,sasson2014zerocash,rondelet2019zeth,williamson2018aztec} & Partial                         & Partial                              & Partial                          & Protects encrypted data access or transaction semantics, but not the governing consent policy or policy-dependent authorization workflow. \\
+        Hidden-policy access control~\cite{hu2023access}                                                                                         & Partial                         & Partial                              & Partial                          & Reduces direct policy exposure, but may leak through workflows, updates, or policy-holder interactions.                                   \\
+        MPC / HE policy evaluation~\cite{ardagna2009xacml,sheikhalishahi2019privacy}                                                             & Yes                             & No                                   & Partial                          & Supports confidential computation, but usually lacks public-chain-verifiable authorization evidence.                                      \\
+        Universal SNARKs / zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}                                                     & No                              & Partial                              & Yes                              & Supports proof reuse and public verification, but does not by itself hide policy-dependent public artifacts.                              \\
+        Metadata-leakage defenses~\cite{miller2023vtbc}                                                                                          & No                              & Yes                                  & No                               & Models or mitigates observable signals, but does not provide hidden-policy consent enforcement.                                           \\
+        TPS-ZKPI                                                                                                                                 & Yes (under TPS trust)           & Yes                                  & Yes                              & Provides policy-private, metadata-aware, verifiable consent enforcement under the stated TPS trust assumption.                            \\
+        \hline
+    \end{tabular}
+\end{table*}

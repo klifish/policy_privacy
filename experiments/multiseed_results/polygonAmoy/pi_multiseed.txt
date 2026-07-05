@@ -1,0 +1,12 @@
+Multi-seed PI single-sample evaluation (30 seeds, policy-disjoint split, testRatio=0.2, permIter=500)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (permutation α=0.05).
+
+Scope                 | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | medN  | role
+----------------------+-----------------+---------+-----------------+---------+-------+------------------------
+overall               | 0.507 ± 0.031   | 3%      | 0.516 ± 0.030   | 10%     | 270   | gating
+semantic_equivalent   | 0.498 ± 0.087   | 10%     | 0.511 ± 0.082   | 13%     | 71    | gating
+structural_variant    | 0.488 ± 0.051   | 0%      | 0.524 ± 0.071   | 0%      | 40    | gating
+weak_equivalent       | 0.486 ± 0.077   | 0%      | 0.494 ± 0.085   | 7%      | 54.5  | gating
+controlled_difference | 0.510 ± 0.076   | 3%      | 0.508 ± 0.071   | 7%      | 68    | diagnostic, non-gating
+----------------------+-----------------+---------+-----------------+---------+-------+------------------------
+Reading: real PI scopes remain near chance; controlled_difference is diagnostic and non-gating.

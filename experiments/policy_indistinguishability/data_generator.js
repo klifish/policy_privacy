@@ -13,7 +13,7 @@ const {
   generateDataset,
   executeDataset,
   DUO_TERMS
-} = require('../policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const DEFAULT_PAIR_TARGETS = Object.freeze({
   semantic_equivalent: 5,
@@ -22,20 +22,10 @@ const DEFAULT_PAIR_TARGETS = Object.freeze({
   controlled_difference: 5
 });
 
-// Observable on-chain features only (excluding proofGenerationTime - client-side only)
-const FEATURE_KEYS = Object.freeze([
-  'commitGasUsed',
-  'commitCalldataLength',
-  'accessGasUsed',
-  'accessCalldataLength',
-  'proofSize',
-  // 'proofGenerationTime',  // EXCLUDED: Not observable on-chain (client-side timing)
-  'commitLogsCount',
-  'commitLogsSize',
-  'accessLogsCount',
-  'accessLogsSize',
-  'blockDifference'
-]);
+// Observable on-chain feature keys — single source of truth in ./feature_keys
+// (a light constants module the parallel verdict worker can load without this
+// hardhat-pulling generator). Re-exported below for existing importers.
+const { FEATURE_KEYS } = require('./feature_keys');
 
 /**
  * Helper – convert execution feature bag to numeric vector.

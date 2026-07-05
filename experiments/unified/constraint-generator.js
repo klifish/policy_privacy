@@ -14,7 +14,7 @@
 const {
   generateDataset: generatePCHDataset,
   DUO_TERMS
-} = require('./policy_content_hiding/data_generator');
+} = require('../core/data_generator');
 
 const {
   annotatePolicy,

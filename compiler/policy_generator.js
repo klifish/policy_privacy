@@ -654,6 +654,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   const attributeDefs = resolveAttributeDefinitions(attributeOrder);
 
   const attributeCtx = buildAttributeContext(attributeDefs, config.attributes || {});
+  // console.log(`Attribute context: ${JSON.stringify(attributeCtx, null, 2)}`);
   const predicateCtx = buildPredicateContext(config.predicates || []);
 
   predicateCtx.slots.forEach((slotInfo) => {
@@ -675,12 +676,17 @@ async function generatePolicyArtifacts(config, options = {}) {
   });
 
   const tokens = tokenizeLogic(config.logic);
+  // console.log(`Tokenized logic: ${tokens.map((t) => t.value).join(' ')}`);
   const baseRpn = infixToRPN(tokens);
+  // console.log(baseRpn.map((t) => `${t.type}(${t.value})`).join(' '));
   const ast = rpnToAst(baseRpn);
+  // console.log(`Parsed AST: ${JSON.stringify(ast, null, 2)}`);
 
   const boundAst = bindAttributes(ast, attributeCtx);
+  // console.log(`AST after attribute binding: ${JSON.stringify(boundAst, null, 2)}`);
 
   const expandedRpn = astToRPN(boundAst);
+  // console.log(`Final RPN tokens after binding: ${expandedRpn.map((t) => `${t.type}(${t.value})`).join(' ')}`);
   const numericTokens = rpnToNumeric(expandedRpn, attributeCtx, predicateCtx);
 
   if (numericTokens.length > depth) {

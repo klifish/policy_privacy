@@ -1,0 +1,34 @@
+% Sources of record:
+%   PCH-DUO:   python/results/pch_clustering_analysis/pch_global_duo_clustering.csv
+%              (global, all 2005 executions, no layering)
+%   PCH-ICD10: python/results/pch_clustering_analysis/pch_global_icd10_clustering.csv
+%              (global, all 920 ICD-bearing executions, no layering)
+%   PI:        python/results/pi_clustering_analysis/pi_balanced_debiased.csv
+%              (133 balanced 30v30 pairs; observed means)
+%   SPP:       python/results/spp_clustering_analysis/spp_clustering_summary.csv
+% Dataset: Polygon Amoy, exported to python/data/polygonAmoy/ (same executions as the
+%   supervised verdicts). See paper/README.md provenance.
+\begin{table}[t]
+  \centering
+  \caption{Unsupervised clustering attack (K-Means, $K$=number of classes / $K{=}2$ for
+    pairs) on the on-chain gas features. ARI and NMI near $0$ mean the natural gas
+    clusters carry no information about the hidden label; NMI is interpreted against
+    the null simulation in Section~\ref{sec:eval-nmi-sensitivity}. PCH clusters all
+    executions globally (no layering).}
+  \label{tab:clustering-summary}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}llcccc@{}}
+    \toprule
+    Property & Target & $n$ & \#cls. & ARI & NMI \\
+    \midrule
+    PCH & DUO terms                & $2005$ & $6$  & $0.0002$  & $0.0036$ \\
+    PCH & ICD-10 chapters          & $920$  & $10$ & $-0.0010$ & $0.0181$ \\
+    PI  & policy pairs ($30$v$30$) & $133$  & $2$  & $0.0015$  & $0.0136$ \\
+    SPP & logicStructure           & $1141$ & $4$  & $-0.0007$ & $0.0022$ \\
+    SPP & nestingDepth             & $1141$ & $4$  & $-0.0002$ & $0.0018$ \\
+    SPP & predicateCount           & $1141$ & $4$  & $-0.0008$ & $0.0015$ \\
+    SPP & setSize                  & $1141$ & $4$  & $-0.0013$ & $0.0019$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -22,7 +22,6 @@ EXECUTIONS_PER_POLICY=3
 NUM_DUO_TERMS=3
 TEST_RATIO=0.3
 AUC_THRESHOLD=0.55
-ADVANTAGE_THRESHOLD=0.05
 
 echo "Configuration:"
 echo "  Policy Count: $POLICY_COUNT"
@@ -30,7 +29,6 @@ echo "  Executions per Policy: $EXECUTIONS_PER_POLICY"
 echo "  DUO Terms: $NUM_DUO_TERMS"
 echo "  Test Ratio: $TEST_RATIO"
 echo "  AUC Threshold: $AUC_THRESHOLD"
-echo "  Advantage Threshold: $ADVANTAGE_THRESHOLD"
 echo ""
 
 # Create output directory
@@ -48,7 +46,6 @@ node experiments/policy_content_hiding/run_experiment.js \
   --num-duo-terms "$NUM_DUO_TERMS" \
   --test-ratio "$TEST_RATIO" \
   --auc-threshold "$AUC_THRESHOLD" \
-  --advantage-threshold "$ADVANTAGE_THRESHOLD" \
   --output "$OUTPUT_DIR" \
   --evaluate-dataset
 

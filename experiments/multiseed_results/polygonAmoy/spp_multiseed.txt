@@ -1,0 +1,20 @@
+
+Multi-seed SPP supervised evaluation (30 seeds, policy-disjoint split, balance=both, permIter=200)
+Honest headline = permutation p-value + RF advantage. LR advantage is unstable on imbalanced test sets (read with f1).
+
+Contrast                              | LR acc          | LR adv          | LR f1           | perm p mean±std | %sig | RF adv          | n
+--------------------------------------+-----------------+-----------------+-----------------+-----------------+------+-----------------+----
+paramType: medium/large               | 0.510 ± 0.119   | 0.074 ± 0.093   | 0.278 ± 0.091   | 0.409 ± 0.390   | 37%  | 0.207 ± 0.044   | 30
+paramType: small/large                | 0.517 ± 0.044   | 0.038 ± 0.029   | 0.458 ± 0.116   | 0.753 ± 0.282   | 0%   | 0.029 ± 0.022   | 30
+paramType: small/medium               | 0.468 ± 0.045   | 0.043 ± 0.035   | 0.533 ± 0.077   | 0.568 ± 0.318   | 7%   | 0.204 ± 0.052   | 30
+predicateCombo: few/many              | 0.531 ± 0.095   | 0.083 ± 0.057   | 0.228 ± 0.064   | 0.421 ± 0.362   | 20%  | 0.284 ± 0.050   | 30
+predicateCombo: single/few            | 0.491 ± 0.061   | 0.051 ± 0.035   | 0.568 ± 0.102   | 0.629 ± 0.345   | 3%   | 0.219 ± 0.040   | 30
+predicateCombo: single/many           | 0.505 ± 0.047   | 0.039 ± 0.027   | 0.377 ± 0.069   | 0.566 ± 0.347   | 13%  | 0.029 ± 0.022   | 30
+structureType: and_only/and_or_mixed  | 0.497 ± 0.055   | 0.041 ± 0.037   | 0.368 ± 0.094   | 0.545 ± 0.381   | 20%  | 0.045 ± 0.037   | 30
+structureType: and_only/negation_heavy | 0.533 ± 0.059   | 0.040 ± 0.055   | 0.488 ± 0.100   | 0.734 ± 0.282   | 0%   | 0.030 ± 0.041   | 30
+structureType: and_only/or_only       | 0.490 ± 0.027   | 0.024 ± 0.015   | 0.480 ± 0.138   | 0.691 ± 0.359   | 10%  | 0.047 ± 0.027   | 30
+structureType: negation_heavy/and_or_mixed | 0.503 ± 0.051   | 0.041 ± 0.031   | 0.390 ± 0.071   | 0.207 ± 0.288   | 40%  | 0.044 ± 0.031   | 30
+structureType: or_only/and_or_mixed   | 0.527 ± 0.087   | 0.065 ± 0.064   | 0.299 ± 0.107   | 0.332 ± 0.374   | 47%  | 0.074 ± 0.038   | 30
+structureType: or_only/negation_heavy | 0.536 ± 0.035   | 0.040 ± 0.029   | 0.454 ± 0.073   | 0.478 ± 0.295   | 3%   | 0.041 ± 0.051   | 30
+--------------------------------------+-----------------+-----------------+-----------------+-----------------+------+-----------------+----
+Reading: privacy holds for a contrast when perm p ≫ 0.05 (low %sig) and RF adv ≈ 0, regardless of the noisy LR advantage.
