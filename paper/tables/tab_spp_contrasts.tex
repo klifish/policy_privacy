@@ -10,7 +10,7 @@
 % table* spans both columns (the 6-column rows with two mean+-std columns overflow a single column).
 \begin{table*}[t]
   \centering
-  \caption{Structure \& Parameter Privacy: 22 pairwise contrasts across three annotation
+  \caption{Structure \& Parameter Privacy: 28 pairwise contrasts across four annotation
     axes, each over 30 policy-disjoint seeds. AUC is the higher-scoring of logistic
     regression and random forest per contrast (the stronger-attacker leg used for
     gating). Every contrast satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and}
@@ -18,7 +18,7 @@
   \label{tab:spp-contrasts}
   \begin{tabular}{lccccc}
     \toprule
-    Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ \\
+    Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
     \midrule
     \multicolumn{6}{l}{\textit{structureType}} \\
     trivial / or\_only                & $0.498 \pm 0.043$ & $0.036 \pm 0.024$ & $0.519$ & $3\%$  & $154$ \\
@@ -48,7 +48,15 @@
     small / large   & $0.527 \pm 0.036$ & $0.037 \pm 0.027$ & $0.336$ & $3\%$  & $139$ \\
     medium / large  & $0.499 \pm 0.031$ & $0.025 \pm 0.017$ & $0.510$ & $3\%$  & $277$ \\
     \midrule
-    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 22 contrasts)} \\
+    \multicolumn{6}{l}{\textit{nestingDepth}} \\
+    flat / shallow   & $0.501 \pm 0.048$ & $0.035 \pm 0.033$ & $0.471$ & $3\%$ & $227$ \\
+    flat / medium    & $0.513 \pm 0.051$ & $0.043 \pm 0.031$ & $0.430$ & $3\%$ & $104$ \\
+    flat / deep      & $0.491 \pm 0.046$ & $0.039 \pm 0.026$ & $0.543$ & $0\%$ & $103$ \\
+    shallow / medium & $0.493 \pm 0.047$ & $0.037 \pm 0.031$ & $0.533$ & $3\%$ & $239$ \\
+    shallow / deep   & $0.485 \pm 0.043$ & $0.036 \pm 0.028$ & $0.597$ & $3\%$ & $236$ \\
+    medium / deep    & $0.497 \pm 0.049$ & $0.040 \pm 0.029$ & $0.508$ & $0\%$ & $115$ \\
+    \midrule
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 28 contrasts)} \\
     \bottomrule
   \end{tabular}
 \end{table*}

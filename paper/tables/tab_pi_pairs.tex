@@ -8,11 +8,11 @@
   \centering
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
     policy-disjoint seeds, by policy-pair archetype. \texttt{controlled\_difference} is
-    reported as a diagnostic regression control and excluded from the PI verdict.}
+    reported as a diagnostic control and excluded from the PI verdict.}
   \label{tab:pi-pairs}
   \begin{tabular}{lcccccc}
     \toprule
-    Pair archetype & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & perm $p$ & \%sig & med $n$ & verdict \\
+    Pair archetype & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ & verdict \\
     \midrule
     overall               & $0.516 \pm 0.030$ & $0.026 \pm 0.022$ & $0.367$ & $10\%$ & $270$  & \checkmark \\
     semantic\_equivalent  & $0.511 \pm 0.082$ & $0.070 \pm 0.045$ & $0.456$ & $13\%$ & $71$   & \checkmark \\

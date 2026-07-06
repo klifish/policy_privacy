@@ -477,7 +477,7 @@ async function runExperiment(config = {}) {
   // decided here. The single split's raw accuracy advantage was unstable on imbalanced
   // test sets (degenerate majority-class predictors scored high advantage with
   // f1=0 while the permutation test showed no signal), causing spurious FAILs.
-  const targetAttributes = ['structureType', 'predicateCombo', 'paramType'];
+  const targetAttributes = ['structureType', 'predicateCombo', 'paramType', 'nestingDepth'];
   const multiseedSeeds = config.multiseedSeeds ?? 30;
   const permIterations = config.permutationIterations || 200;
   const seedCtx = {

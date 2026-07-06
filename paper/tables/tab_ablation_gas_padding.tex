@@ -5,46 +5,43 @@
 % Bootstrap: 500 iterations, seed 20260625; effect = |AUC_B1-0.5| - |AUC_B2-0.5|.
 % This table is ILLUSTRATIVE: the four supervised rows are representative contrasts whose
 % bootstrap 95% CI of dLeak excludes zero (genuine reduction). They are NOT the full set.
-% The full per-contrast distribution (all 39 rf + 39 lr contrasts, colored by dLeak CI
+% The full per-contrast distribution (all 49 rf + 49 lr contrasts, colored by dLeak CI
 % sign) is the primary evidence and lives in Fig. fig:ablation-paired
 % (python/clustering_analysis/plot_ablation_paired.py). Full-set counts, for reference:
-%   RF: 19 reduce / 14 no-eff / 6 neg;  LR: 26 reduce / 11 no-eff / 2 neg.
-\begin{table}[t]
+%   RF: 36 reduce / 7 no-eff / 6 neg;  LR: 42 reduce / 6 no-eff / 1 neg.
+\begin{table*}[t]
   \centering
   \caption{Gas-padding ablation on Polygon Amoy: representative contrasts illustrating the
-    padding effect. B1 (no commit/access gas padding) and B2 (deployed, randomized
-    access-gas padding) are aligned on the same policy set. Supervised AUC is the calibrated
-    random-forest score; clustering reports K-Means ARI.
-    $\Delta_{\text{leak}}=|\mathrm{AUC}_{\mathrm{B1}}-0.5|-|\mathrm{AUC}_{\mathrm{B2}}-0.5|>0$
-    means padding moved the attacker toward chance; $\Delta_{\text{leak}}$ rows show the
-    bootstrap mean with $95\%$ CI ($500$ iterations). The four supervised rows are examples
-    on which B1 carries a genuine gas-channel signal (bootstrap $\Delta_{\text{leak}}$ CI
-    excludes zero), where a padding effect can be measured; the full per-contrast
-    distribution over \emph{all} contrasts is in Figure~\ref{fig:ablation-paired}. Where a
-    recoverable signal is present, padding drives it back toward the chance baseline.}
+    padding effect. B1 (no gas padding) and B2 (deployed, randomized access-gas padding) are
+    aligned on the same policy set. Supervised AUC is the random-forest score (the stronger
+    of the two classifiers here; see Section~\ref{sec:eval-method}); clustering reports K-Means ARI.
+    $\Delta_{\text{leak}}>0$ (defined in the text) means padding moved the attacker toward chance,
+    reported as bootstrap mean with $95\%$ CI. Each supervised row is, per experiment, the
+    largest-signal contrast whose $\Delta_{\text{leak}}$ CI excludes zero (two for SPP), chosen to
+    avoid cherry-picking. The full per-contrast distribution is in Figure~\ref{fig:ablation-paired}.}
   \label{tab:ablation-gas-padding}
-  \begin{tabular}{lp{0.30\linewidth}cc}
+  \begin{tabular}{lp{0.34\linewidth}cc}
     \toprule
     Attack & Target & B1 (unpad.) & B2 (pad.) \\
     \midrule
-    \multicolumn{4}{l}{\emph{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ CI)} \\
-    SPP   & \texttt{paramType none/small}    & $0.812$ & $0.414$ \\
-          & \quad $\Delta_{\text{leak}}=0.127$ CI$[0.055,0.201]$ & & \\
-    SPP   & \texttt{structure and/neg-heavy} & $0.759$ & $0.465$ \\
-          & \quad $\Delta_{\text{leak}}=0.195$ CI$[0.173,0.217]$ & & \\
+    \multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ CI)} \\
+    SPP   & \texttt{nestingDepth flat/medium}   & $0.847$ & $0.486$ \\
+          & \quad $\Delta_{\text{leak}}=0.304$ CI$[0.262,0.340]$ & & \\
+    SPP   & \texttt{structureType trivial/and\_or\_mixed} & $0.846$ & $0.504$ \\
+          & \quad $\Delta_{\text{leak}}=0.291$ CI$[0.259,0.327]$ & & \\
     PCH   & DUO POA                          & $0.616$ & $0.491$ \\
           & \quad $\Delta_{\text{leak}}=0.092$ CI$[0.071,0.114]$ & & \\
     PI    & \texttt{controlled\_difference}  & $0.611$ & $0.515$ \\
           & \quad $\Delta_{\text{leak}}=0.102$ CI$[0.076,0.129]$ & & \\
     \midrule
-    \multicolumn{4}{l}{\emph{Unsupervised} (K-Means ARI)} \\
+    \multicolumn{4}{l}{\textbf{Unsupervised} (K-Means ARI)} \\
     PCH   & ICD-10 chapter                   & $0.064$ & $-0.005$ \\
-    SPP   & logic structure                  & $0.067$ & $-0.006$ \\
+    SPP   & logic structure                  & $0.043$ & $-0.001$ \\
     SPP   & predicate count                  & $0.054$ & $0.001$  \\
     \midrule
-    \multicolumn{4}{l}{\emph{Gas cost} (mean, B1 $\to$ B2)} \\
+    \multicolumn{4}{l}{\textbf{Gas cost} (mean, B1 $\to$ B2)} \\
     \multicolumn{2}{l}{Commit gas} & $216{,}562$ & $303{,}556$ ($+40.2\%$) \\
     \multicolumn{2}{l}{Access gas} & $546{,}876$ & $753{,}310$ ($+37.7\%$) \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}

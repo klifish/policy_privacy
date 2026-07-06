@@ -2,81 +2,48 @@
 \subsection{Attack methodology}
 \label{sec:eval-method}
 
-We evaluate each privacy property with a primary supervised attack and a complementary
-unsupervised cross-check. The \emph{supervised} pipeline asks whether a trained
-classifier can recover a hidden label from the observables; this is the main privacy
-verdict because it gives the adversary labels and therefore more power than a purely
-exploratory analysis. The \emph{unsupervised} pipeline asks whether the observables
-cluster along the hidden label without any supervision, providing a label-free sanity
-check on the same executions.
+We evaluate each privacy property with a primary supervised attack and a complementary unsupervised cross-check. 
+The \emph{supervised} pipeline asks whether a trained classifier can recover a hidden label from the observables; this is the main privacy verdict because it gives the adversary labels and therefore more power than a purely exploratory analysis. 
+The \emph{unsupervised} pipeline asks whether the observables cluster along the hidden label without any supervision, providing a label-free sanity check on the same executions.
+Both pipelines run on the same fixed-circuit, commitment-only, access-gas-padded \emph{Polygon~Amoy} dataset: the supervised numbers reported in this paper are read from \texttt{experiments/multiseed\_results/polygonAmoy/}, and the clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs).
+The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review); the paths above are relative to its root, and provenance for every table and figure is listed in its \texttt{README.md}.
 
 \subsubsection{Supervised attacks}
-For every task we train linear and non-linear classifiers and report the score used by
-the unified verdict for that property. Each task is evaluated over \textbf{30 random
-seeds} using a \textbf{policy-disjoint train/test split}: the policies used to train the
-attacker never appear in the test set, so a high score cannot come from memorizing
-individual policies. For each seed we run a label-permutation test and record whether
-the AUC is significant at $\alpha{=}0.05$.
+For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score used by the unified verdict for that property.
+Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split}: the policies used to train the attacker never appear in the test set, so a high score cannot come from memorizing
+individual policies. 
+For each seed we run a label-permutation test and record whether the AUC is significant at $\alpha{=}0.05$.
 
-The headline metrics are the AUC, its distance from chance averaged over seeds,
-$\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap), and the
-permutation $p$-value. Because the gap averages per-seed absolute deviations, it is
-generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
-This AUC gap is an empirical, sample-estimated diagnostic, not the advantage of a
-formal cryptographic distinguisher and not a proven security bound.
+The headline metrics are the AUC, its distance from chance averaged over seeds, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap), and the permutation $p$-value averaged over seeds ($p_{\mathrm{perm}}$). Because the gap averages per-seed absolute deviations, it is generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
+The mean permutation $p$-value $p_{\mathrm{perm}}$ is reported as a diagnostic only; gating uses the significant-seed fraction---the fraction of seeds whose per-seed test rejects at $\alpha{=}0.05$---defined below, not this pooled $p_{\mathrm{perm}}$.
+This AUC gap is an empirical, sample-estimated diagnostic, not the advantage of a formal cryptographic distinguisher and not a proven security bound.
 The unified verdict is:
 %
 \begin{quote}
-  \textbf{FAIL} iff $\mathrm{AUC}_{\text{mean}}>0.55$ \textbf{and} the
-  significant-seed fraction is $\ge 0.5$ (over 30 policy-disjoint seeds);
+  \textbf{FAIL} iff $\mathrm{AUC}_{\text{mean}}>0.55$ \textbf{and} the significant-seed fraction is $\ge 0.5$ (over 30 policy-disjoint seeds);
   \textbf{PASS} otherwise.
 \end{quote}
 %
-Both legs are required: high classification power that is not statistically reproducible
-across seeds (or reproducible significance with chance-level AUC) does not constitute a
-leak.
-Subclasses whose median test size is $n<20$ are \emph{underpowered}---reported but
-excluded from gating, so a tiny subclass's noise cannot decide the verdict.
-The result tables report the AUC selected by the committed verdict file for each task.
-SPP gates on both a logistic-regression and a random-forest classifier, and a task fails
-if either classifier clears the double criterion. Because logistic regression
-over-separates on the near-constant SPP features and yields a degenerate AUC, the
-operative AUC signal comes from the calibrated random-forest score.
+Both legs of this \emph{double criterion} are required: high classification power that is not statistically reproducible across seeds (or reproducible significance with chance-level AUC) does not constitute a leak.
 
-The LR/RF feature set is deliberately small because the transcript normalization fixes
-calldata footprint, proof size, public-input layout, and event-log shape by
-construction. The live modeled channel is therefore gas, which the on-chain observer
-sees completely.
+Tasks whose test split contains fewer than $20$ executions (median over the 30 seeded splits) are \emph{underpowered}---reported but excluded from gating, so a small task's sampling noise cannot decide the verdict.
+Every task gates on LR and RF independently and fails if either clears the double criterion; the result tables report the stronger (higher-AUC) classifier for each task.
+For SPP, LR over-separates on the near-constant features (see below) and yields a degenerate AUC, so the operative signal is the RF score---the fraction of trees voting for the class---which remains continuous.
+
+As established in Section~\ref{sec:eval-threat}, the transcript normalization leaves gas
+as the only policy-dependent channel; the LR/RF feature set is therefore the two gas
+measurements, which is why LR saturates on the otherwise near-constant SPP inputs.
 To distinguish a genuine defense from a weak attacker, we pair the near-chance main results with the gas-normalization positive control in Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover signal on the un-padded gas transcript and collapse after padding.
 
 \subsubsection{Unsupervised clustering attacks}
-The clustering attacker drops the labels entirely and asks whether the gas features
-\emph{naturally} group along the hidden property.
-We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI). Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
+The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.
+We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI). 
+Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
-PCH clusters all executions globally (no per-layer splitting), so the large-sample
-ARI/NMI are read directly. For the PI pairs we additionally guard against two
-small-sample failure modes.
+PCH clusters all executions globally (no per-layer splitting), so the large-sample ARI/NMI are read directly. 
 
-\paragraph{Controlling sample-size confounds.} The naive PI pair construction produced
-severely imbalanced pairs (one policy with $1$ execution against another with up to
-$30$), where K-Means cannot cut the data and ARI/NMI $\approx 0$ is an artifact rather
-than evidence of privacy. We therefore rebuild the PI pairs from policies with
-$\ge 30$ executions into balanced $30$-vs-$30$ contrasts before clustering. To rule out
-residual finite-sample inflation, which the null simulation in
-Section~\ref{sec:eval-nmi-sensitivity} shows can raise NMI above zero while ARI stays at
-chance, we add a \emph{permutation baseline}: we shuffle the
-pair labels $200$ times and recompute the clustering NMI, giving the NMI distribution
-under zero true signal. The debiased NMI is the observed value minus this baseline, and
-the empirical $p$-value is the fraction of permutations whose NMI meets or exceeds the
-observed; a pair leaks only if its debiased NMI is positive \emph{and} significant
-($p<0.05$).
-
-\paragraph{Dataset.} Both attack families run on the same fixed-circuit, commitment-only,
-access-gas-padded \emph{Polygon~Amoy} dataset: the supervised verdicts read
-\texttt{experiments/multiseed\_results/polygonAmoy/} (numbers of record), and the
-clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. The
-supervised and unsupervised attacks therefore constitute two independent attack families
-applied to one dataset.
-Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs); the PI debiasing averages each observed NMI over $20$ K-Means seeds against a $200$-permutation baseline.
-The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review); the paths above are relative to its root, and provenance for every table and figure is listed in its \texttt{README.md}.
+For the PI pairs, which are much smaller, we apply two corrections in sequence---first rebalancing the pairs, then debiasing the residual small-sample inflation that survives rebalancing.
+\paragraph{Rebalancing the pairs} The naive PI pair construction produced severely imbalanced pairs (one policy with $1$ execution against another with up to $30$), where K-Means cannot partition the two policies and ARI/NMI $\approx 0$ is an artifact rather than evidence of privacy. We therefore rebuild the PI pairs from policies with $\ge 30$ executions into balanced $30$-vs-$30$ contrasts before clustering.
+\paragraph{Debiasing residual inflation} Rebalancing removes the imbalance artifact, but each side of a balanced pair still holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects can still raise NMI above zero while ARI stays at chance, so here ARI is already conservatively near zero and NMI is the more sensitive---but biased---indicator. To debias it we add a \emph{permutation baseline}: we shuffle the pair labels $200$ times and recompute the clustering NMI, giving the NMI distribution under zero true signal.
+The debiased NMI is the observed value minus this baseline, and the empirical $p$-value $p_{\mathrm{NMI}}$ is the fraction of permutations whose NMI meets or exceeds the observed; the clustering cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).
+The PI debiasing averages each observed NMI over $20$ K-Means seeds against a $200$-permutation baseline over $133$ balanced $30$-vs-$30$ pairs.
