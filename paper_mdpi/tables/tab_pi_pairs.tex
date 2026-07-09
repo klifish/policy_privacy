@@ -3,9 +3,9 @@
 % Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 % controlled_difference is diagnostic, non-gating.
-% The per-row verdict column held \checkmark four times over; the verdict is carried by
-% the Overall footer row, as in tab_spp_contrasts. Dropping it takes the table to 355pt
-% at \footnotesize against a 394pt text block, so it now fits the normal measure.
+% The per-row verdict column held \checkmark four times over, so it was dropped; at
+% \footnotesize the remaining six columns measure 355pt against a 394pt text block.
+% The PASS verdict lives in tab_privacy_summary and in the prose, not in this table.
 \begin{table}[H]
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
     policy-disjoint seeds, by policy-pair archetype. \texttt{controlled\_difference} is
@@ -21,8 +21,6 @@
     structural\_variant   & $0.524 \pm 0.071$ & $0.059 \pm 0.046$ & $0.407$ & $0\%$  & $40$   \\
     weak\_equivalent      & $0.494 \pm 0.085$ & $0.069 \pm 0.051$ & $0.529$ & $7\%$  & $54.5$ \\
     controlled\_difference\,$^{\dagger}$ & $0.510 \pm 0.076$ & $0.065 \pm 0.041$ & $0.452$ & $3\%$ & $68$ \\
-    \midrule
-    \multicolumn{6}{l}{Overall: \checkmark\ PASS (three gating archetypes)} \\
     \bottomrule
   \end{tabular}
 
