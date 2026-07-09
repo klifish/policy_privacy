@@ -3,28 +3,28 @@
 % Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 % controlled_difference is diagnostic, non-gating.
-% The 7th column (verdict) pushes the row to 411pt at \footnotesize against a 394pt text
-% block, so the table still has to overhang. Spread the 17pt overhang evenly on both
-% sides rather than shifting the whole table left.
+% The per-row verdict column held \checkmark four times over; the verdict is carried by
+% the Overall footer row, as in tab_spp_contrasts. Dropping it takes the table to 355pt
+% at \footnotesize against a 394pt text block, so it now fits the normal measure.
 \begin{table}[H]
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
     policy-disjoint seeds, by policy-pair archetype. \texttt{controlled\_difference} is
     reported as a diagnostic control and excluded from the PI verdict.}
   \label{tab:pi-pairs}
-  \begin{adjustwidth}{-\extralength}{-\extralength}
   \centering\footnotesize
-  \begin{tabular}{lcccccc}
+  \begin{tabular}{lccccc}
     \toprule
-    Pair archetype & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ & verdict \\
+    Pair archetype & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
     \midrule
-    overall               & $0.516 \pm 0.030$ & $0.026 \pm 0.022$ & $0.367$ & $10\%$ & $270$  & \checkmark \\
-    semantic\_equivalent  & $0.511 \pm 0.082$ & $0.070 \pm 0.045$ & $0.456$ & $13\%$ & $71$   & \checkmark \\
-    structural\_variant   & $0.524 \pm 0.071$ & $0.059 \pm 0.046$ & $0.407$ & $0\%$  & $40$   & \checkmark \\
-    weak\_equivalent      & $0.494 \pm 0.085$ & $0.069 \pm 0.051$ & $0.529$ & $7\%$  & $54.5$ & \checkmark \\
-    controlled\_difference& $0.510 \pm 0.076$ & $0.065 \pm 0.041$ & $0.452$ & $3\%$  & $68$   & --\,(diagnostic) \\
+    overall               & $0.516 \pm 0.030$ & $0.026 \pm 0.022$ & $0.367$ & $10\%$ & $270$  \\
+    semantic\_equivalent  & $0.511 \pm 0.082$ & $0.070 \pm 0.045$ & $0.456$ & $13\%$ & $71$   \\
+    structural\_variant   & $0.524 \pm 0.071$ & $0.059 \pm 0.046$ & $0.407$ & $0\%$  & $40$   \\
+    weak\_equivalent      & $0.494 \pm 0.085$ & $0.069 \pm 0.051$ & $0.529$ & $7\%$  & $54.5$ \\
+    controlled\_difference\,$^{\dagger}$ & $0.510 \pm 0.076$ & $0.065 \pm 0.041$ & $0.452$ & $3\%$ & $68$ \\
     \midrule
-    \multicolumn{7}{l}{Overall: \checkmark\ PASS} \\
+    \multicolumn{6}{l}{Overall: \checkmark\ PASS (three gating archetypes)} \\
     \bottomrule
   \end{tabular}
-  \end{adjustwidth}
+
+  \noindent{\footnotesize{$^{\dagger}$ Diagnostic control; does not gate the PI verdict.}}
 \end{table}
