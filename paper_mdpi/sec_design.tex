@@ -1,0 +1,131 @@
+\section{TPS-ZKPI Design}
+\label{sec:design}
+
+\subsection{Overview}
+
+As shown in Figure~\ref{fig:tps-zkpi-workflow}, the TPS-ZKPI workflow binds a provider-committed hidden policy to requester-submitted authorization evidence through TPS-side proof generation and on-chain proof verification.
+The provider registers only a policy commitment on-chain and sends policy-bound proving material to the TPS off-chain.
+For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of policy compliance, and submits a fixed-format proof statement for ACM verification.
+The ACM records the authorization outcome, which is then consumed by the data access layer.
+
+This design separates confidentiality-sensitive proof generation from public verification.
+Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only
+a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
+Compared with a traditional requester-as-prover design in which the requester receives $P_{\mathrm{enc}}$ and the commitment-opening randomness, TPS-ZKPI closes that leak to the requester; the corresponding confidentiality failure now occurs only if the TPS trust boundary is violated.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{PP-TPS.png}
+	\caption{TPS-assisted policy-compliance workflow. The provider commits to the encoded policy on-chain and provisions proving material to the TPS (steps 1--2); the TPS constructs the witness from requester evidence and generates the proof (3--4); the ACM verifies the proof and records the outcome (5); the data access layer consults the recorded status to serve the requester (6--9).}
+	\label{fig:tps-zkpi-workflow}
+\end{figure}
+
+\subsection{Policy Representation and Interpretation}
+
+TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length, circuit-friendly format.
+Let
+\begin{equation}
+	X = \{0,1\}^{N}, \qquad B = \{0,1\}^{M}
+\end{equation}
+denote the requester-attribute assignment space and the external-predicate assignment space, respectively.
+The full assignment space is
+\begin{equation}
+	O = X \times B,
+\end{equation}
+where $a \in X$ encodes requester attributes and $b \in B$ encodes externally attested predicate outcomes, such as credential validity, ontology-linked checks, or obligation-related conditions.
+TPS-ZKPI does not itself solve credential issuance, revocation, or external attestation; it consumes these outcomes and, where applicable, checks auxiliary witnesses inside the proof relation.
+In the current circuit implementation, issuer-signature verification is represented by a hash-based placeholder gadget (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not enforced in-circuit.
+As a result, the current circuit does not prevent a requester from supplying fabricated attributes that satisfy the policy; enforcing attribute-origin binding requires a real in-circuit issuer-signature verifier, which we leave to future work. The resulting structural limitation is discussed in Section~\ref{sec:problem}.
+
+Consent policies are expressed as Boolean formulas over assignment bits:
+\begin{equation}
+	P ::= \mathit{atom} \mid (P \land P) \mid (P \lor P) \mid \neg P,\qquad
+	\mathit{atom} ::= x_i \mid y_j .
+\end{equation}
+Here $x_i$ selects requester-attribute bit $a_i$ and $y_j$ selects external-predicate bit $b_j$.
+Each policy is compiled into a Reverse Polish Notation (RPN) program over operand tokens and Boolean operator tokens.
+To support reusable verification, each program is padded to a fixed token length $L$:
+\begin{equation}
+	P_{\mathrm{enc}}= [t_{1},\ldots,t_{L}],
+\end{equation}
+together with an explicit program length $\ell \le L$ carried as a private witness.
+The interpreter evaluates only the first $\ell$ tokens; padding positions beyond $\ell$ are inactive and leave the output unchanged.
+The implemented circuit uses $N=6$, $M=5$, and $L=\DEPTH=20$.
+We denote the set of length-$L$ programs by $\mathsf{Prog}_{L}$.
+
+The reusable policy interpreter is a zero-knowledge circuit
+\begin{equation}
+	C : \mathsf{Prog}_{L}\times \{0,\ldots,L\} \times O \rightarrow \{0,1\}.
+\end{equation}
+Given an encoded policy, its program length, and operand values, the interpreter evaluates the
+RPN program using deterministic stack semantics and enforces well-formedness constraints inside the circuit.
+The circuit outputs $1$ only if the requester evidence satisfies the encoded policy.
+Well-formedness is enforced as hard constraints: for a program that violates the stack discipline, no satisfying witness exists and no proof can be generated.
+An output of $0$ therefore indicates unsatisfied evidence for a well-formed program. The proved acceptance relation is the asserted case $C(P_{\mathrm{enc}},\ell,(a,b))=1$.
+
+This design avoids policy-specific circuits and verifier contracts while supporting policy evolution through different fixed-length policy programs.
+
+\subsection{Commitment Binding and Proof Generation}
+
+To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field and computes
+\begin{equation}
+	h = \mathsf{Com}(P_{\mathrm{enc}}; r) = \mathsf{Poseidon}(P_{\mathrm{enc}}\parallel r),
+\end{equation}
+where $h$ is stored on-chain as the public handle of the hidden policy.
+Under the collision resistance of Poseidon, the commitment binds future proofs to the committed
+token array $P_{\mathrm{enc}}$.
+The program length $\ell$ is not part of the commitment preimage: supplying the length recorded at encoding time is part of the prescribed TPS workflow (Section~\ref{subsec:trust-model}), and a TPS that deviates from the workflow could evaluate a stack-consistent prefix of the committed array.
+Binding $\ell$ into the commitment is a straightforward hardening that we leave to future work.
+Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on
+high-entropy $r$ and the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
+
+For an access request, the TPS constructs the private witness
+\begin{equation}
+	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega),
+\end{equation}
+where $P_{\mathrm{enc}}$ is the encoded policy, $\ell$ is its program length, $a$ denotes requester attributes, $b$ denotes external predicate outcomes, $r$ is the commitment randomness, and $\omega$ denotes auxiliary witnesses for credential- or predicate-dependent checks.
+The public statement contains the asserted authorization output, the policy commitment $h$, and a fixed-format parameter commitment $\mathit{pp}$, which binds per-predicate parameters without exposing them in calldata.
+The requester and resource identifiers and a session nonce are carried as transaction-level parameters that the ACM validates.
+
+For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the common reference string as a proving key and a verification key, once for the shared circuit:
+\begin{equation}
+	(\mathit{pk}, \mathit{vk}) \leftarrow \mathsf{Setup}(C).
+\end{equation}
+The TPS generates a proof
+\begin{equation}
+	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1, h, \mathit{pp})\bigr).
+\end{equation}
+The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, the hidden policy encoding is consistent with the on-chain commitment $h$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+The proof statement is not bound to the requester, resource, or session context: the ACM validates these as transaction-level parameters, and nonce single-use prevents reuse of the same session parameters only, so replay of a captured proof with fresh parameters by an active
+submitter is not prevented and lies outside the passive threat model of Section~\ref{sec:problem}.
+Binding the session context into the public statement is a standard hardening that we leave to future work.
+
+The ACM verifies $\pi$ on-chain against $\mathit{vk}$ and the public statement, and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
+The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
+
+\subsection{Transcript Normalization}
+
+Zero-knowledge proofs hide private witness values, but surrounding
+blockchain artifacts may still leak policy-dependent information. TPS-ZKPI therefore
+normalizes the public transcript so that different policies induce fixed or tightly
+bounded observable profiles. Table~\ref{tab:transcript-normalization}
+summarizes the mechanisms.
+
+\begin{table}[H]
+	\centering
+	\caption{Transcript-normalization mechanisms in TPS-ZKPI.}
+	\label{tab:transcript-normalization} \footnotesize
+	\begin{tabular}{p{0.24\linewidth}p{0.66\linewidth}}
+		\hline
+		\textbf{Artifact} & \textbf{Normalization mechanism}                                                   \\
+		\hline
+		Calldata          & Fixed verification interface and fixed-size proof/public-input encoding.           \\
+		Logs              & Fixed event structure with constant topic and payload layout.                      \\
+		Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses.          \\
+		Gas usage         & Policy-independent verifier logic and randomized gas padding toward fixed targets. \\
+		\hline
+	\end{tabular}
+\end{table}
+
+These mechanisms do not eliminate all public observability. Rather, they reduce policy-dependent variation in calldata, logs, public parameters, and gas-related behavior that could otherwise serve as a fingerprint for the metadata-only adversary defined in Section~\ref{sec:problem}.
+TPS-ZKPI does not flatten all residual channels: timing between transactions, transaction ordering, mempool or broadcast patterns, and off-chain TPS communication remain outside the normalized public transcript.

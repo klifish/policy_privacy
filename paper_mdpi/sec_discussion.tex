@@ -1,0 +1,22 @@
+\section{Discussion}
+\label{sec:discussion}
+
+The evaluation indicates that TPS-ZKPI removes the recoverable policy-dependent signals we can measure from normalized public-chain artifacts.
+Across all PCH, PI, and SPP tasks, supervised classifiers stay below the multi-seed permutation-test
+leakage criterion, and unsupervised clustering shows no recoverable structure: ARI is statistically indistinguishable from zero, and the residual NMI is consistent with finite-sample inflation once debiased against a permutation baseline.
+The gas-padding ablation (Section~\ref{sec:eval-ablation}) sharpens this conclusion: the same attacks become measurably effective once gas padding is removed, which attributes the structure- and parameter-related
+protection specifically to randomized gas padding rather than to weak attacks or insufficient sample size; content hiding rests instead on the commitment-only interface and the content-independent transcript normalization. 
+Together with fixed-length policy representation, reusable interpretation, and commitment
+binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
+
+These results support a scoped privacy claim. The evaluation focuses on a metadata-only public-chain adversary that observes commitments, proofs, public parameters, calldata, events, and gas-related artifacts, but not TPS-side witness construction or off-chain policy material. 
+Within this scope, transcript normalization together with randomized gas padding eliminates the recoverable policy-dependent signals we are able to measure across PCH, PI, and SPP, the padding adding a gas-cost overhead of roughly $38$--$40\%$.
+The main limitation is that this is an empirical claim, not an information-theoretic one: we do not claim distinguishability is zero, only that no modeled attacker recovers it above our multi-seed leakage criterion (isolated per-seed spikes above chance occur but do not reproduce across seeds). Stronger adversaries---compromised proof services, adaptive requester-side probing, or off-chain side channels---remain outside this scope and motivate the reduced-trust extensions discussed below.
+
+The TPS trust assumption is the main architectural tradeoff. 
+Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving material away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~\ref{sec:problem}). 
+This tradeoff does not affect liveness or accountability: the TPS or provider can refuse to produce a proof, which may be indistinguishable from a legitimate denial at the on-chain interface.
+
+Two directions follow. 
+First, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make such refusals attributable. 
+Second, the reduced-trust TPS instantiations of Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself; realizing and evaluating them is left to future work.

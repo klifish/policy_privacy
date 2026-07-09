@@ -1,0 +1,118 @@
+% Full manuscript assembly for TPS-ZKPI, typeset for the MDPI journal Blockchains.
+% Build from this directory:
+%   cd paper_mdpi && tectonic main.tex
+% tectonic resolves the bibliography and reruns to convergence in a single pass.
+%
+% The IEEEtran/BRAINS 2026 version of this manuscript lives in ../paper and is
+% maintained independently; body text is duplicated, not shared.
+%
+% Front matter, intro, related work, problem/threat model, design, discussion, and
+% conclusion are modular .tex files. The Evaluation chapter is the authoritative modular
+% evaluation (evaluation.tex) with numbers transcribed from the deterministic
+% multi-seed result files; see ../paper/README.md for provenance.
+%=================================================================
+\documentclass[blockchains,article,submit,moreauthors]{Definitions/mdpi}
+
+%=================================================================
+% MDPI internal commands - do not modify
+\firstpage{1}
+\makeatletter
+\setcounter{page}{\@firstpage}
+\makeatother
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{0}
+\pubyear{2026}
+\copyrightyear{2026}
+\datereceived{ }
+\dateaccepted{ }
+\datepublished{ }
+
+%=================================================================
+% mdpi.cls already loads: amsmath, amssymb, amsthm, booktabs, tabularx, multirow,
+% graphicx, float, natbib, hyperref, cleveref, caption, subfig. Only additions go here.
+
+% --- graphics ---
+\graphicspath{{figures/}{./}}
+
+% The MDPI class hardcodes .eps for its logos, which the XeTeX-based tectonic engine
+% cannot read. Definitions/logo-{mdpi,updates}.eps hold PDF bytes under the .eps name;
+% this rule tells graphicx to parse them with the PDF reader.
+\DeclareGraphicsRule{.eps}{pdf}{*}{}
+
+% --- misc ---
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+% Long identifiers such as controlled\_difference are single unbreakable words, and the
+% single-column MDPI text block is narrower than IEEEtran's two-column measure. Permit a
+% break after the underscore so they wrap instead of running into the margin. No hyphen
+% is inserted: it would be indistinguishable from part of the identifier. This affects
+% only the \_ text command, not math subscripts.
+\DeclareRobustCommand{\_}{\textunderscore\discretionary{}{}{}}
+
+% --- shorthand macros (from the source manuscript) ---
+\newcommand{\negl}{\mathsf{negl}}
+\newcommand{\Com}{\mathsf{Com}}
+\newcommand{\Eval}{\mathsf{Eval}}
+\newcommand{\Verify}{\mathsf{Verify}}
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Setup}{\mathsf{Setup}}
+\newcommand{\Prove}{\mathsf{Prove}}
+\newcommand{\DEPTH}{\mathsf{DEPTH}}
+\newcommand{\Pad}{\mathsf{Pad}}
+\newcommand{\Quantile}{\mathsf{Quantile}}
+\newcommand{\Acc}{\mathsf{Acc}}
+
+%=================================================================
+% Title, authors, abstract, keywords. MDPI declares these in the preamble.
+\input{sec_frontmatter.tex}
+
+%=================================================================
+\begin{document}
+
+\input{sec_introduction.tex}
+\input{sec_related_work.tex}
+\input{sec_problem.tex}
+\input{sec_design.tex}
+
+\input{evaluation.tex}
+
+\input{sec_discussion.tex}
+\input{sec_conclusion.tex}
+
+%=================================================================
+% Back matter. TODO(author): every statement below is a placeholder.
+\vspace{6pt}
+
+% TODO(author): assign CRediT roles per author. See
+% https://img.mdpi.org/data/contributor-role-instruction.pdf
+\authorcontributions{TODO.}
+
+% TODO(author): name the funder and grant number, or use the exact sentence
+% ``This research received no external funding''.
+\funding{TODO.}
+
+% TODO(author): confirm. This is a computational study over synthetic consent
+% policies with no human or animal subjects, so ``Not applicable'' is expected.
+\institutionalreview{Not applicable.}
+
+% TODO(author): confirm, same reasoning as above.
+\informedconsent{Not applicable.}
+
+% TODO(author): point at the code/data repository and state what is released.
+\dataavailability{TODO.}
+
+% TODO(author): confirm, or declare the competing interest.
+\conflictsofinterest{The authors declare no conflicts of interest.}
+
+%=================================================================
+\begin{adjustwidth}{-\extralength}{0cm}
+
+\reftitle{References}
+\bibliography{reference}
+
+\PublishersNote{}
+\end{adjustwidth}
+\end{document}
