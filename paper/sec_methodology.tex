@@ -2,14 +2,14 @@
 \subsection{Attack methodology}
 \label{sec:eval-method}
 
-We evaluate each privacy property with a primary supervised attack and a complementary unsupervised cross-check. 
+We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
 The \emph{supervised} pipeline asks whether a trained classifier can recover a hidden label from the observables; this is the main privacy verdict because it gives the adversary labels and therefore more power than a purely exploratory analysis. 
 The \emph{unsupervised} pipeline asks whether the observables cluster along the hidden label without any supervision, providing a label-free sanity check on the same executions.
 Both pipelines run on the same fixed-circuit, commitment-only, access-gas-padded \emph{Polygon~Amoy} dataset: the supervised numbers reported in this paper are read from \texttt{experiments/multiseed\_results/polygonAmoy/}, and the clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs).
 The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review); the paths above are relative to its root, and provenance for every table and figure is listed in its \texttt{README.md}.
 
 \subsubsection{Supervised attacks}
-For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score used by the unified verdict for that property.
+For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score used by the unified verdict for that objective.
 Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split}: the policies used to train the attacker never appear in the test set, so a high score cannot come from memorizing
 individual policies. 
 For each seed we run a label-permutation test and record whether the AUC is significant at $\alpha{=}0.05$.
