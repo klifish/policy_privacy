@@ -10,19 +10,17 @@
     uses 30 policy-disjoint seeds and a permutation test. A task passes unless both
     AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant.}
   \label{tab:privacy-summary}
-  \begin{tabular}{p{0.16\linewidth}p{0.32\linewidth}p{0.31\linewidth}c}
+  % Column widths sum to <1 so that the inter-column glue fits inside the text block.
+  \begin{tabular}{p{0.16\linewidth}p{0.32\linewidth}p{0.42\linewidth}}
     \toprule
-    Property & Hidden target & Headline supervised result & Verdict \\
+    Property & Hidden target & Headline supervised result \\
     \midrule
     PCH & DUO terms and ICD-10 chapters
-        & 16 content-recovery tasks pass; DUO AUCs $0.490$--$0.527$, ICD AUCs $0.458$--$0.573$
-        & \checkmark \\
+        & 16 content-recovery tasks pass; DUO AUCs $0.490$--$0.527$, ICD AUCs $0.458$--$0.573$ \\
     PI & Related policy-pair identity
-       & Overall AUC $0.516\pm0.030$, $p_{\mathrm{perm}}=0.367$, $10\%$ significant seeds
-       & \checkmark \\
+       & Overall AUC $0.516\pm0.030$, $p_{\mathrm{perm}}=0.367$, $10\%$ significant seeds \\
     SPP & Structure, predicate, parameter, and nesting-depth buckets
-        & 28 pairwise contrasts pass; AUCs $0.421$--$0.530$, max $20\%$ significant seeds
-        & \checkmark \\
+        & 28 pairwise contrasts pass; AUCs $0.421$--$0.530$, max $20\%$ significant seeds \\
     \bottomrule
   \end{tabular}
 \end{table}
