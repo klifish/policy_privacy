@@ -23,7 +23,7 @@ We focus on Boolean-based consent policies, including policies derived from biom
 In particular, an on-chain verifier should be able to check that a requester satisfies a provider-defined consent policy, while a metadata-only public-chain adversary learns minimal information from the resulting public verification transcript.
 
 We address this problem with the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
-In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
+In TPS-ZKPI, the data provider (who can be seen as the data owner) commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
 The requester submits policy-relevant authorization evidence, such as attributes, credentials, and access context, to the TPS.
 The TPS constructs the private witness and generates a zero-knowledge proof showing that the requester satisfies the committed policy.
 The proof is then verified on-chain against the provider's policy commitment.

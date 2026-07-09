@@ -4,12 +4,8 @@
 \subsection{System and Trust Model}
 \label{subsec:trust-model}
 
-We consider a blockchain-based healthcare data-sharing system in which
-access to protected resources is governed by provider-defined consent
-policies.
-The system involves five roles: a data provider, a data
-requester, a Trusted Proof Service (TPS), an on-chain access-control manager
-(ACM), and a data access layer.
+We consider a blockchain-based healthcare data-sharing system in which two types of users interact to share data: data providers, who provide protected resources and govern access to them through consent policies, and data requesters, who seek access to these resources subject to those policies.
+TPS-ZKPI mediates this interaction through three components: a Trusted Proof Service (TPS) operating off-chain, an on-chain access-control manager (ACM), and a data access layer.
 The provider defines a consent policy $P$ for a protected resource on behalf of the data subject whose consent it encodes, and registers an on-chain commitment $h$ to the encoded policy.
 The requester seeks access by submitting policy-relevant authorization evidence, such as attributes, credentials, and access context.
 The TPS constructs the private witness and generates a zero-knowledge proof
@@ -32,16 +28,13 @@ TEE-backed proof service that makes the trust assumption hardware-attested, or
 MPC/collaborative SNARK proof generation in which no single party sees both policy
 material and requester evidence.
 
-For implementation and evaluation simplicity, the current evaluation co-locates the TPS
-with the provider (a provider-operated TPS). This concentrates trust at the provider
-side: a compromised or colluding TPS can see both the policy and requester evidence, and
-can reintroduce fabrication and stonewalling risks similar to a provider-as-prover design.
-Regardless of instantiation, the commitment and zero-knowledge proof machinery primarily
-provides public verifiability and correctness against a TPS that submits an invalid
-proof; it does not provide confidentiality against a compromised TPS. Our evaluation
-therefore isolates a distinct concern, namely policy leakage to public-chain observers
-under an honest-but-curious TPS; weakening the TPS trust assumption itself is orthogonal
-and is the role of the reduced-trust instantiations above.
+For implementation and evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
+This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could construct witnesses from substituted attribute values or withhold proof generation from legitimate requesters.
+Two guarantees must be distinguished here.
+Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
+Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
+Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
+Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
 
 \subsection{Public-Chain Adversary}
 
@@ -57,7 +50,7 @@ Each policy-enforcement instance corresponds to an authorization session, in
 which a requester seeks access to a protected resource under a committed policy.
 For each such session, the adversary observes a public view
 \begin{equation}
-  \mathit{view}_{\mathsf{pub}}= (h, \pi, \mathit{id}_{\mathrm{req}}, \mathit{id}_{\mathrm{res}}, \mathit{nonce}, \mathit{pp}, \mathit{meta}),
+	\mathit{view}_{\mathsf{pub}}= (h, \pi, \mathit{id}_{\mathrm{req}}, \mathit{id}_{\mathrm{res}}, \mathit{nonce}, \mathit{pp}, \mathit{meta}),
 \end{equation}
 where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-knowledge
 proof submitted for on-chain verification, $\mathit{id}_{\mathrm{req}}$, $\mathit{id}_{\mathrm{res}}$, and $\mathit{nonce}$ are the
