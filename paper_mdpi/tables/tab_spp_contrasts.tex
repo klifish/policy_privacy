@@ -7,8 +7,9 @@
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 % structureType has a 5th category, "trivial": single-atom policies with no boolean
 % connective (e.g. logicOriginal "GR" or "DS"), previously misclassified as and_only.
-% The 6-column rows with two mean+-std columns are wider than the text block, so they
-% spill into the margins via the MDPI class's \fulllength/adjustwidth mechanism.
+% At \normalsize the six columns run 473pt against a 394pt text block; \footnotesize
+% brings them to 393pt, so the table fits the normal measure without spilling into the
+% margins.
 \begin{table}[H]
   \caption{Structure \& Parameter Privacy: 28 pairwise contrasts across four annotation
     axes, each over 30 policy-disjoint seeds. AUC is the higher-scoring of logistic
@@ -16,8 +17,7 @@
     gating). Every contrast satisfies AUC$_{\text{mean}}\le 0.55$ \emph{and}
     \%sig${}<50\%$.}
   \label{tab:spp-contrasts}
-  \begin{adjustwidth}{-\extralength}{0cm}
-  \centering
+  \centering\footnotesize
   \begin{tabular}{lccccc}
     \toprule
     Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
@@ -61,5 +61,4 @@
     \multicolumn{6}{l}{Overall: \checkmark\ PASS (all 28 contrasts)} \\
     \bottomrule
   \end{tabular}
-  \end{adjustwidth}
 \end{table}
