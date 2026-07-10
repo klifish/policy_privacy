@@ -5,8 +5,9 @@
 \label{sec:eval}
 
 We evaluate the three privacy objectives of our approach---Policy Content Hiding, Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive on-chain observer (Section~\ref{sec:eval-threat}).
-The primary evidence is a supervised, multi-seed attack evaluation with policy-disjoint splits and permutation tests (Section~\ref{sec:eval-method}); unsupervised clustering provides a label-free cross-check on the same executions.
+The primary evidence is a supervised, multi-seed attack evaluation, scored by test AUC against the chance baseline, with policy-disjoint splits and permutation tests (Section~\ref{sec:eval-method}); unsupervised clustering, scored by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI), provides a label-free cross-check on the same executions.
 All three objectives pass the supervised criterion, and the clustering attack finds no natural grouping by hidden labels.
+Beyond the privacy verdicts, the evaluation reports the system's cost profile as its performance metrics: per-transaction gas for commit and access (including the padding overhead), calldata sizes, circuit constraint count, and local proving time (Section~\ref{sec:eval-ablation}, Table~\ref{tab:cost-profile}).
 
 \input{sec_threat_model.tex}
 \input{sec_methodology.tex}

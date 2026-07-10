@@ -8,8 +8,10 @@
 % The PASS verdict lives in tab_privacy_summary and in the prose, not in this table.
 \begin{table}[H]
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
-    policy-disjoint seeds, by policy-pair archetype. \texttt{controlled\_difference} is
-    reported as a diagnostic control and excluded from the PI verdict.}
+    policy-disjoint seeds, by policy-pair archetype. AUC is the higher-scoring of
+    logistic regression and random forest per archetype (Section~\ref{sec:eval-method}).
+    \texttt{controlled\_difference} is reported as a diagnostic control and excluded
+    from the PI verdict.}
   \label{tab:pi-pairs}
   \centering\footnotesize
   \begin{tabular}{lccccc}

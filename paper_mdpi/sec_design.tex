@@ -6,12 +6,12 @@
 As shown in Figure~\ref{fig:tps-zkpi-workflow}, the TPS-ZKPI workflow binds a provider-committed hidden policy to requester-submitted authorization evidence through TPS-side proof generation and on-chain proof verification.
 The provider registers only a policy commitment on-chain and sends policy-bound proving material to the TPS off-chain.
 For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of policy compliance, and submits a fixed-format proof statement for ACM verification.
-The ACM records the authorization outcome, which is then consumed by the data access layer.
+The ACM records the authorization outcome in contract storage and emits it in the blockchain event log (as access-granted or access-denied events); the data access layer consumes this recorded decision to serve or refuse the request.
 
 This design separates confidentiality-sensitive proof generation from public verification.
-Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only
-a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
-Compared with a traditional requester-as-prover design in which the requester receives $P_{\mathrm{enc}}$ and the commitment-opening randomness, TPS-ZKPI closes that leak to the requester; the corresponding confidentiality failure now occurs only if the TPS trust boundary is violated.
+Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
+In a traditional requester-as-prover design, the requester generates the proof itself and must therefore receive the encoded policy and the commitment-opening randomness, so every requester learns the policy in normal operation.
+In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and policy confidentiality can fail only if the TPS trust assumption itself is violated.
 
 \begin{figure}[H]
 	\centering
@@ -23,6 +23,9 @@ Compared with a traditional requester-as-prover design in which the requester re
 \subsection{Policy Representation and Interpretation}
 
 TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length, circuit-friendly format.
+This policy class is chosen for two reasons.
+First, the targeted biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and institutional or ethics requirements---are categorical conditions combined with AND/OR/NOT, and conditions that are not natively Boolean, such as temporal validity or credential status, enter as externally attested predicate outcomes.
+Second, a Boolean policy class admits a fixed-length encoding evaluated by a single reusable interpreter circuit, which keeps the verification interface policy-independent---a prerequisite for the privacy objectives evaluated later.
 Let
 \begin{equation}
 	X = \{0,1\}^{N}, \qquad B = \{0,1\}^{M}
@@ -33,9 +36,12 @@ The full assignment space is
 	O = X \times B,
 \end{equation}
 where $a \in X$ encodes requester attributes and $b \in B$ encodes externally attested predicate outcomes, such as credential validity, ontology-linked checks, or obligation-related conditions.
-TPS-ZKPI does not itself solve credential issuance, revocation, or external attestation; it consumes these outcomes and, where applicable, checks auxiliary witnesses inside the proof relation.
-In the current circuit implementation, issuer-signature verification is represented by a hash-based placeholder gadget (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not enforced in-circuit.
-As a result, the current circuit does not prevent a requester from supplying fabricated attributes that satisfy the policy; enforcing attribute-origin binding requires a real in-circuit issuer-signature verifier, which we leave to future work. The resulting structural limitation is discussed in Section~\ref{sec:problem}.
+Credential issuance, revocation, and attestation themselves remain external functions (Section~\ref{subsec:trust-model}): TPS-ZKPI consumes their outcomes as predicate bits and, where applicable, checks the associated auxiliary witnesses inside the proof relation.
+
+Ontology-linked conditions are represented extensionally rather than through in-circuit ontology reasoning.
+At encoding time, the provider expands an ontology concept into a whitelist of codes and commits the whitelist as a Merkle root among the policy's per-predicate parameters; in-circuit, the predicate check is a set-membership proof of the requested term against this root.
+A disease-specific policy scoped to diabetes, for example, whitelists the ICD-10 diabetes subtree, whereas one scoped to type-1 diabetes whitelists only the type-1 codes.
+Resolving subsumption at encoding time keeps ontology reasoning out of the circuit and preserves the policy-independent interface.
 
 Consent policies are expressed as Boolean formulas over assignment bits:
 \begin{equation}
@@ -43,13 +49,16 @@ Consent policies are expressed as Boolean formulas over assignment bits:
 	\mathit{atom} ::= x_i \mid y_j .
 \end{equation}
 Here $x_i$ selects requester-attribute bit $a_i$ and $y_j$ selects external-predicate bit $b_j$.
+For example, the consent condition ``the resource may be used for disease-specific research on diabetes, or for clinical care under approved clinical terms'' is expressed as $(x_1 \land y_1) \lor (x_2 \land y_2)$, where $x_1$ and $x_2$ flag the disease-specific-research and clinical-care purposes among the requester attributes, $y_1$ attests that the requested disease code lies in the committed diabetes whitelist, and $y_2$ attests that the requested clinical term lies in the approved clinical whitelist.
 Each policy is compiled into a Reverse Polish Notation (RPN) program over operand tokens and Boolean operator tokens.
+RPN linearizes arbitrarily nested formulas into a parenthesis-free token sequence that a stack machine evaluates in a single left-to-right pass with a fixed step count---a control structure that maps directly onto a fixed-size circuit and lets one interpreter serve all policies.
 To support reusable verification, each program is padded to a fixed token length $L$:
 \begin{equation}
 	P_{\mathrm{enc}}= [t_{1},\ldots,t_{L}],
 \end{equation}
 together with an explicit program length $\ell \le L$ carried as a private witness.
 The interpreter evaluates only the first $\ell$ tokens; padding positions beyond $\ell$ are inactive and leave the output unchanged.
+The example policy above compiles to the token sequence $[x_1,\, y_1,\, \land,\, x_2,\, y_2,\, \land,\, \lor]$ with $\ell = 7$; the remaining $L-7$ positions are padding.
 The implemented circuit uses $N=6$, $M=5$, and $L=\DEPTH=20$.
 We denote the set of length-$L$ programs by $\mathsf{Prog}_{L}$.
 
@@ -63,7 +72,7 @@ The circuit outputs $1$ only if the requester evidence satisfies the encoded pol
 Well-formedness is enforced as hard constraints: for a program that violates the stack discipline, no satisfying witness exists and no proof can be generated.
 An output of $0$ therefore indicates unsatisfied evidence for a well-formed program. The proved acceptance relation is the asserted case $C(P_{\mathrm{enc}},\ell,(a,b))=1$.
 
-This design avoids policy-specific circuits and verifier contracts while supporting policy evolution through different fixed-length policy programs.
+The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
 
 \subsection{Commitment Binding and Proof Generation}
 
@@ -96,6 +105,7 @@ The TPS generates a proof
 	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1, h, \mathit{pp})\bigr).
 \end{equation}
 The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, the hidden policy encoding is consistent with the on-chain commitment $h$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+In the current implementation, the issuer-signature check among these gadgets is a hash-based placeholder (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not an in-circuit guarantee; its scope and implications are treated in Sections~\ref{sec:problem} and~\ref{sec:discussion}.
 The proof statement is not bound to the requester, resource, or session context: the ACM validates these as transaction-level parameters, and nonce single-use prevents reuse of the same session parameters only, so replay of a captured proof with fresh parameters by an active
 submitter is not prevented and lies outside the passive threat model of Section~\ref{sec:problem}.
 Binding the session context into the public statement is a standard hardening that we leave to future work.

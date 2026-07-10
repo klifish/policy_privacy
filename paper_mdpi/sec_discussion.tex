@@ -17,6 +17,11 @@ The TPS trust assumption is the main architectural tradeoff.
 Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving material away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~\ref{sec:problem}). 
 This tradeoff does not affect liveness or accountability: the TPS or provider can refuse to produce a proof, which may be indistinguishable from a legitimate denial at the on-chain interface.
 
-Two directions follow. 
+The same trust concentration underlies the attribute-origin limitation noted in Section~\ref{sec:problem}.
+Because the TPS constructs the witness, a compromised TPS, or a TPS colluding with the provider, can substitute attribute values and still produce a verifying proof.
+Enforcing attribute-origin binding in-circuit would require the requester to reveal attributes in clear to the TPS for issuer-signature verification, which reintroduces the same confidentiality concession.
+Reconciling attribute-origin binding with attribute confidentiality under a single TPS is therefore a structural limitation of the current design.
+
+Two directions follow.
 First, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make such refusals attributable. 
-Second, the reduced-trust TPS instantiations of Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself; realizing and evaluating them is left to future work.
+Second, the reduced-trust TPS instantiations of Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.

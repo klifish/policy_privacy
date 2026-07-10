@@ -6,9 +6,10 @@
 \begin{table}[H]
   \centering
   \caption{Policy Content Hiding: per-chapter ICD-10 supervised attack over 30
-    policy-disjoint seeds (one-vs-rest, ICD-bearing rows only; median test $n=300$). The
-    highest value is ch6 (AUC $0.573$, \%sig $17\%$), but it clears neither the AUC nor
-    the reproducibility leg of the criterion, so all ten chapters pass.}
+    policy-disjoint seeds (one-vs-rest, ICD-bearing rows only; median test $n=300$).
+    AUC is the higher-scoring of logistic regression and random forest per chapter
+    (Section~\ref{sec:eval-method}). The highest value is ch6 (AUC $0.573$, \%sig $17\%$), which meets the AUC condition but
+    not the reproducibility condition of the criterion, so all ten chapters pass.}
   \label{tab:pch-icd10}
   \begin{tabular}{lccccc}
     \toprule

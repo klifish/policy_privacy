@@ -12,15 +12,13 @@ If such policies are directly represented in smart contracts, embedded in verifi
 
 Existing privacy-preserving blockchain solutions mainly protect data contents, user identities, or transaction details~\cite{rondelet2019zeth, williamson2018aztec,	nadler2023tornado}.
 Encrypted data-sharing mechanisms such as attribute-based encryption and proxy re-encryption protect access to data~\cite{ibraimi2009ciphertext, ullah2023survey}, while zero-knowledge transaction systems hide asset ownership, values, or participant relationships~\cite{zhou2024leveraging}.
-Even mechanisms designed to hide policy content, such as hidden-policy attribute-based encryption~\cite{hu2023access}, do not control the policy-dependent artifacts that a public chain exposes while enforcing the policy.
 None of these mechanisms protects the confidentiality of the policies that govern access decisions.
+Even mechanisms designed to hide policy content, such as hidden-policy attribute-based encryption~\cite{hu2023access}, do not control the policy-dependent artifacts that a public chain exposes while enforcing the policy.
 In blockchain-based consent management, policy leakage may arise not only from explicit policy disclosure, but also from policy-dependent artifacts such as calldata size, public-input layout, emitted events, verifier interfaces, and gas usage.
 Therefore, policy-private consent enforcement requires more than hiding data or proving correctness in zero knowledge; it also requires controlling what the public-chain transcript reveals about the hidden policy.
-
-This paper studies policy-private consent enforcement for blockchain-based healthcare data sharing under public-chain observability.
-The core problem is how to make consent enforcement publicly verifiable while preventing metadata-only public-chain observers from inferring the governing policy or requester authorization evidence from policy-dependent execution artifacts.
+This paper studies this problem for blockchain-based healthcare data sharing under public-chain observability.
+The core problem is how an on-chain verifier can check that a requester satisfies a provider-defined consent policy, while metadata-only public-chain observers learn minimal information about the governing policy and the requester's authorization evidence from the resulting verification transcript.
 We focus on Boolean-based consent policies, including policies derived from biomedical data-use conditions such as Data Use Ontology (DUO) terms~\cite{lawson2021data} and disease-scope constraints~\cite{WHO_ICD10}.
-In particular, an on-chain verifier should be able to check that a requester satisfies a provider-defined consent policy, while a metadata-only public-chain adversary learns minimal information from the resulting public verification transcript.
 
 We address this problem with the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
 In TPS-ZKPI, the data provider (who can be seen as the data owner) commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
