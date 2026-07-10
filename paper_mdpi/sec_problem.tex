@@ -4,8 +4,8 @@
 \subsection{System and Trust Model}
 \label{subsec:trust-model}
 
-We consider a blockchain-based healthcare data-sharing system in which two types of users interact to share data: data providers, who provide protected resources and govern access to them through consent policies, and data requesters, who seek access to these resources subject to those policies.
-TPS-ZKPI mediates this interaction through three components: a Trusted Proof Service (TPS) operating off-chain, an on-chain access-control manager (ACM), and a data access layer.
+We consider a blockchain-based healthcare data-sharing system in which two types of users interact to share data: 1. data providers, who provide protected resources and govern access to them through consent policies, and 2. data requesters, who seek access to these resources subject to those policies.
+TPS-ZKPI mediates this interaction through three components: a TPS operating off-chain, an on-chain access-control manager (ACM), and a data access layer.
 The provider defines a consent policy $P$ for a protected resource on behalf of the data subject whose consent it encodes, and registers an on-chain commitment $h$ to the encoded policy.
 The requester seeks access by submitting policy-relevant authorization evidence, such as attributes, credentials, and access context.
 The TPS constructs the private witness and generates a zero-knowledge proof

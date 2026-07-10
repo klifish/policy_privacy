@@ -5,8 +5,8 @@
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
 The \emph{supervised} pipeline asks whether a trained classifier can recover a hidden label from the observables; this is the main privacy verdict because it gives the adversary labels and therefore more power than a purely exploratory analysis. 
 The \emph{unsupervised} pipeline asks whether the observables cluster along the hidden label without any supervision, providing a label-free sanity check on the same executions.
-Both pipelines run on the same fixed-circuit, commitment-only, access-gas-padded \emph{Polygon~Amoy} dataset: the supervised numbers reported in this paper are read from \texttt{experiments/multiseed\_results/polygonAmoy/}, and the clustering reads the same executions exported to \texttt{python/data/polygonAmoy/}. Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs).
-The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review); the paths above are relative to its root, and provenance for every table and figure is listed in its \texttt{README.md}.
+Both pipelines run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, access-gas padding); the supervised attacks and the clustering cross-check therefore observe the same transcripts. Per-task sample sizes vary and are listed in the result tables (e.g.\ $2005$ DUO executions; $133$ balanced $30$-vs-$30$ PI pairs).
+The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review).
 
 \subsubsection{Supervised attacks}
 For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score used by the unified verdict for that objective.
@@ -15,7 +15,7 @@ individual policies.
 For each seed we run a label-permutation test and record whether the AUC is significant at $\alpha{=}0.05$.
 
 The headline metrics are the AUC, its distance from chance averaged over seeds, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap), and the permutation $p$-value averaged over seeds ($p_{\mathrm{perm}}$). Because the gap averages per-seed absolute deviations, it is generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
-The mean permutation $p$-value $p_{\mathrm{perm}}$ is reported as a diagnostic only; gating uses the significant-seed fraction---the fraction of seeds whose per-seed test rejects at $\alpha{=}0.05$---defined below, not this pooled $p_{\mathrm{perm}}$.
+The mean permutation $p$-value $p_{\mathrm{perm}}$ is reported as a diagnostic only; the PASS/FAIL decision uses the significant-seed fraction---the fraction of seeds whose per-seed test rejects at $\alpha{=}0.05$---defined below, not this pooled $p_{\mathrm{perm}}$.
 This AUC gap is an empirical, sample-estimated diagnostic, not the advantage of a formal cryptographic distinguisher and not a proven security bound.
 The unified verdict is:
 %
@@ -26,14 +26,15 @@ The unified verdict is:
 %
 Both legs of this \emph{double criterion} are required: high classification power that is not statistically reproducible across seeds (or reproducible significance with chance-level AUC) does not constitute a leak.
 
-Tasks whose test split contains fewer than $20$ executions (median over the 30 seeded splits) are \emph{underpowered}---reported but excluded from gating, so a small task's sampling noise cannot decide the verdict.
-Every task gates on LR and RF independently and fails if either clears the double criterion; the result tables report the stronger (higher-AUC) classifier for each task.
+Tasks whose test split contains fewer than $20$ executions (median over the 30 seeded splits) are \emph{underpowered}---reported but excluded from the verdict, so a small task's sampling noise cannot decide it.
+The double criterion is applied to LR and RF independently for each task, which fails if either classifier clears it; the result tables report the stronger (higher-AUC) classifier for each task.
 For SPP, LR over-separates on the near-constant features (see below) and yields a degenerate AUC, so the operative signal is the RF score---the fraction of trees voting for the class---which remains continuous.
 
 As established in Section~\ref{sec:eval-threat}, the transcript normalization leaves gas
 as the only policy-dependent channel; the LR/RF feature set is therefore the two gas
 measurements, which is why LR saturates on the otherwise near-constant SPP inputs.
-To distinguish a genuine defense from a weak attacker, we pair the near-chance main results with the gas-normalization positive control in Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover signal on the un-padded gas transcript and collapse after padding.
+A near-chance result alone cannot show whether the defense works or the attacker is simply too weak to find any signal.
+We therefore pair the main results with the gas-normalization positive control in Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover signal on the un-padded gas transcript, and that signal collapses after padding.
 
 \subsubsection{Unsupervised clustering attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.

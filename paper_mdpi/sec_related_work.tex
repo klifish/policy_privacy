@@ -1,31 +1,6 @@
 \section{Related Work}
 \label{sec:related-work}
 
-\begin{table}[H]
-	\centering
-	\caption{Positioning of representative approaches against policy-private
-		consent enforcement under public-chain observability. ``Yes'' indicates explicit
-		support, ``Partial'' indicates indirect or incomplete support, and ``No''
-		indicates that the dimension is not addressed---typically because it lies outside
-		the approach's original design goals; assumptions in parentheses are part of the
-		claim.}
-	\label{tab:related-work-gap} \footnotesize
-	% Column widths sum to <1 so that the inter-column glue fits inside the text block.
-	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}p{0.38\linewidth}@{}}
-		\hline
-		\textbf{Approach}                                                                                                                        & \textbf{Policy confidentiality} & \textbf{Metadata-leakage mitigation} & \textbf{Verifiable auditability} & \textbf{Main limitation}                                                                                                                  \\
-		\hline
-		Blockchain consent management~\cite{kakarlapudi2021systematic,welzel2025enabling}                                                        & No                              & No                                   & Yes                              & Records and enforces consent verifiably on chain, but policy confidentiality and policy-dependent leakage are typically out of scope.     \\
-		Data / transaction privacy~\cite{bethencourt2007ciphertext,ateniese2006improved,sasson2014zerocash,rondelet2019zeth,williamson2018aztec} & No                              & Partial                              & Partial                          & Protects encrypted data access or transaction semantics, but not the governing consent policy or policy-dependent authorization workflow. \\
-		Hidden-policy access control~\cite{wu2023blockchain,hu2023access}                                                                        & Partial                         & Partial                              & Partial                          & Reduces direct policy exposure, but may leak through workflows, updates, or policy-holder interactions.                                   \\
-		MPC / HE policy evaluation~\cite{ardagna2009xacml,sheikhalishahi2019privacy}                                                             & Yes                             & No                                   & Partial                          & Supports confidential computation, but usually lacks public-chain-verifiable authorization evidence.                                      \\
-		Universal SNARKs / zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}                                                     & No                              & Partial                              & Yes                              & Supports proof reuse and public verification, but does not by itself hide policy-dependent public artifacts.                              \\
-		Metadata-leakage defenses~\cite{miller2023vtbc}                                                                                          & No                              & Yes                                  & No                               & Models or mitigates observable signals, but does not provide hidden-policy consent enforcement.                                           \\
-		TPS-ZKPI                                                                                                                                 & Yes (under TPS trust)           & Yes (modeled channels)               & Yes                              & Provides policy-private, metadata-aware, verifiable consent enforcement under the stated TPS trust assumption.                            \\
-		\hline
-	\end{tabular}
-\end{table}
-
 Blockchain-based consent management for healthcare data sharing has been studied extensively, with smart contracts used to record, enforce, and audit consent across institutions~\cite{kakarlapudi2021systematic, welzel2025enabling,li2024you}.
 This line of work focuses on making consent decisions verifiable and auditable, and the privacy mechanisms surveyed in this space mainly protect health data contents and user identities~\cite{li2025privacy}.
 The confidentiality of the governing consent policy---and what public-chain enforcement artifacts reveal about it---is typically out of scope.
@@ -71,3 +46,27 @@ policies. Table~\ref{tab:related-work-gap}
 summarizes this positioning.
 
 
+\begin{table}[H]
+	\centering
+	\caption{Positioning of representative approaches against policy-private
+		consent enforcement under public-chain observability. ``Yes'' indicates explicit
+		support, ``Partial'' indicates indirect or incomplete support, and ``No''
+		indicates that the dimension is not addressed---typically because it lies outside
+		the approach's original design goals; assumptions in parentheses are part of the
+		claim.}
+	\label{tab:related-work-gap} \footnotesize
+	% Column widths sum to <1 so that the inter-column glue fits inside the text block.
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}p{0.38\linewidth}@{}}
+		\hline
+		\textbf{Approach}                                                                                                                        & \textbf{Policy confidentiality} & \textbf{Metadata-leakage mitigation} & \textbf{Verifiable auditability} & \textbf{Main limitation}                                                                                                                  \\
+		\hline
+		Blockchain consent management~\cite{kakarlapudi2021systematic,welzel2025enabling}                                                        & No                              & No                                   & Yes                              & Records and enforces consent verifiably on chain, but policy confidentiality and policy-dependent leakage are typically out of scope.     \\
+		Data / transaction privacy~\cite{bethencourt2007ciphertext,ateniese2006improved,sasson2014zerocash,rondelet2019zeth,williamson2018aztec} & No                              & Partial                              & Partial                          & Protects encrypted data access or transaction semantics, but not the governing consent policy or policy-dependent authorization workflow. \\
+		Hidden-policy access control~\cite{wu2023blockchain,hu2023access}                                                                        & Partial                         & Partial                              & Partial                          & Reduces direct policy exposure, but may leak through workflows, updates, or policy-holder interactions.                                   \\
+		MPC / HE policy evaluation~\cite{ardagna2009xacml,sheikhalishahi2019privacy}                                                             & Yes                             & No                                   & Partial                          & Supports confidential computation, but usually lacks public-chain-verifiable authorization evidence.                                      \\
+		Universal SNARKs / zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}                                                     & No                              & Partial                              & Yes                              & Supports proof reuse and public verification, but does not by itself hide policy-dependent public artifacts.                              \\
+		Metadata-leakage defenses~\cite{miller2023vtbc}                                                                                          & No                              & Yes                                  & No                               & Models or mitigates observable signals, but does not provide hidden-policy consent enforcement.                                           \\
+		TPS-ZKPI                                                                                                                                 & Yes (under TPS trust)           & Yes (modeled channels)               & Yes                              & Provides policy-private, metadata-aware, verifiable consent enforcement under the stated TPS trust assumption.                            \\
+		\hline
+	\end{tabular}
+\end{table}

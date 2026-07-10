@@ -14,13 +14,13 @@ Concretely, for each policy execution (a commit transaction followed by an acces
     \texttt{accessLogsCount}, \texttt{accessLogsSize}.
 \end{itemize}
 %
-By design, calldata length, proof size, and log counts/sizes are content-independent (constant across policies), so any residual signal can only flow through the gas features in the modeled public transcript. 
+Among the observables modeled above, calldata length, proof size, and log counts/sizes are content-independent by design (constant across policies), so any policy-dependent signal can only flow through the gas features.
 The effective feature set the attacker can exploit therefore reduces to the two gas measurements (\texttt{commitGasUsed}, \texttt{accessGasUsed}); the remaining observables are retained in the pipeline but carry no policy-dependent variation. 
 The defenses (commitment-only interface, randomized access-gas padding) target exactly this channel. 
 We do not model side channels such as block timing, transaction ordering, mempool or broadcast patterns, or off-chain TPS communication; these, together with the non-goals stated in Section~\ref{sec:problem}, remain outside this evaluation model.
 
-We consider three increasingly fine-grained attacker tasks, one per privacy objective:
-(i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~tell two
-\emph{semantically related} policies apart (PI, Section~\ref{sec:eval-pi}); and
-(iii)~recover the policy's \emph{structure or parameter magnitude} (SPP,
+We consider three attacker tasks, one per privacy objective:
+(i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~distinguish two
+\emph{semantically related} policies (PI, Section~\ref{sec:eval-pi}); and
+(iii)~recover the policy's \emph{structure or parameter sizes} (SPP,
 Section~\ref{sec:eval-spp}).

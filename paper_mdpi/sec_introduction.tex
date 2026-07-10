@@ -17,7 +17,7 @@ Even mechanisms designed to hide policy content, such as hidden-policy attribute
 In blockchain-based consent management, policy leakage may arise not only from explicit policy disclosure, but also from policy-dependent artifacts such as calldata size, public-input layout, emitted events, verifier interfaces, and gas usage.
 Therefore, policy-private consent enforcement requires more than hiding data or proving correctness in zero knowledge; it also requires controlling what the public-chain transcript reveals about the hidden policy.
 This paper studies this problem for blockchain-based healthcare data sharing under public-chain observability.
-The core problem is how an on-chain verifier can check that a requester satisfies a provider-defined consent policy, while metadata-only public-chain observers learn minimal information about the governing policy and the requester's authorization evidence from the resulting verification transcript.
+The central challenge is to enable an on-chain verifier to check that a requester satisfies a provider-defined consent policy while ensuring that metadata-only public-chain observers learn minimal information about the governing policy and the requester's authorization evidence from the resulting verification transcript.
 We focus on Boolean-based consent policies, including policies derived from biomedical data-use conditions such as terms from the Data Use Ontology (DUO), the GA4GH standard vocabulary of consent-based data-use conditions~\cite{lawson2021data}, and disease-scope constraints~\cite{WHO_ICD10}.
 
 We address this problem with the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
@@ -42,27 +42,22 @@ A paired ablation serves as a positive control: when gas padding is removed, the
 This paper makes the following contributions:
 
 \begin{itemize}
-	\item We cast policy privacy under public-chain observability in blockchain-based
-	      healthcare data sharing as three measurable objectives---policy content hiding,
-	      policy indistinguishability, and structure/parameter privacy---each with an
-	      attack-based criterion, giving concrete evaluation targets for consent-policy
-	      enforcement.
-
 	\item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach for publicly
 	      verifiable and auditable consent enforcement, in which on-chain proof
 	      verification and auditability hold without trusting the TPS, while policy
 	      confidentiality and faithful witness construction are conditional on an
-	      explicit, delimited trust assumption---keeping policy-bound proving material
+	      explicit, delimited trust assumption---keeping policy-bound proving information
 	      and requester authorization evidence off-chain.
 
-	\item We design a reusable zero-knowledge policy interpreter for fixed-length
+	\item We develop a reusable zero-knowledge policy interpreter for fixed-length
 	      Boolean RPN policy programs over a bounded token alphabet, combining policy commitment
 	      binding with a policy-independent on-chain verification interface that serves all
 	      policies through one circuit and supports policy evolution without changing the
 	      on-chain verifier.
 
 	\item We provide an attack-driven empirical evaluation of residual policy-dependent
-	      leakage from normalized public-chain metadata on the Polygon~Amoy testnet, using
+	      leakage from normalized public-chain metadata on the Polygon~Amoy
+	      testnet\footnote{\url{https://amoy.polygonscan.com}}, using
 	      supervised classification and unsupervised clustering attacks under a multi-seed
 	      permutation-test criterion. A paired gas-padding ablation then isolates
 	      gas-transcript normalization as the mechanism responsible for the observed

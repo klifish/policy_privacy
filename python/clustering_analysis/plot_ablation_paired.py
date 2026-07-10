@@ -81,8 +81,9 @@ def panel(ax, points, title, subtitle):
     hi = 0.34
     ax.plot([0, hi], [0, hi], color="#555555", linewidth=1.0, linestyle="--", zorder=1)
     ax.fill_between([0, hi], [0, 0], [0, hi], color="#F4F7F4", zorder=0)  # lower triangle
-    ax.text(0.30, 0.02, "padding helps\n(below diagonal)", fontsize=7.5,
-            color="#6b6b6b", ha="right", va="bottom", style="italic")
+    ax.text(0.26, 0.215, "padding helps (below diagonal)", fontsize=9,
+            color="#3d3d3d", ha="center", va="center", style="italic",
+            rotation=45, rotation_mode="anchor")
 
     # plot in a stable category order so colors layer predictably
     for cat in ("noeff", "reduce", "neg"):

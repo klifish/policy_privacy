@@ -8,15 +8,15 @@
 % The PASS verdict lives in tab_privacy_summary and in the prose, not in this table.
 \begin{table}[H]
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
-    policy-disjoint seeds, by policy-pair archetype. AUC is the higher-scoring of
-    logistic regression and random forest per archetype (Section~\ref{sec:eval-method}).
-    \texttt{controlled\_difference} is reported as a diagnostic control and excluded
+    policy-disjoint seeds, by policy-pair type. AUC is the higher-scoring of
+    logistic regression and random forest per pair type (Section~\ref{sec:eval-method}).
+    \texttt{controlled\_difference} is reported for reference and excluded
     from the PI verdict.}
   \label{tab:pi-pairs}
   \centering\footnotesize
   \begin{tabular}{lccccc}
     \toprule
-    Pair archetype & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
+    Pair type & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
     \midrule
     overall               & $0.516 \pm 0.030$ & $0.026 \pm 0.022$ & $0.367$ & $10\%$ & $270$  \\
     semantic\_equivalent  & $0.511 \pm 0.082$ & $0.070 \pm 0.045$ & $0.456$ & $13\%$ & $71$   \\
@@ -26,5 +26,5 @@
     \bottomrule
   \end{tabular}
 
-  \noindent{\footnotesize{$^{\dagger}$ Diagnostic control; does not gate the PI verdict.}}
+  \noindent{\footnotesize{$^{\dagger}$ Reported for reference; excluded from the PI verdict.}}
 \end{table}

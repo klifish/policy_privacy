@@ -144,6 +144,18 @@ npx mocha test/compiler/icd10_set_builder_test.js --timeout 100000
 npm run test:all
 ```
 
+## Building the Papers
+
+The `paper/` (IEEEtran) and `paper_mdpi/` (MDPI) directories each contain a standalone LaTeX manuscript. Build either with [Tectonic](https://tectonic-typesetting.github.io/), which resolves packages and runs the bibliography/rerun passes in one command:
+
+```bash
+cd paper && tectonic main.tex
+# or
+cd paper_mdpi && tectonic main.tex
+```
+
+This produces `main.pdf` in the same directory. `pdflatex`/`latexmk`/`bibtex` are not required.
+
 ## Code Style
 
 - Use **2 spaces** for indentation in JavaScript and Solidity files.
