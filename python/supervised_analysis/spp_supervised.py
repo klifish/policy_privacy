@@ -19,22 +19,30 @@ import numpy as np
 
 from common import (
     CSV_FIELDS,
+    DEFAULT_SPLIT_CANDIDATES,
     DEFAULT_SEEDS,
     FEATURE_KEYS,
+    PERM_ITERS,
+    TEST_RATIO,
     analyze_contrast,
     build_verdict,
     feature_row,
+    file_sha256,
     find_json,
     load_json,
+    load_split_manifest,
+    new_split_manifest,
     verdict_to_rows,
     evaluate_seed,
+    write_split_manifest,
 )
 
-TARGET_ATTRS = ["structureType", "predicateCombo", "paramType"]
+TARGET_ATTRS = ["structureType", "predicateCombo", "paramType", "nestingDepth"]
 TARGET_CLASS_ORDER = {
     "structureType": ["trivial", "or_only", "and_only", "negation_heavy", "and_or_mixed"],
     "predicateCombo": ["none", "single", "few", "many"],
     "paramType": ["none", "small", "medium", "large"],
+    "nestingDepth": ["flat", "shallow", "medium", "deep"],
 }
 DEFAULT_DATA_DIR = (
     Path(__file__).resolve().parents[2]
@@ -60,6 +68,28 @@ def build_feature_matrix(dataset: List[dict]):
     return X, groups, labels_by_target
 
 
+def build_tasks(dataset: List[dict]):
+    X, groups, labels_by_target = build_feature_matrix(dataset)
+    tasks = []
+    for target in TARGET_ATTRS:
+        labels = labels_by_target[target]
+        present = set(labels.tolist())
+        ordered = [value for value in TARGET_CLASS_ORDER.get(target, []) if value in present]
+        ordered.extend(sorted(present - set(ordered)))
+        for c0, c1 in itertools.combinations(ordered, 2):
+            mask = (labels == c0) | (labels == c1)
+            tasks.append({
+                "key": f"{target}: {c0}/{c1}",
+                "target": target,
+                "class0": c0,
+                "class1": c1,
+                "X": X[mask],
+                "y": (labels[mask] == c1).astype(int),
+                "groups": groups[mask],
+            })
+    return tasks
+
+
 def run_dataset(
     dataset: List[dict],
     seeds: int,
@@ -68,9 +98,12 @@ def run_dataset(
     csv_path: Optional[Path] = None,
     json_path: Optional[Path] = None,
     jobs: int = 1,
+    split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
+    split_manifest_in: Optional[Dict] = None,
+    split_manifest_out: Optional[Dict] = None,
+    perm_iters: int = PERM_ITERS,
 ) -> Dict:
     """Run all SPP contrasts, checkpointing after each contrast."""
-    X, groups, labels_by_target = build_feature_matrix(dataset)
     tasks = []
 
     writer = None
@@ -81,37 +114,38 @@ def run_dataset(
         writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
         writer.writeheader()
 
-    for target in TARGET_ATTRS:
-        labels = labels_by_target[target]
-        present = set(labels.tolist())
-        ordered = [value for value in TARGET_CLASS_ORDER.get(target, []) if value in present]
-        ordered.extend(sorted(present - set(ordered)))
-        for c0, c1 in itertools.combinations(ordered, 2):
-            mask = (labels == c0) | (labels == c1)
-            y = (labels[mask] == c1).astype(int)
-            res = analyze_contrast(X[mask], y, groups[mask], seeds, models, jobs=jobs)
-            res.update({
-                "dataset": dataset_tag,
-                "key": f"{target}: {c0}/{c1}",
-                "target": target,
-                "class0": c0,
-                "class1": c1,
-            })
-            tasks.append(res)
-            _print_contrast(res, models)
+    for task in build_tasks(dataset):
+        target, c0, c1 = task["target"], task["class0"], task["class1"]
+        task_key = task["key"]
+        res = analyze_contrast(
+            task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
+            perm_iters=perm_iters, task_key=task_key,
+            split_candidates=split_candidates,
+            split_manifest_in=split_manifest_in,
+            split_manifest_out=split_manifest_out,
+        )
+        res.update({
+            "dataset": dataset_tag,
+            "key": task_key,
+            "target": target,
+            "class0": c0,
+            "class1": c1,
+        })
+        tasks.append(res)
+        _print_contrast(res, models)
 
-            if writer is not None:
-                for row in verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models):
-                    writer.writerow(row)
-                csv_file.flush()
-            if json_path is not None:
-                with json_path.open("w", encoding="utf-8") as handle:
-                    json.dump(build_verdict(dataset_tag, seeds, tasks), handle, indent=2)
+        if writer is not None:
+            for row in verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models):
+                writer.writerow(row)
+            csv_file.flush()
+        if json_path is not None:
+            with json_path.open("w", encoding="utf-8") as handle:
+                json.dump(build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters), handle, indent=2)
 
     if csv_file is not None:
         csv_file.close()
 
-    return build_verdict(dataset_tag, seeds, tasks)
+    return build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters)
 
 
 def _print_contrast(res: Dict, models: Sequence[str]):
@@ -138,6 +172,10 @@ def main() -> None:
                         help="Parallel processes over seeds (-1 = all cores).")
     parser.add_argument("--tag", type=str, default=None,
                         help="Dataset tag for output rows (default: parent dir name)")
+    parser.add_argument("--permutation-iterations", type=int, default=PERM_ITERS)
+    parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
+    parser.add_argument("--split-manifest-in", type=Path, default=None)
+    parser.add_argument("--split-manifest-out", type=Path, default=None)
     args = parser.parse_args()
 
     global JOBS
@@ -155,8 +193,19 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = args.output_dir / "spp_supervised_summary.csv"
     json_path = args.output_dir / "spp_supervised_verdict.json"
-    verdict = run_dataset(dataset, args.seeds, args.models, tag,
-                          csv_path=csv_path, json_path=json_path, jobs=args.jobs)
+    manifest_in = load_split_manifest(args.split_manifest_in)
+    manifest_out = new_split_manifest(TEST_RATIO, args.split_candidates)
+    manifest_out["dataset"] = {"path": str(dataset_path), "sha256": file_sha256(dataset_path)}
+    verdict = run_dataset(
+        dataset, args.seeds, args.models, tag,
+        csv_path=csv_path, json_path=json_path, jobs=args.jobs,
+        split_candidates=args.split_candidates,
+        split_manifest_in=manifest_in,
+        split_manifest_out=manifest_out,
+        perm_iters=args.permutation_iterations,
+    )
+    manifest_path = args.split_manifest_out or (args.output_dir / "spp_split_manifest.json")
+    write_split_manifest(manifest_path, manifest_out)
 
     print(f"\nOverall SPP supervised verdict [{tag}]: "
           f"{'PASS' if verdict['overallPassed'] else verdict['overallPassed']}")

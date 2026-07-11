@@ -17,16 +17,22 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from common import (
+    DEFAULT_SPLIT_CANDIDATES,
     DEFAULT_SEEDS,
     FEATURE_KEYS,
+    PERM_ITERS,
     TEST_RATIO,
     analyze_contrast,
     build_verdict,
     checkpoint_rows,
     feature_row,
+    file_sha256,
     find_json,
     load_json,
+    load_split_manifest,
+    new_split_manifest,
     verdict_to_rows,
+    write_split_manifest,
 )
 
 DUO_TERM_ORDER: Sequence[Tuple[int, str]] = (
@@ -88,6 +94,10 @@ def _duo_ids(record: dict) -> set:
 
 
 def _icd_chapter(record: dict):
+    # JS keys ICD tasks from ontologyValue (numeric ch0..ch9). Prefer that
+    # authoritative identifier over alphabetically re-numbering semantic names.
+    if record.get("ontologyNamespace") == "ICD10" and record.get("ontologyValue") is not None:
+        return record.get("ontologyValue")
     semantics = record.get("semantics") or {}
     scope = semantics.get("icd10Scope")
     if isinstance(scope, dict):
@@ -136,10 +146,13 @@ def build_tasks(dataset: List[dict]):
     if icd_rows:
         indices = np.array([i for i, _ in icd_rows], dtype=int)
         chapters = sorted({ch for _, ch in icd_rows}, key=lambda value: str(value))
-        chapter_to_js_index = {chapter: idx for idx, chapter in enumerate(chapters)}
         labels = {i: ch for i, ch in icd_rows}
         for chapter in chapters:
-            js_index = chapter_to_js_index[chapter]
+            try:
+                js_index = int(chapter)
+            except (TypeError, ValueError):
+                # Compatibility fallback for older datasets without ontologyValue.
+                js_index = chapters.index(chapter)
             y = np.array([1 if labels[int(i)] == chapter else 0 for i in indices], dtype=int)
             if len(np.unique(y)) < 2:
                 continue
@@ -165,13 +178,23 @@ def run_dataset(
     jobs: int,
     csv_path: Optional[Path] = None,
     json_path: Optional[Path] = None,
+    split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
+    split_manifest_in: Optional[Dict] = None,
+    split_manifest_out: Optional[Dict] = None,
+    perm_iters: int = PERM_ITERS,
 ) -> Dict:
     results = []
     if csv_path is not None and csv_path.exists():
         csv_path.unlink()
 
     for task in build_tasks(dataset):
-        res = analyze_contrast(task["X"], task["y"], task["groups"], seeds, models, jobs=jobs)
+        res = analyze_contrast(
+            task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
+            perm_iters=perm_iters, task_key=task["key"],
+            split_candidates=split_candidates,
+            split_manifest_in=split_manifest_in,
+            split_manifest_out=split_manifest_out,
+        )
         res.update({
             "dataset": dataset_tag,
             "key": task["key"],
@@ -188,14 +211,14 @@ def run_dataset(
         n = res.get("medianTestN")
         print(f"  [{tag:10}] {task['key']:16} medN={n if n is not None else 'NA'} " + " | ".join(parts))
 
-        partial = build_verdict(dataset_tag, seeds, results)
+        partial = build_verdict(dataset_tag, seeds, results, perm_iters=perm_iters)
         checkpoint_rows(csv_path, verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models), append=True)
         if json_path is not None:
             json_path.parent.mkdir(parents=True, exist_ok=True)
             with json_path.open("w", encoding="utf-8") as handle:
                 json.dump(partial, handle, indent=2)
 
-    return build_verdict(dataset_tag, seeds, results)
+    return build_verdict(dataset_tag, seeds, results, perm_iters=perm_iters)
 
 
 def main() -> None:
@@ -206,6 +229,10 @@ def main() -> None:
     parser.add_argument("--models", nargs="+", default=["rf", "lr"], choices=["rf", "lr"])
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--tag", type=str, default=None)
+    parser.add_argument("--permutation-iterations", type=int, default=PERM_ITERS)
+    parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
+    parser.add_argument("--split-manifest-in", type=Path, default=None)
+    parser.add_argument("--split-manifest-out", type=Path, default=None)
     args = parser.parse_args()
 
     dataset_path = find_pch_dataset(args.data_dir)
@@ -219,7 +246,18 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = args.output_dir / "pch_supervised_summary.csv"
     json_path = args.output_dir / "pch_supervised_verdict.json"
-    verdict = run_dataset(dataset, args.seeds, args.models, tag, args.jobs, csv_path, json_path)
+    manifest_in = load_split_manifest(args.split_manifest_in)
+    manifest_out = new_split_manifest(TEST_RATIO, args.split_candidates)
+    manifest_out["dataset"] = {"path": str(dataset_path), "sha256": file_sha256(dataset_path)}
+    verdict = run_dataset(
+        dataset, args.seeds, args.models, tag, args.jobs, csv_path, json_path,
+        split_candidates=args.split_candidates,
+        split_manifest_in=manifest_in,
+        split_manifest_out=manifest_out,
+        perm_iters=args.permutation_iterations,
+    )
+    manifest_path = args.split_manifest_out or (args.output_dir / "pch_split_manifest.json")
+    write_split_manifest(manifest_path, manifest_out)
 
     print(f"\nOverall PCH supervised verdict [{tag}]: "
           f"{'PASS' if verdict['overallPassed'] else verdict['overallPassed']}")

@@ -2,7 +2,7 @@
 """SPP adapter for the visualization framework (viz_common.run_probe).
 
 Builds the same within-attribute pairwise binary contrasts as
-``spp_supervised.py`` (structureType / predicateCombo / paramType), but tags each
+``spp_supervised.py`` (structureType / predicateCombo / paramType / nestingDepth), but tags each
 task with its original dataset ``indices`` so the dashboard's raw-row panel and
 training-data inspection line up.  Never touches the of-record outputs.
 """

@@ -21,6 +21,14 @@ from typing import List, Dict, Tuple, Optional
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
+from clustering_stats import (
+    DEFAULT_BOOTSTRAPS,
+    DEFAULT_KMEANS_SEEDS,
+    DEFAULT_PERMUTATIONS,
+    ensemble_permutation_analysis,
+    policy_bootstrap_ci,
+    write_metadata,
+)
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
@@ -67,6 +75,7 @@ def extract_data_for_target(dataset: List[dict], target_name: str, valid_classes
     """
     rows = []
     labels = []
+    groups = []
 
     # Helper to find the target value in the nested structure
     # The dataset structure might vary, so we need to be flexible.
@@ -142,6 +151,7 @@ def extract_data_for_target(dataset: List[dict], target_name: str, valid_classes
 
         rows.append(row)
         labels.append(str(label))
+        groups.append(str(entry.get("policyId", len(groups))))
 
     if len(rows) < 10:
         return None
@@ -157,17 +167,17 @@ def extract_data_for_target(dataset: List[dict], target_name: str, valid_classes
         "X": X,
         "y": y,
         "term_labels": unique_labels,
-        "n_classes": len(unique_labels)
+        "n_classes": len(unique_labels),
+        "groups": np.array(groups, dtype=object),
     }
 
 
-def analyze_target(target_name: str, data: Dict):
+def analyze_target(target_name: str, data: Dict, *, kmeans_seeds=DEFAULT_KMEANS_SEEDS,
+                   permutations=DEFAULT_PERMUTATIONS, bootstraps=DEFAULT_BOOTSTRAPS,
+                   random_seed=42):
     X = data["X"]
     y = data["y"]
     n_classes = data["n_classes"]
-
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
 
     results = {
         "target": target_name,
@@ -175,11 +185,29 @@ def analyze_target(target_name: str, data: Dict):
         "n_classes": n_classes
     }
 
-    # K-Means
-    kmeans = KMeans(n_clusters=n_classes, random_state=42, n_init=10)
-    y_pred_km = kmeans.fit_predict(X_scaled)
-    results["kmeans_ari"] = adjusted_rand_score(y, y_pred_km)
-    results["kmeans_nmi"] = normalized_mutual_info_score(y, y_pred_km)
+    analysis = ensemble_permutation_analysis(
+        X, y, n_classes, kmeans_seeds=kmeans_seeds,
+        permutations=permutations, random_seed=random_seed,
+    )
+    observed = analysis["observed"]
+    results.update({
+        "kmeans_ari": observed["ari"],
+        "kmeans_ari_std": observed["ariStd"],
+        "kmeans_nmi": observed["nmi"],
+        "kmeans_nmi_std": observed["nmiStd"],
+        "baseline_ari": analysis["nullAri"]["mean"],
+        "baseline_nmi": analysis["nullNmi"]["mean"],
+        "debiased_ari": analysis["nullAri"]["debiased"],
+        "debiased_nmi": analysis["nullNmi"]["debiased"],
+        "ari_p_value": analysis["nullAri"]["pValue"],
+        "nmi_p_value": analysis["nullNmi"]["pValue"],
+    })
+    if bootstraps > 0:
+        results.update(policy_bootstrap_ci(
+            X, y, data["groups"], n_classes, iterations=bootstraps,
+            random_seed=random_seed,
+        ))
+    y_pred_km = analysis["firstPrediction"]
 
     return results, X, y_pred_km
 
@@ -214,6 +242,10 @@ def main():
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     parser.add_argument("--plot", action="store_true", help="Generate plots")
+    parser.add_argument("--kmeans-seeds", type=int, default=DEFAULT_KMEANS_SEEDS)
+    parser.add_argument("--permutations", type=int, default=DEFAULT_PERMUTATIONS)
+    parser.add_argument("--bootstraps", type=int, default=DEFAULT_BOOTSTRAPS)
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -237,7 +269,11 @@ def main():
                 f"  Skipping {target}: Insufficient data or labels not found.")
             continue
 
-        res, X_df, y_pred = analyze_target(target, data)
+        res, X_df, y_pred = analyze_target(
+            target, data, kmeans_seeds=args.kmeans_seeds,
+            permutations=args.permutations, bootstraps=args.bootstraps,
+            random_seed=args.seed,
+        )
         all_results.append(res)
 
         print(
@@ -253,6 +289,13 @@ def main():
         df_res = pd.DataFrame(all_results)
         csv_path = args.output_dir / "spp_clustering_summary.csv"
         df_res.to_csv(csv_path, index=False)
+        write_metadata(
+            args.output_dir / "spp_clustering_metadata.json",
+            source=dataset_path, feature_keys=FEATURE_KEYS,
+            targets=list(TARGETS), kmeansSeeds=args.kmeans_seeds,
+            permutations=args.permutations, bootstraps=args.bootstraps,
+            randomSeed=args.seed,
+        )
         print(f"\nAnalysis complete. Summary saved to {csv_path}")
 
 

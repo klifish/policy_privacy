@@ -126,7 +126,7 @@ def main() -> None:
     add_common_args(parser, DEFAULT_DATA_DIR)
     parser.add_argument("--pairs", type=Path, default=None,
                         help="explicit pi_pairs.json (else auto-find/generate)")
-    parser.add_argument("--pair-seed", type=int, default=42)
+    parser.add_argument("--pair-seed", type=str, default="pi-experiment")
     args = parser.parse_args()
 
     if args.pairs is not None:

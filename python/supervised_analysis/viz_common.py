@@ -21,7 +21,6 @@ from typing import Callable, Dict, List, Optional, Sequence
 
 import numpy as np
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import GroupShuffleSplit
 
 from common import (
     AUC_MAX,
@@ -37,6 +36,7 @@ from common import (
     evaluate_seed,
     fit_predict_proba,
     load_json,
+    repeated_stratified_group_holdout,
 )
 
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "supervised_analysis"
@@ -56,8 +56,10 @@ def null_auc_samples(X, y, groups, seed: int, model: str, perm_iters: int) -> Op
     tail count) so a histogram can be drawn.  Returns None if the split is
     degenerate, matching ``evaluate_seed``.
     """
-    gss = GroupShuffleSplit(n_splits=1, test_size=TEST_RATIO, random_state=seed)
-    tr_idx, te_idx = next(gss.split(X, y, groups))
+    split = repeated_stratified_group_holdout(y, groups, seed, test_ratio=TEST_RATIO)
+    if split is None:
+        return None
+    tr_idx, te_idx = split["trainIndex"], split["testIndex"]
     X_tr, X_te = X[tr_idx], X[te_idx]
     y_tr, y_te = y[tr_idx], y[te_idx]
     if len(np.unique(y_tr)) < 2 or len(np.unique(y_te)) < 2:

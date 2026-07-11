@@ -47,6 +47,17 @@ The final paired reports are:
 - `comparison/ablation_report.json`
 - `comparison/ablation_report.md`
 
+The independent sklearn cross-check covers PCH, PI, and all 28 SPP contrasts,
+replays one stratified policy-group split manifest on both profiles, and validates
+alignment by `policyId + executionId`:
+
+```bash
+npm run ablation:gas:python
+```
+
+Its seed-bootstrap interval is reported as a repeated-split stability interval,
+because the 30 seeded holdouts overlap and are not independent samples.
+
 Positive `deltaLeakage = |AUC_B1-0.5| - |AUC_B2-0.5|` means padding reduced
 classifier leakage. The report also includes policy-group bootstrap clustering
 intervals, balanced-PI pair differences, and gas overhead.

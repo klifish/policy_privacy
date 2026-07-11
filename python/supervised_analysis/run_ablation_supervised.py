@@ -1,42 +1,33 @@
 #!/usr/bin/env python3
-"""
-Gas-padding ablation cross-check (supervised, sklearn).
+"""Paired sklearn gas-padding ablation for PCH, PI, and SPP."""
+from __future__ import annotations
 
-Runs the SPP supervised attack on the paired ablation datasets
-``b1_unpadded`` and ``b2_padded`` and reports, per pairwise contrast and model,
-the leakage reduction attributable to padding:
-
-    deltaLeakage = |AUC_b1 - 0.5| - |AUC_b2 - 0.5|      (per seed, then bootstrapped)
-
-with a bootstrap 95% CI over the shared seeds (seeds are paired: the same
-policy-disjoint partition is applied to both datasets, which share policy ids).
-Leakage is measured as advantage (distance of AUC from chance in either
-direction), matching ``comparison/ablation_report.json``'s
-``effectDefinition: "abs(AUC_B1 - 0.5) - abs(AUC_B2 - 0.5)"``. Interpretation
-follows the same report: CI excludes 0 and delta>0 -> padding_reduces_leakage;
-CI excludes 0 and delta<0 -> padding_increases_leakage; otherwise
-no_detectable_incremental_effect.
-"""
 import argparse
 import csv
-import itertools
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 from joblib import Parallel, delayed
 
-from spp_supervised import (
-    TARGET_ATTRS,
-    build_feature_matrix,
+from common import (
+    DEFAULT_SPLIT_CANDIDATES,
     evaluate_seed,
-    find_spp_dataset,
-    load_json,
+    new_split_manifest,
+    repeated_stratified_group_holdout,
+    split_group_hash,
+    split_task_hash,
+    write_split_manifest,
 )
+from pch_supervised import build_tasks as build_pch_tasks
+from pi_supervised import (
+    PAIR_TYPES,
+    build_scope_arrays,
+    find_or_generate_pairs,
+)
+from spp_supervised import build_tasks as build_spp_tasks
 
-# Parallel processes over seeds; set from CLI (see main).
-JOBS = 1
 
 DEFAULT_ABLATION_DIR = (
     Path(__file__).parents[2]
@@ -45,131 +36,255 @@ DEFAULT_ABLATION_DIR = (
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "supervised_analysis"
 BOOTSTRAP_ITERS = 500
 BOOTSTRAP_SEED = 12345
+JOBS = 1
+
+CSV_FIELDS = [
+    "experiment", "target", "class0", "class1", "model",
+    "aucMean_b1_unpadded", "aucMean_b2_padded", "deltaLeakage",
+    "ciLow", "ciHigh", "ciExcludesZero", "interpretation",
+    "nSeedsPaired", "intervalType",
+]
 
 
-def per_seed_aucs(X, y, groups, seeds: int, model: str):
-    """Return {seed: auc} for one contrast/model (only non-degenerate splits)."""
-    rf_n_jobs = -1 if JOBS == 1 else 1
-    if JOBS == 1:
-        results = [evaluate_seed(X, y, groups, s, [model], rf_n_jobs) for s in range(seeds)]
-    else:
-        results = Parallel(n_jobs=JOBS)(
-            delayed(evaluate_seed)(X, y, groups, s, [model], rf_n_jobs) for s in range(seeds)
+def load_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def record_key(record: dict) -> Tuple[str, str]:
+    return str(record.get("policyId")), str(record.get("executionId"))
+
+
+def align_records(b1: List[dict], b2: List[dict], dataset_name: str) -> Tuple[List[dict], List[dict]]:
+    """Align by policyId+executionId and reject semantic or label drift."""
+    def index(rows):
+        out = {}
+        for row in rows:
+            key = record_key(row)
+            if key in out:
+                raise ValueError(f"duplicate {dataset_name} execution key {key}")
+            out[key] = row
+        return out
+
+    left, right = index(b1), index(b2)
+    if set(left) != set(right):
+        raise ValueError(
+            f"{dataset_name} execution keys differ: "
+            f"onlyB1={len(set(left)-set(right))}, onlyB2={len(set(right)-set(left))}"
         )
-    return {s: res[model]["auc"] for s, res in enumerate(results) if res is not None}
+    keys = sorted(left)
+    label_fields = (
+        "duoTerm", "duoTermCodes", "ontologyNamespace", "ontologyValue",
+        "structureType", "predicateCombo", "paramType", "nestingDepth",
+        "logicStructure", "predicateCount", "setSize",
+    )
+    for key in keys:
+        a, b = left[key], right[key]
+        for field in label_fields:
+            if a.get(field) != b.get(field):
+                raise ValueError(f"{dataset_name} label mismatch at {key}: {field}")
+        if a.get("semantics") != b.get("semantics") or a.get("policy") != b.get("policy"):
+            raise ValueError(f"{dataset_name} semantic mismatch at {key}")
+    return [left[key] for key in keys], [right[key] for key in keys]
+
+
+def _task_map(tasks: Sequence[dict]) -> Dict[str, dict]:
+    return {task["key"]: task for task in tasks}
+
+
+def _pi_tasks(pairs: Sequence[dict]) -> List[dict]:
+    tasks = []
+    scopes = ["overall"] + [
+        pair_type for pair_type in PAIR_TYPES
+        if any(pair.get("pairType") == pair_type for pair in pairs)
+    ]
+    for scope in scopes:
+        arrays = build_scope_arrays(pairs, scope)
+        if arrays is None:
+            continue
+        X, y, groups = arrays
+        tasks.append({
+            "key": scope,
+            "target": "pairScope",
+            "class0": "policy0",
+            "class1": "policy1",
+            "X": X,
+            "y": y,
+            "groups": groups,
+        })
+    return tasks
+
+
+def load_aligned_tasks(root: Path, work_dir: Path, pair_seed: str):
+    output = {}
+    for experiment, filename, builder in (
+        ("pch", "pch_dataset.json", build_pch_tasks),
+        ("spp", "spp_dataset.json", build_spp_tasks),
+    ):
+        b1 = load_json(root / "b1_unpadded" / filename)
+        b2 = load_json(root / "b2_padded" / filename)
+        b1, b2 = align_records(b1, b2, filename)
+        output[experiment] = (_task_map(builder(b1)), _task_map(builder(b2)))
+
+    pair_sets = []
+    pair_paths = []
+    for profile in ("b1_unpadded", "b2_padded"):
+        pair_path, pairs = find_or_generate_pairs(
+            root / profile, work_dir / "pairs" / profile, pair_seed
+        )
+        pair_paths.append(pair_path)
+        pair_sets.append(pairs)
+    ids = [[pair.get("pairId") for pair in pairs] for pairs in pair_sets]
+    if ids[0] != ids[1]:
+        raise ValueError("PI B1/B2 pair IDs or ordering differ")
+    output["pi"] = (_task_map(_pi_tasks(pair_sets[0])), _task_map(_pi_tasks(pair_sets[1])))
+    return output, pair_paths
+
+
+def _paired_seed(task1, task2, seed, model, candidates):
+    if split_task_hash(task1["y"], task1["groups"]) != split_task_hash(task2["y"], task2["groups"]):
+        raise ValueError(f"B1/B2 task data mismatch: {task1['key']}")
+    plan1 = repeated_stratified_group_holdout(
+        task1["y"], task1["groups"], seed, candidates=candidates
+    )
+    if plan1 is None:
+        return None
+    plan2 = repeated_stratified_group_holdout(
+        task2["y"], task2["groups"], seed, candidates=candidates,
+        test_groups=plan1["testGroups"],
+    )
+    if plan2 is None:
+        raise ValueError(f"shared B1/B2 split cannot be replayed: {task1['key']} seed {seed}")
+    # One permutation is enough here because the ablation consumes AUC only.
+    r1 = evaluate_seed(task1["X"], task1["y"], task1["groups"], seed, [model], 1,
+                       perm_iters=1, split_plan=plan1, split_candidates=candidates)
+    r2 = evaluate_seed(task2["X"], task2["y"], task2["groups"], seed, [model], 1,
+                       perm_iters=1, split_plan=plan2, split_candidates=candidates)
+    return {"seed": seed, "b1": r1[model]["auc"], "b2": r2[model]["auc"], "split": r1["split"]}
 
 
 def bootstrap_delta_ci(deltas: np.ndarray, iters: int, rng: np.random.Generator):
-    """Bootstrap 95% CI of the mean paired delta by resampling seeds."""
     if len(deltas) == 0:
-        return (float("nan"), float("nan"), float("nan"))
+        return float("nan"), float("nan"), float("nan")
     means = np.array([
         rng.choice(deltas, size=len(deltas), replace=True).mean() for _ in range(iters)
     ])
     return float(deltas.mean()), float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
-CSV_FIELDS = [
-    "target", "class0", "class1", "model", "aucMean_b1_unpadded", "aucMean_b2_padded",
-    "deltaLeakage", "ciLow", "ciHigh", "ciExcludesZero", "interpretation", "nSeedsPaired",
-]
-
-
-def run(b1: List[dict], b2: List[dict], seeds: int, models: List[str],
-        csv_path: Optional[Path] = None) -> List[Dict]:
-    X1, g1, lab1 = build_feature_matrix(b1)
-    X2, g2, lab2 = build_feature_matrix(b2)
+def run(tasks, seeds: int, models: Sequence[str], candidates: int,
+        bootstrap_iters: int, manifest: Dict) -> List[Dict]:
     rng = np.random.default_rng(BOOTSTRAP_SEED)
     rows = []
-
-    # Checkpoint each row to disk as it is computed, so an interrupted run keeps
-    # its completed contrasts.
-    writer = None
-    csv_file = None
-    if csv_path is not None:
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-        csv_file = open(csv_path, "w", newline="")
-        writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
-        writer.writeheader()
-        csv_file.flush()
-
-    for target in TARGET_ATTRS:
-        classes = sorted(set(lab1[target].tolist()) & set(lab2[target].tolist()))
-        for c0, c1 in itertools.combinations(classes, 2):
-            m1 = (lab1[target] == c0) | (lab1[target] == c1)
-            m2 = (lab2[target] == c0) | (lab2[target] == c1)
-            y1 = (lab1[target][m1] == c1).astype(int)
-            y2 = (lab2[target][m2] == c1).astype(int)
-
+    for experiment in ("pch", "pi", "spp"):
+        b1_tasks, b2_tasks = tasks[experiment]
+        if set(b1_tasks) != set(b2_tasks):
+            raise ValueError(f"{experiment} B1/B2 task sets differ")
+        for key in b1_tasks:
+            task1, task2 = b1_tasks[key], b2_tasks[key]
             for model in models:
-                a1 = per_seed_aucs(X1[m1], y1, g1[m1], seeds, model)
-                a2 = per_seed_aucs(X2[m2], y2, g2[m2], seeds, model)
-                shared = sorted(set(a1) & set(a2))
-                # Leakage = advantage = |AUC - 0.5| (distance from chance).
-                deltas = np.array([abs(a1[s] - 0.5) - abs(a2[s] - 0.5) for s in shared], dtype=float)
-                mean_delta, ci_lo, ci_hi = bootstrap_delta_ci(deltas, BOOTSTRAP_ITERS, rng)
-                excludes_zero = (
-                    len(shared) > 0 and not np.isnan(ci_lo) and (ci_lo > 0 or ci_hi < 0)
-                )
-                if excludes_zero:
-                    interp = "padding_reduces_leakage" if mean_delta > 0 else "padding_increases_leakage"
+                if JOBS == 1:
+                    results = [_paired_seed(task1, task2, seed, model, candidates) for seed in range(seeds)]
                 else:
-                    interp = "no_detectable_incremental_effect"
+                    results = Parallel(n_jobs=JOBS)(
+                        delayed(_paired_seed)(task1, task2, seed, model, candidates)
+                        for seed in range(seeds)
+                    )
+                results = [result for result in results if result is not None]
+                manifest_key = f"{experiment}:{key}"
+                entry = manifest.setdefault("tasks", {}).setdefault(
+                    manifest_key,
+                    {
+                        "taskDataHash": split_task_hash(task1["y"], task1["groups"]),
+                        "groupUniverseHash": split_group_hash(task1["groups"]),
+                        "seeds": {},
+                    },
+                )
+                for result in results:
+                    entry["seeds"][str(result["seed"])] = result["split"]
+                a1 = np.array([result["b1"] for result in results])
+                a2 = np.array([result["b2"] for result in results])
+                deltas = np.abs(a1 - 0.5) - np.abs(a2 - 0.5)
+                mean_delta, ci_lo, ci_hi = bootstrap_delta_ci(deltas, bootstrap_iters, rng)
+                excludes = bool(len(deltas) and (ci_lo > 0 or ci_hi < 0))
+                interpretation = (
+                    "padding_reduces_leakage" if excludes and mean_delta > 0 else
+                    "padding_increases_leakage" if excludes else
+                    "no_detectable_incremental_effect"
+                )
                 row = {
-                    "target": target, "class0": c0, "class1": c1, "model": model,
-                    "aucMean_b1_unpadded": float(np.mean(list(a1.values()))) if a1 else None,
-                    "aucMean_b2_padded": float(np.mean(list(a2.values()))) if a2 else None,
+                    "experiment": experiment,
+                    "target": key,
+                    "class0": task1.get("class0"),
+                    "class1": task1.get("class1"),
+                    "model": model,
+                    "aucMean_b1_unpadded": float(a1.mean()) if len(a1) else None,
+                    "aucMean_b2_padded": float(a2.mean()) if len(a2) else None,
                     "deltaLeakage": mean_delta,
-                    "ciLow": ci_lo, "ciHigh": ci_hi,
-                    "ciExcludesZero": bool(excludes_zero),
-                    "interpretation": interp,
-                    "nSeedsPaired": len(shared),
+                    "ciLow": ci_lo,
+                    "ciHigh": ci_hi,
+                    "ciExcludesZero": excludes,
+                    "interpretation": interpretation,
+                    "nSeedsPaired": len(deltas),
+                    "intervalType": "repeated-split stability interval",
                 }
                 rows.append(row)
-                if writer is not None:
-                    writer.writerow(row)
-                    csv_file.flush()
-                flag = "*" if excludes_zero else " "
-                print(f"  [{flag}] {target}: {c0}/{c1:12} {model} "
-                      f"b1={row['aucMean_b1_unpadded']:.3f} b2={row['aucMean_b2_padded']:.3f} "
-                      f"delta={mean_delta:+.3f} CI=[{ci_lo:+.3f},{ci_hi:+.3f}] {interp}", flush=True)
-    if csv_file is not None:
-        csv_file.close()
+                print(
+                    f"[{experiment.upper()}] {key} {model}: "
+                    f"B1={row['aucMean_b1_unpadded']:.3f} B2={row['aucMean_b2_padded']:.3f} "
+                    f"delta={mean_delta:+.3f} [{ci_lo:+.3f},{ci_hi:+.3f}]"
+                )
     return rows
 
 
+def write_csv(path: Path, rows: Sequence[Dict], fields=CSV_FIELDS):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Supervised gas-padding ablation cross-check")
-    parser.add_argument("--ablation-dir", type=Path, default=DEFAULT_ABLATION_DIR,
-                        help="Dir containing b1_unpadded/ and b2_padded/")
+    parser = argparse.ArgumentParser(description="Paired Python gas-padding ablation")
+    parser.add_argument("--ablation-dir", type=Path, default=DEFAULT_ABLATION_DIR)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     parser.add_argument("--seeds", type=int, default=30)
     parser.add_argument("--models", nargs="+", default=["rf", "lr"], choices=["rf", "lr"])
-    parser.add_argument("--jobs", type=int, default=1,
-                        help="Parallel processes over seeds (-1 = all cores).")
+    parser.add_argument("--jobs", type=int, default=1)
+    parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
+    parser.add_argument("--bootstrap-iterations", type=int, default=BOOTSTRAP_ITERS)
+    parser.add_argument("--pair-seed", type=str, default="pi-experiment")
     args = parser.parse_args()
 
     global JOBS
     JOBS = args.jobs
-
-    b1_path = find_spp_dataset(args.ablation_dir / "b1_unpadded")
-    b2_path = find_spp_dataset(args.ablation_dir / "b2_padded")
-    if not b1_path or not b2_path:
-        print(f"Missing b1_unpadded/b2_padded spp_dataset.json under {args.ablation_dir}")
-        return
-    print(f"b1_unpadded: {b1_path}\nb2_padded:   {b2_path}\n")
-    b1, b2 = load_json(b1_path), load_json(b2_path)
-
+    root = args.ablation_dir.resolve()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = args.output_dir / "spp_ablation_deltaLeakage.csv"
-    rows = run(b1, b2, args.seeds, args.models, csv_path=csv_path)
+    tasks, pair_paths = load_aligned_tasks(root, args.output_dir, args.pair_seed)
+    manifest = new_split_manifest(candidates=args.split_candidates)
+    rows = run(
+        tasks, args.seeds, args.models, args.split_candidates,
+        args.bootstrap_iterations, manifest,
+    )
+    output = args.output_dir / "gas_padding_supervised_deltaLeakage.csv"
+    write_csv(output, rows)
+    write_split_manifest(args.output_dir / "gas_padding_split_manifest.json", manifest)
 
-    reduces = sum(r["interpretation"] == "padding_reduces_leakage" for r in rows)
-    increases = sum(r["interpretation"] == "padding_increases_leakage" for r in rows)
-    print(f"\n{len(rows)} contrast-model rows: {reduces} padding_reduces_leakage, "
-          f"{increases} padding_increases_leakage, "
-          f"{len(rows) - reduces - increases} no_detectable_incremental_effect.")
-    print(f"Ablation deltaLeakage -> {csv_path}")
+    # Backward-compatible SPP-only CSV name used by existing local workflows.
+    spp_rows = [row for row in rows if row["experiment"] == "spp"]
+    write_csv(args.output_dir / "spp_ablation_deltaLeakage.csv", spp_rows)
+    metadata = {
+        "effectDefinition": "abs(AUC_B1 - 0.5) - abs(AUC_B2 - 0.5)",
+        "intervalType": "repeated-split stability interval",
+        "nonContemporaneousProfiles": True,
+        "pairSeed": args.pair_seed,
+        "pairFiles": [str(path) for path in pair_paths],
+        "rows": len(rows),
+    }
+    (args.output_dir / "gas_padding_supervised_metadata.json").write_text(
+        json.dumps(metadata, indent=2), encoding="utf-8"
+    )
+    print(f"\nAblation results -> {output}")
 
 
 if __name__ == "__main__":

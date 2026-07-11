@@ -21,6 +21,14 @@ from typing import List, Dict, Tuple, Optional
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import adjusted_rand_score, silhouette_score, normalized_mutual_info_score
+from clustering_stats import (
+    DEFAULT_BOOTSTRAPS,
+    DEFAULT_KMEANS_SEEDS,
+    DEFAULT_PERMUTATIONS,
+    ensemble_permutation_analysis,
+    policy_bootstrap_ci,
+    write_metadata,
+)
 
 # Configuration
 FEATURE_KEYS = ["commitGasUsed", "accessGasUsed"]
@@ -133,10 +141,11 @@ def extract_data_by_layer(dataset: List[dict], use_icd10: bool = False) -> Dict[
             term_str = str(term)
 
         if layer not in grouped:
-            grouped[layer] = {"rows": [], "labels": []}
+            grouped[layer] = {"rows": [], "labels": [], "groups": []}
 
         grouped[layer]["rows"].append(row)
         grouped[layer]["labels"].append(term_str)
+        grouped[layer]["groups"].append(str(entry.get("policyId", len(grouped[layer]["groups"]))))
 
     # Convert to numpy/pandas
     final_grouped = {}
@@ -155,21 +164,21 @@ def extract_data_by_layer(dataset: List[dict], use_icd10: bool = False) -> Dict[
             "X": X,
             "y": y,
             "term_labels": unique_labels,
-            "n_classes": len(unique_labels)
+            "n_classes": len(unique_labels),
+            "groups": np.array(data["groups"], dtype=object),
         }
 
     return final_grouped
 
 
-def analyze_layer(layer_name: str, data: Dict):
+def analyze_layer(layer_name: str, data: Dict, *, kmeans_seeds=DEFAULT_KMEANS_SEEDS,
+                  permutations=DEFAULT_PERMUTATIONS, bootstraps=DEFAULT_BOOTSTRAPS,
+                  random_seed=42):
     X = data["X"]
     y = data["y"]
     n_classes = data["n_classes"]
 
     # Standardize
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
     results = {
         "layer": layer_name,
         "n_samples": len(X),
@@ -184,15 +193,32 @@ def analyze_layer(layer_name: str, data: Dict):
         results["kmeans_nmi"] = 0.0
         return results, X, np.zeros(len(X))
 
-    kmeans = KMeans(n_clusters=n_classes, random_state=42, n_init=10)
-    y_pred_km = kmeans.fit_predict(X_scaled)
-
-    ari_km = adjusted_rand_score(y, y_pred_km)
-    nmi_km = normalized_mutual_info_score(y, y_pred_km)
-    results["kmeans_ari"] = ari_km
-    results["kmeans_nmi"] = nmi_km
+    analysis = ensemble_permutation_analysis(
+        X, y, n_classes, kmeans_seeds=kmeans_seeds,
+        permutations=permutations, random_seed=random_seed,
+    )
+    observed = analysis["observed"]
+    results.update({
+        "kmeans_ari": observed["ari"],
+        "kmeans_ari_std": observed["ariStd"],
+        "kmeans_nmi": observed["nmi"],
+        "kmeans_nmi_std": observed["nmiStd"],
+        "baseline_ari": analysis["nullAri"]["mean"],
+        "baseline_nmi": analysis["nullNmi"]["mean"],
+        "debiased_ari": analysis["nullAri"]["debiased"],
+        "debiased_nmi": analysis["nullNmi"]["debiased"],
+        "ari_p_value": analysis["nullAri"]["pValue"],
+        "nmi_p_value": analysis["nullNmi"]["pValue"],
+    })
+    if data.get("groups") is not None and bootstraps > 0:
+        results.update(policy_bootstrap_ci(
+            X, y, data["groups"], n_classes, iterations=bootstraps,
+            random_seed=random_seed,
+        ))
+    y_pred_km = analysis["firstPrediction"]
 
     # --- 2. DBSCAN ---
+    X_scaled = StandardScaler().fit_transform(X)
     dbscan = DBSCAN(eps=0.5, min_samples=5)
     y_pred_db = dbscan.fit_predict(X_scaled)
     ari_db = adjusted_rand_score(y, y_pred_db)
@@ -238,6 +264,7 @@ def extract_data_global(dataset: List[dict], use_icd10: bool = False) -> Dict:
     """
     rows = []
     labels = []
+    groups = []
 
     for entry in dataset:
         # Extract Features
@@ -289,6 +316,7 @@ def extract_data_global(dataset: List[dict], use_icd10: bool = False) -> Dict:
 
         labels.append(term_str)
         rows.append(row)
+        groups.append(str(entry.get("policyId", len(groups))))
 
     if len(rows) < 5:
         return None
@@ -304,7 +332,8 @@ def extract_data_global(dataset: List[dict], use_icd10: bool = False) -> Dict:
         "X": X,
         "y": y,
         "term_labels": unique_labels,
-        "n_classes": len(unique_labels)
+        "n_classes": len(unique_labels),
+        "groups": np.array(groups, dtype=object),
     }
 
 
@@ -318,6 +347,10 @@ def main():
                         help="Run global analysis ignoring layers")
     parser.add_argument("--icd10", action="store_true",
                         help="Cluster by ICD10 scope instead of DUO terms")
+    parser.add_argument("--kmeans-seeds", type=int, default=DEFAULT_KMEANS_SEEDS)
+    parser.add_argument("--permutations", type=int, default=DEFAULT_PERMUTATIONS)
+    parser.add_argument("--bootstraps", type=int, default=DEFAULT_BOOTSTRAPS)
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -338,7 +371,11 @@ def main():
         print(f"Running Global Analysis on {target_label} (Ignoring Layers)...")
         data = extract_data_global(dataset, use_icd10=args.icd10)
         if data:
-            res, X_df, y_pred = analyze_layer(f"Global_All_{file_suffix.upper()}", data)
+            res, X_df, y_pred = analyze_layer(
+                f"Global_All_{file_suffix.upper()}", data,
+                kmeans_seeds=args.kmeans_seeds, permutations=args.permutations,
+                bootstraps=args.bootstraps, random_seed=args.seed,
+            )
             print(
                 f"Global Analysis | Classes: {res['n_classes']:2} | K-Means ARI: {res['kmeans_ari']:.4f} | NMI: {res['kmeans_nmi']:.4f}")
 
@@ -351,6 +388,13 @@ def main():
             # Save single result
             pd.DataFrame([res]).to_csv(args.output_dir /
                                        f"pch_global_{file_suffix}_clustering.csv", index=False)
+            write_metadata(
+                args.output_dir / f"pch_global_{file_suffix}_metadata.json",
+                source=dataset_path, feature_keys=FEATURE_KEYS,
+                target="primaryDuoMulticlass" if not args.icd10 else "icd10ChapterMulticlass",
+                kmeansSeeds=args.kmeans_seeds, permutations=args.permutations,
+                bootstraps=args.bootstraps, randomSeed=args.seed,
+            )
         else:
             print(f"No valid data found for {target_label} clustering.")
         return
@@ -363,7 +407,11 @@ def main():
     print(f"Analyzing {len(grouped_data)} layers...")
 
     for layer, data in grouped_data.items():
-        res, X_df, y_pred = analyze_layer(layer, data)
+        res, X_df, y_pred = analyze_layer(
+            layer, data, kmeans_seeds=args.kmeans_seeds,
+            permutations=args.permutations, bootstraps=args.bootstraps,
+            random_seed=args.seed,
+        )
         all_results.append(res)
 
         print(

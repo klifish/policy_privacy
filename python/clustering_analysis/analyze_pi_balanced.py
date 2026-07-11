@@ -16,6 +16,7 @@ import argparse
 import json
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 from pathlib import Path
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -25,11 +26,19 @@ from sklearn.metrics import (
 )
 
 from analyze_pi_clustering import extract_data_from_pair, DEFAULT_DATA_DIR
+from clustering_stats import (
+    DEFAULT_BOOTSTRAPS,
+    DEFAULT_KMEANS_SEEDS,
+    DEFAULT_PERMUTATIONS,
+    benjamini_hochberg,
+    ensemble_permutation_analysis,
+    write_metadata,
+)
 
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "pi_clustering_analysis"
 
-N_SEEDS = 20
-N_PERM = 200
+N_SEEDS = DEFAULT_KMEANS_SEEDS
+N_PERM = DEFAULT_PERMUTATIONS
 
 
 def km_metrics(X_scaled, y, seed):
@@ -37,34 +46,64 @@ def km_metrics(X_scaled, y, seed):
     return (adjusted_rand_score(y, pred), normalized_mutual_info_score(y, pred))
 
 
-def debias_pair(pair, rng):
+def debias_pair(pair, rng, *, kmeans_seeds=N_SEEDS, permutations=N_PERM):
     X, y, names = extract_data_from_pair(pair)
     if X is None or len(X) < 4 or len(set(y)) < 2:
         return None
-    Xs = StandardScaler().fit_transform(X)
-
-    obs = [km_metrics(Xs, y, s) for s in range(N_SEEDS)]
-    obs_ari = float(np.mean([a for a, _ in obs]))
-    obs_nmi = float(np.mean([n for _, n in obs]))
-
-    base = np.array([km_metrics(Xs, rng.permutation(y), 0)[1] for _ in range(N_PERM)])
-    base_mean = float(base.mean())
-    p_value = float((np.sum(base >= obs_nmi) + 1) / (N_PERM + 1))
+    analysis = ensemble_permutation_analysis(
+        X, y, 2, kmeans_seeds=kmeans_seeds, permutations=permutations,
+        random_seed=int(rng.integers(0, 2**31 - 1)),
+    )
+    obs_ari = analysis["observed"]["ari"]
+    obs_nmi = analysis["observed"]["nmi"]
+    base_mean = analysis["nullNmi"]["mean"]
+    p_value = analysis["nullNmi"]["pValue"]
 
     return {
         "pair_id": pair.get("pairId"),
         "mode": pair.get("mode"),
         "pair_type": pair.get("pairType"),
+        "policy_a": names[0],
+        "policy_b": names[1],
         "n_samples": len(X),
         "n0": int(np.sum(y == 0)),
         "n1": int(np.sum(y == 1)),
         "observed_ari": round(obs_ari, 4),
         "observed_nmi": round(obs_nmi, 4),
         "baseline_nmi": round(base_mean, 4),
-        "baseline_p95": round(float(np.percentile(base, 95)), 4),
+        "baseline_p95": round(analysis["nullNmi"]["p95"], 4),
         "debiased_nmi": round(obs_nmi - base_mean, 4),
-        "p_value": round(p_value, 4),
+        "p_value": p_value,
         "significant": p_value < 0.05,
+    }
+
+
+def debias_pair_seeded(pair, random_seed, *, kmeans_seeds=N_SEEDS, permutations=N_PERM):
+    return debias_pair(
+        pair, np.random.default_rng(random_seed),
+        kmeans_seeds=kmeans_seeds, permutations=permutations,
+    )
+
+
+def policy_weighted_bootstrap(df, iterations, seed):
+    """Pigeonhole bootstrap: pair weight is multiplicity(policy A)*multiplicity(B)."""
+    policies = sorted(set(df["policy_a"]) | set(df["policy_b"]))
+    rng = np.random.default_rng(seed)
+    means = []
+    for _ in range(iterations):
+        sampled = rng.choice(policies, size=len(policies), replace=True)
+        counts = dict(zip(*np.unique(sampled, return_counts=True)))
+        weights = np.array([
+            counts.get(a, 0) * counts.get(b, 0)
+            for a, b in zip(df["policy_a"], df["policy_b"])
+        ], dtype=float)
+        if weights.sum() > 0:
+            means.append(float(np.average(df["debiased_nmi"], weights=weights)))
+    return {
+        "mean": float(df["debiased_nmi"].mean()),
+        "ci95": [float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))],
+        "iterations": len(means),
+        "uniquePolicies": len(policies),
     }
 
 
@@ -74,6 +113,10 @@ def main():
     ap.add_argument("--pairs-file", type=Path, default=None)
     ap.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--kmeans-seeds", type=int, default=N_SEEDS)
+    ap.add_argument("--permutations", type=int, default=N_PERM)
+    ap.add_argument("--bootstraps", type=int, default=DEFAULT_BOOTSTRAPS)
+    ap.add_argument("--jobs", type=int, default=-1)
     args = ap.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -86,11 +129,30 @@ def main():
     print(f"{len(pairs)} balanced pairs\n")
 
     rng = np.random.default_rng(args.seed)
-    rows = [r for r in (debias_pair(p, rng) for p in pairs) if r]
+    pair_seeds = rng.integers(0, 2**31 - 1, size=len(pairs))
+    rows = Parallel(n_jobs=args.jobs)(
+        delayed(debias_pair_seeded)(
+            pair, int(pair_seed), kmeans_seeds=args.kmeans_seeds,
+            permutations=args.permutations,
+        )
+        for pair, pair_seed in zip(pairs, pair_seeds)
+    )
+    rows = [row for row in rows if row]
     df = pd.DataFrame(rows)
+    df["q_value"] = benjamini_hochberg(df["p_value"].to_numpy())
+    df["significant_fdr"] = df["q_value"] < 0.05
 
     out = args.output_dir / "pi_balanced_debiased.csv"
     df.to_csv(out, index=False)
+    bootstrap = policy_weighted_bootstrap(df, args.bootstraps, args.seed + 1)
+    summary_path = args.output_dir / "pi_balanced_summary.json"
+    summary_path.write_text(json.dumps({"policyWeightedBootstrap": bootstrap}, indent=2))
+    write_metadata(
+        args.output_dir / "pi_clustering_metadata.json",
+        source=pairs_file, feature_keys=["commitGasUsed", "accessGasUsed"],
+        kmeansSeeds=args.kmeans_seeds, permutations=args.permutations,
+        bootstraps=args.bootstraps, randomSeed=args.seed,
+    )
 
     pd.set_option("display.width", 160)
     print("=== 平衡后逐对 (前 15 行) ===")

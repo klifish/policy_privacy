@@ -168,6 +168,9 @@ def main():
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--kmeans-seeds", type=int, default=20)
+    parser.add_argument("--permutations", type=int, default=200)
+    parser.add_argument("--bootstraps", type=int, default=500)
     args = parser.parse_args()
 
     source_dir = args.source_dir.resolve()
@@ -194,18 +197,23 @@ def main():
     run_script(
         "analyze_pch_clustering.py",
         ["--data-dir", data_dir, "--output-dir", pch_output,
-         "--global-analysis", "--plot"],
+         "--global-analysis", "--plot", "--seed", args.seed,
+         "--kmeans-seeds", args.kmeans_seeds, "--permutations", args.permutations,
+         "--bootstraps", args.bootstraps],
         env,
     )
     run_script(
         "analyze_pch_clustering.py",
         ["--data-dir", data_dir, "--output-dir", pch_output,
-         "--global-analysis", "--icd10", "--plot"],
+         "--global-analysis", "--icd10", "--plot", "--seed", args.seed,
+         "--kmeans-seeds", args.kmeans_seeds, "--permutations", args.permutations,
+         "--bootstraps", args.bootstraps],
         env,
     )
     run_script(
         "pch_icd10_debias.py",
-        ["--data-dir", data_dir, "--output-dir", pch_output, "--seed", args.seed],
+        ["--data-dir", data_dir, "--output-dir", pch_output, "--seed", args.seed,
+         "--kmeans-seeds", args.kmeans_seeds, "--permutations", args.permutations],
         env,
     )
     balanced_pairs = data_dir / "pi_pairs_balanced.json"
@@ -217,12 +225,16 @@ def main():
     run_script(
         "analyze_pi_balanced.py",
         ["--data-dir", data_dir, "--pairs-file", balanced_pairs,
-         "--output-dir", pi_output, "--seed", args.seed],
+         "--output-dir", pi_output, "--seed", args.seed,
+         "--kmeans-seeds", args.kmeans_seeds, "--permutations", args.permutations,
+         "--bootstraps", args.bootstraps, "--jobs", -1],
         env,
     )
     run_script(
         "analyze_spp_clustering.py",
-        ["--data-dir", data_dir, "--output-dir", spp_output, "--plot"],
+        ["--data-dir", data_dir, "--output-dir", spp_output, "--plot", "--seed", args.seed,
+         "--kmeans-seeds", args.kmeans_seeds, "--permutations", args.permutations,
+         "--bootstraps", args.bootstraps],
         env,
     )
     run_script(

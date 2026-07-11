@@ -9,6 +9,7 @@ Python cross-check using the shared AUC + permutation double criterion.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from collections import defaultdict
@@ -18,14 +19,20 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from common import (
+    DEFAULT_SPLIT_CANDIDATES,
     DEFAULT_SEEDS,
+    PERM_ITERS,
+    TEST_RATIO,
     analyze_contrast,
     build_verdict,
     checkpoint_rows,
     feature_row,
     find_json,
     load_json,
+    load_split_manifest,
+    new_split_manifest,
     verdict_to_rows,
+    write_split_manifest,
 )
 
 DEFAULT_DATA_DIR = (
@@ -45,6 +52,14 @@ def load_pi_pairs(path: Path) -> List[dict]:
     if isinstance(data, list):
         return data
     raise ValueError(f"Unrecognized PI pairs format at {path}")
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def find_or_generate_pairs(data_dir: Path, output_dir: Path, seed: int) -> Tuple[Path, List[dict]]:
@@ -139,6 +154,10 @@ def run_pairs(
     jobs: int,
     csv_path: Optional[Path] = None,
     json_path: Optional[Path] = None,
+    split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
+    split_manifest_in: Optional[Dict] = None,
+    split_manifest_out: Optional[Dict] = None,
+    perm_iters: int = PERM_ITERS,
 ) -> Dict:
     tasks = []
     if csv_path is not None and csv_path.exists():
@@ -164,7 +183,13 @@ def run_pairs(
             }
         else:
             X, y, groups = arrays
-            res = analyze_contrast(X, y, groups, seeds, models, jobs=jobs)
+            res = analyze_contrast(
+                X, y, groups, seeds, models, jobs=jobs,
+                perm_iters=perm_iters, task_key=scope,
+                split_candidates=split_candidates,
+                split_manifest_in=split_manifest_in,
+                split_manifest_out=split_manifest_out,
+            )
             res.update({
                 "dataset": dataset_tag,
                 "key": scope,
@@ -186,14 +211,14 @@ def run_pairs(
         n = res.get("medianTestN")
         print(f"  [{tag:10}] {scope:24} medN={n if n is not None else 'NA'} " + " | ".join(parts))
 
-        partial = build_verdict(dataset_tag, seeds, tasks)
+        partial = build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters)
         checkpoint_rows(csv_path, verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models), append=True)
         if json_path is not None:
             json_path.parent.mkdir(parents=True, exist_ok=True)
             with json_path.open("w", encoding="utf-8") as handle:
                 json.dump(partial, handle, indent=2)
 
-    return build_verdict(dataset_tag, seeds, tasks)
+    return build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters)
 
 
 def main() -> None:
@@ -205,7 +230,11 @@ def main() -> None:
     parser.add_argument("--models", nargs="+", default=["rf", "lr"], choices=["rf", "lr"])
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--tag", type=str, default=None)
-    parser.add_argument("--pair-seed", type=int, default=42)
+    parser.add_argument("--pair-seed", type=str, default="pi-experiment")
+    parser.add_argument("--permutation-iterations", type=int, default=PERM_ITERS)
+    parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
+    parser.add_argument("--split-manifest-in", type=Path, default=None)
+    parser.add_argument("--split-manifest-out", type=Path, default=None)
     args = parser.parse_args()
 
     if args.pairs is not None:
@@ -215,6 +244,7 @@ def main() -> None:
         pairs_path, pairs = find_or_generate_pairs(args.data_dir, args.output_dir, args.pair_seed)
     tag = args.tag or pairs_path.parent.name
     print(f"Loading {pairs_path} (tag={tag})...")
+    pair_hash = file_sha256(pairs_path)
     counts = defaultdict(int)
     for pair in pairs:
         counts[pair.get("pairType") or "unspecified"] += 1
@@ -223,7 +253,21 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = args.output_dir / "pi_supervised_summary.csv"
     json_path = args.output_dir / "pi_supervised_verdict.json"
-    verdict = run_pairs(pairs, args.seeds, args.models, tag, args.jobs, csv_path, json_path)
+    manifest_in = load_split_manifest(args.split_manifest_in)
+    manifest_out = new_split_manifest(TEST_RATIO, args.split_candidates)
+    manifest_out["dataset"] = {"path": str(pairs_path), "sha256": pair_hash}
+    verdict = run_pairs(
+        pairs, args.seeds, args.models, tag, args.jobs, csv_path, json_path,
+        split_candidates=args.split_candidates,
+        split_manifest_in=manifest_in,
+        split_manifest_out=manifest_out,
+        perm_iters=args.permutation_iterations,
+    )
+    verdict["pairSource"] = {"path": str(pairs_path), "sha256": pair_hash, "seed": args.pair_seed}
+    with json_path.open("w", encoding="utf-8") as handle:
+        json.dump(verdict, handle, indent=2)
+    manifest_path = args.split_manifest_out or (args.output_dir / "pi_split_manifest.json")
+    write_split_manifest(manifest_path, manifest_out)
 
     print(f"\nOverall PI supervised verdict [{tag}]: "
           f"{'PASS' if verdict['overallPassed'] else verdict['overallPassed']}")

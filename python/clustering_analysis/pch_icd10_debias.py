@@ -31,6 +31,7 @@ from analyze_pch_clustering import (
     extract_data_by_layer,
     DEFAULT_DATA_DIR,
 )
+from clustering_stats import ensemble_permutation_analysis
 
 OUTPUT_DIR = Path(__file__).parents[1] / "results" / "pch_clustering_analysis"
 
@@ -44,33 +45,23 @@ def kmeans_nmi(X_scaled: np.ndarray, y: np.ndarray, k: int, seed: int) -> float:
     return normalized_mutual_info_score(y, pred)
 
 
-def debias_layer(layer: str, data: dict, rng: np.random.Generator) -> dict:
+def debias_layer(layer: str, data: dict, rng: np.random.Generator,
+                 kmeans_seeds=N_SEEDS, permutations=N_PERM) -> dict:
     X = data["X"]
     y = data["y"]
     k = data["n_classes"]
 
-    X_scaled = StandardScaler().fit_transform(X)
-
-    # --- 1. observed: 多 seed 平均 (真标签) ---
-    obs = [kmeans_nmi(X_scaled, y, k, seed) for seed in range(N_SEEDS)]
-    obs_mean = float(np.mean(obs))
-    obs_std = float(np.std(obs))
-
-    # --- 2. permutation baseline (打乱标签 -> 真泄露=0) ---
-    base = []
-    for _ in range(N_PERM):
-        y_perm = rng.permutation(y)
-        # 每次用单一 seed 即可, 打乱本身已经引入随机性
-        base.append(kmeans_nmi(X_scaled, y_perm, k, seed=0))
-    base = np.array(base)
-    base_mean = float(base.mean())
-    base_std = float(base.std())
-    base_p95 = float(np.percentile(base, 95))
-
-    # --- 3. 去偏 & 显著性 ---
-    debiased = obs_mean - base_mean
-    # 单边经验 p 值: 零分布里 >= observed 的比例 (+1 平滑)
-    p_value = float((np.sum(base >= obs_mean) + 1) / (N_PERM + 1))
+    analysis = ensemble_permutation_analysis(
+        X, y, k, kmeans_seeds=kmeans_seeds, permutations=permutations,
+        random_seed=int(rng.integers(0, 2**31 - 1)),
+    )
+    obs_mean = analysis["observed"]["nmi"]
+    obs_std = analysis["observed"]["nmiStd"]
+    base_mean = analysis["nullNmi"]["mean"]
+    base_std = analysis["nullNmi"]["std"]
+    base_p95 = analysis["nullNmi"]["p95"]
+    debiased = analysis["nullNmi"]["debiased"]
+    p_value = analysis["nullNmi"]["pValue"]
 
     return {
         "layer": layer,
@@ -93,6 +84,8 @@ def main():
     ap.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     ap.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--kmeans-seeds", type=int, default=N_SEEDS)
+    ap.add_argument("--permutations", type=int, default=N_PERM)
     args = ap.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -109,9 +102,11 @@ def main():
 
     rng = np.random.default_rng(args.seed)
     print(f"De-biasing {len(grouped)} ICD10 layers "
-          f"({N_SEEDS} seeds, {N_PERM} permutations each)...\n")
+          f"({args.kmeans_seeds} seeds, {args.permutations} permutations each)...\n")
 
-    rows = [debias_layer(l, d, rng) for l, d in grouped.items()]
+    rows = [debias_layer(
+        l, d, rng, kmeans_seeds=args.kmeans_seeds, permutations=args.permutations
+    ) for l, d in grouped.items()]
     df = pd.DataFrame(rows).sort_values("samples_per_class").reset_index(drop=True)
 
     cols = ["layer", "n_samples", "n_classes", "samples_per_class",

@@ -17,6 +17,7 @@ DEFAULT_PY_VERDICTS = {
     "pi": Path("python/results/supervised_analysis/pi_supervised_verdict.json"),
     "spp": Path("python/results/supervised_analysis/spp_supervised_verdict.json"),
 }
+EXPECTED_TASK_COUNTS = {"pch": 16, "pi": 5, "spp": 28}
 
 
 def load_json(path: Path):
@@ -87,12 +88,16 @@ def main() -> None:
             "js": normalize_criterion(js.get("criterion", {})),
         },
         "taskCounts": {"python": len(py_tasks), "js": len(js_tasks), "shared": len(shared)},
+        "expectedTaskCount": EXPECTED_TASK_COUNTS[args.experiment],
         "onlyPython": only_python,
         "onlyJs": only_js,
         "taskDiffs": task_diffs,
         "matches": (
             py.get("overallPassed") == js.get("overallPassed")
             and normalize_criterion(py.get("criterion", {})) == normalize_criterion(js.get("criterion", {}))
+            and len(py_tasks) == EXPECTED_TASK_COUNTS[args.experiment]
+            and len(js_tasks) == EXPECTED_TASK_COUNTS[args.experiment]
+            and not only_python
             and not only_js
             and not task_diffs
         ),

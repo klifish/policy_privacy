@@ -47,9 +47,10 @@ against:
   standardized LogisticRegression. RF probabilities are the raw uncalibrated vote
   fractions — AUC is rank-based and sigmoid calibration is monotonic, so omitting
   calibration keeps the run cheaper and close to the JS attack framing.
-- **Protocol:** group-disjoint `GroupShuffleSplit` (test 0.3), 30 seeds by
-  default. PCH/SPP group by `policyId`; PI Level-I scopes also group by
-  `policyId`, matching the JS source-of-record split.
+- **Protocol:** deterministic repeated stratified group holdout (test 0.3), 30
+  seeds by default. Each seed evaluates 512 whole-policy candidates and selects
+  the closest valid label-stratified partition. PCH/SPP/PI all group by
+  `policyId`; the PI splitter supports policies that occur on both pair sides.
 - **Metric / verdict:** AUC + a 500-shuffle permutation test (no retraining).
   Per (task/contrast, model) `legFails = (aucMean > 0.55) AND (sigFraction >=
   0.5)`; a task FAILs if either model's leg fails, and is non-gating when
@@ -65,8 +66,8 @@ against:
   the JS single-sample verdict scopes: `overall` plus pair types such as
   `semantic_equivalent`, `structural_variant`, `weak_equivalent`, and
   diagnostic `controlled_difference` (reported but non-gating, matching JS).
-- **SPP:** `spp_supervised.py` covers all pairwise binary contrasts within
-  `structureType`, `predicateCombo`, and `paramType`.
+- **SPP:** `spp_supervised.py` covers all 28 pairwise binary contrasts within
+  `structureType`, `predicateCombo`, `paramType`, and `nestingDepth`.
 - **Ablation delta:** `deltaLeakage = |AUC_b1 - 0.5| - |AUC_b2 - 0.5|` (per seed,
   bootstrapped), matching `ablation_report.json`'s `effectDefinition`.
 
@@ -130,6 +131,12 @@ after the dataset or criterion changes.
 (`-1` = all cores). With `--jobs 1` a single RandomForest fit uses all cores;
 with `--jobs > 1` each fit is single-threaded to avoid oversubscription. Results
 are deterministic for a fixed input dataset and seed configuration.
+
+Each runner accepts `--split-manifest-in`, `--split-manifest-out`, and
+`--split-candidates`. Verdict JSON includes per-class policy-count diagnostics
+and `powerWarning`; warnings remain diagnostic and do not change the JS-aligned
+PASS/FAIL criterion. PI defaults to the JS pairing seed `pi-experiment` and
+records the pair artifact SHA-256.
 
 ## Relationship to `run_policy_privacy_experiments.py`
 

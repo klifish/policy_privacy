@@ -25,6 +25,41 @@ def load_json(path):
         return json.load(handle)
 
 
+def execution_key(record):
+    return str(record.get("policyId")), str(record.get("executionId"))
+
+
+def align_execution_rows(b1, b2, dataset_name):
+    """Align paired profiles by stable execution identity, never by row number."""
+    def index(rows):
+        result = {}
+        for row in rows:
+            key = execution_key(row)
+            if key in result:
+                raise ValueError(f"Duplicate {dataset_name} execution key: {key}")
+            result[key] = row
+        return result
+
+    left, right = index(b1), index(b2)
+    if set(left) != set(right):
+        raise ValueError(
+            f"{dataset_name} execution keys differ; "
+            f"onlyB1={len(set(left)-set(right))}, onlyB2={len(set(right)-set(left))}"
+        )
+    keys = sorted(left)
+    label_fields = [
+        "duoTerm", "ontologyNamespace", "ontologyValue", "logicStructure",
+        "nestingDepth", "predicateCount", "setSize",
+    ]
+    for key in keys:
+        for field in label_fields:
+            if left[key].get(field) != right[key].get(field):
+                raise ValueError(f"{dataset_name} label mismatch at {key}: {field}")
+        if left[key].get("semantics") != right[key].get("semantics"):
+            raise ValueError(f"{dataset_name} semantics mismatch at {key}")
+    return [left[key] for key in keys], [right[key] for key in keys]
+
+
 def bootstrap_mean_ci(values, rng, iterations):
     values = np.asarray(values, dtype=float)
     if len(values) == 0:
@@ -136,8 +171,7 @@ def interpret_ci(ci):
 def gas_comparison(root, rng, iterations):
     b1 = load_json(root / "b1_unpadded" / "executed_dataset.json")
     b2 = load_json(root / "b2_padded" / "executed_dataset.json")
-    if len(b1) != len(b2):
-        raise ValueError("Cannot compare gas on unaligned execution counts")
+    b1, b2 = align_execution_rows(b1, b2, "executed_dataset.json")
     result = {}
     for key in ["commitGasUsed", "accessGasUsed"]:
         b1_values = np.array([float(row["features"][key]) for row in b1])
@@ -198,8 +232,7 @@ def bootstrap_cluster_targets(root, rng, iterations):
     for dataset_name, targets in dataset_targets.items():
         b1 = load_json(root / "b1_unpadded" / dataset_name)
         b2 = load_json(root / "b2_padded" / dataset_name)
-        if len(b1) != len(b2):
-            raise ValueError(f"{dataset_name} is not aligned")
+        b1, b2 = align_execution_rows(b1, b2, dataset_name)
         groups = defaultdict(list)
         for index, row in enumerate(b1):
             groups[str(row.get("policyIndex", row.get("policyId")))].append(index)
@@ -243,6 +276,22 @@ def compare_pi_clustering(root, rng, iterations):
     for metric in ["observed_ari", "observed_nmi", "debiased_nmi"]:
         delta = b1.loc[common, metric].to_numpy() - b2.loc[common, metric].to_numpy()
         output[metric] = bootstrap_mean_ci(delta, rng, iterations)
+    if {"policy_a", "policy_b"}.issubset(b1.columns) and {"policy_a", "policy_b"}.issubset(b2.columns):
+        policies = sorted(set(b1["policy_a"]) | set(b1["policy_b"]))
+        weighted = []
+        delta = b1.loc[common, "debiased_nmi"] - b2.loc[common, "debiased_nmi"]
+        for _ in range(iterations):
+            sampled = rng.choice(policies, size=len(policies), replace=True)
+            counts = dict(zip(*np.unique(sampled, return_counts=True)))
+            weights = np.array([
+                counts.get(a, 0) * counts.get(b, 0)
+                for a, b in zip(b1.loc[common, "policy_a"], b1.loc[common, "policy_b"])
+            ], dtype=float)
+            if weights.sum() > 0:
+                weighted.append(float(np.average(delta, weights=weights)))
+        output["policyWeightedDebiasedNmi"] = bootstrap_distribution_summary(
+            float(delta.mean()), weighted
+        )
     output["pairs"] = len(common)
     return output
 
@@ -252,6 +301,7 @@ def render_markdown(report):
         "# B1/B2 Gas Padding Ablation",
         "",
         "Positive Δleakage means B2 padding reduced |AUC−0.5| relative to B1.",
+        "Supervised 95% intervals are repeated-split stability intervals; seeded holdouts overlap and are not independent samples.",
         "",
         "## Supervised attacks",
         "",
@@ -313,6 +363,7 @@ def main():
         "bootstrapIterations": args.bootstrap_iterations,
         "bootstrapSeed": args.seed,
         "effectDefinition": "abs(AUC_B1 - 0.5) - abs(AUC_B2 - 0.5)",
+        "supervisedIntervalType": "repeated-split stability interval",
         "supervised": compare_supervised(root, rng, args.bootstrap_iterations),
         "clustering": {
             "policyGroupBootstrap": bootstrap_cluster_targets(
