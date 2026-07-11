@@ -6,7 +6,7 @@
 % Dataset: Polygon Amoy, fixed circuit + commitment-only interface + access-gas padding.
 \begin{table}[H]
   \centering
-  \caption{Headline privacy results on the Polygon Amoy dataset. The supervised attacker
+  \caption{Results on the Polygon Amoy dataset. The supervised attacker
     uses 30 policy-disjoint seeds and a permutation test. A task passes unless both
     AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant.}
   \label{tab:privacy-summary}
@@ -16,11 +16,11 @@
     Property & Hidden target & Headline supervised result \\
     \midrule
     PCH & DUO terms and ICD-10 chapters
-        & 16 content-recovery tasks pass; DUO AUCs $0.493$--$0.526$, ICD AUCs $0.433$--$0.561$ \\
+        & 16 content-recovery tasks pass; AUC $0.433$--$0.561$; significant seeds median $2\%$, max $37\%$ \\
     PI & Related policy-pair identity
-       & Overall AUC $0.514\pm0.022$, $7\%$ significant seeds \\
+       & 4 gating tasks pass; AUC $0.500$--$0.559$; significant seeds median $7\%$, max $30\%$ \\
     SPP & Structure, predicate, parameter, and nesting-depth buckets
-        & 28 pairwise contrasts pass; AUCs $0.483$--$0.629$, max $23\%$ significant seeds \\
+        & 28 pairwise contrasts pass; AUC $0.483$--$0.629$; significant seeds median $3\%$, max $23\%$ \\
     \bottomrule
   \end{tabular}
 \end{table}
