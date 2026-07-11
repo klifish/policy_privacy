@@ -1,0 +1,35 @@
+{
+  "experiment": "pch",
+  "pythonVerdict": "/workspaces/policy_privacy/python/results/supervised_analysis/pch_supervised_verdict.json",
+  "jsReport": "/workspaces/policy_privacy/experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 16,
+    "js": 16,
+    "shared": 16
+  },
+  "expectedTaskCount": 16,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [],
+  "matches": true
+}

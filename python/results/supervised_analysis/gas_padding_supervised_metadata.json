@@ -1,0 +1,11 @@
+{
+  "effectDefinition": "abs(AUC_B1 - 0.5) - abs(AUC_B2 - 0.5)",
+  "intervalType": "repeated-split stability interval",
+  "nonContemporaneousProfiles": true,
+  "pairSeed": "pi-experiment",
+  "pairFiles": [
+    "/workspaces/policy_privacy/python/results/supervised_analysis/pairs/b1_unpadded/pi_pairs_generated.json",
+    "/workspaces/policy_privacy/python/results/supervised_analysis/pairs/b2_padded/pi_pairs_generated.json"
+  ],
+  "rows": 98
+}
