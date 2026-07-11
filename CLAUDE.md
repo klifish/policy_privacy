@@ -99,3 +99,5 @@ Challenge unclear reasoning, unsupported assumptions, weak motivation, and poor 
 Do not rewrite text merely to make it sound different.
 
 Every revision should have a clear purpose.
+
+所有关于论文的修改在 paper_mdpi 中进行
