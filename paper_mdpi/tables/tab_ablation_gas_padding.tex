@@ -1,14 +1,17 @@
-% Source of record:
-%   experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
-% B1 artifacts: experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/.
-% B2 artifacts: experiments/ablation/gas_padding/polygonAmoy/b2_padded/ (reuses deployed run).
-% Bootstrap: 500 iterations, seed 20260625; effect = |AUC_B1-0.5| - |AUC_B2-0.5|.
+% Source of record (supervised rows + counts):
+%   python/results/supervised_analysis/gas_padding_supervised_deltaLeakage.csv
+%   (metadata: gas_padding_supervised_metadata.json)
+% B1 = unpadded gas transcript; B2 = deployed randomized access-gas padding.
+% Effect = |AUC_B1-0.5| - |AUC_B2-0.5|; 95% repeated-split stability interval over
+% 30 paired seeds (nonContemporaneous B1/B2 profiles).
 % This table is ILLUSTRATIVE: the four supervised rows are representative contrasts whose
-% bootstrap 95% CI of dLeak excludes zero (genuine reduction). They are NOT the full set.
+% stability interval of dLeak excludes zero (genuine reduction). They are NOT the full set.
 % The full per-contrast distribution (all 49 rf + 49 lr contrasts, colored by dLeak CI
-% sign) is the primary evidence and lives in Fig. fig:ablation-paired
-% (python/clustering_analysis/plot_ablation_paired.py). Full-set counts, for reference:
-%   RF: 36 reduce / 7 no-eff / 6 neg;  LR: 42 reduce / 6 no-eff / 1 neg.
+% sign) is the primary evidence and lives in Fig. fig:ablation-paired. Full-set counts:
+%   RF: 36 reduce / 13 no-eff / 0 neg;  LR: 36 reduce / 11 no-eff / 2 neg.
+% The unsupervised-ARI and gas-cost rows below are retained from the deployed on-chain
+% ablation run (experiments/ablation/gas_padding/...); they are not part of the Python
+% supervised recompute.
 \begin{table}[H]
   \centering
   \caption{Gas-padding ablation on Polygon Amoy: representative contrasts illustrating the
@@ -16,23 +19,24 @@
     aligned on the same policy set. Supervised AUC is the random-forest score (the stronger
     of the two classifiers here; see Section~\ref{sec:eval-method}); clustering reports K-Means ARI.
     $\Delta_{\text{leak}}>0$ (defined in the text) means padding moved the attacker toward chance,
-    reported as bootstrap mean with $95\%$ CI. Each supervised row is, per experiment, the
-    largest-signal contrast whose $\Delta_{\text{leak}}$ CI excludes zero (two for SPP), chosen to
-    avoid cherry-picking. The full per-contrast distribution is in Figure~\ref{fig:ablation-paired}.}
+    reported as the mean with a $95\%$ stability interval over $30$ paired splits. Each supervised
+    row is, per experiment, the largest-signal contrast whose $\Delta_{\text{leak}}$ interval excludes
+    zero (two for SPP), chosen to avoid cherry-picking. The full per-contrast distribution is in
+    Figure~\ref{fig:ablation-paired}.}
   \label{tab:ablation-gas-padding}
   \begin{tabular}{lp{0.34\linewidth}cc}
     \toprule
     Attack & Target & B1 (unpad.) & B2 (pad.) \\
     \midrule
-    \multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ CI)} \\
-    SPP   & \texttt{nestingDepth flat/medium}   & $0.847$ & $0.486$ \\
-          & \quad $\Delta_{\text{leak}}=0.304$ CI$[0.262,0.340]$ & & \\
-    SPP   & \texttt{structureType trivial/and\_or\_mixed} & $0.846$ & $0.504$ \\
-          & \quad $\Delta_{\text{leak}}=0.291$ CI$[0.259,0.327]$ & & \\
-    PCH   & DUO POA                          & $0.616$ & $0.491$ \\
-          & \quad $\Delta_{\text{leak}}=0.092$ CI$[0.071,0.114]$ & & \\
-    PI    & \texttt{controlled\_difference}  & $0.611$ & $0.515$ \\
-          & \quad $\Delta_{\text{leak}}=0.102$ CI$[0.076,0.129]$ & & \\
+    \multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ interval)} \\
+    SPP   & \texttt{nestingDepth flat/deep}   & $0.847$ & $0.553$ \\
+          & \quad $\Delta_{\text{leak}}=0.280$ CI$[0.254,0.304]$ & & \\
+    SPP   & \texttt{structureType trivial/negation\_heavy} & $0.843$ & $0.524$ \\
+          & \quad $\Delta_{\text{leak}}=0.276$ CI$[0.248,0.301]$ & & \\
+    PCH   & ICD ch8                          & $0.918$ & $0.410$ \\
+          & \quad $\Delta_{\text{leak}}=0.327$ CI$[0.302,0.349]$ & & \\
+    PI    & \texttt{semantic\_equivalent}\,$^{\dagger}$  & $0.361$ & $0.500$ \\
+          & \quad $\Delta_{\text{leak}}=0.140$ CI$[0.084,0.205]$ & & \\
     \midrule
     \multicolumn{4}{l}{\textbf{Unsupervised} (K-Means ARI)} \\
     PCH   & ICD-10 chapter                   & $0.064$ & $-0.005$ \\
@@ -44,4 +48,8 @@
     \multicolumn{2}{l}{Access gas} & $546{,}876$ & $753{,}310$ ($+37.7\%$) \\
     \bottomrule
   \end{tabular}
+
+  \noindent{\footnotesize{$^{\dagger}$ B1 sits below $0.5$: the unpadded attacker separates the
+  pair in the inverted direction (still $0.14$ from chance). $\Delta_{\text{leak}}$ is defined on
+  $|\mathrm{AUC}-0.5|$.}}
 \end{table}

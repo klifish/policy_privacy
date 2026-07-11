@@ -1,30 +1,32 @@
-% Source of record: experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json
-%   (multiseedVerdict; deterministic per-seed RNG; supersedes the older
-%    multiseed_results/polygonAmoy/pch_verdict.txt batch).
+% Source of record: python/results/supervised_analysis/pch_supervised_verdict.json
+%   (higher-AUC model per chapter; cross-checked against the JS evaluation_report.json verdict).
 % Multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND %sig >= 50%; both legs required, else PASS.
+% p_perm and the AUC-gap std are not emitted by the Python pipeline; %sig (the gating
+% significant-seed fraction) is retained.
 \begin{table}[H]
   \centering
   \caption{Policy Content Hiding: per-chapter ICD-10 supervised attack over 30
-    policy-disjoint seeds (one-vs-rest, ICD-bearing rows only; median test $n=300$).
+    policy-disjoint seeds (one-vs-rest, ICD-bearing rows only; median test $n\approx270$).
     AUC is the higher-scoring of logistic regression and random forest per chapter
-    (Section~\ref{sec:eval-method}). The highest value is ch6 (AUC $0.573$, \%sig $17\%$), which meets the AUC condition but
-    not the reproducibility condition of the criterion, so all ten chapters pass.}
+    (Section~\ref{sec:eval-method}). Two chapters exceed the $0.55$ AUC line---ch6 (AUC
+    $0.561$, \%sig $7\%$) and ch7 (AUC $0.552$, \%sig $20\%$)---but neither meets the $50\%$
+    significant-seed reproducibility condition, so all ten chapters pass.}
   \label{tab:pch-icd10}
-  \begin{tabular}{lccccc}
+  \begin{tabular}{lcccc}
     \toprule
-    Chapter & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
+    Chapter & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
     \midrule
-    ICD ch0 & $0.488 \pm 0.068$ & $0.051 \pm 0.047$ & $0.536$ & $0\%$  & $300$ \\
-    ICD ch1 & $0.490 \pm 0.050$ & $0.042 \pm 0.030$ & $0.560$ & $0\%$  & $300$ \\
-    ICD ch2 & $0.513 \pm 0.051$ & $0.044 \pm 0.029$ & $0.424$ & $7\%$  & $300$ \\
-    ICD ch3 & $0.524 \pm 0.042$ & $0.040 \pm 0.027$ & $0.358$ & $0\%$  & $300$ \\
-    ICD ch4 & $0.547 \pm 0.055$ & $0.058 \pm 0.044$ & $0.278$ & $17\%$ & $300$ \\
-    ICD ch5 & $0.458 \pm 0.060$ & $0.056 \pm 0.048$ & $0.700$ & $0\%$  & $300$ \\
-    ICD ch6 & $0.573 \pm 0.061$ & $0.083 \pm 0.046$ & $0.206$ & $17\%$ & $300$ \\
-    ICD ch7 & $0.490 \pm 0.048$ & $0.039 \pm 0.029$ & $0.595$ & $0\%$  & $300$ \\
-    ICD ch8 & $0.537 \pm 0.055$ & $0.048 \pm 0.046$ & $0.327$ & $10\%$ & $300$ \\
-    ICD ch9 & $0.524 \pm 0.057$ & $0.048 \pm 0.039$ & $0.395$ & $7\%$  & $300$ \\
+    ICD ch0 & $0.433 \pm 0.060$ & $0.075$ & $0\%$  & $270$   \\
+    ICD ch1 & $0.455 \pm 0.066$ & $0.064$ & $3\%$  & $270$   \\
+    ICD ch2 & $0.507 \pm 0.029$ & $0.024$ & $0\%$  & $270$   \\
+    ICD ch3 & $0.486 \pm 0.033$ & $0.031$ & $0\%$  & $284.5$ \\
+    ICD ch4 & $0.541 \pm 0.039$ & $0.047$ & $13\%$ & $270$   \\
+    ICD ch5 & $0.503 \pm 0.031$ & $0.025$ & $0\%$  & $270$   \\
+    ICD ch6 & $0.561 \pm 0.053$ & $0.069$ & $7\%$  & $270$   \\
+    ICD ch7 & $0.552 \pm 0.047$ & $0.058$ & $20\%$ & $270$   \\
+    ICD ch8 & $0.516 \pm 0.021$ & $0.021$ & $0\%$  & $270$   \\
+    ICD ch9 & $0.492 \pm 0.040$ & $0.034$ & $0\%$  & $270$   \\
     \bottomrule
   \end{tabular}
 \end{table}

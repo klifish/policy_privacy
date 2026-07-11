@@ -4,7 +4,7 @@
 The evaluation indicates that TPS-ZKPI removes the recoverable policy-dependent signals we can measure from normalized public-chain artifacts.
 Across all PCH, PI, and SPP tasks, supervised classifiers stay below the multi-seed permutation-test
 leakage criterion, and unsupervised clustering shows no recoverable structure: ARI is essentially zero (within $\pm 0.002$), and the residual NMI is consistent with finite-sample inflation once debiased against a permutation baseline.
-The gas-padding ablation (Section~\ref{sec:eval-ablation}) sharpens this conclusion: the same attacks become measurably effective once gas padding is removed, which attributes the gas-channel protection specifically to randomized gas padding rather than to weak attacks or insufficient sample size; content hiding rests instead on the commitment-only interface and the content-independent transcript normalization.
+The gas-padding ablation (Section~\ref{sec:eval-ablation}) sharpens this conclusion: the same attacks become measurably effective once gas padding is removed, which attributes the gas-channel protection specifically to randomized gas padding rather than to weak attacks or insufficient sample size; content hiding rests on the commitment-only interface and the content-independent transcript normalization, with padding additionally suppressing the residual gas-channel signal that is otherwise recoverable for some content labels.
 Together with fixed-length policy representation, reusable interpretation, and commitment
 binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
 

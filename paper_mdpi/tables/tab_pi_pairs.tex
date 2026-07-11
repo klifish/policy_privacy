@@ -1,11 +1,11 @@
-% Source of record: experiments/policy_indistinguishability/results/polygonAmoy/pi_report.json
-%   (multiseedVerdict; matches the pi_verdict.txt batch).
+% Source of record: python/results/supervised_analysis/pi_supervised_verdict.json
+%   (higher-AUC model per pair type; cross-checked against the JS pi_report.json verdict).
 % Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
 % Criterion: AUC_mean <= 0.55 AND significant-seed fraction < 0.5 (perm alpha=0.05).
 % controlled_difference is diagnostic, non-gating.
-% The per-row verdict column held \checkmark four times over, so it was dropped; at
-% \footnotesize the remaining six columns measure 355pt against a 394pt text block.
-% The PASS verdict lives in tab_privacy_summary and in the prose, not in this table.
+% p_perm and the AUC-gap std are not emitted by the Python pipeline; the gating
+% significant-seed fraction (%sig) is retained. Per-row verdicts held \checkmark
+% throughout, so the PASS verdict lives in tab_privacy_summary and the prose.
 \begin{table}[H]
   \caption{Policy Indistinguishability: single-sample distinguisher (Level~I) over 30
     policy-disjoint seeds, by policy-pair type. AUC is the higher-scoring of
@@ -14,15 +14,15 @@
     from the PI verdict.}
   \label{tab:pi-pairs}
   \centering\footnotesize
-  \begin{tabular}{lccccc}
+  \begin{tabular}{lcccc}
     \toprule
-    Pair type & AUC (mean\,$\pm$\,std) & AUC gap (mean\,$\pm$\,std) & $p_{\mathrm{perm}}$ & \%sig & med $n$ \\
+    Pair type & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
     \midrule
-    overall               & $0.516 \pm 0.030$ & $0.026 \pm 0.022$ & $0.367$ & $10\%$ & $270$  \\
-    semantic\_equivalent  & $0.511 \pm 0.082$ & $0.070 \pm 0.045$ & $0.456$ & $13\%$ & $71$   \\
-    structural\_variant   & $0.524 \pm 0.071$ & $0.059 \pm 0.046$ & $0.407$ & $0\%$  & $40$   \\
-    weak\_equivalent      & $0.494 \pm 0.085$ & $0.069 \pm 0.051$ & $0.529$ & $7\%$  & $54.5$ \\
-    controlled\_difference\,$^{\dagger}$ & $0.510 \pm 0.076$ & $0.065 \pm 0.041$ & $0.452$ & $3\%$ & $68$ \\
+    overall               & $0.514 \pm 0.022$ & $0.021$ & $7\%$  & $415.5$ \\
+    semantic\_equivalent  & $0.559 \pm 0.063$ & $0.069$ & $30\%$ & $118$   \\
+    structural\_variant   & $0.514 \pm 0.061$ & $0.050$ & $7\%$  & $68$    \\
+    weak\_equivalent      & $0.500 \pm 0.057$ & $0.044$ & $3\%$  & $92$    \\
+    controlled\_difference\,$^{\dagger}$ & $0.562 \pm 0.037$ & $0.066$ & $20\%$ & $118$ \\
     \bottomrule
   \end{tabular}
 

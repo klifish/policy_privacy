@@ -15,13 +15,13 @@ The dataset, attack code, and verdict files are released as an accompanying arti
 \subsubsection{Supervised attacks}
 Each objective is operationalized as a set of binary \emph{tasks}, each defined by one hidden label to recover from the observables: recovering a data-use term or disease chapter (PCH, Section~\ref{sec:eval-pch}), distinguishing the executions of two policies (PI, Section~\ref{sec:eval-pi}), or separating two structural buckets (SPP, Section~\ref{sec:eval-spp}).
 For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score used by the unified verdict for that objective.
-Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} ($70/30$ for PCH and SPP; $80/20$ for PI, whose per-pair samples are smaller): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies, rather than re-identification of training policies from per-policy fingerprints.
+Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} (a uniform $70/30$ split across PCH, PI, and SPP): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies, rather than re-identification of training policies from per-policy fingerprints.
 For each seed we run a label-permutation test and record whether the AUC is significant at $\alpha{=}0.05$.
 
-For each task, the result tables report three metrics: the AUC, its distance from chance averaged over seeds, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap), and the permutation $p$-value averaged over seeds ($p_{\mathrm{perm}}$).
+For each task, the result tables report the AUC and its distance from chance averaged over seeds, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap).
 Unlike accuracy, whose chance level shifts with the number of classes, AUC is insensitive to class count and prevalence: a one-vs-rest AUC is a prevalence-weighted average of pairwise AUCs, so the results are not tied to the class counts of our generated corpus---a deployment with any number of circulating classes decomposes into the pairwise contrasts that PI and SPP measure directly.
 Because the gap averages per-seed absolute deviations, it is generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
-The mean permutation $p$-value $p_{\mathrm{perm}}$ is reported as a diagnostic only; the PASS/FAIL decision instead uses the significant-seed fraction---the fraction of seeds whose per-seed test rejects at $\alpha{=}0.05$, reported as \%sig in the result tables---defined below.
+The PASS/FAIL decision uses the significant-seed fraction---the fraction of seeds whose per-seed permutation test rejects at $\alpha{=}0.05$, reported as \%sig in the result tables---defined below.
 This AUC gap is an empirical, sample-estimated diagnostic, not the advantage of a formal cryptographic distinguisher and not a proven security bound.
 The verdict is:
 %

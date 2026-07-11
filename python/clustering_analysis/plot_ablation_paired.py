@@ -20,18 +20,18 @@ near-constant execution features (see the SPP/PCH verdict methodology), so RF is
 reference; LR is shown only to confirm the same qualitative pattern.
 
 Source of record:
-  experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
+  python/results/supervised_analysis/gas_padding_supervised_deltaLeakage.csv
 Output:
   python/results/clustering_summary/ablation_paired_scatter.png
 """
-import json
+import csv
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 REPO = Path(__file__).resolve().parents[2]
-REPORT = REPO / "experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json"
+DELTA_CSV = REPO / "python/results/supervised_analysis/gas_padding_supervised_deltaLeakage.csv"
 OUT_DIR = REPO / "python/results/clustering_summary"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -55,15 +55,16 @@ def categorize(ci95):
 
 def collect():
     """Return {classifier: [ (family, x, y, cat, dleak_mean), ... ]}."""
-    d = json.loads(REPORT.read_text())
     out = {"rf": [], "lr": []}
-    for fam in FAMILIES:
-        for t in d["supervised"][fam]["tasks"]:
-            clf = t["classifier"]
-            x = abs(t["b1AucMean"] - 0.5)
-            y = abs(t["b2AucMean"] - 0.5)
-            cat = categorize(t["deltaLeakage"]["ci95"])
-            out[clf].append((fam, x, y, cat, t["deltaLeakage"]["mean"]))
+    with open(DELTA_CSV) as f:
+        for r in csv.DictReader(f):
+            clf = r["model"]
+            if clf not in out:
+                continue
+            x = abs(float(r["aucMean_b1_unpadded"]) - 0.5)
+            y = abs(float(r["aucMean_b2_padded"]) - 0.5)
+            cat = categorize((float(r["ciLow"]), float(r["ciHigh"])))
+            out[clf].append((r["experiment"], x, y, cat, float(r["deltaLeakage"])))
     return out
 
 
@@ -74,14 +75,13 @@ def counts(points):
     return c
 
 
-def panel(ax, points, title, subtitle):
+def panel(ax, points, title, subtitle, hi):
     c = counts(points)
     n = len(points)
     # reference diagonal y = x; the lower triangle is "padding helps"
-    hi = 0.34
     ax.plot([0, hi], [0, hi], color="#555555", linewidth=1.0, linestyle="--", zorder=1)
     ax.fill_between([0, hi], [0, 0], [0, hi], color="#F4F7F4", zorder=0)  # lower triangle
-    ax.text(0.26, 0.215, "padding helps (below diagonal)", fontsize=9,
+    ax.text(hi * 0.76, hi * 0.63, "padding helps (below diagonal)", fontsize=9,
             color="#3d3d3d", ha="center", va="center", style="italic",
             rotation=45, rotation_mode="anchor")
 
@@ -112,10 +112,14 @@ def main():
     plt.rcParams.update({"font.size": 11, "axes.titlesize": 11})
     fig, (ax_rf, ax_lr) = plt.subplots(1, 2, figsize=(9.4, 4.8), sharey=True)
 
+    # square axes sized to the largest deviation across both panels
+    allpts = data["rf"] + data["lr"]
+    hi = max(0.34, max(max(p[1], p[2]) for p in allpts) + 0.02)
+
     panel(ax_rf, data["rf"], "Random forest (primary)",
-          "reference criterion")
+          "reference criterion", hi)
     panel(ax_lr, data["lr"], "Logistic regression (robustness)",
-          "over-separates on near-constant features")
+          "over-separates on near-constant features", hi)
 
     ax_rf.set_ylabel(r"$|\mathrm{AUC}_{B2}-0.5|$  (padded)")
 
