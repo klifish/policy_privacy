@@ -5,7 +5,6 @@
 \noindent\textbf{Property.} PCH requires that the on-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes it references---better than chance.
 
 \noindent\textbf{Scope of the labels.} The attack targets six DUO data-use terms---general research use (GR), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), and clinical care use (CC)---and disease codes aggregated to the ten ICD-10 chapters. This label restriction, its statistical-power rationale, and why category-level granularity is a conservative choice are detailed in Section~\ref{sec:eval-dataset}; the per-label support is given in Table~\ref{tab:corpus}.
-The restriction cannot favor the defenses: the commitment-only interface and gas padding are content-agnostic, behaving identically whichever terms a policy carries.
 
 \noindent\textbf{Supervised attack.} Each of the six DUO terms (GR, DS, RS, POA, GS, CC) defines a one-vs-rest binary recovery task, on which we run the multi-seed pipeline of Section~\ref{sec:eval-method}.
 Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task has $\mathrm{AUC}_{\text{mean}}\in[0.490,0.527]$ and a significant-seed fraction of at most $13\%$, so none approaches either condition of the failure criterion.
