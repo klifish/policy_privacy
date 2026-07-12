@@ -9,9 +9,16 @@ provider-defined policies to on-chain commitments, evaluates Boolean-based conse
 policies through a reusable policy interpreter, and normalizes public
 verification artifacts to reduce metadata-level leakage. Across supervised and
 unsupervised attacks on PCH, PI, and SPP, no modeled adversary recovered hidden
-policy information above the chance baseline under a multi-seed permutation
-criterion, and a paired gas-padding ablation attributed this protection
-specifically to gas-transcript normalization---at a $38$--$40\%$ gas overhead.
-Future work will extend the analysis to stronger adaptive adversaries, off-chain
-leakage, richer policy languages, reduced-trust proof generation, and privacy-preserving
-resource discovery.
+policy information reproducibly above chance under our multi-seed leakage
+criterion, and a paired gas-padding ablation attributed the gas-channel
+protection specifically to randomized gas padding---at a gas overhead of about
+$38\%$ on access and $40\%$ on commit.
+
+These results hold for a metadata-only public-chain adversary, and the privacy
+claim is empirical rather than information-theoretic. Two soundness gaps in the
+current instantiation remain open: the committed policy does not bind the program
+length, and the proof statement is not bound to the session context
+(Section~\ref{sec:discussion}). Closing both, together with extending the analysis
+to stronger adaptive adversaries, off-chain leakage, richer policy languages,
+reduced-trust proof generation, and privacy-preserving resource discovery, is left
+to future work.

@@ -36,8 +36,8 @@ Fourth, it applies observability-aware transcript normalization to reduce policy
 We evaluate TPS-ZKPI using attack-driven empirical analysis under a metadata-only threat model.
 The evaluation operationalizes policy privacy through three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 Supervised and unsupervised attacks test whether observable public-chain artifacts allow adversaries to recover hidden policy content, distinguish otherwise-equivalent policies, or infer structural and parameter properties.
-The results show that, after transcript normalization, no modeled attack recovers hidden policy information above the chance baseline under a multi-seed permutation-test criterion.
-A paired ablation serves as a positive control: when gas padding is removed, the same attackers recover policy-dependent signal, and that signal collapses under full normalization, isolating gas-transcript normalization as the mechanism responsible.
+The results show that, after transcript normalization, no modeled attack recovers hidden policy information reproducibly above chance under a multi-seed leakage criterion.
+A paired ablation serves as a positive control: when gas padding is removed, the same attackers recover policy-dependent signal, and that signal collapses under the full mechanism, isolating randomized gas padding as the defense responsible for closing the gas channel.
 
 This paper makes the following contributions:
 
@@ -60,8 +60,8 @@ This paper makes the following contributions:
 	      testnet\footnote{\url{https://amoy.polygonscan.com}}, using
 	      supervised classification and unsupervised clustering attacks under a multi-seed
 	      permutation-test criterion. A paired gas-padding ablation then isolates
-	      gas-transcript normalization as the mechanism responsible for the observed
-	      protection and quantifies its gas-cost overhead.
+	      randomized gas padding as the defense responsible for closing the gas
+	      channel and quantifies its gas-cost overhead.
 \end{itemize}
 
 The remainder of this paper is organized as follows.
