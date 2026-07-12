@@ -14,9 +14,9 @@ Concretely, for each policy execution (a commit transaction followed by an acces
     \texttt{accessLogsCount}, \texttt{accessLogsSize}.
 \end{itemize}
 %
-Among the observables modeled above, calldata length, proof size, and log counts/sizes are content-independent by design (constant across policies), so any policy-dependent signal can only flow through the gas features.
-The effective feature set the attacker can exploit therefore reduces to the two gas measurements (\texttt{commitGasUsed}, \texttt{accessGasUsed}); the remaining observables are retained in the pipeline but carry no policy-dependent variation. 
-The defenses (commitment-only interface, randomized access-gas padding) target exactly this channel. 
+Among the observables modeled above, calldata length, proof size, and log counts/sizes are content-independent by design (constant across policies), so any policy-dependent signal only flows through the gas features.
+The effective feature set the attacker exploits therefore reduces to the two gas measurements (\texttt{commitGasUsed}, \texttt{accessGasUsed}); the remaining observables are retained in the pipeline but carry no policy-dependent variation. 
+The defenses (commitment-only interface, randomized gas padding) target exactly this channel. 
 We do not model side channels such as block timing, transaction ordering, mempool or broadcast patterns, or off-chain TPS communication; these, together with the non-goals stated in Section~\ref{sec:problem}, remain outside this evaluation model.
 
 We consider three attacker tasks, one per privacy objective:
