@@ -82,8 +82,21 @@ npm run ablation:gas:analyze
 python/.venv/bin/python python/supervised_analysis/run_ablation_supervised.py --seeds 30 --jobs -1
 ```
 
-To exercise stage 1 locally without spending testnet funds, `npm run exp:full` runs the
-same corpus against a local Hardhat node.
+**Running without testnet funds.** `npm run exp:full` starts a local Hardhat node and runs
+the corpus against it, as a smoke test of the on-chain path. It writes to
+`experiments/unified/artifacts_data/localhost/`, so the analysis scripts need to be pointed
+there explicitly:
+
+```bash
+../.venv/bin/python pch_supervised.py \
+  --data-dir ../../experiments/unified/artifacts_data/localhost \
+  --output-dir /tmp/local_check --seeds 30 --jobs -1
+```
+
+The local corpus is far smaller than the Amoy one (tens of policies rather than ~1,000), so
+individual tasks can come out FAIL on sampling noise alone. It exercises the pipeline; it
+does not reproduce the paper's numbers. Keep `--output-dir` off `python/results/` so a
+smoke run cannot overwrite the of-record verdicts.
 
 The classifiers carry some internal randomness, so a re-run reproduces the reported AUCs to
 about ±0.001 rather than bit-for-bit; the verdicts themselves are stable.
