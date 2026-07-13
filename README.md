@@ -42,40 +42,52 @@ python/.venv/bin/pip install -r python/requirements.txt
 
 ## Reproducing the paper results
 
-The evaluation runs against the Polygon Amoy testnet. It has three stages: generate the
-policy corpus and execute it on-chain, run the metadata-only attacks, then run the
-analysis that produces the numbers cited in the manuscript.
+Only the first stage runs on-chain. It executes the policy corpus against the Polygon Amoy
+testnet and writes the observable public-chain features to `python/data/polygonAmoy/`
+(`pch_dataset.json`, `pi_dataset.json`, `spp_dataset.json`). Every attack and analysis
+step after that is Python, reading those datasets.
 
-**1. Generate the dataset (on-chain execution).** Requires a funded Amoy account
-configured in `hardhat.config.js`.
+**1. Generate the dataset (on-chain).** Requires a funded Amoy account configured in
+`hardhat.config.js`.
 
 ```bash
 npm run unified:testnet
 ```
 
-**2. Run the three attack experiments.** Policy Content Hiding (PCH), Structure and
-Parameter Privacy (SPP), and Policy Indistinguishability (PI):
+**2. Run the supervised attacks.** Policy Content Hiding (PCH), Policy Indistinguishability
+(PI), and Structure and Parameter Privacy (SPP). Each writes its verdict to
+`python/results/supervised_analysis/`.
 
 ```bash
-npm run exp:all:amoy
+cd python/supervised_analysis
+../.venv/bin/python pch_supervised.py --seeds 30 --jobs -1
+../.venv/bin/python pi_supervised.py  --seeds 30 --jobs -1
+../.venv/bin/python spp_supervised.py --data-dir ../data --seeds 30 --jobs -1
 ```
 
-**3. Run the analysis.** This writes the of-record results the paper cites:
+**3. Run the label-free clustering cross-check.**
 
 ```bash
-python/.venv/bin/python python/run_policy_privacy_experiments.py
+python/.venv/bin/python python/clustering_analysis/run_all_clustering.py
 ```
 
-**Gas-padding ablation.** The paired padded/unpadded comparison behind the ablation table:
+**4. Gas-padding ablation.** The paired unpadded/padded comparison behind the ablation
+table. The first two steps collect the padded and unpadded runs on-chain; the third scores
+them.
 
 ```bash
 npm run ablation:gas:prepare
 npm run ablation:gas:analyze
-npm run ablation:gas:python
+python/.venv/bin/python python/supervised_analysis/run_ablation_supervised.py --seeds 30 --jobs -1
 ```
 
-To exercise the pipeline locally without spending testnet funds, `npm run exp:full` runs
-the same flow against a local Hardhat node.
+To exercise stage 1 locally without spending testnet funds, `npm run exp:full` runs the
+same corpus against a local Hardhat node.
+
+The privacy criterion is a multi-seed permutation test: per task, an attack counts as
+leakage only if `AUC > 0.55` and it clears the permutation test in at least half of the 30
+seeds. A run passes only if every gating task passes. `overallPassed` in each verdict file
+records the outcome.
 
 ### Where the paper's numbers come from
 
@@ -93,10 +105,6 @@ These result files are tracked in this repository, so the tables can be checked 
 them without re-running the experiments. The bulky PI pair intermediates
 (`pi_pairs_generated.json`, `pairs/`) are not tracked — `pi_supervised.py` regenerates
 them.
-
-The privacy criterion itself is a multi-seed permutation test; a target is considered
-leaky only if an attack beats chance reproducibly across seeds. `overallPassed` in each
-verdict file records the outcome.
 
 ## Core circuit
 
