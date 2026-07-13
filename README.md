@@ -43,9 +43,10 @@ python/.venv/bin/pip install -r python/requirements.txt
 ## Reproducing the paper results
 
 Only the first stage runs on-chain. It executes the policy corpus against the Polygon Amoy
-testnet and writes the observable public-chain features to `python/data/polygonAmoy/`
-(`pch_dataset.json`, `pi_dataset.json`, `spp_dataset.json`). Every attack and analysis
-step after that is Python, reading those datasets.
+testnet and writes the observable public-chain features to
+`experiments/unified/artifacts_data/polygonAmoy/` (`pch_dataset.json`, `pi_dataset.json`,
+`spp_dataset.json`). Every attack and analysis step after that is Python, reading those
+datasets — the analysis scripts default to that directory, and `--data-dir` overrides it.
 
 **1. Generate the dataset (on-chain).** Requires a funded Amoy account configured in
 `hardhat.config.js`.
@@ -56,16 +57,16 @@ npm run unified:testnet
 
 **2. Run the supervised attacks.** Policy Content Hiding (PCH), Policy Indistinguishability
 (PI), and Structure and Parameter Privacy (SPP). Each writes its verdict to
-`python/results/supervised_analysis/`.
+`python/results/supervised_analysis/`. About a minute each.
 
 ```bash
 cd python/supervised_analysis
 ../.venv/bin/python pch_supervised.py --seeds 30 --jobs -1
 ../.venv/bin/python pi_supervised.py  --seeds 30 --jobs -1
-../.venv/bin/python spp_supervised.py --data-dir ../data --seeds 30 --jobs -1
+../.venv/bin/python spp_supervised.py --seeds 30 --jobs -1
 ```
 
-**3. Run the label-free clustering cross-check.**
+**3. Run the label-free clustering cross-check.** Roughly four minutes.
 
 ```bash
 python/.venv/bin/python python/clustering_analysis/run_all_clustering.py
@@ -83,6 +84,9 @@ python/.venv/bin/python python/supervised_analysis/run_ablation_supervised.py --
 
 To exercise stage 1 locally without spending testnet funds, `npm run exp:full` runs the
 same corpus against a local Hardhat node.
+
+The classifiers carry some internal randomness, so a re-run reproduces the reported AUCs to
+about ±0.001 rather than bit-for-bit; the verdicts themselves are stable.
 
 The privacy criterion is a multi-seed permutation test: per task, an attack counts as
 leakage only if `AUC > 0.55` and it clears the permutation test in at least half of the 30
