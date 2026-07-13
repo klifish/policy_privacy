@@ -1,8 +1,7 @@
 # TPS-ZKPI: Enhancing Consent Policy Privacy in Blockchain-Based Healthcare Data Sharing
 
 Reference implementation and evaluation code for the manuscript *"Enhancing Consent
-Policy Privacy in Blockchain-Based Healthcare Data Sharing"* (Kun Li, Ankur Lohachab,
-Michel Dumontier, Visara Urovi), submitted to MDPI *Blockchains*.
+Policy Privacy in Blockchain-Based Healthcare Data Sharing"*.
 
 TPS-ZKPI is a Trusted Proof Service-assisted zero-knowledge policy interpreter. It
 compiles heterogeneous Boolean consent policies into fixed-length programs evaluated by a
@@ -21,7 +20,6 @@ information.
 ├── tps/            # Trusted Proof Service
 ├── experiments/    # Attack experiments (PCH, SPP, PI) and the gas-padding ablation
 ├── python/         # Supervised/clustering analysis pipeline and of-record results
-├── paper_mdpi/     # LaTeX manuscript
 ├── test/           # Mocha/Hardhat test suite
 └── examples/       # Usage examples (diabetes, ICD-10 cases)
 ```
@@ -108,8 +106,8 @@ records the outcome.
 
 ### Where the paper's numbers come from
 
-The manuscript's result tables cite these files by path; each `paper_mdpi/tables/*.tex`
-names its own source of record in a header comment.
+Each result table in the manuscript names its source of record; those files are tracked
+here, so the reported numbers can be checked without re-running anything.
 
 | Paper table | Source of record |
 |---|---|
@@ -140,15 +138,6 @@ predicates, and DEPTH=20 policy tokens, under Groth16.
 npx hardhat test     # full suite
 npm run test:all
 ```
-
-## Building the manuscript
-
-```bash
-cd paper_mdpi && tectonic main.tex
-```
-
-[Tectonic](https://tectonic-typesetting.github.io/) resolves packages and runs the
-bibliography and rerun passes in one command; `pdflatex`/`latexmk`/`bibtex` are not needed.
 
 ## SDK usage
 
