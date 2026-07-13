@@ -22,8 +22,8 @@ This repository implements a zero-knowledge approach for privacy-preserving cons
 ├── experiments/               # Research experiments (PCH, SPP, PI)
 ├── utils/                     # Utility scripts
 │   └── validation/            # Validation and debugging tools
-├── docs/                      # Documentation
-│   └── analysis/              # Research and analysis documents
+├── paper_mdpi/                # LaTeX manuscript (MDPI Blockchains)
+├── python/                    # Analysis pipeline and of-record results
 └── examples/                  # Usage examples
     ├── diabetes_case/         # Healthcare consent example
     └── icd10_case/           # Medical code verification example
@@ -112,23 +112,11 @@ npx mocha test/policy_privacy_phase1_integration.js --timeout 100000
   }
   ```
   Attributes are auto-bound to their ontology predicates (e.g., `DS` ⟶ `ICD10`) and compiled into postfix tokens with operator codes matching the interpreter circuit.
-  See [docs/POLICY_GENERATOR.md](docs/POLICY_GENERATOR.md) for full schema and integration notes.
 - `utils/policy/random_human_policy.js` can synthesize author-style DUO policies; use it to bootstrap datasets or fuzz the compiler.
 
-## Documentation
-
-### ICD-10 Set Builder
-
-For comprehensive documentation on the ICD-10 Allowed-Set Builder tool, see [docs/ICD10_SET_BUILDER.md](docs/ICD10_SET_BUILDER.md).
+## ICD-10 Set Builder
 
 The ICD-10 Set Builder creates Poseidon Merkle trees for medical codes to enable zero-knowledge proofs for medical verification without revealing specific conditions.
-
-### Analysis Documents
-
-- `/docs/analysis/` - Contains detailed analysis documents:
-  - `PAPER_IMPLEMENTATION_GAP_ANALYSIS.md` - Gap analysis with the academic paper
-  - `MISSING_FUNCTIONALITY_ANALYSIS.md` - Additional functionality analysis
-  - `REPOSITORY_ANALYSIS_REPORT.md` - Technical analysis report
 
 ## Testing
 
@@ -144,13 +132,11 @@ npx mocha test/compiler/icd10_set_builder_test.js --timeout 100000
 npm run test:all
 ```
 
-## Building the Papers
+## Building the Paper
 
-The `paper/` (IEEEtran) and `paper_mdpi/` (MDPI) directories each contain a standalone LaTeX manuscript. Build either with [Tectonic](https://tectonic-typesetting.github.io/), which resolves packages and runs the bibliography/rerun passes in one command:
+The `paper_mdpi/` directory contains the LaTeX manuscript. Build it with [Tectonic](https://tectonic-typesetting.github.io/), which resolves packages and runs the bibliography/rerun passes in one command:
 
 ```bash
-cd paper && tectonic main.tex
-# or
 cd paper_mdpi && tectonic main.tex
 ```
 
