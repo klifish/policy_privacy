@@ -1,21 +1,26 @@
-# `supervised_analysis/` — Python supervised privacy cross-checks
+# `supervised_analysis/` — Python supervised privacy attacks
 
-Independent Python (scikit-learn) re-runs of the supervised attack layer for
-Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure &
-Parameter Privacy (SPP). These scripts complement the label-free clustering
-cross-check in [`../clustering_analysis/`](../clustering_analysis/): if mature,
-well-tuned sklearn classifiers — given labels and training data, i.e. the
-strongest attacker — still cannot beat the privacy verdict, that is stronger
-supporting evidence than the bespoke JS models alone.
+The supervised attack layer for Policy Content Hiding (PCH), Policy
+Indistinguishability (PI), and Structure & Parameter Privacy (SPP), implemented
+with scikit-learn. It pairs with the label-free clustering cross-check in
+[`../clustering_analysis/`](../clustering_analysis/): if well-tuned classifiers —
+given labels and training data, i.e. the strongest attacker — still cannot beat
+the privacy verdict, and unsupervised clustering finds no structure either, the
+privacy claim rests on two independent lines of evidence.
 
-This is **supporting evidence, not a source of record.** The paper tables are
-driven by the JavaScript pipeline (see below); nothing here overwrites them.
+**These scripts are the source of record for the manuscript's privacy verdicts.**
+Each `paper_mdpi/tables/*.tex` names the file it draws from in a header comment;
+the privacy summary and the per-experiment PCH/PI/SPP tables all cite the verdict
+JSON produced here. The JS pipeline under `experiments/**/results/` computes the
+same criterion independently and is kept as a cross-check (see
+`compare_with_js_verdict.py`), not as the tables' source.
 
-## Outputs and isolation from the JS results
+## Outputs
 
-All outputs go to `python/results/supervised_analysis/` (which is **gitignored**,
-`.gitignore` line `python/results/`), so this code never touches — and cannot
-overwrite — the JS results tracked under `experiments/**/results/`.
+All outputs go to `python/results/supervised_analysis/`, which is **git-tracked**:
+the paper's tables can be checked against them without re-running anything. The
+bulky PI pair intermediates (`pi_pairs_generated.json`, `pairs/`) are the
+exception — they are gitignored and regenerated on demand.
 
 | File | Produced by |
 |---|---|
@@ -28,8 +33,8 @@ overwrite — the JS results tracked under `experiments/**/results/`.
 | `spp_ablation_deltaLeakage.csv` | `run_ablation_supervised.py` — per-contrast b1/b2 leakage delta + bootstrap CI |
 | `*_js_comparison.json` | `compare_with_js_verdict.py` — JSON diff against JS `multiseedVerdict` |
 
-The JS sources of record (separate tree, git-tracked) that these are compared
-against:
+The independent JS reports (separate tree, git-tracked) that
+`compare_with_js_verdict.py` diffs against:
 
 - PCH: `experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json`
 - PI: `experiments/policy_indistinguishability/results/polygonAmoy/pi_report.json`
@@ -76,19 +81,19 @@ against:
 ```bash
 cd python/supervised_analysis
 
-# PCH cross-check on the unified dataset (30 seeds).
+# PCH on the unified dataset (30 seeds).
 ../.venv/bin/python pch_supervised.py --seeds 30 --jobs -1
 
-# PI cross-check; auto-generates a gitignored pi_pairs_generated.json if needed.
+# PI; auto-generates a gitignored pi_pairs_generated.json if needed.
 ../.venv/bin/python pi_supervised.py --seeds 30 --jobs -1
 
-# SPP cross-check on the unified dataset (30 seeds).
-../.venv/bin/python spp_supervised.py --data-dir ../data --seeds 30 --jobs -1
+# SPP on the unified dataset (30 seeds).
+../.venv/bin/python spp_supervised.py --seeds 30 --jobs -1
 
-# Gas-padding ablation cross-check (b1_unpadded vs b2_padded).
+# Gas-padding ablation (b1_unpadded vs b2_padded).
 ../.venv/bin/python run_ablation_supervised.py --seeds 30 --jobs -1
 
-# Compare a Python verdict with the JS source-of-record report.
+# Diff a verdict against the independent JS report.
 ../.venv/bin/python compare_with_js_verdict.py --experiment pch
 ../.venv/bin/python compare_with_js_verdict.py --experiment pi
 ../.venv/bin/python compare_with_js_verdict.py --experiment spp
@@ -140,9 +145,6 @@ records the pair artifact SHA-256.
 
 ## Relationship to `run_policy_privacy_experiments.py`
 
-`python/run_policy_privacy_experiments.py` remains useful as a broad legacy
-sanity-check runner and visualization generator across PCH/PI/SPP. The scripts
-in this directory are the preferred Python layer when the goal is to cross-check
-the JS source-of-record verdicts, because they mirror the shared multi-seed AUC +
-permutation criterion more directly. The JS reports under `experiments/**/results/`
-remain authoritative.
+`python/run_policy_privacy_experiments.py` is a broad legacy sanity-check runner
+and visualization generator across PCH/PI/SPP. It does not produce the verdicts
+the paper cites — use the scripts in this directory for that.
