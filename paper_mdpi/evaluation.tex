@@ -4,10 +4,11 @@
 \section{Privacy Evaluation}
 \label{sec:eval}
 
-We evaluate the three privacy objectives of our approach---Policy Content Hiding, Policy Indistinguishability, and Structure \& Parameter Privacy---against a passive on-chain observer (Section~\ref{sec:eval-threat}).
-The primary evidence is a supervised, multi-seed attack evaluation, scored by test AUC against the chance baseline, with policy-disjoint splits and permutation tests (Section~\ref{sec:eval-method}); unsupervised clustering, scored by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI), provides a label-free cross-check on the same executions.
-All three objectives pass the supervised criterion, and the clustering attack finds no natural grouping by hidden labels.
-Beyond the privacy verdicts, the evaluation reports the system's cost profile as its performance metrics: per-transaction gas for commit and access (including the padding overhead), calldata sizes, circuit constraint count, and local proving time (Section~\ref{sec:eval-ablation}, Table~\ref{tab:cost-profile}).
+We evaluate PCH, PI, and SPP (Section~\ref{subsec:privacy-objectives}) against a passive public-chain observer (Section~\ref{sec:eval-threat}).
+The evidence comes from two attack families run on the same executions: a supervised attacker that tries to recover each hidden label from the on-chain observables, and an unsupervised attacker that asks whether the observables cluster along that label without seeing it.
+Section~\ref{sec:eval-method} defines both pipelines and the multi-seed criterion that decides each privacy verdict.
+All three objectives pass, and the unsupervised attacker finds no natural grouping by the hidden labels.
+Beyond the privacy verdicts, we report the system's performance as a cost profile: per-transaction gas for commit and access (including the padding overhead), calldata sizes, circuit constraint count, and local proving time (Section~\ref{sec:eval-ablation}, Table~\ref{tab:cost-profile}).
 
 \input{sec_threat_model.tex}
 \input{sec_methodology.tex}

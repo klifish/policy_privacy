@@ -2,12 +2,12 @@
 \subsection{Ablation: gas-normalization positive control}
 \label{sec:eval-ablation}
 
-The main results show that the full mechanism hides content, policy identity, and structure/parameters. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized access-gas padding after the fixed circuit and commitment-only interface have already eliminated calldata, proof-size, and event-log
+The main results show that the full mechanism hides content, policy identity, and structure/parameters. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata, proof-size, and event-log
 channels.
 
 We compare two aligned protection profiles on the same selected policy set. 
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding. 
-\textbf{B2} is the full mechanism used in the main evaluation, with randomized access-gas padding. 
+\textbf{B2} is the full mechanism used in the main evaluation, with randomized gas padding. 
 This is the positive control for the gas channel: calldata, proof size, and event-log shape are already fixed, so B1 is an un-padded gas-transcript control rather than a run with every normalization layer
 removed. 
 The same features, splits, and classifiers produce well-above-chance AUCs on B1 when padding is absent, while B2 returns the attacker toward chance. 
@@ -32,7 +32,7 @@ Every contrast on which B1 carries a sizable signal ($|\mathrm{AUC}_{\mathrm{B1}
 Across the $49$ random-forest contrasts the median unpadded deviation of $0.136$ drops to $0.033$ under padding, and the per-family median $\Delta_{\text{leak}}$ is $+0.169$ (SPP), $+0.072$ (PCH), and $+0.039$ (PI).
 The clustering attacker shows the same pattern on a second, label-free attack family: PI pairwise clustering reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$ under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.043$ (B1) to $-0.001$ (B2). 
 This attributes the gas-channel protection reported in Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}
-to randomized access-gas padding, rather than to weak attacks or insufficient sample size.
+to randomized gas padding, rather than to weak attacks or insufficient sample size.
 
 The effect is conditional, and we report it as such. 
 Padding reduces leakage wherever a recoverable gas-channel signal exists and is otherwise inert: the $13$ random-forest contrasts with no detectable effect ($\Delta_{\text{leak}}$ interval spanning zero) sit in the lower-left of Figure~\ref{fig:ablation-paired}, where B1 is already near chance so there is little to remove.
@@ -46,7 +46,7 @@ The logistic-regression panel (shown for robustness only, since it over-separate
   \caption{Gas-padding ablation over \emph{all} supervised contrasts. Each point is one
     contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$
     (x) versus its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$ (y); points below
-    the $y=x$ diagonal are cases where randomized access-gas padding moved the attacker
+    the $y=x$ diagonal are cases where randomized gas padding moved the attacker
     back toward chance. Color encodes the sign of the bootstrap $95\%$ CI of
     $\Delta_{\text{leak}}$: reduce (CI$>0$), no effect (CI spans $0$), negative (CI$<0$).
     Every contrast with a sizable unpadded signal collapses toward the padded axis, while

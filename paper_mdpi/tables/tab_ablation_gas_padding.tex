@@ -1,7 +1,7 @@
 % Source of record (supervised rows + counts):
 %   python/results/supervised_analysis/gas_padding_supervised_deltaLeakage.csv
 %   (metadata: gas_padding_supervised_metadata.json)
-% B1 = unpadded gas transcript; B2 = deployed randomized access-gas padding.
+% B1 = unpadded gas transcript; B2 = deployed randomized gas padding.
 % Effect = |AUC_B1-0.5| - |AUC_B2-0.5|; 95% repeated-split stability interval over
 % 30 paired seeds (nonContemporaneous B1/B2 profiles).
 % This table is ILLUSTRATIVE: the four supervised rows are representative contrasts whose
@@ -15,7 +15,7 @@
 \begin{table}[H]
   \centering
   \caption{Gas-padding ablation on Polygon Amoy: representative contrasts illustrating the
-    padding effect. B1 (no gas padding) and B2 (deployed, randomized access-gas padding) are
+    padding effect. B1 (no gas padding) and B2 (deployed, randomized gas padding) are
     aligned on the same policy set. Supervised AUC is the random-forest score (the stronger
     of the two classifiers here; see Section~\ref{sec:eval-method}); clustering reports K-Means ARI.
     $\Delta_{\text{leak}}>0$ (defined in the text) means padding moved the attacker toward chance,

@@ -4,12 +4,12 @@
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
 The \emph{supervised} pipeline asks whether a trained classifier can recover a hidden label from the observables, measured by test AUC against the chance level of $0.5$; its outcome serves as the main privacy verdict, since the label-informed adversary is at least as strong as the unsupervised one and therefore yields the more conservative test.
-The \emph{unsupervised} pipeline asks whether the observables cluster along the hidden label, measured by ARI and NMI against their nominal chance level of $0$, providing a label-free cross-check on the same executions.
+The \emph{unsupervised} pipeline asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their nominal chance level of $0$, providing a label-free cross-check on the same executions.
 
 \noindent\textbf{Execution setup.} All policy executions are transactions on the public \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicy}), generate the Groth16 proof locally in the role of the co-located TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBound}).
 The provider-to-TPS and requester-to-TPS exchanges are in-process calls; they use no public channel and produce no on-chain artifacts, so they do not affect the observables of Section~\ref{sec:eval-threat}, which are extracted from the resulting transaction receipts, calldata, and event logs.
 
-Both pipelines run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, access-gas padding).
+Both pipelines run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, randomized gas padding).
 The corpus composition and the two-layer execution design that supplies the balanced PI pairs are detailed in Section~\ref{sec:eval-dataset} and Table~\ref{tab:corpus}; per-task sample sizes are listed in the result tables.
 The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review).
 
