@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Visualizations - Mermaid</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+        
+        .circuit-card {
+            background: #f8f9fb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .circuit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .circuit-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .circuit-info {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .diagram-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .tab-button:hover {
+            background: #34495e;
+            color: white;
+        }
+        
+        .diagram-content {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            min-height: 400px;
+        }
+        
+        .diagram-panel {
+            display: none;
+        }
+        
+        .diagram-panel.active {
+            display: block;
+        }
+        
+        .mermaid-code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+        
+        .copy-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .copy-button:hover {
+            background: #2980b9;
+        }
+        
+        .mermaid-note {
+            background: #e8f5e8;
+            border: 1px solid #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+        
+        .toc {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 250px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .toc h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .toc a:hover {
+            background: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Circuit Visualizations</h1>
+        <div class="subtitle">Interactive Mermaid diagrams for all Circom circuits</div>
+        
+        <div class="mermaid-note">
+            📝 <strong>How to use:</strong> Copy the Mermaid code below and paste it into 
+            <a href="https://mermaid.live/" target="_blank">Mermaid Live Editor</a> or any Mermaid-compatible tool to view the interactive diagrams.
+        </div>
+        
+        <div class="toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#commitment">commitment</a></li>
+                <li><a href="#external_predicates">external_predicates</a></li>
+                <li><a href="#multimux">multimux</a></li>
+                <li><a href="#policy_commitment">policy_commitment</a></li>
+                <li><a href="#postfix_policy_interpreter">postfix_policy_interpreter</a></li>
+                <li><a href="#policy_privacy_main">policy_privacy_main</a></li>
+                <li><a href="#policy_privacy_main_instance">policy_privacy_main_instance</a></li>
+                <li><a href="#postfix_policy_interpreter_legacy">postfix_policy_interpreter_legacy</a></li>
+            </ul>
+        </div>
+        
+        <div class="circuit-card" id="commitment">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 commitment.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 1 templates</div>
+                    <div class="info-item">🧩 1 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 3 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('commitment', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('commitment', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('commitment', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: commitment.circom
+
+    node2["Main: Claim"]
+
+
+    subgraph Claim[Template: Claim]
+        node0[secret]
+        node0:::inputNode
+        node1[commitment]
+        node1:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: commitment.circom
+
+    node2["Main: Claim"]
+
+
+    subgraph Claim[Template: Claim]
+        node0[secret]
+        node0:::inputNode
+        node1[commitment]
+        node1:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: commitment.circom
+
+    node0"Claim"
+    node0:::templateNode
+    node1"pedersen"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: commitment.circom
+
+    node0"Claim"
+    node0:::templateNode
+    node1"pedersen"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: commitment.circom
+
+    node0["Input: secret"]
+    node0:::inputNode
+    node1["Output: commitment"]
+    node1:::outputNode
+    node2["Pedersen"]
+    node2:::componentNode
+    node3["Num2Bits"]
+    node3:::componentNode
+
+    node0 --> node2
+    node0 --> node3
+    node2 --> node1
+    node3 --> node1
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: commitment.circom
+
+    node0["Input: secret"]
+    node0:::inputNode
+    node1["Output: commitment"]
+    node1:::outputNode
+    node2["Pedersen"]
+    node2:::componentNode
+    node3["Num2Bits"]
+    node3:::componentNode
+
+    node0 --> node2
+    node0 --> node3
+    node2 --> node1
+    node3 --> node1
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="external_predicates">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 external_predicates.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 5 templates</div>
+                    <div class="info-item">🧩 0 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 71 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('external_predicates', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('external_predicates', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('external_predicates', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: external_predicates.circom
+
+
+
+    subgraph MerkleProofVerifier[Template: MerkleProofVerifier]
+        node0[leaf]
+        node0:::inputNode
+        node1[pathElements[]]
+        node1:::inputNode
+        node2[pathIndices[]]
+        node2:::inputNode
+        node3[root]
+        node3:::inputNode
+        node4[isValid]
+        node4:::outputNode
+        node5[computedHash[]]
+    end
+
+    subgraph CredentialSignatureVerifier[Template: CredentialSignatureVerifier]
+        node6[message]
+        node6:::inputNode
+        node7[signature]
+        node7:::inputNode
+        node8[publicKey]
+        node8:::inputNode
+        node9[isValid]
+        node9:::outputNode
+    end
+
+    subgraph RangeProof[Template: RangeProof]
+        node10[value]
+        node10:::inputNode
+        node11[minValue]
+        node11:::inputNode
+        node12[maxValue]
+        node12:::inputNode
+        node13[isValid]
+        node13:::outputNode
+    end
+
+    subgraph OntologyLinkedTermsVerifier[Template: OntologyLinkedTermsVerifier]
+        node14[icdCode]
+        node14:::inputNode
+        node15[merklePathElements[]]
+        node15:::inputNode
+        node16[merklePathIndices[]]
+        node16:::inputNode
+        node17[allowedRoot]
+        node17:::inputNode
+        node18[policyId]
+        node18:::inputNode
+        node19[epoch]
+        node19:::inputNode
+        node20[pred]
+        node20:::outputNode
+    end
+
+    subgraph ExternalPredicateVerifier[Template: ExternalPredicateVerifier]
+        node21[predicateType]
+        node21:::inputNode
+        node22[merkleLeaf]
+        node22:::inputNode
+        node23[merklePathElements[]]
+        node23:::inputNode
+        node24[merklePathIndices[]]
+        node24:::inputNode
+        node25[merkleRoot]
+        node25:::inputNode
+        node26[credMessage]
+        node26:::inputNode
+        node27[credSignature]
+        node27:::inputNode
+        node28[credPublicKey]
+        node28:::inputNode
+        node29[rangeValue]
+        node29:::inputNode
+        node30[rangeMin]
+        node30:::inputNode
+        node31[rangeMax]
+        node31:::inputNode
+        node32[ontologyCode]
+        node32:::inputNode
+        node33[ontologyPolicyId]
+        node33:::inputNode
+        node34[ontologyEpoch]
+        node34:::inputNode
+        node35[isValid]
+        node35:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: external_predicates.circom
+
+
+
+    subgraph MerkleProofVerifier[Template: MerkleProofVerifier]
+        node0[leaf]
+        node0:::inputNode
+        node1[pathElements[]]
+        node1:::inputNode
+        node2[pathIndices[]]
+        node2:::inputNode
+        node3[root]
+        node3:::inputNode
+        node4[isValid]
+        node4:::outputNode
+        node5[computedHash[]]
+    end
+
+    subgraph CredentialSignatureVerifier[Template: CredentialSignatureVerifier]
+        node6[message]
+        node6:::inputNode
+        node7[signature]
+        node7:::inputNode
+        node8[publicKey]
+        node8:::inputNode
+        node9[isValid]
+        node9:::outputNode
+    end
+
+    subgraph RangeProof[Template: RangeProof]
+        node10[value]
+        node10:::inputNode
+        node11[minValue]
+        node11:::inputNode
+        node12[maxValue]
+        node12:::inputNode
+        node13[isValid]
+        node13:::outputNode
+    end
+
+    subgraph OntologyLinkedTermsVerifier[Template: OntologyLinkedTermsVerifier]
+        node14[icdCode]
+        node14:::inputNode
+        node15[merklePathElements[]]
+        node15:::inputNode
+        node16[merklePathIndices[]]
+        node16:::inputNode
+        node17[allowedRoot]
+        node17:::inputNode
+        node18[policyId]
+        node18:::inputNode
+        node19[epoch]
+        node19:::inputNode
+        node20[pred]
+        node20:::outputNode
+    end
+
+    subgraph ExternalPredicateVerifier[Template: ExternalPredicateVerifier]
+        node21[predicateType]
+        node21:::inputNode
+        node22[merkleLeaf]
+        node22:::inputNode
+        node23[merklePathElements[]]
+        node23:::inputNode
+        node24[merklePathIndices[]]
+        node24:::inputNode
+        node25[merkleRoot]
+        node25:::inputNode
+        node26[credMessage]
+        node26:::inputNode
+        node27[credSignature]
+        node27:::inputNode
+        node28[credPublicKey]
+        node28:::inputNode
+        node29[rangeValue]
+        node29:::inputNode
+        node30[rangeMin]
+        node30:::inputNode
+        node31[rangeMax]
+        node31:::inputNode
+        node32[ontologyCode]
+        node32:::inputNode
+        node33[ontologyPolicyId]
+        node33:::inputNode
+        node34[ontologyEpoch]
+        node34:::inputNode
+        node35[isValid]
+        node35:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: external_predicates.circom
+
+    node0"MerkleProofVerifier"
+    node0:::templateNode
+    node1"CredentialSignatureVerifier"
+    node1:::templateNode
+    node2"RangeProof"
+    node2:::templateNode
+    node3"OntologyLinkedTermsVerifier"
+    node3:::templateNode
+    node4"ExternalPredicateVerifier"
+    node4:::templateNode
+    node5"poseidon"
+    node5:::includeNode
+    node6"eddsaposeidon"
+    node6:::includeNode
+    node7"comparators"
+    node7:::includeNode
+    node8"mux1"
+    node8:::includeNode
+    node9"mux3"
+    node9:::includeNode
+    node10"gates"
+    node10:::includeNode
+    node11"bitify"
+    node11:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: external_predicates.circom
+
+    node0"MerkleProofVerifier"
+    node0:::templateNode
+    node1"CredentialSignatureVerifier"
+    node1:::templateNode
+    node2"RangeProof"
+    node2:::templateNode
+    node3"OntologyLinkedTermsVerifier"
+    node3:::templateNode
+    node4"ExternalPredicateVerifier"
+    node4:::templateNode
+    node5"poseidon"
+    node5:::includeNode
+    node6"eddsaposeidon"
+    node6:::includeNode
+    node7"comparators"
+    node7:::includeNode
+    node8"mux1"
+    node8:::includeNode
+    node9"mux3"
+    node9:::includeNode
+    node10"gates"
+    node10:::includeNode
+    node11"bitify"
+    node11:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: external_predicates.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: external_predicates.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="multimux">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 multimux.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 1 templates</div>
+                    <div class="info-item">🧩 0 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 6 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('multimux', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('multimux', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('multimux', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: multimux.circom
+
+
+
+    subgraph MultiMux[Template: MultiMux]
+        node0[in[]]
+        node0:::inputNode
+        node1[sel[]]
+        node1:::inputNode
+        node2[out]
+        node2:::outputNode
+        node3[stage[]]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: multimux.circom
+
+
+
+    subgraph MultiMux[Template: MultiMux]
+        node0[in[]]
+        node0:::inputNode
+        node1[sel[]]
+        node1:::inputNode
+        node2[out]
+        node2:::outputNode
+        node3[stage[]]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: multimux.circom
+
+    node0"MultiMux"
+    node0:::templateNode
+    node1"mux1"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: multimux.circom
+
+    node0"MultiMux"
+    node0:::templateNode
+    node1"mux1"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: multimux.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: multimux.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="policy_commitment">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 policy_commitment.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 2 templates</div>
+                    <div class="info-item">🧩 0 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 13 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('policy_commitment', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('policy_commitment', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('policy_commitment', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: policy_commitment.circom
+
+
+
+    subgraph PolicyCommitmentVerifier[Template: PolicyCommitmentVerifier]
+        node0[policy[]]
+        node0:::inputNode
+        node1[randomizer]
+        node1:::inputNode
+        node2[expectedCommitment]
+        node2:::inputNode
+        node3[isValid]
+        node3:::outputNode
+        node4[policyHash]
+        node5[computedCommitment]
+    end
+
+    subgraph PolicyCommitmentVerifierDirect[Template: PolicyCommitmentVerifierDirect]
+        node6[policy[]]
+        node6:::inputNode
+        node7[randomizer]
+        node7:::inputNode
+        node8[expectedCommitment]
+        node8:::inputNode
+        node9[isValid]
+        node9:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: policy_commitment.circom
+
+
+
+    subgraph PolicyCommitmentVerifier[Template: PolicyCommitmentVerifier]
+        node0[policy[]]
+        node0:::inputNode
+        node1[randomizer]
+        node1:::inputNode
+        node2[expectedCommitment]
+        node2:::inputNode
+        node3[isValid]
+        node3:::outputNode
+        node4[policyHash]
+        node5[computedCommitment]
+    end
+
+    subgraph PolicyCommitmentVerifierDirect[Template: PolicyCommitmentVerifierDirect]
+        node6[policy[]]
+        node6:::inputNode
+        node7[randomizer]
+        node7:::inputNode
+        node8[expectedCommitment]
+        node8:::inputNode
+        node9[isValid]
+        node9:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: policy_commitment.circom
+
+    node0"PolicyCommitmentVerifier"
+    node0:::templateNode
+    node1"PolicyCommitmentVerifierDirect"
+    node1:::templateNode
+    node2"poseidon"
+    node2:::includeNode
+    node3"comparators"
+    node3:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: policy_commitment.circom
+
+    node0"PolicyCommitmentVerifier"
+    node0:::templateNode
+    node1"PolicyCommitmentVerifierDirect"
+    node1:::templateNode
+    node2"poseidon"
+    node2:::includeNode
+    node3"comparators"
+    node3:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: policy_commitment.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: policy_commitment.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="postfix_policy_interpreter">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 postfix_policy_interpreter.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 1 templates</div>
+                    <div class="info-item">🧩 0 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 73 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('postfix_policy_interpreter', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('postfix_policy_interpreter', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('postfix_policy_interpreter', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: postfix_policy_interpreter.circom
+
+
+
+    subgraph PostfixPolicyInterpreter[Template: PostfixPolicyInterpreter]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: postfix_policy_interpreter.circom
+
+
+
+    subgraph PostfixPolicyInterpreter[Template: PostfixPolicyInterpreter]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: postfix_policy_interpreter.circom
+
+    node0"PostfixPolicyInterpreter"
+    node0:::templateNode
+    node1"bitify"
+    node1:::includeNode
+    node2"comparators"
+    node2:::includeNode
+    node3"multimux"
+    node3:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: postfix_policy_interpreter.circom
+
+    node0"PostfixPolicyInterpreter"
+    node0:::templateNode
+    node1"bitify"
+    node1:::includeNode
+    node2"comparators"
+    node2:::includeNode
+    node3"multimux"
+    node3:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: postfix_policy_interpreter.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: postfix_policy_interpreter.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="policy_privacy_main">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 policy_privacy_main.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 1 templates</div>
+                    <div class="info-item">🧩 0 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 31 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('policy_privacy_main', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('policy_privacy_main', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('policy_privacy_main', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: policy_privacy_main.circom
+
+
+
+    subgraph PolicyPrivacyMain[Template: PolicyPrivacyMain]
+        node0[policy[]]
+        node0:::inputNode
+        node1[requesterAttrs[]]
+        node1:::inputNode
+        node2[predicateTypes[]]
+        node2:::inputNode
+        node3[merkleLeaves[]]
+        node3:::inputNode
+        node4[merklePathElements[]]
+        node4:::inputNode
+        node5[merklePathIndices[]]
+        node5:::inputNode
+        node6[credMessages[]]
+        node6:::inputNode
+        node7[credSignatures[]]
+        node7:::inputNode
+        node8[rangeValues[]]
+        node8:::inputNode
+        node9[ontologyCodes[]]
+        node9:::inputNode
+        node10[randomizer]
+        node10:::inputNode
+        node11[policyCommitment]
+        node11:::inputNode
+        node12[merkleRoots[]]
+        node12:::inputNode
+        node13[credPublicKeys[]]
+        node13:::inputNode
+        node14[rangeMin[]]
+        node14:::inputNode
+        node15[rangeMax[]]
+        node15:::inputNode
+        node16[ontologyPolicyIds[]]
+        node16:::inputNode
+        node17[ontologyEpochs[]]
+        node17:::inputNode
+        node18[numOperations]
+        node18:::inputNode
+        node19[isAuthorized]
+        node19:::outputNode
+        node20[predicateValues[]]
+        node21[policyResult]
+        node22[commitmentValid]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: policy_privacy_main.circom
+
+
+
+    subgraph PolicyPrivacyMain[Template: PolicyPrivacyMain]
+        node0[policy[]]
+        node0:::inputNode
+        node1[requesterAttrs[]]
+        node1:::inputNode
+        node2[predicateTypes[]]
+        node2:::inputNode
+        node3[merkleLeaves[]]
+        node3:::inputNode
+        node4[merklePathElements[]]
+        node4:::inputNode
+        node5[merklePathIndices[]]
+        node5:::inputNode
+        node6[credMessages[]]
+        node6:::inputNode
+        node7[credSignatures[]]
+        node7:::inputNode
+        node8[rangeValues[]]
+        node8:::inputNode
+        node9[ontologyCodes[]]
+        node9:::inputNode
+        node10[randomizer]
+        node10:::inputNode
+        node11[policyCommitment]
+        node11:::inputNode
+        node12[merkleRoots[]]
+        node12:::inputNode
+        node13[credPublicKeys[]]
+        node13:::inputNode
+        node14[rangeMin[]]
+        node14:::inputNode
+        node15[rangeMax[]]
+        node15:::inputNode
+        node16[ontologyPolicyIds[]]
+        node16:::inputNode
+        node17[ontologyEpochs[]]
+        node17:::inputNode
+        node18[numOperations]
+        node18:::inputNode
+        node19[isAuthorized]
+        node19:::outputNode
+        node20[predicateValues[]]
+        node21[policyResult]
+        node22[commitmentValid]
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: policy_privacy_main.circom
+
+    node0"PolicyPrivacyMain"
+    node0:::templateNode
+    node1"postfix_policy_interpreter"
+    node1:::includeNode
+    node2"policy_commitment"
+    node2:::includeNode
+    node3"external_predicates"
+    node3:::includeNode
+    node4"gates"
+    node4:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: policy_privacy_main.circom
+
+    node0"PolicyPrivacyMain"
+    node0:::templateNode
+    node1"postfix_policy_interpreter"
+    node1:::includeNode
+    node2"policy_commitment"
+    node2:::includeNode
+    node3"external_predicates"
+    node3:::includeNode
+    node4"gates"
+    node4:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: policy_privacy_main.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: policy_privacy_main.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="policy_privacy_main_instance">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 policy_privacy_main_instance.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 0 templates</div>
+                    <div class="info-item">🧩 1 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 0 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('policy_privacy_main_instance', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('policy_privacy_main_instance', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('policy_privacy_main_instance', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: policy_privacy_main_instance.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: policy_privacy_main_instance.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: policy_privacy_main_instance.circom
+
+    node0"policy_privacy_main"
+    node0:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: policy_privacy_main_instance.circom
+
+    node0"policy_privacy_main"
+    node0:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: policy_privacy_main_instance.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: policy_privacy_main_instance.circom
+
+
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+        <div class="circuit-card" id="postfix_policy_interpreter_legacy">
+            <div class="circuit-header">
+                <div class="circuit-title">📄 postfix_policy_interpreter_legacy.circom</div>
+                <div class="circuit-info">
+                    <div class="info-item">🏗️ 1 templates</div>
+                    <div class="info-item">🧩 1 components</div>
+                    <div class="info-item">📡 0 signals</div>
+                    <div class="info-item">🔗 4 connections</div>
+                </div>
+            </div>
+            
+            <div class="diagram-tabs">
+                <button class="tab-button tab-flowchart" onclick="showDiagram('postfix_policy_interpreter_legacy', 'flowchart')">
+                    🌊 Flow Chart
+                </button>
+                <button class="tab-button tab-architecture" onclick="showDiagram('postfix_policy_interpreter_legacy', 'architecture')">
+                    🏛️ Architecture
+                </button>
+                <button class="tab-button tab-dataflow" onclick="showDiagram('postfix_policy_interpreter_legacy', 'dataflow')">
+                    📊 Data Flow
+                </button>
+            </div>
+            
+            <div class="diagram-content">
+                <div class="diagram-panel diagram-flowchart">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart TD
+    %% Circuit: postfix_policy_interpreter_legacy.circom
+
+    node4["Main: PostfixPolicyInterpreterLegacy"]
+
+
+    subgraph PostfixPolicyInterpreterLegacy[Template: PostfixPolicyInterpreterLegacy]
+        node0[postfixExpr[]]
+        node0:::inputNode
+        node1[numOperations]
+        node1:::inputNode
+        node2[requesterPolicy[]]
+        node2:::inputNode
+        node3[isValid]
+        node3:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Flowchart Code
+                    </button>
+                    <div class="mermaid-code">flowchart TD
+    %% Circuit: postfix_policy_interpreter_legacy.circom
+
+    node4["Main: PostfixPolicyInterpreterLegacy"]
+
+
+    subgraph PostfixPolicyInterpreterLegacy[Template: PostfixPolicyInterpreterLegacy]
+        node0[postfixExpr[]]
+        node0:::inputNode
+        node1[numOperations]
+        node1:::inputNode
+        node2[requesterPolicy[]]
+        node2:::inputNode
+        node3[isValid]
+        node3:::outputNode
+    end
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-architecture">
+                    <button class="copy-button" onclick="copyToClipboard(`graph LR
+    %% Architecture: postfix_policy_interpreter_legacy.circom
+
+    node0"PostfixPolicyInterpreterLegacy"
+    node0:::templateNode
+    node1"postfix_policy_interpreter"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+`, this)">
+                        📋 Copy Architecture Code
+                    </button>
+                    <div class="mermaid-code">graph LR
+    %% Architecture: postfix_policy_interpreter_legacy.circom
+
+    node0"PostfixPolicyInterpreterLegacy"
+    node0:::templateNode
+    node1"postfix_policy_interpreter"
+    node1:::includeNode
+
+
+    classDef templateNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef includeNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+</div>
+                </div>
+                
+                <div class="diagram-panel diagram-dataflow">
+                    <button class="copy-button" onclick="copyToClipboard(`flowchart LR
+    %% Data Flow: postfix_policy_interpreter_legacy.circom
+
+    node0["Input: postfixExpr"]
+    node0:::inputNode
+    node1["Input: numOperations"]
+    node1:::inputNode
+    node2["Input: requesterPolicy"]
+    node2:::inputNode
+    node3["Output: isValid"]
+    node3:::outputNode
+    node4["PostfixPolicyInterpreter"]
+    node4:::componentNode
+
+    node0 --> node4
+    node1 --> node4
+    node2 --> node4
+    node4 --> node3
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+`, this)">
+                        📋 Copy Data Flow Code
+                    </button>
+                    <div class="mermaid-code">flowchart LR
+    %% Data Flow: postfix_policy_interpreter_legacy.circom
+
+    node0["Input: postfixExpr"]
+    node0:::inputNode
+    node1["Input: numOperations"]
+    node1:::inputNode
+    node2["Input: requesterPolicy"]
+    node2:::inputNode
+    node3["Output: isValid"]
+    node3:::outputNode
+    node4["PostfixPolicyInterpreter"]
+    node4:::componentNode
+
+    node0 --> node4
+    node1 --> node4
+    node2 --> node4
+    node4 --> node3
+
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef outputNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef componentNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef mainNode fill:#fff3e0,stroke:#e65100,stroke-width:3px
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyToClipboard(text, buttonEl) {
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = buttonEl.textContent;
+                buttonEl.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    buttonEl.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        function showDiagram(circuitId, diagramType) {
+            // Hide all diagram panels for this circuit
+            const panels = document.querySelectorAll(`#${circuitId} .diagram-panel`);
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            // Remove active class from all tabs for this circuit
+            const tabs = document.querySelectorAll(`#${circuitId} .tab-button`);
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected diagram panel
+            const selectedPanel = document.querySelector(`#${circuitId} .diagram-${diagramType}`);
+            if (selectedPanel) {
+                selectedPanel.classList.add('active');
+            }
+            
+            // Add active class to selected tab
+            const selectedTab = document.querySelector(`#${circuitId} .tab-${diagramType}`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+        }
+        
+        // Initialize first tabs as active
+        document.querySelectorAll('.circuit-card').forEach(card => {
+            const firstTab = card.querySelector('.tab-button');
+            const firstPanel = card.querySelector('.diagram-panel');
+            if (firstTab && firstPanel) {
+                firstTab.classList.add('active');
+                firstPanel.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

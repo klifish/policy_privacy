@@ -117,6 +117,13 @@ npx mocha test/policy_privacy_phase1_integration.js --timeout 100000
 
 ## Documentation
 
+### Circuit Visualization
+Interactive Mermaid-based visualizations for all Circom circuits:
+```bash
+npm run visualize-circuit
+```
+This generates comprehensive diagrams showing circuit architecture, data flow, and component relationships. See [docs/CIRCUIT_VISUALIZATION.md](docs/CIRCUIT_VISUALIZATION.md) for details.
+
 ### ICD-10 Set Builder
 
 For comprehensive documentation on the ICD-10 Allowed-Set Builder tool, see [docs/ICD10_SET_BUILDER.md](docs/ICD10_SET_BUILDER.md).
