@@ -155,7 +155,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] }
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address }
                     // submitOnChain omitted → defaults to false
                 });
 
@@ -184,7 +184,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
 
@@ -211,7 +211,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] }, // GR=1 satisfies "GR"
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address }, // GR=1 satisfies "GR"
                     submitOnChain: true
                 });
 
@@ -261,7 +261,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
 
@@ -281,7 +281,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
 
@@ -302,7 +302,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
 
@@ -326,7 +326,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [0, 0, 0, 0, 0, 0] }, // GR=0 fails "GR"
+                    evidence: { attributes: [0, 0, 0, 0, 0, 0], requesterId: requester.address }, // GR=0 fails "GR"
                     submitOnChain: true
                 });
 
@@ -355,7 +355,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
             expect(first.status).to.equal(200);
@@ -368,7 +368,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce,
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
             expect(second.status).to.equal(409);
@@ -386,7 +386,7 @@ describe('TPS Chain Submission', function () {
             resourceId: '1',
             nonce: freshNonce(),
             policyCommitment: '12345',
-            evidence: { attributes: [1, 0, 0, 0, 0, 0] }
+            evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address }
         });
 
         it('returns 400 when policyId is missing', async () => {
@@ -478,7 +478,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: otherResourceId.toString(),  // wrong resource
                     nonce: freshNonce(),
                     policyCommitment: sharedArtifacts.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
             expect(res.status).to.equal(500);
@@ -522,7 +522,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: revokedResourceId.toString(),
                     nonce: freshNonce(),
                     policyCommitment: artifacts3.policyCommitment.toString(),
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
             expect(res.status).to.equal(500);
@@ -537,7 +537,7 @@ describe('TPS Chain Submission', function () {
                     resourceId: sharedResourceId.toString(),
                     nonce: freshNonce(),
                     policyCommitment: '9999999999', // wrong commitment
-                    evidence: { attributes: [1, 0, 0, 0, 0, 0] },
+                    evidence: { attributes: [1, 0, 0, 0, 0, 0], requesterId: requester.address },
                     submitOnChain: true
                 });
             expect(res.status).to.equal(500);

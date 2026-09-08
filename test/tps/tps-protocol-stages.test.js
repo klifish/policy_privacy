@@ -52,6 +52,14 @@ describe('TPS-ZKPI Workflow', function () {
     let contract, provider, requester;
     let sharedMaterial, sharedArtifacts; // shared across Stage 4+5 and Stage 6
 
+    // Authorization context bound into the proof statement. The digest
+    // Poseidon(idReq || idRes || nonce) is a public signal, so proof generation
+    // and the on-chain call must agree on the triple. requestAccess() records
+    // resourceId 0, so proofs submitted through it are bound to resource 0.
+    const REQ_ID = 111n;
+    const UNBOUND_RESOURCE = 0n;
+    const SESSION_NONCE = 999n;
+
     // ── Deploy contracts ─────────────────────────────────────────────────────
     before(async function () {
         if (!CIRCUIT_AVAILABLE) {
@@ -220,7 +228,10 @@ describe('TPS-ZKPI Workflow', function () {
         it('buildWitness constructs a valid circuit input shape', () => {
             const evidence = { attributes: [1, 0, 0, 0, 0, 0] };
             const witness = buildWitness(sharedMaterial, evidence, {
-                policyCommitment: sharedArtifacts.policyCommitment.toString()
+                policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                idReq: REQ_ID,
+                idRes: UNBOUND_RESOURCE,
+                nonce: SESSION_NONCE
             });
 
             expect(witness.policy).to.have.length(20);        // DEPTH = 20
@@ -232,7 +243,12 @@ describe('TPS-ZKPI Workflow', function () {
             const evidence = { attributes: [1, 0, 0, 0, 0, 0] };
             const { pA, pB, pC, pubSignals } = await generateProof(
                 sharedMaterial, evidence,
-                { policyCommitment: sharedArtifacts.policyCommitment.toString() }
+                {
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    idReq: REQ_ID,
+                    idRes: UNBOUND_RESOURCE,
+                    nonce: SESSION_NONCE
+                }
             );
 
             expect(pA).to.have.length(2);
@@ -247,7 +263,12 @@ describe('TPS-ZKPI Workflow', function () {
             const evidence = { attributes: [0, 0, 0, 0, 0, 0] };
             const { pubSignals } = await generateProof(
                 sharedMaterial, evidence,
-                { policyCommitment: sharedArtifacts.policyCommitment.toString() }
+                {
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    idReq: REQ_ID,
+                    idRes: UNBOUND_RESOURCE,
+                    nonce: SESSION_NONCE
+                }
             );
 
             expect(BigInt(pubSignals[0])).to.equal(0n);
@@ -257,7 +278,12 @@ describe('TPS-ZKPI Workflow', function () {
             const evidence = { attributes: [1, 0, 0, 0, 0, 0] };
             const { pA, pB, pC, pubSignals } = await generateProof(
                 sharedMaterial, evidence,
-                { policyCommitment: sharedArtifacts.policyCommitment.toString() }
+                {
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    idReq: REQ_ID,
+                    idRes: UNBOUND_RESOURCE,
+                    nonce: SESSION_NONCE
+                }
             );
 
             const commitTx = await contract.connect(provider)['commitPolicy(uint256,uint256,string)'](
@@ -270,7 +296,7 @@ describe('TPS-ZKPI Workflow', function () {
             const policyId = committedEvent.args.policyId;
 
             const accessTx = await contract.connect(requester).requestAccess(
-                policyId, pA, pB, pC, pubSignals
+                policyId, REQ_ID, pA, pB, pC, pubSignals
             );
             const accessReceipt = await accessTx.wait();
             const grantedEvent = accessReceipt.logs
@@ -290,7 +316,12 @@ describe('TPS-ZKPI Workflow', function () {
             const { pA, pB, pC, pubSignals } = await generateProof(
                 sharedMaterial,
                 { attributes: [1, 0, 0, 0, 0, 0] },
-                { policyCommitment: sharedArtifacts.policyCommitment.toString() }
+                {
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    idReq: REQ_ID,
+                    idRes: UNBOUND_RESOURCE,
+                    nonce: SESSION_NONCE
+                }
             );
 
             const commitTx = await contract.connect(provider)['commitPolicy(uint256,uint256,string)'](
@@ -303,7 +334,7 @@ describe('TPS-ZKPI Workflow', function () {
             policyId = committedEvent.args.policyId;
 
             const accessTx = await contract.connect(requester).requestAccess(
-                policyId, pA, pB, pC, pubSignals
+                policyId, REQ_ID, pA, pB, pC, pubSignals
             );
             const accessReceipt = await accessTx.wait();
             const reqEvent = accessReceipt.logs
@@ -338,23 +369,32 @@ describe('TPS-ZKPI Workflow', function () {
                 .find(e => e && e.name === 'ResourceRegistered');
             const resourceId = resourceEvent.args.resourceId;
 
+            const nonce = BigInt('0xdeadbeef');
+
+            // requestAccessBound recomputes Poseidon(idReq || resourceId ||
+            // nonce) on-chain and compares it against the proof's fourth public
+            // signal, so the proof must be generated for the same triple that
+            // the transaction carries.
             const { pA, pB, pC, pubSignals } = await generateProof(
                 sharedMaterial,
                 { attributes: [1, 0, 0, 0, 0, 0] },
-                { policyCommitment: sharedArtifacts.policyCommitment.toString() }
+                {
+                    policyCommitment: sharedArtifacts.policyCommitment.toString(),
+                    idReq: REQ_ID,
+                    idRes: resourceId,
+                    nonce
+                }
             );
-
-            const nonce = BigInt('0xdeadbeef');
 
             // First call should succeed
             await contract.connect(requester).requestAccessBound(
-                policyId, resourceId, nonce, pA, pB, pC, pubSignals
+                policyId, resourceId, nonce, REQ_ID, pA, pB, pC, pubSignals
             );
 
             // Second call with same nonce should revert
             await expect(
                 contract.connect(requester).requestAccessBound(
-                    policyId, resourceId, nonce, pA, pB, pC, pubSignals
+                    policyId, resourceId, nonce, REQ_ID, pA, pB, pC, pubSignals
                 )
             ).to.be.revertedWith('Nonce already used');
         });

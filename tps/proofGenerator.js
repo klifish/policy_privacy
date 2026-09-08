@@ -76,6 +76,22 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
 function buildWitness(policyMaterial, evidence, publicInputs) {
     const { DEPTH, N, M, MERKLE_LEVELS } = CIRCUIT;
 
+    // Validate the authorization context before any String() coercion below.
+    // String(undefined) yields the string "undefined", which survives the
+    // emptiness checks in calculateContextHash and only fails much later, at
+    // BigInt("undefined"), with an error that points away from the real cause:
+    // a caller that omitted the context entirely.
+    for (const name of ['idReq', 'idRes', 'nonce']) {
+        const value = publicInputs ? publicInputs[name] : undefined;
+        if (value === undefined || value === null || value === '') {
+            throw new Error(
+                `buildWitness requires publicInputs.${name}: the authorization ` +
+                `context (requester, resource, session) is bound into the proof ` +
+                `statement and must be supplied by the caller.`
+            );
+        }
+    }
+
     const penc = Array.isArray(policyMaterial.penc)
         ? policyMaterial.penc.slice()
         : [];
