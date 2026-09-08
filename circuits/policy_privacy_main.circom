@@ -60,8 +60,12 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input merklePathIndices[M][MERKLE_LEVELS];
     
     // Credential signature inputs (for predicates that use them)  
-    signal input credMessages[M];                   // Single message values
-    signal input credSignatures[M];                 // Single signature values
+    signal input credMessages[M];                   // Signed credential messages
+    signal input credSignatures[M];                 // Signature scalars S
+    signal input credSigR8x[M];                     // Signature points R8.x
+    signal input credSigR8y[M];                     // Signature points R8.y
+    signal input credIssuerAx[M];                   // Issuer public-key points x
+    signal input credIssuerAy[M];                   // Issuer public-key points y
     
     // Range proof inputs (for predicates that use them)
     signal input rangeValues[M];
@@ -193,6 +197,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         // Connect credential signature inputs
         predicateVerifiers[i].credMessage <== credMessages[i];
         predicateVerifiers[i].credSignature <== credSignatures[i];
+        predicateVerifiers[i].credSigR8x <== credSigR8x[i];
+        predicateVerifiers[i].credSigR8y <== credSigR8y[i];
+        predicateVerifiers[i].credIssuerAx <== credIssuerAx[i];
+        predicateVerifiers[i].credIssuerAy <== credIssuerAy[i];
         predicateVerifiers[i].credPublicKey <== credPublicKeys[i];
         
         // Connect range proof inputs

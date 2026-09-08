@@ -297,6 +297,51 @@ async function calculateContextHash(idReq, idRes, nonce) {
   return poseidon.F.toObject(digest).toString();
 }
 
+/**
+ * EdDSA credential helpers.
+ *
+ * The circuit verifies an EdDSA-Poseidon signature over the credential message
+ * under an issuer key point (Ax, Ay), and separately binds that point to the
+ * single field element committed in paramsCommitment via
+ * credPublicKey = Poseidon(Ax, Ay). Keeping the committed value one element
+ * preserves the existing parameter-commitment layout.
+ */
+let eddsaInstance = null;
+async function initEddsa() {
+  if (!eddsaInstance) {
+    const circomlibjs = require('circomlibjs');
+    eddsaInstance = await circomlibjs.buildEddsa();
+  }
+  return eddsaInstance;
+}
+
+/** Issuer key pair derived from a private key buffer. */
+async function deriveIssuerKey(privateKey) {
+  const eddsa = await initEddsa();
+  const F = eddsa.babyJub.F;
+  const pubKey = eddsa.prv2pub(privateKey);
+  const Ax = F.toObject(pubKey[0]).toString();
+  const Ay = F.toObject(pubKey[1]).toString();
+  const poseidon = await initPoseidon();
+  const committed = poseidon.F.toObject(
+    poseidon([BigInt(Ax), BigInt(Ay)])
+  ).toString();
+  return { Ax, Ay, committed };
+}
+
+/** Sign a credential message with the issuer key. */
+async function signCredential(privateKey, message) {
+  const eddsa = await initEddsa();
+  const F = eddsa.babyJub.F;
+  const msg = F.e(BigInt(message));
+  const signature = eddsa.signPoseidon(privateKey, msg);
+  return {
+    S: signature.S.toString(),
+    R8x: F.toObject(signature.R8[0]).toString(),
+    R8y: F.toObject(signature.R8[1]).toString()
+  };
+}
+
 function createCircuitInput(policyCommitment, options = {}) {
   const {
     // Default policy: attr0 AND attr1
@@ -310,6 +355,15 @@ function createCircuitInput(policyCommitment, options = {}) {
     predicateTypes = [4, 4, 4, 4, 4], // All predicates disabled by default
     merkleRoots = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
     credPublicKeys = ['0', '0', '0', '0', '0'], // Ensure M=5 array elements as strings
+    // EdDSA credential witness. Slots with predicateType != 1 are not checked
+    // (the verifier's `enabled` is driven by the predicate type), so all-zero
+    // defaults are safe for the disabled slots used by most callers.
+    credMessages = ['0', '0', '0', '0', '0'],
+    credSignatures = ['0', '0', '0', '0', '0'],
+    credSigR8x = ['0', '0', '0', '0', '0'],
+    credSigR8y = ['0', '0', '0', '0', '0'],
+    credIssuerAx = ['0', '0', '0', '0', '0'],
+    credIssuerAy = ['0', '0', '0', '0', '0'],
     rangeMin = ['0', '0', '0', '0', '0'],
     rangeMax = ['0', '0', '0', '0', '0'],
     ontologyPolicyIds = ['0', '0', '0', '0', '0'],
@@ -340,8 +394,12 @@ function createCircuitInput(policyCommitment, options = {}) {
     merkleLeaves: ['0', '0', '0', '0', '0'],
     merklePathElements: Array.from({ length: 5 }, () => Array(8).fill('0')),
     merklePathIndices: Array.from({ length: 5 }, () => Array(8).fill(0)),
-    credMessages: ['0', '0', '0', '0', '0'],
-    credSignatures: ['0', '0', '0', '0', '0'],
+    credMessages: credMessages,
+    credSignatures: credSignatures,
+    credSigR8x: credSigR8x,
+    credSigR8y: credSigR8y,
+    credIssuerAx: credIssuerAx,
+    credIssuerAy: credIssuerAy,
     rangeValues: [0, 0, 0, 0, 0],
     ontologyCodes: [0, 0, 0, 0, 0],
     randomizer: randomizer.toString(),
@@ -371,5 +429,7 @@ module.exports = {
   calculatePolicyCommitment,
   calculateParamsCommitment,
   calculateContextHash,
-  createCircuitInput
+  createCircuitInput,
+  deriveIssuerKey,
+  signCredential
 };

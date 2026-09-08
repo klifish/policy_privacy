@@ -59,7 +59,11 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
  *     merklePathElements: string[][] (optional)
  *     merklePathIndices : number[][] (optional)
  *     credMessages  : string[]   (optional)
- *     credSignatures: string[]   (optional)
+ *     credSignatures: string[]   (optional)  EdDSA scalar S
+ *     credSigR8x    : string[]   (optional)  EdDSA point R8.x
+ *     credSigR8y    : string[]   (optional)  EdDSA point R8.y
+ *     credIssuerAx  : string[]   (optional)  issuer key point x
+ *     credIssuerAy  : string[]   (optional)  issuer key point y
  *     rangeValues   : number[]   (optional)
  *     ontologyCodes : number[]   (optional)
  *   }
@@ -98,6 +102,12 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const merklePathIndices = (evidence.merklePathIndices || zeroMatNum(M, MERKLE_LEVELS)).slice(0, M);
     const credMessages = (evidence.credMessages || zeroStr(M)).slice(0, M);
     const credSignatures = (evidence.credSignatures || zeroStr(M)).slice(0, M);
+    // EdDSA signature points and issuer key point. The circuit checks these
+    // only for slots whose predicateType selects the credential predicate.
+    const credSigR8x = (evidence.credSigR8x || zeroStr(M)).slice(0, M);
+    const credSigR8y = (evidence.credSigR8y || zeroStr(M)).slice(0, M);
+    const credIssuerAx = (evidence.credIssuerAx || zeroStr(M)).slice(0, M);
+    const credIssuerAy = (evidence.credIssuerAy || zeroStr(M)).slice(0, M);
     const rangeValues = (evidence.rangeValues || zero(M)).slice(0, M);
     const ontologyCodes = (evidence.ontologyCodes || zero(M)).slice(0, M);
 
@@ -111,6 +121,10 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         merklePathIndices,
         credMessages,
         credSignatures,
+        credSigR8x,
+        credSigR8y,
+        credIssuerAx,
+        credIssuerAy,
         rangeValues,
         ontologyCodes,
         randomizer: policyMaterial.randomizer.toString(),
