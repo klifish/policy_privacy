@@ -76,7 +76,13 @@ describe('policy_generator', function () {
     expect(artifacts.policyCommitment).to.match(/^0x[0-9a-f]+$/);
     expect(artifacts.policyHash).to.match(/^0x[0-9a-f]+$/);
 
-    const commitmentDecimal = await calculatePolicyCommitment(artifacts.policy, BigInt(randomizerHex));
+    // numOperations is part of the commitment preimage, so the independent
+    // recomputation must use the same program length the generator recorded.
+    const commitmentDecimal = await calculatePolicyCommitment(
+      artifacts.policy,
+      BigInt(randomizerHex),
+      artifacts.numOperations
+    );
     const expectedCommitmentHex = '0x' + BigInt(commitmentDecimal).toString(16);
     expect(artifacts.policyCommitment).to.equal(expectedCommitmentHex);
   });

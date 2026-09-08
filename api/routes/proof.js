@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.post('/generate', async (req, res, next) => {
   try {
-    const { policy, randomizer, requesterAttrs, merkleProofs, credentials, rangeProofs } = req.body;
+    const { policy, randomizer, requesterAttrs, merkleProofs, credentials, rangeProofs, numOperations } = req.body;
 
     // Validate input
     if (!policy || !Array.isArray(policy) || policy.length !== 10) {
@@ -34,8 +34,14 @@ router.post('/generate', async (req, res, next) => {
       });
     }
 
-    // Calculate policy commitment
-    const policyCommitment = await calculatePolicyCommitment(policy, BigInt(randomizer));
+    // Calculate policy commitment. numOperations is part of the commitment
+    // preimage, so the same value must be used here and in the circuit input.
+    const effectiveNumOperations = numOperations ?? 3;
+    const policyCommitment = await calculatePolicyCommitment(
+      policy,
+      BigInt(randomizer),
+      effectiveNumOperations
+    );
 
     // Create circuit input using the proper function
     const circuitInput = createCircuitInput(policyCommitment, {
@@ -50,7 +56,7 @@ router.post('/generate', async (req, res, next) => {
       rangeMax: rangeProofs?.bounds?.slice(0, 2)?.map(b => b[1]) || [100, 100], // M=2 elements
       ontologyPolicyIds: [0, 0], // M=2 elements
       ontologyEpochs: [0, 0], // M=2 elements
-      numOperations: 3
+      numOperations: effectiveNumOperations
     });
 
     console.log('Generating proof with commitment:', policyCommitment.toString());
@@ -204,7 +210,7 @@ router.post('/verify', async (req, res, next) => {
  */
 router.post('/policy-commitment', async (req, res, next) => {
   try {
-    const { policy, randomizer } = req.body;
+    const { policy, randomizer, numOperations } = req.body;
 
     if (!policy || !Array.isArray(policy) || policy.length !== 10) {
       return res.status(400).json({
@@ -220,13 +226,20 @@ router.post('/policy-commitment', async (req, res, next) => {
       });
     }
 
-    const commitment = await calculatePolicyCommitment(policy, BigInt(randomizer));
+    // The program length is bound into the commitment preimage.
+    const effectiveNumOperations = numOperations ?? policy.filter((t) => t !== 0).length;
+    const commitment = await calculatePolicyCommitment(
+      policy,
+      BigInt(randomizer),
+      effectiveNumOperations
+    );
 
     res.json({
       message: 'Policy commitment calculated',
       commitment: commitment.toString(),
       policy,
-      randomizer: randomizer.toString()
+      randomizer: randomizer.toString(),
+      numOperations: effectiveNumOperations
     });
 
   } catch (error) {

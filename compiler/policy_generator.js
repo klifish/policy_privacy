@@ -727,7 +727,10 @@ async function generatePolicyArtifacts(config, options = {}) {
   const policyHashBigInt = poseidonToBigInt(poseidon, policyHash);
 
   const chosenRandomizer = parseRandomizer(randomizer) ?? generateRandomizerBytes();
-  const commitment = poseidon([policyHashBigInt, chosenRandomizer]);
+  // The program length is bound into the commitment preimage:
+  // h = Poseidon(Poseidon(P) || l || r). This prevents a prover from
+  // re-interpreting the committed token array at a shorter prefix.
+  const commitment = poseidon([policyHashBigInt, numericTokens.length, chosenRandomizer]);
   const commitmentBigInt = poseidonToBigInt(poseidon, commitment);
 
   return {

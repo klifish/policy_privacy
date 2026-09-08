@@ -20,7 +20,8 @@ include "../gadgets/multimux.circom";
 
     Inputs:
       postfixExpr[DEPTH]  : token array (only first numOperations meaningful)
-      numOperations       : actual length (public)
+      numOperations       : actual program length (private witness; bound into
+                            the policy commitment preimage by the caller)
       requesterPolicy[N]  : private attribute bitmap (Boolean)
       predicateValues[M]  : external predicate results (Boolean)
 

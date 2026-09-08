@@ -7,24 +7,29 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
     Policy Commitment Verifier
     ==========================
     
-    Implements the paper's commitment scheme: h = Com(P;r) = Poseidon(P || r)
-    
-    This verifier proves that a hidden policy P with randomness r produces
-    the expected commitment h without revealing P or r.
-    
-    The policy P is represented as a fixed-length RPN token sequence.
+    Implements the paper's commitment scheme:
+        h = Com(P, l; r) = Poseidon(Poseidon(P) || l || r)
+
+    This verifier proves that a hidden policy P of program length l with
+    randomness r produces the expected commitment h without revealing P, l or r.
+
+    The policy P is represented as a fixed-length RPN token sequence, of which
+    only the first l tokens are meaningful. Binding l into the preimage is what
+    prevents a prover from re-interpreting the same committed token array at a
+    shorter, stack-consistent prefix (e.g. reading "A AND B" as just "A").
 */
 
 template PolicyCommitmentVerifier(DEPTH) {
     // Private inputs
     signal input policy[DEPTH];                     // Policy as RPN tokens P = [t_1, ..., t_d]
+    signal input programLength;                     // Program length l <= DEPTH
     signal input randomizer;                        // Commitment randomness r
 
     // Public input
     signal input expectedCommitment;                // Expected commitment h
 
     // Output
-    signal output isValid;                          // Boolean: Com(P;r) == h?
+    signal output isValid;                          // Boolean: Com(P, l; r) == h?
 
     // Internal signals
     signal policyHash;
@@ -72,11 +77,14 @@ template PolicyCommitmentVerifier(DEPTH) {
         policyHash <== finalHasher.out;
     }
 
-    // Then create commitment: h = Poseidon(policyHash || randomizer)
-    // This matches the paper's specification Com(P;r) = Poseidon(P || r)
-    commitmentHasher = Poseidon(2);
+    // Then create commitment: h = Poseidon(policyHash || programLength || randomizer)
+    // This matches the paper's specification Com(P, l; r) = Poseidon(P || l || r).
+    // programLength is part of the preimage so that the committed token array
+    // cannot be re-interpreted at a shorter prefix under the same h.
+    commitmentHasher = Poseidon(3);
     commitmentHasher.inputs[0] <== policyHash;
-    commitmentHasher.inputs[1] <== randomizer;
+    commitmentHasher.inputs[1] <== programLength;
+    commitmentHasher.inputs[2] <== randomizer;
     computedCommitment <== commitmentHasher.out;
 
     // Verify the commitment matches expected value
@@ -95,13 +103,14 @@ template PolicyCommitmentVerifier(DEPTH) {
 template PolicyCommitmentVerifierDirect(DEPTH) {
     // Private inputs
     signal input policy[DEPTH];                     // Policy as RPN tokens
+    signal input programLength;                     // Program length l <= DEPTH
     signal input randomizer;                        // Commitment randomness
 
     // Public input
     signal input expectedCommitment;                // Expected commitment
 
     // Output
-    signal output isValid;                          // Boolean: Com(P;r) == h?
+    signal output isValid;                          // Boolean: Com(P, l; r) == h?
 
     // Components
     component commitmentHasher;
@@ -109,21 +118,22 @@ template PolicyCommitmentVerifierDirect(DEPTH) {
     signal computedCommitment;
 
     // Direct commitment with Poseidon limit handling
-    if (DEPTH + 1 <= 16) {
-        // Direct hashing when DEPTH + 1 <= 16 (i.e., DEPTH <= 15)
-        commitmentHasher = Poseidon(DEPTH + 1);
+    if (DEPTH + 2 <= 16) {
+        // Direct hashing when DEPTH + 2 <= 16 (i.e., DEPTH <= 14)
+        commitmentHasher = Poseidon(DEPTH + 2);
 
         // Add all policy tokens
         for (var i = 0; i < DEPTH; i++) {
             commitmentHasher.inputs[i] <== policy[i];
         }
 
-        // Add randomizer as final input
-        commitmentHasher.inputs[DEPTH] <== randomizer;
+        // Add program length and randomizer as final inputs
+        commitmentHasher.inputs[DEPTH] <== programLength;
+        commitmentHasher.inputs[DEPTH + 1] <== randomizer;
         computedCommitment <== commitmentHasher.out;
     } else {
-        // Tree-based hashing for DEPTH > 15
-        // First hash the policy, then hash with randomizer
+        // Tree-based hashing for DEPTH > 14
+        // First hash the policy, then hash with programLength and randomizer
         var numChunks = (DEPTH + 15) \ 16;
         component chunkHashers[numChunks];
         signal chunkHashes[numChunks];
@@ -147,10 +157,11 @@ template PolicyCommitmentVerifierDirect(DEPTH) {
             policyHasher.inputs[i] <== chunkHashes[i];
         }
 
-        // Finally hash with randomizer
-        component finalHasher = Poseidon(2);
+        // Finally hash with programLength and randomizer
+        component finalHasher = Poseidon(3);
         finalHasher.inputs[0] <== policyHasher.out;
-        finalHasher.inputs[1] <== randomizer;
+        finalHasher.inputs[1] <== programLength;
+        finalHasher.inputs[2] <== randomizer;
         computedCommitment <== finalHasher.out;
     }
 

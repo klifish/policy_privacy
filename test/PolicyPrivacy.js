@@ -10,8 +10,11 @@ async function createRealProof(commitment, options = {}) {
       const policy = options.policy || [0, 1, 5, 0, 0, 0, 0, 0, 0, 0]; // Default: attr0 AND attr1
       const randomizer = options.randomizer || BigInt('12345');
       
-      const actualCommitment = await calculatePolicyCommitment(policy, randomizer);
-      const input = createCircuitInput(actualCommitment, { policy, randomizer, ...options });
+      // The commitment binds the program length, so it must match the
+      // numOperations that reaches the circuit input (default 3).
+      const numOperations = options.numOperations ?? 3;
+      const actualCommitment = await calculatePolicyCommitment(policy, randomizer, numOperations);
+      const input = createCircuitInput(actualCommitment, { policy, randomizer, ...options, numOperations });
       const { pA, pB, pC, pubSignals } = await generateGroth16Proof(input);
       
       return { pA, pB, pC, pubSignals, actualCommitment, paramsCommitment: input.paramsCommitment };

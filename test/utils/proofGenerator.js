@@ -70,8 +70,33 @@ async function generateGroth16Proof(input) {
  * @param {BigInt} randomizer - Random value for commitment
  * @returns {string} - Policy commitment as string
  */
-async function calculatePolicyCommitment(policy, randomizer) {
+/**
+ * Compute the policy commitment h = Poseidon(Poseidon(P) || l || r).
+ *
+ * The program length l is part of the preimage so that the committed token
+ * array cannot be re-interpreted at a shorter stack-consistent prefix.
+ * Mirrors PolicyCommitmentVerifier in circuits/gadgets/policy_commitment.circom.
+ */
+function validateProgramLength(programLength, depth) {
+  if (programLength === undefined || programLength === null) {
+    throw new Error(
+      'calculatePolicyCommitment requires a programLength (numOperations): ' +
+      'the program length is bound into the commitment preimage.'
+    );
+  }
+  const length = Number(programLength);
+  if (!Number.isInteger(length) || length < 0 || length > depth) {
+    throw new Error(
+      `Invalid programLength ${programLength}: expected an integer in [0, ${depth}].`
+    );
+  }
+  return length;
+}
+
+async function calculatePolicyCommitment(policy, randomizer, programLength) {
   const poseidon = await initPoseidon();
+
+  const length = validateProgramLength(programLength, policy.length);
 
   let policyHash;
 
@@ -98,8 +123,8 @@ async function calculatePolicyCommitment(policy, randomizer) {
     policyHash = poseidon(chunkHashes);
   }
 
-  // Then create commitment: Com(P;r) = Poseidon(Poseidon(P), r)
-  const commitment = poseidon([policyHash, randomizer]);
+  // Then create commitment: Com(P, l; r) = Poseidon(Poseidon(P), l, r)
+  const commitment = poseidon([policyHash, length, randomizer]);
   return poseidon.F.toObject(commitment).toString();
 }
 

@@ -32,7 +32,7 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     // Step 1: Create a policy and calculate proper commitment
     const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0]; // attr0 AND attr1
     const randomizer = BigInt('12345');
-    const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+    const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
     
     console.log('Policy commitment:', policyCommitment);
     
@@ -94,7 +94,7 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     // Step 1: Create and commit a policy
     const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0];
     const randomizer = BigInt('12345');
-    const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+    const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
     
     const inputForCommit = createCircuitInput(policyCommitment, { policy, randomizer, requesterAttrs: [1, 1, 0] });
     const paramsCommitment = await calculateParamsCommitment({
@@ -113,7 +113,7 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     
     // Step 2: Generate proof for a DIFFERENT policy commitment
     const wrongRandomizer = BigInt('99999');
-    const wrongCommitment = await calculatePolicyCommitment(policy, wrongRandomizer);
+    const wrongCommitment = await calculatePolicyCommitment(policy, wrongRandomizer, 3);
     
     const input = createCircuitInput(wrongCommitment, { 
       policy, 
@@ -134,7 +134,7 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
     // Step 1: Create and commit a policy
     const policy = [0, 1, 5, 0, 0, 0, 0, 0, 0, 0];
     const randomizer = BigInt('12345');
-    const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+    const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
     
     const inputForCommit = createCircuitInput(policyCommitment, { policy, randomizer, requesterAttrs: badRequesterAttrs });
     const paramsCommitment = await calculateParamsCommitment({

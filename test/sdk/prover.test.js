@@ -32,7 +32,7 @@ describe('SDK - Prover Module', function() {
       const policy = [0, 1, 11, 0, 0];
       const randomizer = BigInt('12345');
 
-      const commitment = await calculatePolicyCommitment(policy, randomizer);
+      const commitment = await calculatePolicyCommitment(policy, randomizer, 3);
 
       // Commitment should be a string representing a number
       expect(commitment).to.be.a('string');
@@ -46,7 +46,7 @@ describe('SDK - Prover Module', function() {
       const policy = Array(20).fill(0).map((_, i) => i % 10);
       const randomizer = BigInt('54321');
 
-      const commitment = await calculatePolicyCommitment(policy, randomizer);
+      const commitment = await calculatePolicyCommitment(policy, randomizer, 20);
 
       // Commitment should be a string representing a number
       expect(commitment).to.be.a('string');
@@ -59,8 +59,8 @@ describe('SDK - Prover Module', function() {
       const randomizer1 = BigInt('111');
       const randomizer2 = BigInt('222');
 
-      const commitment1 = await calculatePolicyCommitment(policy, randomizer1);
-      const commitment2 = await calculatePolicyCommitment(policy, randomizer2);
+      const commitment1 = await calculatePolicyCommitment(policy, randomizer1, 3);
+      const commitment2 = await calculatePolicyCommitment(policy, randomizer2, 3);
 
       expect(commitment1).to.not.equal(commitment2);
     });
@@ -70,8 +70,8 @@ describe('SDK - Prover Module', function() {
       const policy2 = [3, 2, 1];
       const randomizer = BigInt('12345');
 
-      const commitment1 = await calculatePolicyCommitment(policy1, randomizer);
-      const commitment2 = await calculatePolicyCommitment(policy2, randomizer);
+      const commitment1 = await calculatePolicyCommitment(policy1, randomizer, 3);
+      const commitment2 = await calculatePolicyCommitment(policy2, randomizer, 3);
 
       expect(commitment1).to.not.equal(commitment2);
     });
@@ -80,7 +80,7 @@ describe('SDK - Prover Module', function() {
       const policy = [0];
       const randomizer = BigInt('1');
 
-      const commitment = await calculatePolicyCommitment(policy, randomizer);
+      const commitment = await calculatePolicyCommitment(policy, randomizer, 1);
       expect(commitment).to.be.a('string');
     });
 
@@ -88,7 +88,7 @@ describe('SDK - Prover Module', function() {
       const policy = Array(16).fill(1);
       const randomizer = BigInt('999');
 
-      const commitment = await calculatePolicyCommitment(policy, randomizer);
+      const commitment = await calculatePolicyCommitment(policy, randomizer, 16);
       expect(commitment).to.be.a('string');
     });
 
@@ -96,8 +96,30 @@ describe('SDK - Prover Module', function() {
       const policy = Array(17).fill(1);
       const randomizer = BigInt('999');
 
-      const commitment = await calculatePolicyCommitment(policy, randomizer);
+      const commitment = await calculatePolicyCommitment(policy, randomizer, 17);
       expect(commitment).to.be.a('string');
+    });
+
+    it('should produce different commitments for different program lengths', async function() {
+      // The program length is part of the commitment preimage, so the same
+      // token array committed at two lengths must not collide.
+      const policy = [0, 1, 11, 0, 0];
+      const randomizer = BigInt('12345');
+
+      const commitment1 = await calculatePolicyCommitment(policy, randomizer, 3);
+      const commitment2 = await calculatePolicyCommitment(policy, randomizer, 1);
+
+      expect(commitment1).to.not.equal(commitment2);
+    });
+
+    it('should require a program length', async function() {
+      const policy = [0, 1, 11, 0, 0];
+      try {
+        await calculatePolicyCommitment(policy, BigInt('12345'));
+        throw new Error('Expected calculatePolicyCommitment to throw');
+      } catch (error) {
+        expect(error.message).to.match(/requires a programLength/);
+      }
     });
   });
 
@@ -338,7 +360,9 @@ describe('SDK - Prover Module', function() {
       const randomizer = BigInt('12345');
 
       // Step 1: Calculate policy commitment
-      const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+      // createCircuitInput defaults numOperations to 3; the commitment binds
+      // the program length, so both must agree.
+      const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
       expect(policyCommitment).to.be.a('string');
 
       // Step 2: Calculate params commitment
@@ -367,7 +391,9 @@ describe('SDK - Prover Module', function() {
       const randomizer = BigInt('9876543210');
       const requesterAttrs = [1, 1, 0, 0, 0, 0]; // Has DS and RS
 
-      const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+      // createCircuitInput defaults numOperations to 3; the commitment binds
+      // the program length, so both must agree.
+      const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
       const paramsCommitment = await calculateParamsCommitment({
         merkleRoots: ['0x123abc', '0x456def', '0', '0', '0'],
         ontologyPolicyIds: ['1', '2', '0', '0', '0'],

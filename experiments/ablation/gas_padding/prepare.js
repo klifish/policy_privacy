@@ -317,8 +317,13 @@ async function assertReplayCommitments(definitions, executions) {
   for (let index = 0; index < definitions.length; index++) {
     const definition = definitions[index];
     const expected = BigInt(executions[index].policyCommitment).toString();
+    // numOperations is part of the commitment preimage, so the replay must
+    // supply the same program length as the original execution.
+    const numOperations = definition.numOperations
+      ?? definition.structure?.numOperations
+      ?? definition.policy.filter((t) => t !== 0).length;
     const actual = BigInt(
-      await calculatePolicyCommitment(definition.policy, definition.randomizer)
+      await calculatePolicyCommitment(definition.policy, definition.randomizer, numOperations)
     ).toString();
     if (actual !== expected) {
       throw new Error(`Replay commitment mismatch at selected index ${index}`);

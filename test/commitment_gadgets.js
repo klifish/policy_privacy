@@ -9,6 +9,10 @@ const snarkjs = require("snarkjs");
 const { spawn } = require('child_process');
 const { setupZkSnarkKeys } = require('./gadgets/exec_snarkjs');
 
+// The commitment binds the program length: h = Poseidon(Poseidon(P) || l || r).
+// Every fixture below commits the 5-token program [attr0, attr1, AND, attr2, NOT].
+const PROGRAM_LENGTH = 5;
+
 describe('Commitment Gadget Tests', function () {
     let commitmentCircuit;
     let poseidonHash;
@@ -61,7 +65,7 @@ describe('Commitment Gadget Tests', function () {
             // Compute expected commitment using the circuit's approach:
             // First hash the policy tokens, then create commitment with randomizer
             const policyHash = poseidonHash(policy);
-            const expectedCommitment = poseidonHash([policyHash, randomizer]);
+            const expectedCommitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
 
             console.log('Testing policy commitment circuit:');
             console.log('- Policy:', policy.slice(0, 5) + '...');
@@ -75,6 +79,7 @@ describe('Commitment Gadget Tests', function () {
                 console.log('Using snarkjs witness calculation approach...');
                 const snarkjsInput = {
                     policy: policy,
+                    programLength: PROGRAM_LENGTH,
                     randomizer: randomizer.toString(),
                     expectedCommitment: poseidonHash.F.toObject(expectedCommitment).toString()
                 };
@@ -105,7 +110,7 @@ describe('Commitment Gadget Tests', function () {
 
             // Compute correct commitment
             const policyHash = poseidonHash(policy);
-            const correctCommitment = poseidonHash([policyHash, randomizer]);
+            const correctCommitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
 
             // Use different commitment (simulate invalid case)
             const invalidCommitment = poseidonHash([policyHash, randomizer + 1n]);
@@ -120,6 +125,7 @@ describe('Commitment Gadget Tests', function () {
                 console.log('Using snarkjs constraint verification...');
                 const snarkjsInput = {
                     policy: policy,
+                    programLength: PROGRAM_LENGTH,
                     randomizer: randomizer.toString(),
                     expectedCommitment: poseidonHash.F.toObject(invalidCommitment).toString()
                 };
@@ -167,7 +173,7 @@ describe('Commitment Gadget Tests', function () {
 
             // Compute expected commitment
             const policyHash = poseidonHash(policy);
-            const expectedCommitment = poseidonHash([policyHash, randomizer]);
+            const expectedCommitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
             const expectedCommitmentBigInt = poseidonHash.F.toObject(expectedCommitment);
 
             console.log('Demonstrating witness generation with snarkjs:');
@@ -176,6 +182,7 @@ describe('Commitment Gadget Tests', function () {
 
             const input = {
                 policy: policy,
+                programLength: PROGRAM_LENGTH,
                 randomizer: randomizer,
                 expectedCommitment: expectedCommitmentBigInt
             };
@@ -214,7 +221,7 @@ describe('Commitment Gadget Tests', function () {
 
             // Compute expected commitment - IMPORTANT: Convert to BigInt properly
             const policyHash = poseidonHash(policy);
-            const expectedCommitment = poseidonHash([policyHash, randomizer]);
+            const expectedCommitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
             const expectedCommitmentBigInt1 = utils.leBuff2int(expectedCommitment);
 
             console.log('Generating zk-SNARK proof for commitment verification:');
@@ -224,6 +231,7 @@ describe('Commitment Gadget Tests', function () {
             // Convert Poseidon hash outputs to proper BigInt format for snarkjs
             const input = {
                 policy: policy,
+                programLength: PROGRAM_LENGTH,
                 randomizer: randomizer.toString(),
                 expectedCommitment: poseidonHash.F.toObject(expectedCommitment).toString()
             };
@@ -285,7 +293,7 @@ describe('Commitment Gadget Tests', function () {
 
             // Compute correct commitment
             const policyHash = poseidonHash(policy);
-            const correctCommitment = poseidonHash([policyHash, randomizer]);
+            const correctCommitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
 
             // Use different commitment (simulate invalid case)
             const invalidCommitment = poseidonHash([policyHash, randomizer + 1n]);
@@ -297,6 +305,7 @@ describe('Commitment Gadget Tests', function () {
             // Convert to proper format for snarkjs
             const input = {
                 policy: policy,
+                programLength: PROGRAM_LENGTH,
                 randomizer: randomizer.toString(),
                 expectedCommitment: poseidonHash.F.toObject(invalidCommitment).toString()
             };
@@ -349,7 +358,7 @@ describe('Commitment Gadget Tests', function () {
             const randomizer = 98765n;
 
             const policyHash = poseidonHash(policy);
-            const commitment = poseidonHash([policyHash, randomizer]);
+            const commitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
             const commitmentBigInt = utils.leBuff2int(commitment);
 
             console.log('Step 1: Policy Setup');
@@ -361,6 +370,7 @@ describe('Commitment Gadget Tests', function () {
             // Step 2: Witness generation (optional if circom_tester available)
             const input = {
                 policy: policy,
+                programLength: PROGRAM_LENGTH,
                 randomizer: randomizer.toString(),
                 expectedCommitment: poseidonHash.F.toObject(commitment).toString()
             };
@@ -417,7 +427,7 @@ describe('Commitment Gadget Tests', function () {
 
             // Circuit approach: first hash policy, then combine with randomizer  
             const policyHash = poseidonHash(policy);
-            const commitment = poseidonHash([policyHash, randomizer]);
+            const commitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
 
             console.log('Testing circuit-compatible commitment computation:');
             console.log('- Policy:', policy.slice(0, 5) + '...');
@@ -443,7 +453,7 @@ describe('Commitment Gadget Tests', function () {
             console.log('Testing different policy structures:');
             const commitments = policies.map((policy, i) => {
                 const policyHash = poseidonHash(policy);
-                const commitment = poseidonHash([policyHash, randomizer]);
+                const commitment = poseidonHash([policyHash, PROGRAM_LENGTH, randomizer]);
                 console.log(`Policy ${i}: [${policy.slice(0, 4).join(',')}...] => ${commitment.toString().slice(-6)}`);
                 return commitment;
             });
@@ -459,10 +469,10 @@ describe('Commitment Gadget Tests', function () {
 
             // Compute commitment twice
             const policyHash1 = poseidonHash(policy);
-            const commitment1 = poseidonHash([policyHash1, randomizer]);
+            const commitment1 = poseidonHash([policyHash1, PROGRAM_LENGTH, randomizer]);
 
             const policyHash2 = poseidonHash(policy);
-            const commitment2 = poseidonHash([policyHash2, randomizer]);
+            const commitment2 = poseidonHash([policyHash2, PROGRAM_LENGTH, randomizer]);
 
             // Verify same inputs produce same commitment
             assert.equal(commitment1.toString(), commitment2.toString(), 'Same inputs should produce same commitment');

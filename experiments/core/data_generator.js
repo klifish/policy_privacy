@@ -2231,7 +2231,11 @@ async function providerCommitAndProvision(policyData, contract, options = {}) {
   const randomizer = policyData.randomizer !== undefined
     ? BigInt(policyData.randomizer)
     : BigInt(Math.floor(Math.random() * 1000000));
-  const policyCommitment = await calculatePolicyCommitment(policy, randomizer);
+  // The program length is bound into the commitment preimage, so the value
+  // committed here must be exactly the numOperations handed to the circuit
+  // (and provisioned to the TPS below).
+  const effectiveNumOperations = numOperations || policy.filter(t => t !== 0).length;
+  const policyCommitment = await calculatePolicyCommitment(policy, randomizer, effectiveNumOperations);
 
   const paramsCommitment = await calculateParamsCommitment({
     merkleRoots,
@@ -2310,7 +2314,7 @@ async function providerCommitAndProvision(policyData, contract, options = {}) {
     rangeMax: rangeMax.map(String),
     ontologyPolicyIds: ontologyPolicyIds.map(String),
     ontologyEpochs: ontologyEpochs.map(String),
-    numOperations: numOperations || policy.filter(t => t !== 0).length
+    numOperations: effectiveNumOperations
   };
   await tpsClient.provision(blockchainPolicyId.toString(), material);
   console.log(`[Provider] Provisioned policyId=${blockchainPolicyId} to TPS`);

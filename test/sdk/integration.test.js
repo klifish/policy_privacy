@@ -458,7 +458,7 @@ describe('SDK - Integration Tests', function() {
       const randomizer = BigInt('12345');
 
       const startTime = Date.now();
-      const commitment = await PolicyPrivacy.calculatePolicyCommitment(longPolicy, randomizer);
+      const commitment = await PolicyPrivacy.calculatePolicyCommitment(longPolicy, randomizer, longPolicy.length);
       const endTime = Date.now();
 
       expect(commitment).to.be.a('string');

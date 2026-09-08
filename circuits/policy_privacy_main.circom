@@ -136,10 +136,13 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     
     commitmentVerifier = PolicyCommitmentVerifier(DEPTH);
     
-    // Connect policy and randomizer
+    // Connect policy, program length and randomizer.
+    // numOperations is bound into the commitment preimage so that the same
+    // committed token array cannot be re-interpreted at a shorter prefix.
     for (var i = 0; i < DEPTH; i++) {
         commitmentVerifier.policy[i] <== policy[i];
     }
+    commitmentVerifier.programLength <== numOperations;
     commitmentVerifier.randomizer <== randomizer;
     commitmentVerifier.expectedCommitment <== policyCommitment;
     
