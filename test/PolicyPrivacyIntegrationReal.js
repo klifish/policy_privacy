@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
+const { deployPoseidon3 } = require('../lib/poseidon_contract');
 const { generateGroth16Proof, calculatePolicyCommitment, calculateParamsCommitment, createCircuitInput } = require('./utils/proofGenerator');
 
 describe('PolicyPrivacy - Real Groth16 Integration', function () {
@@ -15,7 +16,11 @@ describe('PolicyPrivacy - Real Groth16 Integration', function () {
 
     // Deploy main PolicyPrivacy contract
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const policyPrivacy = await PolicyPrivacy.deploy(verifier.target);
+    const contextHasher = await deployPoseidon3(ethers);
+    const policyPrivacy = await PolicyPrivacy.deploy(
+      verifier.target,
+      await contextHasher.getAddress()
+    );
 
     return {
       policyPrivacy,

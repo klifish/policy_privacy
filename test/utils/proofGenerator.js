@@ -280,6 +280,23 @@ async function calculateParamsCommitment({
  * @param {object} options - Additional options
  * @returns {object} - Circuit input
  */
+// Poseidon(0, 0, 0) — the context digest for the all-zero triple. Tests that
+// do not exercise context binding leave idReq/idRes/nonce at 0, and the circuit
+// enforces the digest as a hard equality, so the default must be the real hash
+// rather than a placeholder.
+const DEFAULT_CONTEXT_HASH =
+  '5317387130258456662214331362918410991734007599705406860481038345552731150762';
+
+/**
+ * ctx = Poseidon(id_req || id_res || nonce), the authorization-context digest
+ * bound into the proof statement. Mirrors lib/prover.calculateContextHash.
+ */
+async function calculateContextHash(idReq, idRes, nonce) {
+  const poseidon = await initPoseidon();
+  const digest = poseidon([BigInt(idReq), BigInt(idRes), BigInt(nonce)]);
+  return poseidon.F.toObject(digest).toString();
+}
+
 function createCircuitInput(policyCommitment, options = {}) {
   const {
     // Default policy: attr0 AND attr1
@@ -298,7 +315,14 @@ function createCircuitInput(policyCommitment, options = {}) {
     ontologyPolicyIds = ['0', '0', '0', '0', '0'],
     ontologyEpochs = ['0', '0', '0', '0', '0'],
     numOperations = 3,
-    paramsCommitment = '0'
+    paramsCommitment = '0',
+    // Authorization context. Private witness values; the circuit enforces
+    // contextHash === Poseidon(idReq, idRes, nonce) as a hard equality, so a
+    // caller must pass a digest consistent with the triple.
+    idReq = '0',
+    idRes = '0',
+    nonce = '0',
+    contextHash = null
   } = options;
 
   // Circuit is compiled with DEPTH=20, so policy array must be exactly 20 elements
@@ -331,7 +355,11 @@ function createCircuitInput(policyCommitment, options = {}) {
     rangeMax: rangeMax,
     ontologyPolicyIds: ontologyPolicyIds,
     ontologyEpochs: ontologyEpochs,
-    numOperations: numOperations
+    numOperations: numOperations,
+    idReq: idReq.toString(),
+    idRes: idRes.toString(),
+    nonce: nonce.toString(),
+    contextHash: contextHash === null ? DEFAULT_CONTEXT_HASH : contextHash
   };
 
   normalizePredicateTypesInPlace(input);
@@ -342,5 +370,6 @@ module.exports = {
   generateGroth16Proof,
   calculatePolicyCommitment,
   calculateParamsCommitment,
+  calculateContextHash,
   createCircuitInput
 };

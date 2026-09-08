@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
 const circomlibjs = require('circomlibjs');
+const { deployPoseidon3 } = require('../lib/poseidon_contract');
 
 // Helper function to create test Groth16 proof components
 function createTestProof(commitment, paramsCommitment = 0, seedValue = 1) {
@@ -42,7 +43,11 @@ describe('PolicyPrivacy Integration Tests', function () {
 
     // Deploy PolicyPrivacy contract
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    const policyPrivacy = await PolicyPrivacy.deploy(mockVerifier.target);
+    const contextHasher = await deployPoseidon3(ethers);
+    const policyPrivacy = await PolicyPrivacy.deploy(
+      mockVerifier.target,
+      await contextHasher.getAddress()
+    );
 
     return {
       policyPrivacy,

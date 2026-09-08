@@ -1,5 +1,6 @@
 const { ethers } = require('hardhat');
 const fs = require('fs');
+const { deployPoseidon3 } = require('../lib/poseidon_contract');
 const e = require('cors');
 
 async function main() {
@@ -37,7 +38,11 @@ async function main() {
   // Deploy PolicyPrivacy contract
   console.log('\n📋 Deploying PolicyPrivacy...');
   const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-  const policyPrivacy = await PolicyPrivacy.deploy(verifierAddress);
+  const contextHasher = await deployPoseidon3(ethers);
+  const policyPrivacy = await PolicyPrivacy.deploy(
+    verifierAddress,
+    await contextHasher.getAddress()
+  );
   await policyPrivacy.waitForDeployment();
   console.log('✅ PolicyPrivacy deployed to:', await policyPrivacy.getAddress());
 

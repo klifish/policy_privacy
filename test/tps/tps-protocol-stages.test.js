@@ -23,6 +23,7 @@
 
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
+const { deployPoseidon3 } = require('../../lib/poseidon_contract');
 const fs = require('fs');
 const path = require('path');
 
@@ -64,7 +65,11 @@ describe('TPS-ZKPI Workflow', function () {
         const verifier = await RealVerifier.deploy();
 
         const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-        contract = await PolicyPrivacy.deploy(await verifier.getAddress());
+        const contextHasher = await deployPoseidon3(ethers);
+        contract = await PolicyPrivacy.deploy(
+            await verifier.getAddress(),
+            await contextHasher.getAddress()
+        );
     });
 
     // ── Stage 1: Policy commitment + resource registration ──────────────────

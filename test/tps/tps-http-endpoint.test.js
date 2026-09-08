@@ -22,6 +22,7 @@
 
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
+const { deployPoseidon3 } = require('../../lib/poseidon_contract');
 const fs = require('fs');
 const express = require('express');
 const request = require('supertest');
@@ -94,7 +95,11 @@ describe('TPS Chain Submission', function () {
         const verifier = await RealVerifier.deploy();
 
         const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-        contract = await PolicyPrivacy.deploy(await verifier.getAddress());
+        const contextHasher = await deployPoseidon3(ethers);
+        contract = await PolicyPrivacy.deploy(
+            await verifier.getAddress(),
+            await contextHasher.getAddress()
+        );
 
         // Compile a simple GR policy and commit on-chain.
         // Use explicit zero arrays so paramsCommitment matches what the circuit

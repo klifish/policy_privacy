@@ -19,6 +19,7 @@ const fs = require('fs');
 const {
     initPoseidon,
     calculateParamsCommitment,
+    calculateContextHash,
     normalizePredicateTypesInPlace: _normalizePredicateTypesInPlace,
     generateProof: _rawGenerateProof
 } = require('../lib/prover');
@@ -115,6 +116,11 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         randomizer: policyMaterial.randomizer.toString(),
         numOperations: policyMaterial.numOperations || policy.filter(t => t !== 0).length,
 
+        // Authorization context (private witness; only its digest is public)
+        idReq: String(publicInputs.idReq),
+        idRes: String(publicInputs.idRes),
+        nonce: String(publicInputs.nonce),
+
         // Public inputs
         policyCommitment: publicInputs.policyCommitment,
         paramsCommitment: policyMaterial.paramsCommitment,
@@ -137,7 +143,7 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
  *
  * @param {object} policyMaterial   from tps/store.getPolicyMaterial(policyId)
  * @param {object} evidence         requester-submitted authorization evidence
- * @param {object} publicInputs     { policyCommitment }
+ * @param {object} publicInputs     { policyCommitment, idReq, idRes, nonce }
  * @returns {Promise<{pA, pB, pC, pubSignals}>}
  */
 async function generateProof(policyMaterial, evidence, publicInputs) {
@@ -166,6 +172,16 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
         ontologyPolicyIds: witness.ontologyPolicyIds,
         ontologyEpochs: witness.ontologyEpochs
     });
+
+    // Bind the authorization context into the statement: the digest is a public
+    // signal the ACM recomputes from the transaction parameters, so a proof
+    // issued for one (requester, resource, session) triple cannot be replayed
+    // under another.
+    witness.contextHash = await calculateContextHash(
+        witness.idReq,
+        witness.idRes,
+        witness.nonce
+    );
 
     // Returns { pA, pB, pC, pubSignals, timings } — timings passed through to
     // the prove response so per-execution proof costs can be recorded.

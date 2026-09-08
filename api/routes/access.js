@@ -31,7 +31,12 @@ router.get('/status/:requestId', async (req, res, next) => {
         return res.json({
             requestId,
             isGranted,
-            requester: record.requester,
+            // The transaction submitter is the TPS; the requester is identified
+            // by the pseudonym bound into the proof statement.
+            submitter: record.submitter,
+            requesterId: record.requesterId.toString(),
+            resourceId: record.resourceId.toString(),
+            contextHash: record.contextHash.toString(),
             policyId: record.policyId.toString(),
             timestamp: new Date(Number(record.timestamp) * 1000).toISOString(),
             isProcessed: record.isProcessed

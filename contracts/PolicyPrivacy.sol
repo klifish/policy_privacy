@@ -3,12 +3,21 @@ pragma solidity ^0.8.27;
 
 import "hardhat/console.sol";
 
+/**
+ * @dev circomlib's Poseidon(3) hasher, deployed from the generated EVM bytecode
+ * (circomlibjs `poseidonContract.createCode(3)`) so that the on-chain digest is
+ * bit-identical to the one the circuit computes.
+ */
+interface IPoseidon3 {
+    function poseidon(uint256[3] calldata input) external pure returns (uint256);
+}
+
 interface IVerifier {
     function verifyProof(
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) external view returns (bool);
 }
 
@@ -63,7 +72,10 @@ contract PolicyPrivacy {
 
     // Struct for access requests
     struct AccessRequest {
-        address requester; // Who is requesting access
+        address submitter; // Who submitted the transaction (the TPS, not the requester)
+        uint256 requesterId; // Requester pseudonym bound into the proof statement
+        uint256 resourceId; // Resource bound into the proof statement
+        uint256 contextHash; // Poseidon(requesterId || resourceId || nonce), a public signal
         uint256 policyId; // Which policy they're claiming to satisfy
         uint256 timestamp; // When request was made
         bool isProcessed; // Whether request has been processed
@@ -79,6 +91,7 @@ contract PolicyPrivacy {
 
     // Contract state
     IVerifier public immutable verifier;
+    IPoseidon3 public immutable contextHasher;
     uint256 public nextPolicyId;
     uint256 public nextRequestId;
     uint256 public nextResourceId;
@@ -89,7 +102,9 @@ contract PolicyPrivacy {
     mapping(address => uint256[]) public subjectPolicies;
     mapping(address => uint256[]) public requesterRequests;
     mapping(uint256 => Resource) public resources;
-    // Replay prevention: hash(policyId, resourceId, nonce) → used
+    // Replay prevention: hash(policyId, resourceId, nonce, requesterId) → used.
+    // requesterId is part of the key so a nonce consumed for one requester
+    // cannot be reused to record an authorization for another.
     mapping(bytes32 => bool) public usedNonces;
 
     // Emergency controls
@@ -117,8 +132,9 @@ contract PolicyPrivacy {
         _;
     }
 
-    constructor(IVerifier _verifier) {
+    constructor(IVerifier _verifier, IPoseidon3 _contextHasher) {
         verifier = _verifier;
+        contextHasher = _contextHasher;
         owner = msg.sender;
         nextPolicyId = 1;
         nextRequestId = 1;
@@ -332,12 +348,32 @@ contract PolicyPrivacy {
         return policyId;
     }
 
+    /**
+     * @dev Core verification path.
+     *
+     * _pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash].
+     * contextHash = Poseidon(requesterId || resourceId || nonce) is constrained
+     * in-circuit by a hard equality, so a proof is bound to exactly one
+     * authorization context: it cannot be replayed for a different requester,
+     * resource or session without generating a new proof. The context values
+     * themselves stay off the public statement, keeping the requester pseudonym
+     * out of the verification interface. Callers that supply a context
+     * (_requestAccessBound) have the digest recomputed on-chain before reaching
+     * this point; the digest is also recorded so the binding is auditable from
+     * chain state.
+     *
+     * @param _idReq Requester pseudonym bound into the proof statement.
+     * @param _resourceId Resource bound into the proof statement (0 for the
+     *        unbound legacy entry point).
+     */
     function _requestAccess(
         uint256 _policyId,
+        uint256 _idReq,
+        uint256 _resourceId,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
@@ -357,7 +393,10 @@ contract PolicyPrivacy {
         bool isAuthorized = isValidProof && (_pubSignals[0] == 1);
 
         accessRequests[requestId] = AccessRequest({
-            requester: msg.sender,
+            submitter: msg.sender,
+            requesterId: _idReq,
+            resourceId: _resourceId,
+            contextHash: _pubSignals[3],
             policyId: _policyId,
             timestamp: block.timestamp,
             isProcessed: true,
@@ -387,12 +426,13 @@ contract PolicyPrivacy {
      */
     function requestAccess(
         uint256 _policyId,
+        uint256 _idReq,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) external notPaused returns (uint256) {
-        return _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
+        return _requestAccess(_policyId, _idReq, 0, _pA, _pB, _pC, _pubSignals);
     }
 
     /**
@@ -400,15 +440,18 @@ contract PolicyPrivacy {
      */
     function requestAccessWithGasPad(
         uint256 _policyId,
+        uint256 _idReq,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals,
+        uint[4] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256) {
         uint256 startGas = gasleft();
         uint256 requestId = _requestAccess(
             _policyId,
+            _idReq,
+            0,
             _pA,
             _pB,
             _pC,
@@ -544,8 +587,16 @@ contract PolicyPrivacy {
      *  - resourceId binding  (links proof to the specific resource)
      *  - nonce replay prevention (prevents proof reuse across sessions)
      *
-     * The proof must have been generated by the TPS against the committed policy
-     * and bound to (requester, resource, nonce) per Section V-E.
+     * The proof must have been generated by the TPS against the committed policy.
+     * It is bound to (requester, resource, nonce) inside the proof statement:
+     * pubSignals[3] = Poseidon(requesterId || resourceId || nonce) is enforced
+     * in-circuit AND recomputed here from the transaction parameters, so a
+     * captured proof cannot be replayed under a different requester, resource
+     * or session, and a recorded request cannot cite a statement proved for a
+     * different context.
+     *
+     * @param _idReq Requester pseudonym; must match the one the proof was
+     *        generated for, otherwise the context check reverts.
      *
      * @param _policyId    The policy governing access.
      * @param _resourceId  The protected resource being accessed.
@@ -557,13 +608,14 @@ contract PolicyPrivacy {
         uint256 _policyId,
         uint256 _resourceId,
         uint256 _nonce,
+        uint256 _idReq,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) external notPaused returns (uint256 requestId) {
         requestId = _requestAccessBound(
-            _policyId, _resourceId, _nonce, _pA, _pB, _pC, _pubSignals
+            _policyId, _resourceId, _nonce, _idReq, _pA, _pB, _pC, _pubSignals
         );
     }
 
@@ -579,15 +631,16 @@ contract PolicyPrivacy {
         uint256 _policyId,
         uint256 _resourceId,
         uint256 _nonce,
+        uint256 _idReq,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals,
+        uint[4] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256 requestId) {
         uint256 startGas = gasleft();
         requestId = _requestAccessBound(
-            _policyId, _resourceId, _nonce, _pA, _pB, _pC, _pubSignals
+            _policyId, _resourceId, _nonce, _idReq, _pA, _pB, _pC, _pubSignals
         );
         _padGasToTarget(startGas, targetGas);
     }
@@ -600,10 +653,11 @@ contract PolicyPrivacy {
         uint256 _policyId,
         uint256 _resourceId,
         uint256 _nonce,
+        uint256 _idReq,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) internal returns (uint256 requestId) {
         require(policies[_policyId].isActive, "Policy not active");
         require(resources[_resourceId].isActive, "Resource not active");
@@ -612,13 +666,33 @@ contract PolicyPrivacy {
             "Resource/policy mismatch"
         );
 
-        // Nonce replay prevention: each (policy, resource, nonce) triple is one-shot
-        bytes32 nonceKey = keccak256(abi.encodePacked(_policyId, _resourceId, _nonce));
+        // Authorization-context binding: the proof's public signal must be the
+        // digest of THIS request's context. The circuit constrains
+        // contextHash === Poseidon(id_req || id_res || nonce), so recomputing
+        // the digest here ties the transaction parameters to the verified
+        // statement: a proof issued for one (requester, resource, session)
+        // triple cannot be submitted under another, and a record cannot carry
+        // parameters inconsistent with the statement it cites.
+        require(
+            _pubSignals[3] ==
+                contextHasher.poseidon([_idReq, _resourceId, _nonce]),
+            "Context binding mismatch"
+        );
+
+        // Nonce replay prevention: each (policy, resource, nonce, requester)
+        // tuple is one-shot. The requester is part of the key because the proof
+        // itself is bound to it: reusing a nonce under a different requester
+        // would need a proof carrying that requester's contextHash.
+        bytes32 nonceKey = keccak256(
+            abi.encodePacked(_policyId, _resourceId, _nonce, _idReq)
+        );
         require(!usedNonces[nonceKey], "Nonce already used");
         usedNonces[nonceKey] = true;
 
         // Delegate to existing internal verification logic
-        requestId = _requestAccess(_policyId, _pA, _pB, _pC, _pubSignals);
+        requestId = _requestAccess(
+            _policyId, _idReq, _resourceId, _pA, _pB, _pC, _pubSignals
+        );
     }
 
     /**
@@ -632,7 +706,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint[4] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }

@@ -1,4 +1,5 @@
 const hre = require('hardhat');
+const { deployPoseidon3 } = require('../lib/poseidon_contract');
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -20,7 +21,11 @@ async function main() {
 
   const PolicyPrivacy = await hre.ethers.getContractFactory('PolicyPrivacy');
   console.log('Deploying PolicyPrivacy...');
-  const policyPrivacy = await PolicyPrivacy.deploy(verifierAddress);
+  const contextHasher = await deployPoseidon3(hre.ethers);
+  const policyPrivacy = await PolicyPrivacy.deploy(
+    verifierAddress,
+    await contextHasher.getAddress()
+  );
   await policyPrivacy.waitForDeployment();
   const policyPrivacyAddress = await policyPrivacy.getAddress();
 

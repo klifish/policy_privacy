@@ -16,7 +16,7 @@ include "policy_privacy_main.circom";
 
 /*
     Public interface (commitment-only):
-    pubSignals = [isAuthorized, policyCommitment, paramsCommitment]
+    pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash]
 
     Per-predicate parameters (merkleRoots, credPublicKeys, rangeMin/Max,
     ontologyPolicyIds, ontologyEpochs) are private witness inputs. They are
@@ -24,7 +24,13 @@ include "policy_privacy_main.circom";
     the contract compares paramsCommitment against the value committed at
     commitPolicy time. Exposing them publicly leaks predicate-slot occupancy
     through calldata zero-byte gas pricing (EIP-2028).
+
+    contextHash = Poseidon(id_req || id_res || nonce) binds the proof to the
+    authorization context. The three context values themselves remain private
+    witness inputs for the same EIP-2028 reason and to keep the requester
+    pseudonym off-chain; the ACM recomputes the digest from the transaction
+    parameters and rejects a mismatch.
 */
 component main {
-    public [policyCommitment, paramsCommitment]
+    public [policyCommitment, paramsCommitment, contextHash]
 } = PolicyPrivacyMain(6, 5, 20, 4, 8, 32);

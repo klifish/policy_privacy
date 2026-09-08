@@ -312,14 +312,17 @@ router.get('/:id/access-requests', async (req, res, next) => {
     for (let requestId = startCheck; requestId < endCheck; requestId++) {
       try {
         const request = await req.contract.accessRequests(requestId);
-        if (request[1].toString() === id) { // policyId matches
+        if (request.policyId.toString() === id) { // policyId matches
           accessRequests.push({
             requestId: requestId.toString(),
-            requester: request[0],
-            policyId: request[1].toString(),
-            timestamp: new Date(Number(request[2]) * 1000).toISOString(),
-            isProcessed: request[3],
-            isGranted: request[4]
+            submitter: request.submitter,
+            requesterId: request.requesterId.toString(),
+            resourceId: request.resourceId.toString(),
+            contextHash: request.contextHash.toString(),
+            policyId: request.policyId.toString(),
+            timestamp: new Date(Number(request.timestamp) * 1000).toISOString(),
+            isProcessed: request.isProcessed,
+            isGranted: request.isGranted
           });
         }
       } catch (error) {

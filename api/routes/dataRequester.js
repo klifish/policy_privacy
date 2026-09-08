@@ -272,12 +272,18 @@ router.get('/requests/:id', async (req, res, next) => {
     if (accessRequest.contractRequestId) {
       try {
         const contractRequest = await req.contract.accessRequests(accessRequest.contractRequestId);
+        // Read by name: AccessRequest gained requesterId/resourceId/contextHash
+        // when the authorization context was bound into the proof statement,
+        // so positional indices no longer line up.
         accessRequest.contractDetails = {
-          requester: contractRequest[0],
-          policyId: contractRequest[1].toString(),
-          timestamp: new Date(Number(contractRequest[2]) * 1000).toISOString(),
-          isProcessed: contractRequest[3],
-          isGranted: contractRequest[4]
+          submitter: contractRequest.submitter,
+          requesterId: contractRequest.requesterId.toString(),
+          resourceId: contractRequest.resourceId.toString(),
+          contextHash: contractRequest.contextHash.toString(),
+          policyId: contractRequest.policyId.toString(),
+          timestamp: new Date(Number(contractRequest.timestamp) * 1000).toISOString(),
+          isProcessed: contractRequest.isProcessed,
+          isGranted: contractRequest.isGranted
         };
       } catch (error) {
         console.warn('Failed to fetch contract request details:', error.message);

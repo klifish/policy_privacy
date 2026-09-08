@@ -2344,9 +2344,17 @@ async function requesterRequestAccess(policyData, commitResult) {
   // Generate nonce for replay prevention (both TPS-side and on-chain)
   const nonce = BigInt('0x' + crypto.randomBytes(16).toString('hex')).toString();
 
+  // Requester pseudonym. It is bound into the proof statement via
+  // contextHash = Poseidon(id_req || id_res || nonce), so it must be a stable
+  // field element rather than an address; it never appears on-chain in clear.
+  const requesterId = BigInt(
+    '0x' + crypto.randomBytes(16).toString('hex')
+  ).toString();
+
   // Build evidence: only requester-controlled attributes
   const evidence = {
-    attributes: policyData.requesterAttrs
+    attributes: policyData.requesterAttrs,
+    requesterId
   };
 
   // Stage 4+5: TPS generates proof and submits requestAccessBound() on-chain.

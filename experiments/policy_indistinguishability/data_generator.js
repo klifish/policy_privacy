@@ -26,6 +26,7 @@ const DEFAULT_PAIR_TARGETS = Object.freeze({
 // (a light constants module the parallel verdict worker can load without this
 // hardhat-pulling generator). Re-exported below for existing importers.
 const { FEATURE_KEYS } = require('./feature_keys');
+const { deployPoseidon3 } = require('../../lib/poseidon_contract');
 
 /**
  * Helper – convert execution feature bag to numeric vector.
@@ -316,7 +317,11 @@ async function generatePolicyPairsDataset({
   const verifier = await Verifier.deploy();
   await verifier.waitForDeployment();
 
-  const policyPrivacy = await PolicyPrivacy.deploy(await verifier.getAddress());
+  const contextHasher = await deployPoseidon3(ethers);
+  const policyPrivacy = await PolicyPrivacy.deploy(
+    await verifier.getAddress(),
+    await contextHasher.getAddress()
+  );
   await policyPrivacy.waitForDeployment();
 
   const executionResultsPath = path.join(resolvedOutput, `pi_execution_results_${seed}.json`);

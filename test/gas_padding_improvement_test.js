@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
+const { deployPoseidon3 } = require('../lib/poseidon_contract');
 
 describe('Gas Padding Improvement', function () {
   let policyPrivacy;
@@ -16,7 +17,11 @@ describe('Gas Padding Improvement', function () {
 
     // Deploy PolicyPrivacy
     const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
-    policyPrivacy = await PolicyPrivacy.deploy(await mockVerifier.getAddress());
+    const contextHasher = await deployPoseidon3(ethers);
+    policyPrivacy = await PolicyPrivacy.deploy(
+      await mockVerifier.getAddress(),
+      await contextHasher.getAddress()
+    );
     await policyPrivacy.waitForDeployment();
   });
 

@@ -12,7 +12,8 @@
  *  POST /tps/prove
  *    Requester submits authorization evidence; TPS constructs witness and
  *    generates a Groth16 proof (Stage 4).
- *    Body: { policyId, resourceId, nonce, policyCommitment, evidence: { ... } }
+ *    Body: { policyId, resourceId, nonce, policyCommitment,
+ *            evidence: { attributes, requesterId, ... } }
  *    Returns: { pA, pB, pC, pubSignals, sessionId }
  *
  * Security note: in a real deployment these endpoints would be mutually-TLS
@@ -110,6 +111,14 @@ router.post('/prove', async (req, res) => {
                 error: 'evidence.attributes is required'
             });
         }
+        // The requester pseudonym is bound into the proof statement, so it is
+        // required rather than optional audit metadata.
+        if (evidence.requesterId === undefined || evidence.requesterId === null
+            || evidence.requesterId === '') {
+            return res.status(400).json({
+                error: 'evidence.requesterId is required (bound into the proof statement)'
+            });
+        }
 
         // Replay prevention: each (policyId, nonce) may only be used once
         if (store.isNonceUsed(policyId, nonce)) {
@@ -129,7 +138,7 @@ router.post('/prove', async (req, res) => {
             policyId,
             resourceId,
             nonce,
-            requesterId: evidence.requesterId || null,
+            requesterId: evidence.requesterId,
             status: 'proving'
         });
 
@@ -139,7 +148,13 @@ router.post('/prove', async (req, res) => {
         const { pA, pB, pC, pubSignals, timings: proofTimings } = await generateProof(
             material,
             evidence,
-            { policyCommitment }
+            {
+                policyCommitment,
+                // Authorization context bound into the statement (Section V-E).
+                idReq: evidence.requesterId,
+                idRes: resourceId,
+                nonce
+            }
         );
 
         // Mark nonce consumed and session completed
@@ -199,6 +214,7 @@ router.post('/prove', async (req, res) => {
                             BigInt(policyId),
                             BigInt(resourceId),
                             BigInt(nonce),
+                            BigInt(evidence.requesterId),
                             pA, pB, pC, pubSignals,
                             accessGasPadTarget,
                             padOverrides
@@ -207,6 +223,7 @@ router.post('/prove', async (req, res) => {
                             BigInt(policyId),
                             BigInt(resourceId),
                             BigInt(nonce),
+                            BigInt(evidence.requesterId),
                             pA, pB, pC, pubSignals,
                             overrides
                         ),
