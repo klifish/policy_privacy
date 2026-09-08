@@ -34,7 +34,7 @@ const router = express.Router();
  */
 router.post('/register-resource', async (req, res, next) => {
     try {
-        const { providerAddress, policy, metadataURI = '', useGasPad = true } = req.body;
+        const { providerAddress, policy, metadataURI = '', useGasPad = true, policyParameters = {} } = req.body;
 
         if (!providerAddress || !ethers.isAddress(providerAddress)) {
             return res.status(400).json({ error: 'Valid providerAddress is required' });
@@ -57,8 +57,26 @@ router.post('/register-resource', async (req, res, next) => {
         const randomizer = BigInt(artifacts.randomizer);
         const { numOperations } = artifacts;
 
-        // Params commitment (all predicates zero for simple Boolean policies)
-        const paramsCommitment = await calculateParamsCommitment({});
+        const slots = (value, name, fallback) => {
+            const actual = value ?? Array(5).fill(fallback);
+            if (!Array.isArray(actual) || actual.length !== 5) {
+                throw new Error(`policyParameters.${name} must contain exactly 5 entries`);
+            }
+            return actual;
+        };
+        const v2Params = {
+            predicateTypes: slots(policyParameters.predicateTypes, 'predicateTypes', 4),
+            predicateSchemaTags: slots(policyParameters.predicateSchemaTags, 'predicateSchemaTags', 0),
+            merkleRoots: slots(policyParameters.merkleRoots, 'merkleRoots', '0'),
+            credPublicKeys: slots(policyParameters.credPublicKeys, 'credPublicKeys', '0'),
+            rangeMin: slots(policyParameters.rangeMin, 'rangeMin', '0'),
+            rangeMax: slots(policyParameters.rangeMax, 'rangeMax', '0'),
+            ontologyPolicyIds: slots(policyParameters.ontologyPolicyIds, 'ontologyPolicyIds', '0'),
+            ontologyEpochs: slots(policyParameters.ontologyEpochs, 'ontologyEpochs', '0'),
+            policyValidFromEpoch: policyParameters.policyValidFromEpoch ?? Math.floor(Date.now() / 3_600_000),
+            policyValidUntilEpoch: policyParameters.policyValidUntilEpoch ?? 4294967295
+        };
+        const paramsCommitment = await calculateParamsCommitment(v2Params);
 
         // Policy commitment: h = Com(penc; r)  — hex string from compiler
         const commitment = artifacts.policyCommitment;
@@ -126,12 +144,7 @@ router.post('/register-resource', async (req, res, next) => {
             penc,
             randomizer: randomizer.toString(),
             paramsCommitment: paramsCommitment.toString(),
-            merkleRoots: ['0', '0', '0', '0', '0'],
-            credPublicKeys: ['0', '0', '0', '0', '0'],
-            rangeMin: ['0', '0', '0', '0', '0'],
-            rangeMax: ['0', '0', '0', '0', '0'],
-            ontologyPolicyIds: ['0', '0', '0', '0', '0'],
-            ontologyEpochs: ['0', '0', '0', '0', '0'],
+            ...v2Params,
             numOperations
         };
 

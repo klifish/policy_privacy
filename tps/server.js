@@ -67,10 +67,18 @@ router.post('/provision', async (req, res) => {
         if (!policyId) {
             return res.status(400).json({ error: 'policyId is required' });
         }
-        if (!material || !material.penc || !material.randomizer) {
+        if (!material || !material.penc || !material.randomizer || !material.paramsCommitment) {
             return res.status(400).json({
-                error: 'material must include penc and randomizer'
+                error: 'material must include penc, randomizer, and paramsCommitment'
             });
+        }
+        for (const name of ['predicateTypes', 'predicateSchemaTags', 'merkleRoots', 'credPublicKeys', 'rangeMin', 'rangeMax', 'ontologyPolicyIds', 'ontologyEpochs']) {
+            if (!Array.isArray(material[name]) || material[name].length !== 5) {
+                return res.status(400).json({ error: `material.${name} must contain exactly 5 entries` });
+            }
+        }
+        if (material.policyValidFromEpoch === undefined || material.policyValidUntilEpoch === undefined) {
+            return res.status(400).json({ error: 'material policy validity epochs are required' });
         }
 
         store.provisionPolicy(policyId, material);
@@ -119,6 +127,16 @@ router.post('/prove', async (req, res) => {
                 error: 'evidence.requesterId is required (bound into the proof statement)'
             });
         }
+        if (evidence.purposeCode === undefined || evidence.purposeCode === null
+            || evidence.purposeCode === '') {
+            return res.status(400).json({
+                error: 'evidence.purposeCode is required for V2 access-time consent'
+            });
+        }
+
+        // V2 uses a strict EVM-hour bucket.  The same value is public in the
+        // proof statement and is checked by the ACM at submission time.
+        let requestEpoch = Math.floor(Date.now() / 3_600_000);
 
         // Replay prevention: each (policyId, nonce) may only be used once
         if (store.isNonceUsed(policyId, nonce)) {
@@ -139,13 +157,16 @@ router.post('/prove', async (req, res) => {
             resourceId,
             nonce,
             requesterId: evidence.requesterId,
+            purposeCode: evidence.purposeCode,
+            approvalIds: evidence.approvalIds || [],
+            requestEpoch,
             status: 'proving'
         });
 
         // Construct witness w = (penc, a, p, r, ω) and generate proof.
         // timings = { witnessMs, proveMs, verifyMs, verified } — server-side,
         // network-free proof costs, surfaced to the client below.
-        const { pA, pB, pC, pubSignals, timings: proofTimings } = await generateProof(
+        let proofResult = await generateProof(
             material,
             evidence,
             {
@@ -153,12 +174,14 @@ router.post('/prove', async (req, res) => {
                 // Authorization context bound into the statement (Section V-E).
                 idReq: evidence.requesterId,
                 idRes: resourceId,
-                nonce
+                nonce,
+                requestEpoch
             }
         );
+        let { pA, pB, pC, pubSignals, timings: proofTimings } = proofResult;
 
-        // Mark nonce consumed and session completed
-        store.markNonceUsed(policyId, nonce);
+        // Keep private audit fields in TPS storage only; they are never added
+        // to the transaction or public signals.
         store.updateSession(sessionId, { status: 'proved' });
 
         // ── Stage 5 (optional): TPS submits proof on-chain ───────────────────
@@ -171,6 +194,29 @@ router.post('/prove', async (req, res) => {
                 return res.status(500).json({
                     error: 'TPS chain signer not configured – set TPS_PRIVATE_KEY and CONTRACT_ADDRESS'
                 });
+            }
+
+            // Avoid knowingly submitting a proof generated in the preceding
+            // hour.  A boundary crossed after this check causes the ACM to
+            // reject, and the caller can obtain a fresh proof without having
+            // consumed the nonce in TPS storage.
+            const latestBlock = await tpsContract.runner.provider.getBlock('latest');
+            const chainEpoch = Math.floor(Number(latestBlock.timestamp) / 3600);
+            if (chainEpoch !== requestEpoch) {
+                // The previous proof cannot succeed under the strict epoch
+                // check. Regenerate once against the chain's current hour;
+                // a later mining-boundary race still reverts safely and leaves
+                // the nonce unconsumed for a new request.
+                requestEpoch = chainEpoch;
+                proofResult = await generateProof(material, evidence, {
+                    policyCommitment,
+                    idReq: evidence.requesterId,
+                    idRes: resourceId,
+                    nonce,
+                    requestEpoch
+                });
+                ({ pA, pB, pC, pubSignals, timings: proofTimings } = proofResult);
+                store.updateSession(sessionId, { requestEpoch, status: 'reproved' });
             }
 
             // Optional fee cap (gwei): on Polygon Amoy the RPC-suggested tip is
@@ -215,6 +261,7 @@ router.post('/prove', async (req, res) => {
                             BigInt(resourceId),
                             BigInt(nonce),
                             BigInt(evidence.requesterId),
+                            BigInt(requestEpoch),
                             pA, pB, pC, pubSignals,
                             accessGasPadTarget,
                             padOverrides
@@ -224,6 +271,7 @@ router.post('/prove', async (req, res) => {
                             BigInt(resourceId),
                             BigInt(nonce),
                             BigInt(evidence.requesterId),
+                            BigInt(requestEpoch),
                             pA, pB, pC, pubSignals,
                             overrides
                         ),
@@ -266,7 +314,12 @@ router.post('/prove', async (req, res) => {
             };
         }
 
-        return res.json({ pA, pB, pC, pubSignals, sessionId, chainResult, proofTimings });
+        // The contract independently prevents reuse.  Record the TPS-side
+        // nonce only after the proof has either been returned (oracle mode) or
+        // submitted, so a rejected hour-boundary attempt can be retried.
+        store.markNonceUsed(policyId, nonce);
+
+        return res.json({ pA, pB, pC, pubSignals, requestEpoch, sessionId, chainResult, proofTimings });
     } catch (err) {
         console.error('[TPS prove] error:', err.message);
         return res.status(500).json({ error: err.message });

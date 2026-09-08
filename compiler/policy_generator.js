@@ -26,6 +26,9 @@ const ATTRIBUTE_DEFINITIONS = [
   { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true },
   { code: 'CU', label: 'Commercial use', namespace: null, requiresPredicate: false }
 ];
+const PRODUCTION_ATTRIBUTE_ORDER = Object.freeze(['GR', 'DS', 'RS', 'POA', 'GS', 'CC']);
+const PRODUCTION_N = 6;
+const PRODUCTION_M = 5;
 
 // Flexible identifier mapping for DUO attributes.
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
@@ -81,7 +84,7 @@ const OP_INFO = Object.freeze({
  */
 function resolveAttributeDefinitions(order) {
   if (!order || order.length === 0) {
-    return ATTRIBUTE_DEFINITIONS;
+    return PRODUCTION_ATTRIBUTE_ORDER.map((code) => ATTRIBUTE_DEFINITIONS.find((d) => d.code === code));
   }
   const defs = [];
   order.forEach((entry, idx) => {
@@ -604,18 +607,21 @@ function generateRandomizerBytes(byteLength = 31) {
 /**
  * Map logical tokens into numeric codes understood by the circuit.
  */
-function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx) {
-  const N = attributeCtx.order.length;
-  const M = predicateCtx.slots.length;
+function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M = PRODUCTION_M) {
   const namespaceToSlot = predicateCtx.namespaceToSlot;
   const attributeIndexByCode = attributeCtx.indexByCode;
 
   const tokens = [];
   rpnTokens.forEach((tok) => {
     if (tok.type === 'ATTRIBUTE') {
-      const idx = attributeIndexByCode.get(tok.value);
+      // The production circuit uses a stable six-slot operand layout even
+      // when an author provides a shorter presentation order.
+      const idx = PRODUCTION_ATTRIBUTE_ORDER.indexOf(tok.value);
       if (idx === undefined) {
         throw new Error(`Attribute ${tok.value} was not declared`);
+      }
+      if (idx < 0) {
+        throw new Error(`Attribute ${tok.value} is not supported by the V2 production circuit`);
       }
       tokens.push(idx);
     } else if (tok.type === 'PREDICATE') {
@@ -656,6 +662,9 @@ async function generatePolicyArtifacts(config, options = {}) {
   const attributeCtx = buildAttributeContext(attributeDefs, config.attributes || {});
   // console.log(`Attribute context: ${JSON.stringify(attributeCtx, null, 2)}`);
   const predicateCtx = buildPredicateContext(config.predicates || []);
+  if (predicateCtx.slots.length > PRODUCTION_M) {
+    throw new Error(`V2 production circuit supports at most ${PRODUCTION_M} predicate slots`);
+  }
 
   predicateCtx.slots.forEach((slotInfo) => {
     const expectedNamespace = attributeCtx.namespaceByCode[slotInfo.duo];
@@ -687,7 +696,7 @@ async function generatePolicyArtifacts(config, options = {}) {
 
   const expandedRpn = astToRPN(boundAst);
   // console.log(`Final RPN tokens after binding: ${expandedRpn.map((t) => `${t.type}(${t.value})`).join(' ')}`);
-  const numericTokens = rpnToNumeric(expandedRpn, attributeCtx, predicateCtx);
+  const numericTokens = rpnToNumeric(expandedRpn, attributeCtx, predicateCtx, PRODUCTION_N, PRODUCTION_M);
 
   if (numericTokens.length > depth) {
     throw new Error(
@@ -737,15 +746,15 @@ async function generatePolicyArtifacts(config, options = {}) {
     policyId: config.policy_id ?? config.policyId ?? null,
     datasetId: config.dataset_id ?? config.datasetId ?? null,
     depth,
-    numAttributes: attributeDefs.length,
-    numPredicates: predicateCtx.slots.length,
+    numAttributes: PRODUCTION_N,
+    numPredicates: PRODUCTION_M,
     numOperations: numericTokens.length,
     tokens: numericTokens,
     policy,
     operators: {
-      AND: attributeDefs.length + predicateCtx.slots.length + 0,
-      OR: attributeDefs.length + predicateCtx.slots.length + 1,
-      NOT: attributeDefs.length + predicateCtx.slots.length + 2
+      AND: PRODUCTION_N + PRODUCTION_M + 0,
+      OR: PRODUCTION_N + PRODUCTION_M + 1,
+      NOT: PRODUCTION_N + PRODUCTION_M + 2
     },
     attributes: {
       order: attributeCtx.order,

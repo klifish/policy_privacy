@@ -17,7 +17,7 @@ interface IVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) external view returns (bool);
 }
 
@@ -59,6 +59,8 @@ contract PolicyPrivacy {
         uint256 requestId
     );
     event PolicyRevoked(address indexed dataSubject, uint256 indexed policyId);
+    event PolicyVersionCommitted(uint256 indexed policyId, uint256 indexed supersedesPolicyId);
+    event ResourcePolicyRebound(uint256 indexed resourceId, uint256 indexed oldPolicyId, uint256 indexed newPolicyId);
 
     // Struct for policy commitments
     struct PolicyCommitment {
@@ -67,6 +69,7 @@ contract PolicyPrivacy {
         uint256 paramsCommitment; // Poseidon hash of external parameter configuration
         bool isActive; // Whether policy is still valid
         uint256 timestamp; // When policy was committed
+        uint256 supersedesPolicyId; // Direct predecessor, or zero for a root policy
         string metadataURI; // Optional metadata (IPFS hash, etc.)
     }
 
@@ -76,6 +79,7 @@ contract PolicyPrivacy {
         uint256 requesterId; // Requester pseudonym bound into the proof statement
         uint256 resourceId; // Resource bound into the proof statement
         uint256 contextHash; // Poseidon(requesterId || resourceId || nonce), a public signal
+        uint256 requestEpoch; // V2 EVM hour bucket asserted by the proof
         uint256 policyId; // Which policy they're claiming to satisfy
         uint256 timestamp; // When request was made
         bool isProcessed; // Whether request has been processed
@@ -106,12 +110,16 @@ contract PolicyPrivacy {
     // requesterId is part of the key so a nonce consumed for one requester
     // cannot be reused to record an authorization for another.
     mapping(bytes32 => bool) public usedNonces;
+    mapping(uint256 => uint256) public policySuccessor;
 
     // Emergency controls
     address public immutable owner;
     bool public emergencyPaused;
 
     uint256 private constant MAX_GAS_PAD_TARGET_GAS = 8_000_000;
+    uint256 public constant EPOCH_SECONDS = 3600;
+    uint256 private constant SNARK_SCALAR_FIELD =
+        21888242871839275222246405745257275088548364400416034343698204186575808495617;
     uint256 private gasPadAccumulator;
 
     modifier onlyOwner() {
@@ -269,7 +277,8 @@ contract PolicyPrivacy {
     function _commitPolicy(
         uint256 _commitment,
         uint256 _paramsCommitment,
-        string calldata _metadataURI
+        string calldata _metadataURI,
+        uint256 _supersedesPolicyId
     ) internal returns (uint256) {
         uint256 policyId = nextPolicyId++;
 
@@ -279,6 +288,7 @@ contract PolicyPrivacy {
             paramsCommitment: _paramsCommitment,
             isActive: true,
             timestamp: block.timestamp,
+            supersedesPolicyId: _supersedesPolicyId,
             metadataURI: _metadataURI
         });
 
@@ -290,6 +300,9 @@ contract PolicyPrivacy {
             _commitment,
             _paramsCommitment
         );
+        if (_supersedesPolicyId != 0) {
+            emit PolicyVersionCommitted(policyId, _supersedesPolicyId);
+        }
 
         return policyId;
     }
@@ -305,7 +318,7 @@ contract PolicyPrivacy {
         uint256 _paramsCommitment,
         string calldata _metadataURI
     ) public notPaused returns (uint256) {
-        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI);
+        return _commitPolicy(_commitment, _paramsCommitment, _metadataURI, 0);
     }
 
     /**
@@ -315,7 +328,7 @@ contract PolicyPrivacy {
         uint256 _commitment,
         string calldata _metadataURI
     ) external notPaused returns (uint256) {
-        return _commitPolicy(_commitment, 0, _metadataURI);
+        return _commitPolicy(_commitment, 0, _metadataURI, 0);
     }
 
     /**
@@ -331,7 +344,8 @@ contract PolicyPrivacy {
         uint256 policyId = _commitPolicy(
             _commitment,
             _paramsCommitment,
-            _metadataURI
+            _metadataURI,
+            0
         );
         _padGasToTarget(startGas, targetGas);
         return policyId;
@@ -343,7 +357,7 @@ contract PolicyPrivacy {
         uint256 targetGas
     ) external notPaused returns (uint256) {
         uint256 startGas = gasleft();
-        uint256 policyId = _commitPolicy(_commitment, 0, _metadataURI);
+        uint256 policyId = _commitPolicy(_commitment, 0, _metadataURI, 0);
         _padGasToTarget(startGas, targetGas);
         return policyId;
     }
@@ -351,7 +365,7 @@ contract PolicyPrivacy {
     /**
      * @dev Core verification path.
      *
-     * _pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash].
+     * _pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash, requestEpoch].
      * contextHash = Poseidon(requesterId || resourceId || nonce) is constrained
      * in-circuit by a hard equality, so a proof is bound to exactly one
      * authorization context: it cannot be replayed for a different requester,
@@ -373,7 +387,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
@@ -397,6 +411,7 @@ contract PolicyPrivacy {
             requesterId: _idReq,
             resourceId: _resourceId,
             contextHash: _pubSignals[3],
+            requestEpoch: _pubSignals[4],
             policyId: _policyId,
             timestamp: block.timestamp,
             isProcessed: true,
@@ -430,9 +445,10 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) external notPaused returns (uint256) {
-        return _requestAccess(_policyId, _idReq, 0, _pA, _pB, _pC, _pubSignals);
+        _policyId; _idReq; _pA; _pB; _pC; _pubSignals;
+        revert("V2 requires requestAccessBound");
     }
 
     /**
@@ -444,21 +460,11 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals,
+        uint[5] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256) {
-        uint256 startGas = gasleft();
-        uint256 requestId = _requestAccess(
-            _policyId,
-            _idReq,
-            0,
-            _pA,
-            _pB,
-            _pC,
-            _pubSignals
-        );
-        _padGasToTarget(startGas, targetGas);
-        return requestId;
+        _policyId; _idReq; _pA; _pB; _pC; _pubSignals; targetGas;
+        revert("V2 requires requestAccessBound");
     }
 
     /**
@@ -484,6 +490,18 @@ contract PolicyPrivacy {
     }
 
     /**
+     * @dev Current release predicate for a data gateway. Historical grants are
+     * deliberately not bearer capabilities: callers must additionally verify
+     * the requester and resource recorded in AccessRequest.
+     */
+    function isAuthorizationCurrent(uint256 _requestId) external view returns (bool) {
+        AccessRequest memory request = accessRequests[_requestId];
+        if (!request.isGranted || request.requestEpoch != block.timestamp / EPOCH_SECONDS) return false;
+        Resource memory resource = resources[request.resourceId];
+        return resource.isActive && resource.policyId == request.policyId && policies[request.policyId].isActive;
+    }
+
+    /**
      * @dev Get policy details
      * @param _policyId The policy ID
      */
@@ -498,6 +516,7 @@ contract PolicyPrivacy {
             uint256 paramsCommitment,
             bool isActive,
             uint256 timestamp,
+            uint256 supersedesPolicyId,
             string memory metadataURI
         )
     {
@@ -508,6 +527,7 @@ contract PolicyPrivacy {
             policy.paramsCommitment,
             policy.isActive,
             policy.timestamp,
+            policy.supersedesPolicyId,
             policy.metadataURI
         );
     }
@@ -568,6 +588,35 @@ contract PolicyPrivacy {
         emit ResourceRegistered(msg.sender, resourceId, _policyId);
     }
 
+    /** Commit a direct V2 successor without deactivating the predecessor. */
+    function commitPolicyVersion(
+        uint256 _commitment,
+        uint256 _paramsCommitment,
+        string calldata _metadataURI,
+        uint256 _supersedesPolicyId
+    ) external notPaused returns (uint256) {
+        require(_supersedesPolicyId != 0, "Missing predecessor");
+        require(policies[_supersedesPolicyId].isActive, "Predecessor not active");
+        require(policies[_supersedesPolicyId].dataSubject == msg.sender, "Not predecessor subject");
+        require(policySuccessor[_supersedesPolicyId] == 0, "Predecessor already superseded");
+        uint256 policyId = _commitPolicy(_commitment, _paramsCommitment, _metadataURI, _supersedesPolicyId);
+        policySuccessor[_supersedesPolicyId] = policyId;
+        return policyId;
+    }
+
+    /** Rebind one resource to its policy's direct successor. */
+    function rebindResourcePolicy(uint256 _resourceId, uint256 _newPolicyId) external notPaused {
+        Resource storage resource = resources[_resourceId];
+        uint256 oldPolicyId = resource.policyId;
+        require(resource.isActive, "Resource not active");
+        require(resource.provider == msg.sender, "Not resource provider");
+        require(policies[_newPolicyId].isActive, "New policy not active");
+        require(policies[_newPolicyId].supersedesPolicyId == oldPolicyId, "Not direct successor");
+        require(policies[_newPolicyId].dataSubject == policies[oldPolicyId].dataSubject, "Different data subject");
+        resource.policyId = _newPolicyId;
+        emit ResourcePolicyRebound(_resourceId, oldPolicyId, _newPolicyId);
+    }
+
     /**
      * @dev Get resource details.
      */
@@ -609,13 +658,14 @@ contract PolicyPrivacy {
         uint256 _resourceId,
         uint256 _nonce,
         uint256 _idReq,
+        uint256 _requestEpoch,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) external notPaused returns (uint256 requestId) {
         requestId = _requestAccessBound(
-            _policyId, _resourceId, _nonce, _idReq, _pA, _pB, _pC, _pubSignals
+            _policyId, _resourceId, _nonce, _idReq, _requestEpoch, _pA, _pB, _pC, _pubSignals
         );
     }
 
@@ -632,15 +682,16 @@ contract PolicyPrivacy {
         uint256 _resourceId,
         uint256 _nonce,
         uint256 _idReq,
+        uint256 _requestEpoch,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals,
+        uint[5] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256 requestId) {
         uint256 startGas = gasleft();
         requestId = _requestAccessBound(
-            _policyId, _resourceId, _nonce, _idReq, _pA, _pB, _pC, _pubSignals
+            _policyId, _resourceId, _nonce, _idReq, _requestEpoch, _pA, _pB, _pC, _pubSignals
         );
         _padGasToTarget(startGas, targetGas);
     }
@@ -654,10 +705,11 @@ contract PolicyPrivacy {
         uint256 _resourceId,
         uint256 _nonce,
         uint256 _idReq,
+        uint256 _requestEpoch,
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) internal returns (uint256 requestId) {
         require(policies[_policyId].isActive, "Policy not active");
         require(resources[_resourceId].isActive, "Resource not active");
@@ -665,6 +717,9 @@ contract PolicyPrivacy {
             resources[_resourceId].policyId == _policyId,
             "Resource/policy mismatch"
         );
+        require(_idReq < SNARK_SCALAR_FIELD && _nonce < SNARK_SCALAR_FIELD, "Context value outside SNARK field");
+        require(_requestEpoch == block.timestamp / EPOCH_SECONDS, "Stale request epoch");
+        require(_pubSignals[4] == _requestEpoch, "Request epoch mismatch");
 
         // Authorization-context binding: the proof's public signal must be the
         // digest of THIS request's context. The circuit constrains
@@ -706,7 +761,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
+        uint[5] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }

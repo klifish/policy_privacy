@@ -16,7 +16,8 @@ include "policy_privacy_main.circom";
 
 /*
     Public interface (commitment-only):
-    pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash]
+    pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash,
+                  requestEpoch]
 
     Per-predicate parameters (merkleRoots, credPublicKeys, rangeMin/Max,
     ontologyPolicyIds, ontologyEpochs) are private witness inputs. They are
@@ -32,5 +33,5 @@ include "policy_privacy_main.circom";
     parameters and rejects a mismatch.
 */
 component main {
-    public [policyCommitment, paramsCommitment, contextHash]
+    public [policyCommitment, paramsCommitment, contextHash, requestEpoch]
 } = PolicyPrivacyMain(6, 5, 20, 4, 8, 32);

@@ -91,8 +91,21 @@ template CredentialSignatureVerifier() {
     // constrained, never from a prover-chosen value.
     signal input enabled;
 
-    // Private inputs
-    signal input message;                           // Signed credential message
+    // Policy-bound, typed approval credential inputs.  The circuit derives the
+    // signed message itself; accepting a prover-provided opaque message would
+    // permit a valid institutional signature to be replayed for a different
+    // requester, resource, purpose, policy or validity interval.
+    signal input schemaTag;
+    signal input policyCommitment;
+    signal input requesterId;
+    signal input resourceId;
+    signal input purposeCode;
+    signal input validFromEpoch;
+    signal input validUntilEpoch;
+    signal input approvalId;
+    signal input requestEpoch;
+
+    // Private signature inputs
     signal input signature;                         // Signature scalar S
     signal input sigR8x;                            // Signature point R8.x
     signal input sigR8y;                            // Signature point R8.y
@@ -117,7 +130,37 @@ template CredentialSignatureVerifier() {
     keyMatches.in[0] <== keyDigest.out;
     keyMatches.in[1] <== publicKey;
 
-    // 2. Verify the EdDSA signature over the credential message.
+    // 2. Construct and verify the InstitutionalApprovalV1 message.  The
+    // domain and schema constants prevent cross-protocol interpretation of a
+    // signature intended for another credential format.
+    var INSTITUTIONAL_APPROVAL_V1 = 1001;
+    component schemaMatches = IsEqual();
+    schemaMatches.in[0] <== schemaTag;
+    schemaMatches.in[1] <== INSTITUTIONAL_APPROVAL_V1;
+
+    component approvalDigest = Poseidon(8);
+    // schemaTag is committed in paramsCommitment and doubles as the credential
+    // domain tag, so an approval cannot be reinterpreted under another schema.
+    approvalDigest.inputs[0] <== schemaTag;
+    approvalDigest.inputs[1] <== policyCommitment;
+    approvalDigest.inputs[2] <== requesterId;
+    approvalDigest.inputs[3] <== resourceId;
+    approvalDigest.inputs[4] <== purposeCode;
+    approvalDigest.inputs[5] <== validFromEpoch;
+    approvalDigest.inputs[6] <== validUntilEpoch;
+    approvalDigest.inputs[7] <== approvalId;
+
+    component startsBeforeRequest = GreaterEqThan(32);
+    startsBeforeRequest.in[0] <== requestEpoch;
+    startsBeforeRequest.in[1] <== validFromEpoch;
+    component endsAfterRequest = LessEqThan(32);
+    endsAfterRequest.in[0] <== requestEpoch;
+    endsAfterRequest.in[1] <== validUntilEpoch;
+    component validityAnd = AND();
+    validityAnd.a <== startsBeforeRequest.out;
+    validityAnd.b <== endsAfterRequest.out;
+
+    // 3. Verify the EdDSA signature over the typed credential digest.
     //    EdDSAPoseidonVerifier enforces validity by constraint when enabled, so
     //    an invalid signature makes the witness unsatisfiable rather than merely
     //    yielding isValid = 0. enabled is driven by the predicate type, which is
@@ -131,12 +174,17 @@ template CredentialSignatureVerifier() {
     eddsa.S <== signature;
     eddsa.R8x <== sigR8x;
     eddsa.R8y <== sigR8y;
-    eddsa.M <== message;
+    eddsa.M <== approvalDigest.out;
 
     // Signature validity is enforced above by constraint; the remaining
     // condition is that the signing key is the issuer committed in the policy
-    // parameters. A disabled slot never reports a satisfied predicate.
-    isValid <== enabled * keyMatches.out;
+    // parameters, the schema is the approved schema, and the approval is
+    // temporally valid. A disabled slot never reports a satisfied predicate.
+    signal keyAndSchema;
+    signal typedApprovalValid;
+    keyAndSchema <== keyMatches.out * schemaMatches.out;
+    typedApprovalValid <== keyAndSchema * validityAnd.out;
+    isValid <== enabled * typedApprovalValid;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -258,8 +306,18 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal input merklePathIndices[MERKLE_LEVELS];
     signal input merkleRoot;
     
-    // Signature inputs  
-    signal input credMessage;                       // Signed credential message
+    // Typed institutional-approval credential inputs
+    signal input predicateSchemaTag;
+    signal input policyCommitment;
+    signal input requesterId;
+    signal input resourceId;
+    signal input purposeCode;
+    signal input credValidFromEpoch;
+    signal input credValidUntilEpoch;
+    signal input approvalId;
+    signal input requestEpoch;
+
+    // Signature inputs
     signal input credSignature;                     // Signature scalar S
     signal input credSigR8x;                        // Signature point R8.x
     signal input credSigR8y;                        // Signature point R8.y
@@ -321,7 +379,15 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     merkleVerifier.root <== merkleRoot;
     
     // Connect signature verifier
-    signatureVerifier.message <== credMessage;
+    signatureVerifier.schemaTag <== predicateSchemaTag;
+    signatureVerifier.policyCommitment <== policyCommitment;
+    signatureVerifier.requesterId <== requesterId;
+    signatureVerifier.resourceId <== resourceId;
+    signatureVerifier.purposeCode <== purposeCode;
+    signatureVerifier.validFromEpoch <== credValidFromEpoch;
+    signatureVerifier.validUntilEpoch <== credValidUntilEpoch;
+    signatureVerifier.approvalId <== approvalId;
+    signatureVerifier.requestEpoch <== requestEpoch;
     signatureVerifier.signature <== credSignature;
     signatureVerifier.sigR8x <== credSigR8x;
     signatureVerifier.sigR8y <== credSigR8y;

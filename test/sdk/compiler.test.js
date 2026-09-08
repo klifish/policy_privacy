@@ -401,7 +401,7 @@ describe('SDK - Compiler Module', function () {
         'logic', 'operators', 'randomizer', 'policyCommitment', 'policyHash'
       );
       expect(artifacts.tokens).to.be.an('array').with.length.greaterThan(0);
-      expect(BigInt(artifacts.policyCommitment)).to.be.greaterThan(0n);
+      expect(BigInt(artifacts.policyCommitment) > 0n).to.equal(true);
     });
 
     it('should compile policy with geographical restriction', async function () {

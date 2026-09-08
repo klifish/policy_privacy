@@ -54,7 +54,7 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
  * @param {object} evidence  Submitted by the requester.
  *   {
  *     attributes    : number[]   – Boolean attribute vector a ∈ {0,1}^N
- *     predicateTypes: number[]   – 0=merkle,1=cred,2=range,3=ontology,4=disabled
+ *     purposeCode   : bigint     – private declared request purpose
  *     merkleLeaves  : string[]   (optional)
  *     merklePathElements: string[][] (optional)
  *     merklePathIndices : number[][] (optional)
@@ -112,11 +112,20 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const zeroMat = (rows, cols) => Array.from({ length: rows }, () => Array(cols).fill('0'));
     const zeroMatNum = (rows, cols) => Array.from({ length: rows }, () => Array(cols).fill(0));
 
-    const predicateTypes = (evidence.predicateTypes || zero(M)).slice(0, M);
+    const exactPolicyArray = (value, name) => {
+        if (!Array.isArray(value) || value.length !== M) {
+            throw new Error(`policyMaterial.${name} must contain exactly ${M} entries`);
+        }
+        return value.slice();
+    };
+
+    // Predicate semantics are policy parameters, never requester evidence.
+    // Allowing evidence to select a verifier would permit type substitution.
+    const predicateTypes = exactPolicyArray(policyMaterial.predicateTypes, 'predicateTypes');
+    const predicateSchemaTags = exactPolicyArray(policyMaterial.predicateSchemaTags, 'predicateSchemaTags');
     const merkleLeaves = (evidence.merkleLeaves || zeroStr(M)).slice(0, M);
     const merklePathElements = (evidence.merklePathElements || zeroMat(M, MERKLE_LEVELS)).slice(0, M);
     const merklePathIndices = (evidence.merklePathIndices || zeroMatNum(M, MERKLE_LEVELS)).slice(0, M);
-    const credMessages = (evidence.credMessages || zeroStr(M)).slice(0, M);
     const credSignatures = (evidence.credSignatures || zeroStr(M)).slice(0, M);
     // EdDSA signature points and issuer key point. The circuit checks these
     // only for slots whose predicateType selects the credential predicate.
@@ -126,16 +135,24 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const credIssuerAy = (evidence.credIssuerAy || zeroStr(M)).slice(0, M);
     const rangeValues = (evidence.rangeValues || zero(M)).slice(0, M);
     const ontologyCodes = (evidence.ontologyCodes || zero(M)).slice(0, M);
+    const purposeCode = evidence.purposeCode ?? 0;
+    const credValidFromEpochs = (evidence.credValidFromEpochs || zeroStr(M)).slice(0, M);
+    const credValidUntilEpochs = (evidence.credValidUntilEpochs || zeroStr(M)).slice(0, M);
+    const approvalIds = (evidence.approvalIds || zeroStr(M)).slice(0, M);
+
+    if (publicInputs.requestEpoch === undefined || publicInputs.requestEpoch === null) {
+        throw new Error('buildWitness requires publicInputs.requestEpoch');
+    }
 
     const input = {
         // Private witness
         policy,
         requesterAttrs,
         predicateTypes,
+        predicateSchemaTags,
         merkleLeaves,
         merklePathElements,
         merklePathIndices,
-        credMessages,
         credSignatures,
         credSigR8x,
         credSigR8y,
@@ -143,6 +160,10 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         credIssuerAy,
         rangeValues,
         ontologyCodes,
+        purposeCode: String(purposeCode),
+        credValidFromEpochs,
+        credValidUntilEpochs,
+        approvalIds,
         randomizer: policyMaterial.randomizer.toString(),
         numOperations: policyMaterial.numOperations || policy.filter(t => t !== 0).length,
 
@@ -154,16 +175,16 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         // Public inputs
         policyCommitment: publicInputs.policyCommitment,
         paramsCommitment: policyMaterial.paramsCommitment,
-        merkleRoots: (policyMaterial.merkleRoots || zeroStr(M)).slice(0, M),
-        credPublicKeys: (policyMaterial.credPublicKeys || zeroStr(M)).slice(0, M),
-        rangeMin: (policyMaterial.rangeMin || zeroStr(M)).slice(0, M),
-        rangeMax: (policyMaterial.rangeMax || zeroStr(M)).slice(0, M),
-        ontologyPolicyIds: (policyMaterial.ontologyPolicyIds || zeroStr(M)).slice(0, M),
-        ontologyEpochs: (policyMaterial.ontologyEpochs || zeroStr(M)).slice(0, M)
+        merkleRoots: exactPolicyArray(policyMaterial.merkleRoots, 'merkleRoots'),
+        credPublicKeys: exactPolicyArray(policyMaterial.credPublicKeys, 'credPublicKeys'),
+        rangeMin: exactPolicyArray(policyMaterial.rangeMin, 'rangeMin'),
+        rangeMax: exactPolicyArray(policyMaterial.rangeMax, 'rangeMax'),
+        ontologyPolicyIds: exactPolicyArray(policyMaterial.ontologyPolicyIds, 'ontologyPolicyIds'),
+        ontologyEpochs: exactPolicyArray(policyMaterial.ontologyEpochs, 'ontologyEpochs'),
+        policyValidFromEpoch: String(policyMaterial.policyValidFromEpoch),
+        policyValidUntilEpoch: String(policyMaterial.policyValidUntilEpoch),
+        requestEpoch: String(publicInputs.requestEpoch)
     };
-
-    // Auto-detect disabled predicates (type=4) when type is 0 but no data present
-    _normalizePredicateTypesInPlace(input);
 
     return input;
 }
@@ -195,13 +216,21 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
     // Always recompute paramsCommitment from the actual parameter arrays so it
     // matches what the circuit recomputes internally from those same arrays.
     witness.paramsCommitment = await calculateParamsCommitment({
+        predicateTypes: witness.predicateTypes,
+        predicateSchemaTags: witness.predicateSchemaTags,
         merkleRoots: witness.merkleRoots,
         credPublicKeys: witness.credPublicKeys,
         rangeMin: witness.rangeMin,
         rangeMax: witness.rangeMax,
         ontologyPolicyIds: witness.ontologyPolicyIds,
-        ontologyEpochs: witness.ontologyEpochs
+        ontologyEpochs: witness.ontologyEpochs,
+        policyValidFromEpoch: witness.policyValidFromEpoch,
+        policyValidUntilEpoch: witness.policyValidUntilEpoch
     });
+
+    if (policyMaterial.paramsCommitment && String(policyMaterial.paramsCommitment) !== witness.paramsCommitment) {
+        throw new Error('Provisioned paramsCommitment does not match V2 policy parameters');
+    }
 
     // Bind the authorization context into the statement: the digest is a public
     // signal the ACM recomputes from the transaction parameters, so a proof

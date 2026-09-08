@@ -43,7 +43,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
-    var PARAM_DOMAIN_SEPARATOR = 1;
+    // V2 parameter layout includes predicate type/schema and temporal fields.
+    // A distinct domain prevents accidental V1/V2 parameter-commitment reuse.
+    var PARAM_DOMAIN_SEPARATOR = 2;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -52,7 +54,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input requesterAttrs[N];
     
     // External predicate inputs for generating p ∈ {0,1}^M
-    signal input predicateTypes[M];                     // Type selector for each predicate
+    // Predicate types and schema tags are provider-provisioned policy
+    // parameters.  They are committed through paramsCommitment below, so the
+    // requester cannot reinterpret a slot under a weaker verifier.
+    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled
+    signal input predicateSchemaTags[M];
     
     // Merkle proof inputs (for predicates that use them)
     signal input merkleLeaves[M];
@@ -60,7 +66,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input merklePathIndices[M][MERKLE_LEVELS];
     
     // Credential signature inputs (for predicates that use them)  
-    signal input credMessages[M];                   // Signed credential messages
     signal input credSignatures[M];                 // Signature scalars S
     signal input credSigR8x[M];                     // Signature points R8.x
     signal input credSigR8y[M];                     // Signature points R8.y
@@ -72,6 +77,14 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     
     // Ontology-linked terms inputs (for predicates that use them)
     signal input ontologyCodes[M];                   // ICD codes or other ontology terms
+
+    // Private request-purpose and approval fields.  purposeCode never appears
+    // in calldata or the public statement; it is bound only inside a typed
+    // institutional-approval signature.
+    signal input purposeCode;
+    signal input credValidFromEpochs[M];
+    signal input credValidUntilEpochs[M];
+    signal input approvalIds[M];
     
     // Commitment randomizer r
     signal input randomizer;
@@ -98,6 +111,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Binding the context into the statement makes a proof non-transferable
     // across requesters, resources and sessions.
     signal input contextHash;
+    // Current EVM hour bucket.  The ACM checks it against block.timestamp;
+    // the circuit uses it for policy and approval validity checks.
+    signal input requestEpoch;
     
     // Public parameters pp for external predicate verification
     signal input merkleRoots[M];                        // Merkle tree roots
@@ -106,6 +122,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input rangeMax[M];                           // Range maximum values
     signal input ontologyPolicyIds[M];                  // Policy IDs for ontology-linked terms
     signal input ontologyEpochs[M];                     // Policy epochs for ontology-linked terms
+    signal input policyValidFromEpoch;
+    signal input policyValidUntilEpoch;
     
     // ═══════════════════════════════════════════════════════════════════════
     // OUTPUT
@@ -130,22 +148,28 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component predicateVerifiers[M];
     component disabledCheckers[M];
     component merkleRootHashers[M];
+    component predicateTypeHashers[M];
+    component predicateSchemaTagHashers[M];
     component credPublicKeyHashers[M];
     component rangeMinHashers[M];
     component rangeMaxHashers[M];
     component ontologyPolicyIdHashers[M];
     component ontologyEpochHashers[M];
-    component paramsDigestHashers[7];
+    component paramsDigestHashers[11];
     signal disabledFlags[M];
+    signal predicateTypeHashChain[M + 1];
+    signal predicateSchemaTagHashChain[M + 1];
     signal merkleRootHashChain[M + 1];
     signal credPublicKeyHashChain[M + 1];
     signal rangeMinHashChain[M + 1];
     signal rangeMaxHashChain[M + 1];
     signal ontologyPolicyIdHashChain[M + 1];
     signal ontologyEpochHashChain[M + 1];
-    signal paramsDigestChain[8];
+    signal paramsDigestChain[12];
     component finalAnd;
     component contextHasher;
+    component policyValidityVerifier;
+    component policyWindowWellFormed;
     
     // ───────────────────────────────────────────────────────────────────────
     // 1. VERIFY POLICY COMMITMENT: Com(P;r) = h
@@ -169,6 +193,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // 2. VERIFY EXTERNAL PREDICATES: Generate p from external proofs  
     // ───────────────────────────────────────────────────────────────────────
     
+    predicateTypeHashChain[0] <== 0;
+    predicateSchemaTagHashChain[0] <== 0;
     merkleRootHashChain[0] <== 0;
     credPublicKeyHashChain[0] <== 0;
     rangeMinHashChain[0] <== 0;
@@ -181,6 +207,15 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         
         // Connect predicate type
         predicateVerifiers[i].predicateType <== predicateTypes[i];
+        predicateVerifiers[i].predicateSchemaTag <== predicateSchemaTags[i];
+        predicateVerifiers[i].policyCommitment <== policyCommitment;
+        predicateVerifiers[i].requesterId <== idReq;
+        predicateVerifiers[i].resourceId <== idRes;
+        predicateVerifiers[i].purposeCode <== purposeCode;
+        predicateVerifiers[i].credValidFromEpoch <== credValidFromEpochs[i];
+        predicateVerifiers[i].credValidUntilEpoch <== credValidUntilEpochs[i];
+        predicateVerifiers[i].approvalId <== approvalIds[i];
+        predicateVerifiers[i].requestEpoch <== requestEpoch;
         disabledCheckers[i] = IsEqual();
         disabledCheckers[i].in[0] <== predicateTypes[i];
         disabledCheckers[i].in[1] <== 4;
@@ -195,7 +230,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].merkleRoot <== merkleRoots[i];
         
         // Connect credential signature inputs
-        predicateVerifiers[i].credMessage <== credMessages[i];
         predicateVerifiers[i].credSignature <== credSignatures[i];
         predicateVerifiers[i].credSigR8x <== credSigR8x[i];
         predicateVerifiers[i].credSigR8y <== credSigR8y[i];
@@ -224,7 +258,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         }
         (merkleRoots[i] - DEFAULT_MERKLE_VALUE) * disabledFlags[i] === 0;
 
-        (credMessages[i] - DEFAULT_CRED_MESSAGE) * disabledFlags[i] === 0;
         (credSignatures[i] - DEFAULT_CRED_SIGNATURE) * disabledFlags[i] === 0;
         (credPublicKeys[i] - DEFAULT_CRED_PUBLIC_KEY) * disabledFlags[i] === 0;
 
@@ -235,10 +268,24 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         (ontologyCodes[i] - DEFAULT_ONTOLOGY_CODE) * disabledFlags[i] === 0;
         (ontologyPolicyIds[i] - DEFAULT_ONTOLOGY_POLICY_ID) * disabledFlags[i] === 0;
         (ontologyEpochs[i] - DEFAULT_ONTOLOGY_EPOCH) * disabledFlags[i] === 0;
+        predicateSchemaTags[i] * disabledFlags[i] === 0;
+        credValidFromEpochs[i] * disabledFlags[i] === 0;
+        credValidUntilEpochs[i] * disabledFlags[i] === 0;
+        approvalIds[i] * disabledFlags[i] === 0;
 
         predicateValues[i] * disabledFlags[i] === 0;
 
         // Hash chains for parameter commitment
+        predicateTypeHashers[i] = Poseidon(2);
+        predicateTypeHashers[i].inputs[0] <== predicateTypeHashChain[i];
+        predicateTypeHashers[i].inputs[1] <== predicateTypes[i];
+        predicateTypeHashChain[i + 1] <== predicateTypeHashers[i].out;
+
+        predicateSchemaTagHashers[i] = Poseidon(2);
+        predicateSchemaTagHashers[i].inputs[0] <== predicateSchemaTagHashChain[i];
+        predicateSchemaTagHashers[i].inputs[1] <== predicateSchemaTags[i];
+        predicateSchemaTagHashChain[i + 1] <== predicateSchemaTagHashers[i].out;
+
         merkleRootHashers[i] = Poseidon(2);
         merkleRootHashers[i].inputs[0] <== merkleRootHashChain[i];
         merkleRootHashers[i].inputs[1] <== merkleRoots[i];
@@ -274,40 +321,60 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     paramsDigestHashers[0] = Poseidon(2);
     paramsDigestHashers[0].inputs[0] <== paramsDigestChain[0];
-    paramsDigestHashers[0].inputs[1] <== merkleRootHashChain[M];
+    paramsDigestHashers[0].inputs[1] <== predicateTypeHashChain[M];
     paramsDigestChain[1] <== paramsDigestHashers[0].out;
 
     paramsDigestHashers[1] = Poseidon(2);
     paramsDigestHashers[1].inputs[0] <== paramsDigestChain[1];
-    paramsDigestHashers[1].inputs[1] <== credPublicKeyHashChain[M];
+    paramsDigestHashers[1].inputs[1] <== predicateSchemaTagHashChain[M];
     paramsDigestChain[2] <== paramsDigestHashers[1].out;
 
     paramsDigestHashers[2] = Poseidon(2);
     paramsDigestHashers[2].inputs[0] <== paramsDigestChain[2];
-    paramsDigestHashers[2].inputs[1] <== rangeMinHashChain[M];
+    paramsDigestHashers[2].inputs[1] <== merkleRootHashChain[M];
     paramsDigestChain[3] <== paramsDigestHashers[2].out;
 
     paramsDigestHashers[3] = Poseidon(2);
     paramsDigestHashers[3].inputs[0] <== paramsDigestChain[3];
-    paramsDigestHashers[3].inputs[1] <== rangeMaxHashChain[M];
+    paramsDigestHashers[3].inputs[1] <== credPublicKeyHashChain[M];
     paramsDigestChain[4] <== paramsDigestHashers[3].out;
 
     paramsDigestHashers[4] = Poseidon(2);
     paramsDigestHashers[4].inputs[0] <== paramsDigestChain[4];
-    paramsDigestHashers[4].inputs[1] <== ontologyPolicyIdHashChain[M];
+    paramsDigestHashers[4].inputs[1] <== rangeMinHashChain[M];
     paramsDigestChain[5] <== paramsDigestHashers[4].out;
 
     paramsDigestHashers[5] = Poseidon(2);
     paramsDigestHashers[5].inputs[0] <== paramsDigestChain[5];
-    paramsDigestHashers[5].inputs[1] <== ontologyEpochHashChain[M];
+    paramsDigestHashers[5].inputs[1] <== rangeMaxHashChain[M];
     paramsDigestChain[6] <== paramsDigestHashers[5].out;
 
     paramsDigestHashers[6] = Poseidon(2);
     paramsDigestHashers[6].inputs[0] <== paramsDigestChain[6];
-    paramsDigestHashers[6].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestHashers[6].inputs[1] <== ontologyPolicyIdHashChain[M];
     paramsDigestChain[7] <== paramsDigestHashers[6].out;
 
-    paramsCommitment === paramsDigestChain[7];
+    paramsDigestHashers[7] = Poseidon(2);
+    paramsDigestHashers[7].inputs[0] <== paramsDigestChain[7];
+    paramsDigestHashers[7].inputs[1] <== ontologyEpochHashChain[M];
+    paramsDigestChain[8] <== paramsDigestHashers[7].out;
+
+    paramsDigestHashers[8] = Poseidon(2);
+    paramsDigestHashers[8].inputs[0] <== paramsDigestChain[8];
+    paramsDigestHashers[8].inputs[1] <== policyValidFromEpoch;
+    paramsDigestChain[9] <== paramsDigestHashers[8].out;
+
+    paramsDigestHashers[9] = Poseidon(2);
+    paramsDigestHashers[9].inputs[0] <== paramsDigestChain[9];
+    paramsDigestHashers[9].inputs[1] <== policyValidUntilEpoch;
+    paramsDigestChain[10] <== paramsDigestHashers[9].out;
+
+    paramsDigestHashers[10] = Poseidon(2);
+    paramsDigestHashers[10].inputs[0] <== paramsDigestChain[10];
+    paramsDigestHashers[10].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestChain[11] <== paramsDigestHashers[10].out;
+
+    paramsCommitment === paramsDigestChain[11];
     
     // ───────────────────────────────────────────────────────────────────────
     // 3. EVALUATE POLICY: C(P,(a,p)) = 1
@@ -355,9 +422,23 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component and = AND();
     and.a <== commitmentValid;
     and.b <== policyResult;
+
+    // Policy-wide temporal validity is bound by paramsCommitment.  requestEpoch
+    // is public and checked against the EVM hour bucket by the ACM.
+    policyValidityVerifier = RangeProof(RANGE_BITS);
+    policyValidityVerifier.value <== requestEpoch;
+    policyValidityVerifier.minValue <== policyValidFromEpoch;
+    policyValidityVerifier.maxValue <== policyValidUntilEpoch;
+    policyWindowWellFormed = GreaterEqThan(RANGE_BITS);
+    policyWindowWellFormed.in[0] <== policyValidUntilEpoch;
+    policyWindowWellFormed.in[1] <== policyValidFromEpoch;
+    policyWindowWellFormed.out === 1;
+    finalAnd = AND();
+    finalAnd.a <== and.out;
+    finalAnd.b <== policyValidityVerifier.isValid;
     
     // Final authorization decision
-    isAuthorized <== and.out;
+    isAuthorized <== finalAnd.out;
     
     // Internal signals for type checking
     signal tmp1[M];
