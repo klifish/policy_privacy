@@ -192,43 +192,50 @@ template CredentialSignatureVerifier() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 2b. SCOPED-MEMBERSHIP VERIFIER (DUO US / PS / IS)
+// 2b. SIGNED SCOPED-CREDENTIAL VERIFIER (DUO US / PS / IS)
 // ═══════════════════════════════════════════════════════════════════════════
 
-template ScopedMembershipVerifier(LEVELS) {
+template SignedScopedCredentialVerifier() {
     signal input enabled;
+    signal input schemaTag;
     signal input scopeKind;          // 26=US, 27=PS, 28=IS
     signal input approvedScopeId;
     signal input requesterId;
     signal input validFromEpoch;
     signal input validUntilEpoch;
-    signal input recordVersion;
+    signal input credentialId;
     signal input requestEpoch;
-    signal input pathElements[LEVELS];
-    signal input pathIndices[LEVELS];
-    signal input registryRoot;
+    signal input signature;
+    signal input sigR8x;
+    signal input sigR8y;
+    signal input issuerAx;
+    signal input issuerAy;
+    signal input publicKey;
     signal output isValid;
 
-    // Domain separation prevents affiliation leaves from being interpreted as
-    // ontology terms or credential messages. The leaf is fully recomputed in
-    // circuit rather than supplied by the prover.
-    var SCOPED_MEMBERSHIP_V1 = 2001;
-    component leafDigest = Poseidon(7);
-    leafDigest.inputs[0] <== SCOPED_MEMBERSHIP_V1;
-    leafDigest.inputs[1] <== scopeKind;
-    leafDigest.inputs[2] <== requesterId;
-    leafDigest.inputs[3] <== approvedScopeId;
-    leafDigest.inputs[4] <== validFromEpoch;
-    leafDigest.inputs[5] <== validUntilEpoch;
-    leafDigest.inputs[6] <== recordVersion;
+    var SCOPED_AFFILIATION_CREDENTIAL_V1 = 2002;
+    component schemaMatches = IsEqual();
+    schemaMatches.in[0] <== schemaTag;
+    schemaMatches.in[1] <== SCOPED_AFFILIATION_CREDENTIAL_V1;
 
-    component membership = MerkleProofVerifier(LEVELS);
-    membership.leaf <== leafDigest.out;
-    membership.root <== registryRoot;
-    for (var i = 0; i < LEVELS; i++) {
-        membership.pathElements[i] <== pathElements[i];
-        membership.pathIndices[i] <== pathIndices[i];
-    }
+    // Bind the witness issuer point to the issuer key committed by this
+    // policy slot. A policy therefore decides who may issue each US/PS/IS
+    // credential, rather than trusting a requester-selected signer.
+    component keyDigest = Poseidon(2);
+    keyDigest.inputs[0] <== issuerAx;
+    keyDigest.inputs[1] <== issuerAy;
+    component keyMatches = IsEqual();
+    keyMatches.in[0] <== keyDigest.out;
+    keyMatches.in[1] <== publicKey;
+
+    component credentialDigest = Poseidon(7);
+    credentialDigest.inputs[0] <== SCOPED_AFFILIATION_CREDENTIAL_V1;
+    credentialDigest.inputs[1] <== scopeKind;
+    credentialDigest.inputs[2] <== requesterId;
+    credentialDigest.inputs[3] <== approvedScopeId;
+    credentialDigest.inputs[4] <== validFromEpoch;
+    credentialDigest.inputs[5] <== validUntilEpoch;
+    credentialDigest.inputs[6] <== credentialId;
 
     component isUS = IsEqual();
     component isPS = IsEqual();
@@ -253,13 +260,24 @@ template ScopedMembershipVerifier(LEVELS) {
     endsAfterRequest.in[0] <== requestEpoch;
     endsAfterRequest.in[1] <== validUntilEpoch;
 
+    component eddsa = EdDSAPoseidonVerifier();
+    eddsa.enabled <== enabled;
+    eddsa.Ax <== issuerAx;
+    eddsa.Ay <== issuerAy;
+    eddsa.S <== signature;
+    eddsa.R8x <== sigR8x;
+    eddsa.R8y <== sigR8y;
+    eddsa.M <== credentialDigest.out;
+
     signal temporalValid;
-    signal membershipAndKind;
-    signal enabledMembership;
+    signal keyAndSchema;
+    signal keySchemaKind;
+    signal enabledCredential;
     temporalValid <== startsBeforeRequest.out * endsAfterRequest.out;
-    membershipAndKind <== membership.isValid * supportedKind;
-    enabledMembership <== enabled * membershipAndKind;
-    isValid <== enabledMembership * temporalValid;
+    keyAndSchema <== keyMatches.out * schemaMatches.out;
+    keySchemaKind <== keyAndSchema * supportedKind;
+    enabledCredential <== enabled * keySchemaKind;
+    isValid <== enabledCredential * temporalValid;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -376,7 +394,7 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 // 5. UNIFIED EXTERNAL PREDICATE VERIFIER
 // ═══════════════════════════════════════════════════════════════════════════
 
-template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
+template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked,
     // 4=disabled, 5=scoped membership)
     signal input predicateType;
@@ -395,7 +413,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     signal input purposeCode;
     signal input credValidFromEpoch;
     signal input credValidUntilEpoch;
-    signal input approvalId;
+    signal input credentialId;
     signal input requestEpoch;
 
     // Signature inputs
@@ -416,16 +434,10 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     signal input ontologyPolicyId;                  // Policy ID for binding
     signal input ontologyEpoch;                     // Policy epoch/version
 
-    // Scoped-membership inputs. Scope kind and ID are policy parameters; the
-    // validity/version/path are private affiliation witness values.
+    // Signed scoped-credential inputs. Scope kind and ID are policy parameters;
+    // the credential fields and signature remain private witness values.
     signal input scopeKind;
     signal input approvedScopeId;
-    signal input scopeValidFromEpoch;
-    signal input scopeValidUntilEpoch;
-    signal input scopeRecordVersion;
-    signal input scopePathElements[SCOPE_LEVELS];
-    signal input scopePathIndices[SCOPE_LEVELS];
-    signal input scopeRegistryRoot;
     
     // Output
     signal output isValid;
@@ -466,7 +478,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     signatureVerifier = CredentialSignatureVerifier();
     rangeVerifier = RangeProof(RANGE_BITS);
     ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
-    scopedVerifier = ScopedMembershipVerifier(SCOPE_LEVELS);
+    scopedVerifier = SignedScopedCredentialVerifier();
     
     // Connect merkle verifier
     merkleVerifier.leaf <== merkleLeaf;
@@ -484,7 +496,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     signatureVerifier.purposeCode <== purposeCode;
     signatureVerifier.validFromEpoch <== credValidFromEpoch;
     signatureVerifier.validUntilEpoch <== credValidUntilEpoch;
-    signatureVerifier.approvalId <== approvalId;
+    signatureVerifier.approvalId <== credentialId;
     signatureVerifier.requestEpoch <== requestEpoch;
     signatureVerifier.signature <== credSignature;
     signatureVerifier.sigR8x <== credSigR8x;
@@ -497,21 +509,21 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     // prover-controlled switch.
     signatureVerifier.enabled <== type1Check.out;
 
-    // The scoped root is an explicit public signal and is checked by the ACM
-    // against its current on-chain registry root.
     scopedVerifier.enabled <== type5Check.out;
+    scopedVerifier.schemaTag <== predicateSchemaTag;
     scopedVerifier.scopeKind <== scopeKind;
     scopedVerifier.approvedScopeId <== approvedScopeId;
     scopedVerifier.requesterId <== requesterId;
-    scopedVerifier.validFromEpoch <== scopeValidFromEpoch;
-    scopedVerifier.validUntilEpoch <== scopeValidUntilEpoch;
-    scopedVerifier.recordVersion <== scopeRecordVersion;
+    scopedVerifier.validFromEpoch <== credValidFromEpoch;
+    scopedVerifier.validUntilEpoch <== credValidUntilEpoch;
+    scopedVerifier.credentialId <== credentialId;
     scopedVerifier.requestEpoch <== requestEpoch;
-    scopedVerifier.registryRoot <== scopeRegistryRoot;
-    for (var i = 0; i < SCOPE_LEVELS; i++) {
-        scopedVerifier.pathElements[i] <== scopePathElements[i];
-        scopedVerifier.pathIndices[i] <== scopePathIndices[i];
-    }
+    scopedVerifier.signature <== credSignature;
+    scopedVerifier.sigR8x <== credSigR8x;
+    scopedVerifier.sigR8y <== credSigR8y;
+    scopedVerifier.issuerAx <== credIssuerAx;
+    scopedVerifier.issuerAy <== credIssuerAy;
+    scopedVerifier.publicKey <== credPublicKey;
     
     // Connect range verifier
     rangeVerifier.value <== rangeValue;

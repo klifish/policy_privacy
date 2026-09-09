@@ -137,10 +137,10 @@ router.post('/verify', async (req, res, next) => {
       });
     }
 
-    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 6) {
+    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 5) {
       return res.status(400).json({
         error: 'Invalid proof format',
-        message: 'pubSignals must be an array of 6 elements'
+        message: 'pubSignals must be an array of 5 elements'
       });
     }
 
@@ -184,8 +184,7 @@ router.post('/verify', async (req, res, next) => {
           policyCommitment: formattedProof.pubSignals[1],
           paramsCommitment: formattedProof.pubSignals[2],
           contextHash: formattedProof.pubSignals[3],
-          requestEpoch: formattedProof.pubSignals[4],
-          scopeRegistryRoot: formattedProof.pubSignals[5]
+          requestEpoch: formattedProof.pubSignals[4]
         }
       }
     });

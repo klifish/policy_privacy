@@ -64,20 +64,26 @@ router.post('/register-resource', async (req, res, next) => {
             }
             return actual;
         };
+        const scoped = artifacts.predicates.scopeParameters;
+        const bindScoped = (name, fallback) => {
+            const generated = scoped[name];
+            const supplied = policyParameters[name]
+                ? slots(policyParameters[name], name, fallback)
+                : generated.slice();
+            for (const predicate of artifacts.predicates.slots) {
+                if (predicate.kind === 'scoped' && String(supplied[predicate.slot]) !== String(generated[predicate.slot])) {
+                    throw new Error(`policyParameters.${name}[${predicate.slot}] must match the compiled scoped predicate`);
+                }
+            }
+            return supplied;
+        };
         const v2Params = {
-            predicateTypes: slots(policyParameters.predicateTypes, 'predicateTypes', 4).map((type, slot) => {
-                const generated = artifacts.predicates.slots.find((entry) => entry.slot === slot);
-                return generated && generated.kind === 'scoped' ? 5 : type;
-            }),
-            predicateSchemaTags: slots(policyParameters.predicateSchemaTags, 'predicateSchemaTags', 0),
-            scopeKinds: policyParameters.scopeKinds
-                ? slots(policyParameters.scopeKinds, 'scopeKinds', 0)
-                : artifacts.predicates.scopeParameters.scopeKinds,
-            approvedScopeIds: policyParameters.approvedScopeIds
-                ? slots(policyParameters.approvedScopeIds, 'approvedScopeIds', '0')
-                : artifacts.predicates.scopeParameters.approvedScopeIds,
+            predicateTypes: bindScoped('predicateTypes', 4),
+            predicateSchemaTags: bindScoped('predicateSchemaTags', 0),
+            scopeKinds: bindScoped('scopeKinds', 0),
+            approvedScopeIds: bindScoped('approvedScopeIds', '0'),
             merkleRoots: slots(policyParameters.merkleRoots, 'merkleRoots', '0'),
-            credPublicKeys: slots(policyParameters.credPublicKeys, 'credPublicKeys', '0'),
+            credPublicKeys: bindScoped('credPublicKeys', '0'),
             rangeMin: slots(policyParameters.rangeMin, 'rangeMin', '0'),
             rangeMax: slots(policyParameters.rangeMax, 'rangeMax', '0'),
             ontologyPolicyIds: slots(policyParameters.ontologyPolicyIds, 'ontologyPolicyIds', '0'),

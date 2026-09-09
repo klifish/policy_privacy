@@ -280,8 +280,9 @@ describe('SDK - Prover Module', function() {
 
       const requiredFields = [
         'policy', 'requesterAttrs', 'predicateTypes',
+        'predicateSchemaTags', 'scopeKinds', 'approvedScopeIds',
         'merkleLeaves', 'merklePathElements', 'merklePathIndices',
-        'credMessages', 'credSignatures', 'credPublicKeys',
+        'credSignatures', 'credPublicKeys', 'credentialIds', 'holderSecret',
         'rangeValues', 'rangeMin', 'rangeMax',
         'ontologyCodes', 'ontologyPolicyIds', 'ontologyEpochs',
         'randomizer', 'policyCommitment', 'paramsCommitment',

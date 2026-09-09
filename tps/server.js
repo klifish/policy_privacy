@@ -25,7 +25,7 @@ const express = require('express');
 const crypto = require('crypto');
 const store = require('./store');
 const { generateProof } = require('./proofGenerator');
-const { verifyGatewayAssertion } = require('../lib/gateway_assertion');
+const { calculateRequesterId } = require('../lib/prover');
 const {
     getAlreadyKnownTransactionHash,
     retryRpc,
@@ -107,8 +107,7 @@ router.post('/prove', async (req, res) => {
             nonce,
             policyCommitment,
             evidence,
-            submitOnChain = false,
-            gatewayAssertion
+            submitOnChain = false
         } = req.body;
 
         if (!policyId || !resourceId || !nonce || !policyCommitment) {
@@ -121,34 +120,6 @@ router.post('/prove', async (req, res) => {
                 error: 'evidence.attributes is required'
             });
         }
-        // Submitted authorizations must carry a gateway-authenticated identity.
-        // The TPS overwrites any browser-supplied requesterId.
-        if (submitOnChain) {
-            let asserted;
-            try {
-                asserted = verifyGatewayAssertion(gatewayAssertion, {
-                    secret: req.app.locals.gatewayTpsSharedSecret || process.env.GATEWAY_TPS_SHARED_SECRET
-                });
-            } catch (err) {
-                return res.status(401).json({ error: err.message });
-            }
-            evidence.requesterId = asserted.requesterId;
-        }
-        // The requester pseudonym is bound into the proof statement, so it is
-        // required rather than optional audit metadata.
-        if (evidence.requesterId === undefined || evidence.requesterId === null
-            || evidence.requesterId === '') {
-            return res.status(400).json({
-                error: 'evidence.requesterId is required (bound into the proof statement)'
-            });
-        }
-        if (evidence.purposeCode === undefined || evidence.purposeCode === null
-            || evidence.purposeCode === '') {
-            return res.status(400).json({
-                error: 'evidence.purposeCode is required for V2 access-time consent'
-            });
-        }
-
         // V2 uses a strict EVM-hour bucket.  The same value is public in the
         // proof statement and is checked by the ACM at submission time.
         let requestEpoch = Math.floor(Date.now() / 3_600_000);
@@ -165,21 +136,32 @@ router.post('/prove', async (req, res) => {
             });
         }
 
-        // Scoped memberships are bound to the live on-chain root. Never take
-        // this value from requester evidence: doing so would permit stale or
-        // attacker-selected affiliation state. Ontology-only policies use the
-        // circuit's zero-root sentinel and need no registry read.
-        const usesScopedMembership = material.predicateTypes.some((type) => Number(type) === 5);
-        let scopeRegistryRoot = '0';
-        if (usesScopedMembership) {
-            const rootReader = req.app.locals.tpsContract;
-            if (!rootReader) {
-                return res.status(503).json({ error: 'Scoped registry root reader is not configured' });
+        // Purpose is only part of the type-1 institutional-approval message.
+        // A scoped credential is bound to its holder, scope and epoch instead.
+        const usesInstitutionalApproval = material.predicateTypes.some((type) => Number(type) === 1);
+        if (usesInstitutionalApproval && (evidence.purposeCode === undefined || evidence.purposeCode === null
+            || evidence.purposeCode === '')) {
+            return res.status(400).json({
+                error: 'evidence.purposeCode is required for institutional approval'
+            });
+        }
+
+        // Scoped credentials are holder-bound: never trust a requesterId sent
+        // alongside the credential. The trusted TPS derives it from the secret
+        // that the credential issuer signed into the claim.
+        const usesScopedCredential = material.predicateTypes.some((type) => Number(type) === 5);
+        if (usesScopedCredential) {
+            if (evidence.holderSecret === undefined || evidence.holderSecret === null || evidence.holderSecret === '') {
+                return res.status(400).json({ error: 'evidence.holderSecret is required for signed scoped credentials' });
             }
-            scopeRegistryRoot = (await rootReader.scopeRegistryRoot()).toString();
-            if (scopeRegistryRoot === '0') {
-                return res.status(503).json({ error: 'Scoped registry root has not been published' });
+            try {
+                evidence.requesterId = await calculateRequesterId(evidence.holderSecret);
+            } catch (err) {
+                return res.status(400).json({ error: err.message });
             }
+        }
+        if (evidence.requesterId === undefined || evidence.requesterId === null || evidence.requesterId === '') {
+            return res.status(400).json({ error: 'evidence.requesterId is required (bound into the proof statement)' });
         }
 
         // Create session record for audit trail
@@ -190,7 +172,7 @@ router.post('/prove', async (req, res) => {
             nonce,
             requesterId: evidence.requesterId,
             purposeCode: evidence.purposeCode,
-            approvalIds: evidence.approvalIds || [],
+            credentialIds: evidence.credentialIds || [],
             requestEpoch,
             status: 'proving'
         });
@@ -207,8 +189,7 @@ router.post('/prove', async (req, res) => {
                 idReq: evidence.requesterId,
                 idRes: resourceId,
                 nonce,
-                requestEpoch,
-                scopeRegistryRoot
+                requestEpoch
             }
         );
         let { pA, pB, pC, pubSignals, timings: proofTimings } = proofResult;
@@ -246,8 +227,7 @@ router.post('/prove', async (req, res) => {
                     idReq: evidence.requesterId,
                     idRes: resourceId,
                     nonce,
-                    requestEpoch,
-                    scopeRegistryRoot: (await tpsContract.scopeRegistryRoot()).toString()
+                    requestEpoch
                 });
                 ({ pA, pB, pC, pubSignals, timings: proofTimings } = proofResult);
                 store.updateSession(sessionId, { requestEpoch, status: 'reproved' });

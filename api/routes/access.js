@@ -37,7 +37,6 @@ router.get('/status/:requestId', async (req, res, next) => {
             requesterId: record.requesterId.toString(),
             resourceId: record.resourceId.toString(),
             contextHash: record.contextHash.toString(),
-            scopeRegistryRoot: record.scopeRegistryRoot.toString(),
             policyId: record.policyId.toString(),
             timestamp: new Date(Number(record.timestamp) * 1000).toISOString(),
             isProcessed: record.isProcessed

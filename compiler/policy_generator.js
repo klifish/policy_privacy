@@ -35,6 +35,7 @@ const SCOPED_DUO_TERMS = Object.freeze({
   PS: { code: 'PS', duoId: 'DUO0000027', scopeKind: 27 },
   IS: { code: 'IS', duoId: 'DUO0000028', scopeKind: 28 }
 });
+const SCOPED_AFFILIATION_CREDENTIAL_V1 = 2002;
 
 // Flexible identifier mapping for DUO attributes.
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
@@ -236,6 +237,17 @@ function buildPredicateContext(predicates = []) {
       if (raw.scopeId === undefined || raw.scopeId === null || raw.scopeId === '') {
         throw new Error(`Scoped predicate ${scopedTerm} requires scopeId`);
       }
+      const issuerKeyCommitment = raw.issuerKeyCommitment ?? raw.issuerPublicKeyCommitment;
+      if (issuerKeyCommitment === undefined || issuerKeyCommitment === null || issuerKeyCommitment === '') {
+        throw new Error(`Scoped predicate ${scopedTerm} requires issuerKeyCommitment`);
+      }
+      try {
+        if (BigInt(raw.scopeId) <= 0n || BigInt(issuerKeyCommitment) <= 0n) {
+          throw new Error('non-positive');
+        }
+      } catch (_) {
+        throw new Error(`Scoped predicate ${scopedTerm} requires non-zero numeric scopeId and issuerKeyCommitment`);
+      }
       if (raw.namespace ?? raw.ns ?? raw.ontology) {
         throw new Error(`Scoped predicate ${scopedTerm} must not declare an ontology namespace`);
       }
@@ -248,6 +260,7 @@ function buildPredicateContext(predicates = []) {
         kind: 'scoped',
         scopeKind: SCOPED_DUO_TERMS[scopedTerm].scopeKind,
         scopeId: raw.scopeId,
+        issuerKeyCommitment: String(issuerKeyCommitment),
         description: raw.description ?? null
       });
       scopeToSlot.set(scopedTerm, raw.slot);
@@ -287,7 +300,12 @@ function buildPredicateContext(predicates = []) {
     scopeParameters: slots.map((slot) => {
       const predicate = bySlot.get(slot);
       return predicate.kind === 'scoped'
-        ? { slot, scopeKind: predicate.scopeKind, approvedScopeId: String(predicate.scopeId) }
+        ? {
+          slot,
+          scopeKind: predicate.scopeKind,
+          approvedScopeId: String(predicate.scopeId),
+          issuerKeyCommitment: predicate.issuerKeyCommitment
+        }
         : null;
     }).filter(Boolean)
   };
@@ -828,6 +846,14 @@ async function generatePolicyArtifacts(config, options = {}) {
       namespaceToSlot: Object.fromEntries(predicateCtx.namespaceToSlot.entries()),
       scopeToSlot: Object.fromEntries(predicateCtx.scopeToSlot.entries()),
       scopeParameters: {
+        predicateTypes: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'scoped' ? 5 : 4;
+        }),
+        predicateSchemaTags: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'scoped' ? SCOPED_AFFILIATION_CREDENTIAL_V1 : 0;
+        }),
         scopeKinds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           return p && p.kind === 'scoped' ? p.scopeKind : 0;
@@ -835,6 +861,10 @@ async function generatePolicyArtifacts(config, options = {}) {
         approvedScopeIds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           return p && p.kind === 'scoped' ? String(p.scopeId) : '0';
+        }),
+        credPublicKeys: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'scoped' ? p.issuerKeyCommitment : '0';
         })
       }
     },

@@ -28,7 +28,7 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
     - RANGE_BITS: Bit width for range/threshold proofs
 */
 
-template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
+template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // ═══════════════════════════════════════════════════════════════════════
     // PRIVATE WITNESS INPUTS (w = (P, a, p, r))
     // ═══════════════════════════════════════════════════════════════════════
@@ -43,10 +43,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
-    var DEFAULT_SCOPE_VALUE = 0;
     // V2 parameter layout includes predicate type/schema and temporal fields.
     // A distinct domain prevents accidental V1/V2 parameter-commitment reuse.
-    var PARAM_DOMAIN_SEPARATOR = 3;
+    var PARAM_DOMAIN_SEPARATOR = 4;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -80,11 +79,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     
     // Ontology-linked terms inputs (for predicates that use them)
     signal input ontologyCodes[M];                   // ICD codes or other ontology terms
-    signal input scopeValidFromEpochs[M];
-    signal input scopeValidUntilEpochs[M];
-    signal input scopeRecordVersions[M];
-    signal input scopePathElements[M][SCOPE_LEVELS];
-    signal input scopePathIndices[M][SCOPE_LEVELS];
 
     // Private request-purpose and approval fields.  purposeCode never appears
     // in calldata or the public statement; it is bound only inside a typed
@@ -92,7 +86,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     signal input purposeCode;
     signal input credValidFromEpochs[M];
     signal input credValidUntilEpochs[M];
-    signal input approvalIds[M];
+    signal input credentialIds[M];
+    // Scoped credentials bind idReq to a secret-held pseudonym. It is zero for
+    // policies without type-5 slots and never appears in the public statement.
+    signal input holderSecret;
     
     // Commitment randomizer r
     signal input randomizer;
@@ -122,7 +119,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     // Current EVM hour bucket.  The ACM checks it against block.timestamp;
     // the circuit uses it for policy and approval validity checks.
     signal input requestEpoch;
-    signal input scopeRegistryRoot;
     
     // Public parameters pp for external predicate verification
     signal input merkleRoots[M];                        // Merkle tree roots
@@ -187,7 +183,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     component policyValidityVerifier;
     component policyWindowWellFormed;
     component noScopedPredicate;
-    component zeroScopeRegistryRoot;
+    component holderIdHasher;
+    component holderIdMatches;
+    component holderSecretIsZero;
     
     // ───────────────────────────────────────────────────────────────────────
     // 1. VERIFY POLICY COMMITMENT: Com(P;r) = h
@@ -224,7 +222,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
     scopedFlagSum[0] <== 0;
 
     for (var i = 0; i < M; i++) {
-        predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS);
+        predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS);
         
         // Connect predicate type
         predicateVerifiers[i].predicateType <== predicateTypes[i];
@@ -235,18 +233,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
         predicateVerifiers[i].purposeCode <== purposeCode;
         predicateVerifiers[i].credValidFromEpoch <== credValidFromEpochs[i];
         predicateVerifiers[i].credValidUntilEpoch <== credValidUntilEpochs[i];
-        predicateVerifiers[i].approvalId <== approvalIds[i];
+        predicateVerifiers[i].credentialId <== credentialIds[i];
         predicateVerifiers[i].requestEpoch <== requestEpoch;
         predicateVerifiers[i].scopeKind <== scopeKinds[i];
         predicateVerifiers[i].approvedScopeId <== approvedScopeIds[i];
-        predicateVerifiers[i].scopeValidFromEpoch <== scopeValidFromEpochs[i];
-        predicateVerifiers[i].scopeValidUntilEpoch <== scopeValidUntilEpochs[i];
-        predicateVerifiers[i].scopeRecordVersion <== scopeRecordVersions[i];
-        predicateVerifiers[i].scopeRegistryRoot <== scopeRegistryRoot;
-        for (var j = 0; j < SCOPE_LEVELS; j++) {
-            predicateVerifiers[i].scopePathElements[j] <== scopePathElements[i][j];
-            predicateVerifiers[i].scopePathIndices[j] <== scopePathIndices[i][j];
-        }
         disabledCheckers[i] = IsEqual();
         disabledCheckers[i].in[0] <== predicateTypes[i];
         disabledCheckers[i].in[1] <== 4;
@@ -307,22 +297,14 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
         predicateSchemaTags[i] * disabledFlags[i] === 0;
         credValidFromEpochs[i] * disabledFlags[i] === 0;
         credValidUntilEpochs[i] * disabledFlags[i] === 0;
-        approvalIds[i] * disabledFlags[i] === 0;
+        credentialIds[i] * disabledFlags[i] === 0;
 
         predicateValues[i] * disabledFlags[i] === 0;
 
         // Scope values are canonical zero padding unless the slot selects the
-        // scoped-membership verifier. This prevents a policy configuration
-        // from smuggling unrelated scope parameters through other predicates.
+        // signed scoped-credential verifier.
         scopeKinds[i] * (1 - scopedFlags[i]) === 0;
         approvedScopeIds[i] * (1 - scopedFlags[i]) === 0;
-        scopeValidFromEpochs[i] * (1 - scopedFlags[i]) === 0;
-        scopeValidUntilEpochs[i] * (1 - scopedFlags[i]) === 0;
-        scopeRecordVersions[i] * (1 - scopedFlags[i]) === 0;
-        for (var j = 0; j < SCOPE_LEVELS; j++) {
-            scopePathElements[i][j] * (1 - scopedFlags[i]) === 0;
-            scopePathIndices[i][j] * (1 - scopedFlags[i]) === 0;
-        }
 
         // Hash chains for parameter commitment
         predicateTypeHashers[i] = Poseidon(2);
@@ -445,18 +427,22 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVE
 
     paramsCommitment === paramsDigestChain[13];
 
-    // `scopeRegistryRoot` is public so the ACM can compare it with the live
-    // registry. It is exactly zero for ontology-only policies, preventing an
-    // unrelated registry update from invalidating their proofs; any scoped
-    // predicate requires a non-zero root.
+    // A type-5 credential identifies its holder as Poseidon(holderSecret).
+    // Non-scoped policies cannot smuggle an unused secret into the witness.
     noScopedPredicate = IsEqual();
     noScopedPredicate.in[0] <== scopedFlagSum[M];
     noScopedPredicate.in[1] <== 0;
-    scopeRegistryRoot * noScopedPredicate.out === 0;
-    zeroScopeRegistryRoot = IsEqual();
-    zeroScopeRegistryRoot.in[0] <== scopeRegistryRoot;
-    zeroScopeRegistryRoot.in[1] <== 0;
-    zeroScopeRegistryRoot.out * (1 - noScopedPredicate.out) === 0;
+    holderSecret * noScopedPredicate.out === 0;
+    holderIdHasher = Poseidon(1);
+    holderIdHasher.inputs[0] <== holderSecret;
+    holderIdMatches = IsEqual();
+    holderIdMatches.in[0] <== idReq;
+    holderIdMatches.in[1] <== holderIdHasher.out;
+    (1 - noScopedPredicate.out) * (1 - holderIdMatches.out) === 0;
+    holderSecretIsZero = IsEqual();
+    holderSecretIsZero.in[0] <== holderSecret;
+    holderSecretIsZero.in[1] <== 0;
+    holderSecretIsZero.out * (1 - noScopedPredicate.out) === 0;
     
     // ───────────────────────────────────────────────────────────────────────
     // 3. EVALUATE POLICY: C(P,(a,p)) = 1

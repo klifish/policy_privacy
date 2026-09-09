@@ -33,7 +33,7 @@ const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
 // circuits/policy_privacy_main_instance.circom
-const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8, SCOPE_LEVELS: 20 };
+const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
 
 /**
  * Build the full circuit witness from policy material + requester evidence.
@@ -58,7 +58,6 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8, SCOPE_LEVELS: 2
  *     merkleLeaves  : string[]   (optional)
  *     merklePathElements: string[][] (optional)
  *     merklePathIndices : number[][] (optional)
- *     credMessages  : string[]   (optional)
  *     credSignatures: string[]   (optional)  EdDSA scalar S
  *     credSigR8x    : string[]   (optional)  EdDSA point R8.x
  *     credSigR8y    : string[]   (optional)  EdDSA point R8.y
@@ -74,7 +73,7 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8, SCOPE_LEVELS: 2
  * @returns {object}  snarkjs circuit input ready for fullProve
  */
 function buildWitness(policyMaterial, evidence, publicInputs) {
-    const { DEPTH, N, M, MERKLE_LEVELS, SCOPE_LEVELS } = CIRCUIT;
+    const { DEPTH, N, M, MERKLE_LEVELS } = CIRCUIT;
 
     // Validate the authorization context before any String() coercion below.
     // String(undefined) yields the string "undefined", which survives the
@@ -142,16 +141,14 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const purposeCode = evidence.purposeCode ?? 0;
     const credValidFromEpochs = (evidence.credValidFromEpochs || zeroStr(M)).slice(0, M);
     const credValidUntilEpochs = (evidence.credValidUntilEpochs || zeroStr(M)).slice(0, M);
-    const approvalIds = (evidence.approvalIds || zeroStr(M)).slice(0, M);
-    const scopeValidFromEpochs = (evidence.scopeValidFromEpochs || zeroStr(M)).slice(0, M);
-    const scopeValidUntilEpochs = (evidence.scopeValidUntilEpochs || zeroStr(M)).slice(0, M);
-    const scopeRecordVersions = (evidence.scopeRecordVersions || zeroStr(M)).slice(0, M);
-    const scopePathElements = (evidence.scopePathElements || zeroMat(M, SCOPE_LEVELS)).slice(0, M);
-    const scopePathIndices = (evidence.scopePathIndices || zeroMatNum(M, SCOPE_LEVELS)).slice(0, M);
+    const credentialIds = (evidence.credentialIds || zeroStr(M)).slice(0, M);
+    const holderSecret = evidence.holderSecret ?? 0;
 
-    if (publicInputs.requestEpoch === undefined || publicInputs.requestEpoch === null) {
-        throw new Error('buildWitness requires publicInputs.requestEpoch');
-    }
+    // HTTP callers pass the chain-hour bucket explicitly. Keep the direct TPS
+    // library ergonomic by deriving the same bucket when it is omitted.
+    const requestEpoch = publicInputs.requestEpoch === undefined || publicInputs.requestEpoch === null
+        ? Math.floor(Date.now() / 3_600_000)
+        : publicInputs.requestEpoch;
 
     const input = {
         // Private witness
@@ -174,12 +171,8 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         purposeCode: String(purposeCode),
         credValidFromEpochs,
         credValidUntilEpochs,
-        approvalIds,
-        scopeValidFromEpochs,
-        scopeValidUntilEpochs,
-        scopeRecordVersions,
-        scopePathElements,
-        scopePathIndices,
+        credentialIds,
+        holderSecret: String(holderSecret),
         randomizer: policyMaterial.randomizer.toString(),
         numOperations: policyMaterial.numOperations || policy.filter(t => t !== 0).length,
 
@@ -199,8 +192,7 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         ontologyEpochs: exactPolicyArray(policyMaterial.ontologyEpochs, 'ontologyEpochs'),
         policyValidFromEpoch: String(policyMaterial.policyValidFromEpoch),
         policyValidUntilEpoch: String(policyMaterial.policyValidUntilEpoch),
-        requestEpoch: String(publicInputs.requestEpoch),
-        scopeRegistryRoot: String(publicInputs.scopeRegistryRoot ?? 0)
+        requestEpoch: String(requestEpoch)
     };
 
     return input;

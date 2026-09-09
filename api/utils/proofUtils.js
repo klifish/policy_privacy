@@ -39,8 +39,8 @@ class ProofUtils {
     }
 
     // Validate pubSignals
-    if (!Array.isArray(pubSignals) || pubSignals.length !== 6) {
-      throw new Error('pubSignals must be an array of 6 elements');
+    if (!Array.isArray(pubSignals) || pubSignals.length !== 5) {
+      throw new Error('pubSignals must be an array of 5 elements');
     }
 
     // Validate that all elements are valid numbers
@@ -76,7 +76,7 @@ class ProofUtils {
    * @returns {Object} Extracted information
    */
   static extractPublicSignals(pubSignals) {
-    if (!Array.isArray(pubSignals) || pubSignals.length !== 6) {
+    if (!Array.isArray(pubSignals) || pubSignals.length !== 5) {
       throw new Error('Invalid public signals format');
     }
 
@@ -85,8 +85,7 @@ class ProofUtils {
       policyCommitment: BigInt(pubSignals[1]).toString(),
       paramsCommitment: BigInt(pubSignals[2]).toString(),
       contextHash: BigInt(pubSignals[3]).toString(),
-      requestEpoch: BigInt(pubSignals[4]).toString(),
-      scopeRegistryRoot: BigInt(pubSignals[5]).toString()
+      requestEpoch: BigInt(pubSignals[4]).toString()
     };
   }
 

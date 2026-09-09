@@ -15,11 +15,6 @@ const PORT = process.env.TPS_PORT || 3001;
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use('/tps', tpsRouter);
-// Must match the secret used by the gateway process. Submission requests are
-// rejected when it is absent, rather than accepting a caller-selected identity.
-if (process.env.GATEWAY_TPS_SHARED_SECRET) {
-    app.locals.gatewayTpsSharedSecret = process.env.GATEWAY_TPS_SHARED_SECRET;
-}
 
 // ── Optional: TPS chain signer for on-chain proof submission (Stage 5) ────────
 // Set TPS_PRIVATE_KEY + CONTRACT_ADDRESS (or rely on deployment.json fallback)

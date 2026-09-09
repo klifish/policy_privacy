@@ -28,14 +28,14 @@ describe('V2 typed institutional approval', function () {
     });
     const input = {
       policy, requesterAttrs: [0, 0, 0, 0, 0, 0], predicateTypes: [1, 4, 4, 4, 4],
-      predicateSchemaTags: [1001, 0, 0, 0, 0], merkleLeaves: [0, 0, 0, 0, 0],
+      predicateSchemaTags: [1001, 0, 0, 0, 0], scopeKinds: [0, 0, 0, 0, 0], approvedScopeIds: [0, 0, 0, 0, 0], merkleLeaves: [0, 0, 0, 0, 0],
       merklePathElements: Array.from({ length: 5 }, () => Array(8).fill(0)),
       merklePathIndices: Array.from({ length: 5 }, () => Array(8).fill(0)),
       credSignatures: [signature.S, 0, 0, 0, 0], credSigR8x: [signature.R8x, 0, 0, 0, 0],
       credSigR8y: [signature.R8y, 0, 0, 0, 0], credIssuerAx: [issuer.Ax, 0, 0, 0, 0],
       credIssuerAy: [issuer.Ay, 0, 0, 0, 0], rangeValues: [0, 0, 0, 0, 0], ontologyCodes: [0, 0, 0, 0, 0],
       purposeCode, credValidFromEpochs: [requestEpoch - 1n, 0, 0, 0, 0],
-      credValidUntilEpochs: [requestEpoch + 1n, 0, 0, 0, 0], approvalIds: [approvalId, 0, 0, 0, 0],
+      credValidUntilEpochs: [requestEpoch + 1n, 0, 0, 0, 0], credentialIds: [approvalId, 0, 0, 0, 0], holderSecret: 0,
       randomizer: 123n, numOperations: 1, idReq, idRes, nonce, policyCommitment, paramsCommitment,
       contextHash: await calculateContextHash(idReq, idRes, nonce), requestEpoch,
       merkleRoots: [0, 0, 0, 0, 0], credPublicKeys: [issuer.committed, 0, 0, 0, 0],
