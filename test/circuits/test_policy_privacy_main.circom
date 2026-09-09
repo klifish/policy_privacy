@@ -16,4 +16,4 @@ include "../../circuits/policy_privacy_main.circom";
 
 component main { 
     public [policyCommitment, merkleRoots, credPublicKeys, rangeMin, rangeMax, ontologyPolicyIds, ontologyEpochs, numOperations]
-} = PolicyPrivacyMain(3, 2, 10, 3, 8, 32);
+} = PolicyPrivacyMain(3, 2, 10, 3, 8, 32, 20);

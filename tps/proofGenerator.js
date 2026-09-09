@@ -33,7 +33,7 @@ const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
 // circuits/policy_privacy_main_instance.circom
-const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
+const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8, SCOPE_LEVELS: 20 };
 
 /**
  * Build the full circuit witness from policy material + requester evidence.
@@ -74,7 +74,7 @@ const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
  * @returns {object}  snarkjs circuit input ready for fullProve
  */
 function buildWitness(policyMaterial, evidence, publicInputs) {
-    const { DEPTH, N, M, MERKLE_LEVELS } = CIRCUIT;
+    const { DEPTH, N, M, MERKLE_LEVELS, SCOPE_LEVELS } = CIRCUIT;
 
     // Validate the authorization context before any String() coercion below.
     // String(undefined) yields the string "undefined", which survives the
@@ -123,6 +123,10 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     // Allowing evidence to select a verifier would permit type substitution.
     const predicateTypes = exactPolicyArray(policyMaterial.predicateTypes, 'predicateTypes');
     const predicateSchemaTags = exactPolicyArray(policyMaterial.predicateSchemaTags, 'predicateSchemaTags');
+    const scopeKinds = Array.isArray(policyMaterial.scopeKinds)
+        ? exactPolicyArray(policyMaterial.scopeKinds, 'scopeKinds') : zero(M);
+    const approvedScopeIds = Array.isArray(policyMaterial.approvedScopeIds)
+        ? exactPolicyArray(policyMaterial.approvedScopeIds, 'approvedScopeIds') : zeroStr(M);
     const merkleLeaves = (evidence.merkleLeaves || zeroStr(M)).slice(0, M);
     const merklePathElements = (evidence.merklePathElements || zeroMat(M, MERKLE_LEVELS)).slice(0, M);
     const merklePathIndices = (evidence.merklePathIndices || zeroMatNum(M, MERKLE_LEVELS)).slice(0, M);
@@ -139,6 +143,11 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const credValidFromEpochs = (evidence.credValidFromEpochs || zeroStr(M)).slice(0, M);
     const credValidUntilEpochs = (evidence.credValidUntilEpochs || zeroStr(M)).slice(0, M);
     const approvalIds = (evidence.approvalIds || zeroStr(M)).slice(0, M);
+    const scopeValidFromEpochs = (evidence.scopeValidFromEpochs || zeroStr(M)).slice(0, M);
+    const scopeValidUntilEpochs = (evidence.scopeValidUntilEpochs || zeroStr(M)).slice(0, M);
+    const scopeRecordVersions = (evidence.scopeRecordVersions || zeroStr(M)).slice(0, M);
+    const scopePathElements = (evidence.scopePathElements || zeroMat(M, SCOPE_LEVELS)).slice(0, M);
+    const scopePathIndices = (evidence.scopePathIndices || zeroMatNum(M, SCOPE_LEVELS)).slice(0, M);
 
     if (publicInputs.requestEpoch === undefined || publicInputs.requestEpoch === null) {
         throw new Error('buildWitness requires publicInputs.requestEpoch');
@@ -150,6 +159,8 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         requesterAttrs,
         predicateTypes,
         predicateSchemaTags,
+        scopeKinds,
+        approvedScopeIds,
         merkleLeaves,
         merklePathElements,
         merklePathIndices,
@@ -164,6 +175,11 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         credValidFromEpochs,
         credValidUntilEpochs,
         approvalIds,
+        scopeValidFromEpochs,
+        scopeValidUntilEpochs,
+        scopeRecordVersions,
+        scopePathElements,
+        scopePathIndices,
         randomizer: policyMaterial.randomizer.toString(),
         numOperations: policyMaterial.numOperations || policy.filter(t => t !== 0).length,
 
@@ -183,7 +199,8 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         ontologyEpochs: exactPolicyArray(policyMaterial.ontologyEpochs, 'ontologyEpochs'),
         policyValidFromEpoch: String(policyMaterial.policyValidFromEpoch),
         policyValidUntilEpoch: String(policyMaterial.policyValidUntilEpoch),
-        requestEpoch: String(publicInputs.requestEpoch)
+        requestEpoch: String(publicInputs.requestEpoch),
+        scopeRegistryRoot: String(publicInputs.scopeRegistryRoot ?? 0)
     };
 
     return input;
@@ -224,6 +241,8 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
         rangeMax: witness.rangeMax,
         ontologyPolicyIds: witness.ontologyPolicyIds,
         ontologyEpochs: witness.ontologyEpochs,
+        scopeKinds: witness.scopeKinds,
+        approvedScopeIds: witness.approvedScopeIds,
         policyValidFromEpoch: witness.policyValidFromEpoch,
         policyValidUntilEpoch: witness.policyValidUntilEpoch
     });

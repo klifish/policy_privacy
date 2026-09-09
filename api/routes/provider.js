@@ -34,7 +34,7 @@ const router = express.Router();
  */
 router.post('/register-resource', async (req, res, next) => {
     try {
-        const { providerAddress, policy, metadataURI = '', useGasPad = true, policyParameters = {} } = req.body;
+        const { providerAddress, policy, predicates, metadataURI = '', useGasPad = true, policyParameters = {} } = req.body;
 
         if (!providerAddress || !ethers.isAddress(providerAddress)) {
             return res.status(400).json({ error: 'Valid providerAddress is required' });
@@ -49,7 +49,7 @@ router.post('/register-resource', async (req, res, next) => {
         // slot for DS (the canonical ontology-linked attribute at slot 0).
         const artifacts = await generatePolicyArtifacts({
             logic: policy,
-            predicates: [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: null }]
+            predicates: predicates || [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: null }]
         });
         // artifacts = { tokens, policy, randomizer (hex), policyCommitment (hex), numOperations, ... }
 
@@ -65,8 +65,17 @@ router.post('/register-resource', async (req, res, next) => {
             return actual;
         };
         const v2Params = {
-            predicateTypes: slots(policyParameters.predicateTypes, 'predicateTypes', 4),
+            predicateTypes: slots(policyParameters.predicateTypes, 'predicateTypes', 4).map((type, slot) => {
+                const generated = artifacts.predicates.slots.find((entry) => entry.slot === slot);
+                return generated && generated.kind === 'scoped' ? 5 : type;
+            }),
             predicateSchemaTags: slots(policyParameters.predicateSchemaTags, 'predicateSchemaTags', 0),
+            scopeKinds: policyParameters.scopeKinds
+                ? slots(policyParameters.scopeKinds, 'scopeKinds', 0)
+                : artifacts.predicates.scopeParameters.scopeKinds,
+            approvedScopeIds: policyParameters.approvedScopeIds
+                ? slots(policyParameters.approvedScopeIds, 'approvedScopeIds', '0')
+                : artifacts.predicates.scopeParameters.approvedScopeIds,
             merkleRoots: slots(policyParameters.merkleRoots, 'merkleRoots', '0'),
             credPublicKeys: slots(policyParameters.credPublicKeys, 'credPublicKeys', '0'),
             rangeMin: slots(policyParameters.rangeMin, 'rangeMin', '0'),

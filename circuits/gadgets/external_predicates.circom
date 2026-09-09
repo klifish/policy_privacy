@@ -53,6 +53,10 @@ template MerkleProofVerifier(LEVELS) {
     
     // Verify Merkle path
     for (var i = 0; i < LEVELS; i++) {
+        // Mux1 does not itself make the selector Boolean. Without this
+        // constraint a malicious field element could select a linear mixture
+        // rather than a left/right Merkle branch.
+        pathIndices[i] * (pathIndices[i] - 1) === 0;
         // Select left input: if pathIndices[i] == 0, use current hash; else use path element
         leftSelectors[i] = Mux1();
         leftSelectors[i].c[0] <== computedHash[i];      // if pathIndices[i] == 0
@@ -188,6 +192,77 @@ template CredentialSignatureVerifier() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 2b. SCOPED-MEMBERSHIP VERIFIER (DUO US / PS / IS)
+// ═══════════════════════════════════════════════════════════════════════════
+
+template ScopedMembershipVerifier(LEVELS) {
+    signal input enabled;
+    signal input scopeKind;          // 26=US, 27=PS, 28=IS
+    signal input approvedScopeId;
+    signal input requesterId;
+    signal input validFromEpoch;
+    signal input validUntilEpoch;
+    signal input recordVersion;
+    signal input requestEpoch;
+    signal input pathElements[LEVELS];
+    signal input pathIndices[LEVELS];
+    signal input registryRoot;
+    signal output isValid;
+
+    // Domain separation prevents affiliation leaves from being interpreted as
+    // ontology terms or credential messages. The leaf is fully recomputed in
+    // circuit rather than supplied by the prover.
+    var SCOPED_MEMBERSHIP_V1 = 2001;
+    component leafDigest = Poseidon(7);
+    leafDigest.inputs[0] <== SCOPED_MEMBERSHIP_V1;
+    leafDigest.inputs[1] <== scopeKind;
+    leafDigest.inputs[2] <== requesterId;
+    leafDigest.inputs[3] <== approvedScopeId;
+    leafDigest.inputs[4] <== validFromEpoch;
+    leafDigest.inputs[5] <== validUntilEpoch;
+    leafDigest.inputs[6] <== recordVersion;
+
+    component membership = MerkleProofVerifier(LEVELS);
+    membership.leaf <== leafDigest.out;
+    membership.root <== registryRoot;
+    for (var i = 0; i < LEVELS; i++) {
+        membership.pathElements[i] <== pathElements[i];
+        membership.pathIndices[i] <== pathIndices[i];
+    }
+
+    component isUS = IsEqual();
+    component isPS = IsEqual();
+    component isIS = IsEqual();
+    isUS.in[0] <== scopeKind;
+    isUS.in[1] <== 26;
+    isPS.in[0] <== scopeKind;
+    isPS.in[1] <== 27;
+    isIS.in[0] <== scopeKind;
+    isIS.in[1] <== 28;
+    // DUO:0000026 denotes a particular approved user, rather than membership
+    // in a named group. Project and institution scopes intentionally do not
+    // impose this equality.
+    (requesterId - approvedScopeId) * isUS.out === 0;
+    signal supportedKind;
+    supportedKind <== isUS.out + isPS.out + isIS.out;
+
+    component startsBeforeRequest = GreaterEqThan(32);
+    component endsAfterRequest = LessEqThan(32);
+    startsBeforeRequest.in[0] <== requestEpoch;
+    startsBeforeRequest.in[1] <== validFromEpoch;
+    endsAfterRequest.in[0] <== requestEpoch;
+    endsAfterRequest.in[1] <== validUntilEpoch;
+
+    signal temporalValid;
+    signal membershipAndKind;
+    signal enabledMembership;
+    temporalValid <== startsBeforeRequest.out * endsAfterRequest.out;
+    membershipAndKind <== membership.isValid * supportedKind;
+    enabledMembership <== enabled * membershipAndKind;
+    isValid <== enabledMembership * temporalValid;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 3. RANGE/THRESHOLD PROOF VERIFIER
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -248,16 +323,21 @@ template OntologyLinkedTermsVerifier(LEVELS) {
     component epochCheck;
     component finalAnd;
     
-    // 1. Verify ICD code is in the allowed set using Merkle proof
+    // 1. Domain-separate ontology leaves from scoped affiliation leaves.
+    component ontologyLeaf = Poseidon(2);
+    ontologyLeaf.inputs[0] <== 2000;
+    ontologyLeaf.inputs[1] <== icdCode;
+
+    // 2. Verify the domain-separated term is in the allowed set.
     merkleVerifier = MerkleProofVerifier(LEVELS);
-    merkleVerifier.leaf <== icdCode;
+    merkleVerifier.leaf <== ontologyLeaf.out;
     merkleVerifier.root <== allowedRoot;
     for (var i = 0; i < LEVELS; i++) {
         merkleVerifier.pathElements[i] <== merklePathElements[i];
         merkleVerifier.pathIndices[i] <== merklePathIndices[i];
     }
     
-    // 2. Policy binding: Ensure proof is bound to specific policy
+    // 3. Policy binding: Ensure proof is bound to specific policy
     // For Phase 1, we'll use a simple constraint that policyId must be non-zero
     // In production, this would involve more sophisticated policy binding
     policyBinding = IsEqual();
@@ -296,8 +376,9 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 // 5. UNIFIED EXTERNAL PREDICATE VERIFIER
 // ═══════════════════════════════════════════════════════════════════════════
 
-template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
-    // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked)
+template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
+    // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked,
+    // 4=disabled, 5=scoped membership)
     signal input predicateType;
     
     // Merkle proof inputs
@@ -334,6 +415,17 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal input ontologyCode;                      // ICD code or other ontology term
     signal input ontologyPolicyId;                  // Policy ID for binding
     signal input ontologyEpoch;                     // Policy epoch/version
+
+    // Scoped-membership inputs. Scope kind and ID are policy parameters; the
+    // validity/version/path are private affiliation witness values.
+    signal input scopeKind;
+    signal input approvedScopeId;
+    signal input scopeValidFromEpoch;
+    signal input scopeValidUntilEpoch;
+    signal input scopeRecordVersion;
+    signal input scopePathElements[SCOPE_LEVELS];
+    signal input scopePathIndices[SCOPE_LEVELS];
+    signal input scopeRegistryRoot;
     
     // Output
     signal output isValid;
@@ -343,7 +435,8 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     component signatureVerifier;  
     component rangeVerifier;
     component ontologyVerifier;
-    component type0Check, type1Check, type2Check, type3Check;
+    component scopedVerifier;
+    component type0Check, type1Check, type2Check, type3Check, type5Check;
     
     // Select result based on predicate type using manual selection
     // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
@@ -364,11 +457,16 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     type3Check.in[0] <== predicateType;
     type3Check.in[1] <== 3;
 
+    type5Check = IsEqual();
+    type5Check.in[0] <== predicateType;
+    type5Check.in[1] <== 5;
+
     // Instantiate all verifiers
     merkleVerifier = MerkleProofVerifier(MERKLE_LEVELS);
     signatureVerifier = CredentialSignatureVerifier();
     rangeVerifier = RangeProof(RANGE_BITS);
     ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
+    scopedVerifier = ScopedMembershipVerifier(SCOPE_LEVELS);
     
     // Connect merkle verifier
     merkleVerifier.leaf <== merkleLeaf;
@@ -398,6 +496,22 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // predicateType is range-constrained by the caller, so this is not a
     // prover-controlled switch.
     signatureVerifier.enabled <== type1Check.out;
+
+    // The scoped root is an explicit public signal and is checked by the ACM
+    // against its current on-chain registry root.
+    scopedVerifier.enabled <== type5Check.out;
+    scopedVerifier.scopeKind <== scopeKind;
+    scopedVerifier.approvedScopeId <== approvedScopeId;
+    scopedVerifier.requesterId <== requesterId;
+    scopedVerifier.validFromEpoch <== scopeValidFromEpoch;
+    scopedVerifier.validUntilEpoch <== scopeValidUntilEpoch;
+    scopedVerifier.recordVersion <== scopeRecordVersion;
+    scopedVerifier.requestEpoch <== requestEpoch;
+    scopedVerifier.registryRoot <== scopeRegistryRoot;
+    for (var i = 0; i < SCOPE_LEVELS; i++) {
+        scopedVerifier.pathElements[i] <== scopePathElements[i];
+        scopedVerifier.pathIndices[i] <== scopePathIndices[i];
+    }
     
     // Connect range verifier
     rangeVerifier.value <== rangeValue;
@@ -420,14 +534,16 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal signatureSelected; 
     signal rangeSelected;
     signal ontologySelected;
+    signal scopedSelected;
     signal partialSum1, partialSum2;
     
     merkleSelected <== type0Check.out * merkleVerifier.isValid;
     signatureSelected <== type1Check.out * signatureVerifier.isValid;
     rangeSelected <== type2Check.out * rangeVerifier.isValid;
     ontologySelected <== type3Check.out * ontologyVerifier.pred;
+    scopedSelected <== type5Check.out * scopedVerifier.isValid;
     
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
-    isValid <== partialSum2 + ontologySelected;
+    isValid <== partialSum2 + ontologySelected + scopedSelected;
 }

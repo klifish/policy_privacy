@@ -28,7 +28,7 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
     - RANGE_BITS: Bit width for range/threshold proofs
 */
 
-template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
+template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS) {
     // ═══════════════════════════════════════════════════════════════════════
     // PRIVATE WITNESS INPUTS (w = (P, a, p, r))
     // ═══════════════════════════════════════════════════════════════════════
@@ -43,9 +43,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
+    var DEFAULT_SCOPE_VALUE = 0;
     // V2 parameter layout includes predicate type/schema and temporal fields.
     // A distinct domain prevents accidental V1/V2 parameter-commitment reuse.
-    var PARAM_DOMAIN_SEPARATOR = 2;
+    var PARAM_DOMAIN_SEPARATOR = 3;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -57,8 +58,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Predicate types and schema tags are provider-provisioned policy
     // parameters.  They are committed through paramsCommitment below, so the
     // requester cannot reinterpret a slot under a weaker verifier.
-    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled
+    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled, 5=scoped
     signal input predicateSchemaTags[M];
+    signal input scopeKinds[M];                         // 26=US, 27=PS, 28=IS
+    signal input approvedScopeIds[M];
     
     // Merkle proof inputs (for predicates that use them)
     signal input merkleLeaves[M];
@@ -77,6 +80,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     
     // Ontology-linked terms inputs (for predicates that use them)
     signal input ontologyCodes[M];                   // ICD codes or other ontology terms
+    signal input scopeValidFromEpochs[M];
+    signal input scopeValidUntilEpochs[M];
+    signal input scopeRecordVersions[M];
+    signal input scopePathElements[M][SCOPE_LEVELS];
+    signal input scopePathIndices[M][SCOPE_LEVELS];
 
     // Private request-purpose and approval fields.  purposeCode never appears
     // in calldata or the public statement; it is bound only inside a typed
@@ -114,6 +122,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Current EVM hour bucket.  The ACM checks it against block.timestamp;
     // the circuit uses it for policy and approval validity checks.
     signal input requestEpoch;
+    signal input scopeRegistryRoot;
     
     // Public parameters pp for external predicate verification
     signal input merkleRoots[M];                        // Merkle tree roots
@@ -138,6 +147,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal predicateValues[M];                          // Computed predicate values p
     signal policyResult;                                // Policy evaluation result
     signal commitmentValid;                             // Commitment verification result
+    signal scopedFlagSum[M + 1];
     
     // ═══════════════════════════════════════════════════════════════════════  
     // CIRCUIT COMPONENTS
@@ -147,6 +157,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component commitmentVerifier;
     component predicateVerifiers[M];
     component disabledCheckers[M];
+    component scopedCheckers[M];
     component merkleRootHashers[M];
     component predicateTypeHashers[M];
     component predicateSchemaTagHashers[M];
@@ -155,8 +166,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component rangeMaxHashers[M];
     component ontologyPolicyIdHashers[M];
     component ontologyEpochHashers[M];
-    component paramsDigestHashers[11];
+    component scopeKindHashers[M];
+    component approvedScopeIdHashers[M];
+    component paramsDigestHashers[13];
     signal disabledFlags[M];
+    signal scopedFlags[M];
     signal predicateTypeHashChain[M + 1];
     signal predicateSchemaTagHashChain[M + 1];
     signal merkleRootHashChain[M + 1];
@@ -165,11 +179,15 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal rangeMaxHashChain[M + 1];
     signal ontologyPolicyIdHashChain[M + 1];
     signal ontologyEpochHashChain[M + 1];
-    signal paramsDigestChain[12];
+    signal scopeKindHashChain[M + 1];
+    signal approvedScopeIdHashChain[M + 1];
+    signal paramsDigestChain[14];
     component finalAnd;
     component contextHasher;
     component policyValidityVerifier;
     component policyWindowWellFormed;
+    component noScopedPredicate;
+    component zeroScopeRegistryRoot;
     
     // ───────────────────────────────────────────────────────────────────────
     // 1. VERIFY POLICY COMMITMENT: Com(P;r) = h
@@ -201,9 +219,12 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     rangeMaxHashChain[0] <== 0;
     ontologyPolicyIdHashChain[0] <== 0;
     ontologyEpochHashChain[0] <== 0;
+    scopeKindHashChain[0] <== 0;
+    approvedScopeIdHashChain[0] <== 0;
+    scopedFlagSum[0] <== 0;
 
     for (var i = 0; i < M; i++) {
-        predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS);
+        predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, SCOPE_LEVELS);
         
         // Connect predicate type
         predicateVerifiers[i].predicateType <== predicateTypes[i];
@@ -216,10 +237,25 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].credValidUntilEpoch <== credValidUntilEpochs[i];
         predicateVerifiers[i].approvalId <== approvalIds[i];
         predicateVerifiers[i].requestEpoch <== requestEpoch;
+        predicateVerifiers[i].scopeKind <== scopeKinds[i];
+        predicateVerifiers[i].approvedScopeId <== approvedScopeIds[i];
+        predicateVerifiers[i].scopeValidFromEpoch <== scopeValidFromEpochs[i];
+        predicateVerifiers[i].scopeValidUntilEpoch <== scopeValidUntilEpochs[i];
+        predicateVerifiers[i].scopeRecordVersion <== scopeRecordVersions[i];
+        predicateVerifiers[i].scopeRegistryRoot <== scopeRegistryRoot;
+        for (var j = 0; j < SCOPE_LEVELS; j++) {
+            predicateVerifiers[i].scopePathElements[j] <== scopePathElements[i][j];
+            predicateVerifiers[i].scopePathIndices[j] <== scopePathIndices[i][j];
+        }
         disabledCheckers[i] = IsEqual();
         disabledCheckers[i].in[0] <== predicateTypes[i];
         disabledCheckers[i].in[1] <== 4;
         disabledFlags[i] <== disabledCheckers[i].out;
+        scopedCheckers[i] = IsEqual();
+        scopedCheckers[i].in[0] <== predicateTypes[i];
+        scopedCheckers[i].in[1] <== 5;
+        scopedFlags[i] <== scopedCheckers[i].out;
+        scopedFlagSum[i + 1] <== scopedFlagSum[i] + scopedFlags[i];
         
         // Connect Merkle proof inputs
         predicateVerifiers[i].merkleLeaf <== merkleLeaves[i];
@@ -275,6 +311,19 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
         predicateValues[i] * disabledFlags[i] === 0;
 
+        // Scope values are canonical zero padding unless the slot selects the
+        // scoped-membership verifier. This prevents a policy configuration
+        // from smuggling unrelated scope parameters through other predicates.
+        scopeKinds[i] * (1 - scopedFlags[i]) === 0;
+        approvedScopeIds[i] * (1 - scopedFlags[i]) === 0;
+        scopeValidFromEpochs[i] * (1 - scopedFlags[i]) === 0;
+        scopeValidUntilEpochs[i] * (1 - scopedFlags[i]) === 0;
+        scopeRecordVersions[i] * (1 - scopedFlags[i]) === 0;
+        for (var j = 0; j < SCOPE_LEVELS; j++) {
+            scopePathElements[i][j] * (1 - scopedFlags[i]) === 0;
+            scopePathIndices[i][j] * (1 - scopedFlags[i]) === 0;
+        }
+
         // Hash chains for parameter commitment
         predicateTypeHashers[i] = Poseidon(2);
         predicateTypeHashers[i].inputs[0] <== predicateTypeHashChain[i];
@@ -315,6 +364,16 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         ontologyEpochHashers[i].inputs[0] <== ontologyEpochHashChain[i];
         ontologyEpochHashers[i].inputs[1] <== ontologyEpochs[i];
         ontologyEpochHashChain[i + 1] <== ontologyEpochHashers[i].out;
+
+        scopeKindHashers[i] = Poseidon(2);
+        scopeKindHashers[i].inputs[0] <== scopeKindHashChain[i];
+        scopeKindHashers[i].inputs[1] <== scopeKinds[i];
+        scopeKindHashChain[i + 1] <== scopeKindHashers[i].out;
+
+        approvedScopeIdHashers[i] = Poseidon(2);
+        approvedScopeIdHashers[i].inputs[0] <== approvedScopeIdHashChain[i];
+        approvedScopeIdHashers[i].inputs[1] <== approvedScopeIds[i];
+        approvedScopeIdHashChain[i + 1] <== approvedScopeIdHashers[i].out;
     }
 
     paramsDigestChain[0] <== 0;
@@ -361,20 +420,43 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     paramsDigestHashers[8] = Poseidon(2);
     paramsDigestHashers[8].inputs[0] <== paramsDigestChain[8];
-    paramsDigestHashers[8].inputs[1] <== policyValidFromEpoch;
+    paramsDigestHashers[8].inputs[1] <== scopeKindHashChain[M];
     paramsDigestChain[9] <== paramsDigestHashers[8].out;
 
     paramsDigestHashers[9] = Poseidon(2);
     paramsDigestHashers[9].inputs[0] <== paramsDigestChain[9];
-    paramsDigestHashers[9].inputs[1] <== policyValidUntilEpoch;
+    paramsDigestHashers[9].inputs[1] <== approvedScopeIdHashChain[M];
     paramsDigestChain[10] <== paramsDigestHashers[9].out;
 
     paramsDigestHashers[10] = Poseidon(2);
     paramsDigestHashers[10].inputs[0] <== paramsDigestChain[10];
-    paramsDigestHashers[10].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestHashers[10].inputs[1] <== policyValidFromEpoch;
     paramsDigestChain[11] <== paramsDigestHashers[10].out;
 
-    paramsCommitment === paramsDigestChain[11];
+    paramsDigestHashers[11] = Poseidon(2);
+    paramsDigestHashers[11].inputs[0] <== paramsDigestChain[11];
+    paramsDigestHashers[11].inputs[1] <== policyValidUntilEpoch;
+    paramsDigestChain[12] <== paramsDigestHashers[11].out;
+
+    paramsDigestHashers[12] = Poseidon(2);
+    paramsDigestHashers[12].inputs[0] <== paramsDigestChain[12];
+    paramsDigestHashers[12].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestChain[13] <== paramsDigestHashers[12].out;
+
+    paramsCommitment === paramsDigestChain[13];
+
+    // `scopeRegistryRoot` is public so the ACM can compare it with the live
+    // registry. It is exactly zero for ontology-only policies, preventing an
+    // unrelated registry update from invalidating their proofs; any scoped
+    // predicate requires a non-zero root.
+    noScopedPredicate = IsEqual();
+    noScopedPredicate.in[0] <== scopedFlagSum[M];
+    noScopedPredicate.in[1] <== 0;
+    scopeRegistryRoot * noScopedPredicate.out === 0;
+    zeroScopeRegistryRoot = IsEqual();
+    zeroScopeRegistryRoot.in[0] <== scopeRegistryRoot;
+    zeroScopeRegistryRoot.in[1] <== 0;
+    zeroScopeRegistryRoot.out * (1 - noScopedPredicate.out) === 0;
     
     // ───────────────────────────────────────────────────────────────────────
     // 3. EVALUATE POLICY: C(P,(a,p)) = 1
@@ -455,14 +537,14 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         requesterAttrs[i] * (requesterAttrs[i] - 1) === 0;
     }
     
-    // Ensure predicate types are valid (0, 1, 2, or 3) using quadratic constraints
+    // Ensure predicate types are valid (0 through 5) using quadratic constraints.
     for (var i = 0; i < M; i++) {
-        // Check that predicateTypes[i] * (predicateTypes[i] - 1) * (predicateTypes[i] - 2) * (predicateTypes[i] - 3) == 0
+        // Check the product of (type - 0) through (type - 5) is zero.
         // Break down into quadratic operations
         tmp1[i] <== predicateTypes[i] * (predicateTypes[i] - 1);
         tmp2[i] <== (predicateTypes[i] - 2) * (predicateTypes[i] - 3);
         tmp3[i] <== tmp1[i] * tmp2[i];
-        tmp4[i] <== tmp3[i] * (predicateTypes[i] - 4);
-        tmp4[i] === 0;
+        tmp4[i] <== (predicateTypes[i] - 4) * (predicateTypes[i] - 5);
+        tmp3[i] * tmp4[i] === 0;
     }
 }

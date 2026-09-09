@@ -30,6 +30,12 @@ const PRODUCTION_ATTRIBUTE_ORDER = Object.freeze(['GR', 'DS', 'RS', 'POA', 'GS',
 const PRODUCTION_N = 6;
 const PRODUCTION_M = 5;
 
+const SCOPED_DUO_TERMS = Object.freeze({
+  US: { code: 'US', duoId: 'DUO0000026', scopeKind: 26 },
+  PS: { code: 'PS', duoId: 'DUO0000027', scopeKind: 27 },
+  IS: { code: 'IS', duoId: 'DUO0000028', scopeKind: 28 }
+});
+
 // Flexible identifier mapping for DUO attributes.
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   GR: 'GR',
@@ -72,6 +78,12 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   DUO0000046: 'CU'
 });
 
+const SCOPED_ALIAS_MAP = Object.freeze({
+  US: 'US', USER_SPECIFIC: 'US', USER_SPECIFIC_RESTRICTION: 'US', DUO0000026: 'US',
+  PS: 'PS', PROJECT_SPECIFIC: 'PS', PROJECT_SPECIFIC_RESTRICTION: 'PS', DUO0000027: 'PS',
+  IS: 'IS', INSTITUTION_SPECIFIC: 'IS', INSTITUTION_SPECIFIC_RESTRICTION: 'IS', DUO0000028: 'IS'
+});
+
 // Operator table used by shunting-yard during logic parsing.
 const OP_INFO = Object.freeze({
   NOT: { precedence: 3, arity: 1, assoc: 'right' },
@@ -112,6 +124,12 @@ function canonicalizeAttribute(name) {
     throw new Error(`Unknown attribute identifier: ${name}`);
   }
   return mapped;
+}
+
+function canonicalizeScopedTerm(name) {
+  if (!name) return null;
+  const key = String(name).trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
+  return SCOPED_ALIAS_MAP[key] || null;
 }
 
 // Normalize ontology namespace identifiers by consulting alias table.
@@ -200,6 +218,7 @@ function buildPredicateContext(predicates = []) {
   }
   const bySlot = new Map();
   const namespaceToSlot = new Map();
+  const scopeToSlot = new Map();
 
   predicates.forEach((raw, idx) => {
     if (typeof raw !== 'object' || raw === null) {
@@ -211,21 +230,43 @@ function buildPredicateContext(predicates = []) {
     if (bySlot.has(raw.slot)) {
       throw new Error(`Duplicate predicate slot: ${raw.slot}`);
     }
-    const duoCode = canonicalizeAttribute(raw.duo ?? raw.code ?? raw.attribute);
-    const namespace = canonicalizeNamespace(raw.namespace ?? raw.ns ?? raw.ontology);
-
-    bySlot.set(raw.slot, {
-      slot: raw.slot,
-      duo: duoCode,
-      namespace,
-      root: raw.root ?? null,
-      description: raw.description ?? null
-    });
-
-    if (namespaceToSlot.has(namespace)) {
-      throw new Error(`Namespace ${namespace} already mapped to slot ${namespaceToSlot.get(namespace)}`);
+    const rawDuo = raw.duo ?? raw.code ?? raw.attribute;
+    const scopedTerm = canonicalizeScopedTerm(rawDuo);
+    if (scopedTerm) {
+      if (raw.scopeId === undefined || raw.scopeId === null || raw.scopeId === '') {
+        throw new Error(`Scoped predicate ${scopedTerm} requires scopeId`);
+      }
+      if (raw.namespace ?? raw.ns ?? raw.ontology) {
+        throw new Error(`Scoped predicate ${scopedTerm} must not declare an ontology namespace`);
+      }
+      if (scopeToSlot.has(scopedTerm)) {
+        throw new Error(`Only one ${scopedTerm} scoped predicate is allowed per policy`);
+      }
+      bySlot.set(raw.slot, {
+        slot: raw.slot,
+        duo: scopedTerm,
+        kind: 'scoped',
+        scopeKind: SCOPED_DUO_TERMS[scopedTerm].scopeKind,
+        scopeId: raw.scopeId,
+        description: raw.description ?? null
+      });
+      scopeToSlot.set(scopedTerm, raw.slot);
+    } else {
+      const duoCode = canonicalizeAttribute(rawDuo);
+      const namespace = canonicalizeNamespace(raw.namespace ?? raw.ns ?? raw.ontology);
+      bySlot.set(raw.slot, {
+        slot: raw.slot,
+        duo: duoCode,
+        kind: 'ontology',
+        namespace,
+        root: raw.root ?? null,
+        description: raw.description ?? null
+      });
+      if (namespaceToSlot.has(namespace)) {
+        throw new Error(`Namespace ${namespace} already mapped to slot ${namespaceToSlot.get(namespace)}`);
+      }
+      namespaceToSlot.set(namespace, raw.slot);
     }
-    namespaceToSlot.set(namespace, raw.slot);
   });
 
   if (bySlot.size === 0) {
@@ -241,7 +282,14 @@ function buildPredicateContext(predicates = []) {
 
   return {
     slots: slots.map((slot) => bySlot.get(slot)),
-    namespaceToSlot
+    namespaceToSlot,
+    scopeToSlot,
+    scopeParameters: slots.map((slot) => {
+      const predicate = bySlot.get(slot);
+      return predicate.kind === 'scoped'
+        ? { slot, scopeKind: predicate.scopeKind, approvedScopeId: String(predicate.scopeId) }
+        : null;
+    }).filter(Boolean)
   };
 }
 
@@ -290,7 +338,8 @@ function tokenizeLogic(expr) {
       if (!inner) {
         throw new Error('Empty predicate identifier inside P[...]');
       }
-      pushToken('PREDICATE', canonicalizeNamespace(inner));
+      const scopedTerm = canonicalizeScopedTerm(inner);
+      pushToken('PREDICATE', scopedTerm || canonicalizeNamespace(inner));
       i = endIdx + 1;
       continue;
     }
@@ -310,7 +359,12 @@ function tokenizeLogic(expr) {
     } else if (upper === 'TRUE' || upper === 'FALSE') {
       throw new Error('Boolean constants TRUE/FALSE are not supported in policy logic');
     } else {
-      pushToken('ATTRIBUTE', canonicalizeAttribute(raw));
+      const scopedTerm = canonicalizeScopedTerm(raw);
+      if (scopedTerm) {
+        pushToken('PREDICATE', scopedTerm);
+      } else {
+        pushToken('ATTRIBUTE', canonicalizeAttribute(raw));
+      }
     }
     i += raw.length;
   }
@@ -609,6 +663,7 @@ function generateRandomizerBytes(byteLength = 31) {
  */
 function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M = PRODUCTION_M) {
   const namespaceToSlot = predicateCtx.namespaceToSlot;
+  const scopeToSlot = predicateCtx.scopeToSlot;
   const attributeIndexByCode = attributeCtx.indexByCode;
 
   const tokens = [];
@@ -625,10 +680,12 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
       }
       tokens.push(idx);
     } else if (tok.type === 'PREDICATE') {
-      if (!namespaceToSlot.has(tok.value)) {
-        throw new Error(`No predicate slot declared for namespace ${tok.value}`);
+      const slot = namespaceToSlot.has(tok.value)
+        ? namespaceToSlot.get(tok.value)
+        : scopeToSlot.get(tok.value);
+      if (slot === undefined) {
+        throw new Error(`No predicate slot declared for ${tok.value}`);
       }
-      const slot = namespaceToSlot.get(tok.value);
       tokens.push(N + slot);
     } else if (tok.type === 'OP') {
       if (tok.value === 'AND') {
@@ -667,6 +724,9 @@ async function generatePolicyArtifacts(config, options = {}) {
   }
 
   predicateCtx.slots.forEach((slotInfo) => {
+    if (slotInfo.kind === 'scoped') {
+      return;
+    }
     const expectedNamespace = attributeCtx.namespaceByCode[slotInfo.duo];
     if (expectedNamespace === undefined) {
       throw new Error(`Predicate slot ${slotInfo.slot} references attribute ${slotInfo.duo} not present in attributeOrder`);
@@ -765,7 +825,18 @@ async function generatePolicyArtifacts(config, options = {}) {
     },
     predicates: {
       slots: predicateCtx.slots,
-      namespaceToSlot: Object.fromEntries(predicateCtx.namespaceToSlot.entries())
+      namespaceToSlot: Object.fromEntries(predicateCtx.namespaceToSlot.entries()),
+      scopeToSlot: Object.fromEntries(predicateCtx.scopeToSlot.entries()),
+      scopeParameters: {
+        scopeKinds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'scoped' ? p.scopeKind : 0;
+        }),
+        approvedScopeIds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'scoped' ? String(p.scopeId) : '0';
+        })
+      }
     },
     logic: {
       original: config.logic,

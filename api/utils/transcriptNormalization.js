@@ -15,7 +15,7 @@
 
 // Target calldata size in bytes (Lcd in the paper).
 // Must be large enough to accommodate any valid serialised proof+signals.
-// 32 * (2 + 4 + 2 + 33) = 32 * 41 = 1312 bytes for pA/pB/pC/pubSignals alone;
+// 32 * (2 + 4 + 2 + 6) = 32 * 14 = 448 bytes for pA/pB/pC/pubSignals alone;
 // add selector (4) + policyId (32) + resource (32) + nonce (32) ≈ 1412 bytes.
 // We round up to 2048 to leave headroom.
 const LCD = 2048;

@@ -17,7 +17,7 @@ interface IVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) external view returns (bool);
 }
 
@@ -61,6 +61,7 @@ contract PolicyPrivacy {
     event PolicyRevoked(address indexed dataSubject, uint256 indexed policyId);
     event PolicyVersionCommitted(uint256 indexed policyId, uint256 indexed supersedesPolicyId);
     event ResourcePolicyRebound(uint256 indexed resourceId, uint256 indexed oldPolicyId, uint256 indexed newPolicyId);
+    event ScopeRegistryRootUpdated(uint256 indexed previousRoot, uint256 indexed newRoot);
 
     // Struct for policy commitments
     struct PolicyCommitment {
@@ -80,6 +81,7 @@ contract PolicyPrivacy {
         uint256 resourceId; // Resource bound into the proof statement
         uint256 contextHash; // Poseidon(requesterId || resourceId || nonce), a public signal
         uint256 requestEpoch; // V2 EVM hour bucket asserted by the proof
+        uint256 scopeRegistryRoot; // zero for ontology-only proofs; otherwise live root used
         uint256 policyId; // Which policy they're claiming to satisfy
         uint256 timestamp; // When request was made
         bool isProcessed; // Whether request has been processed
@@ -99,6 +101,7 @@ contract PolicyPrivacy {
     uint256 public nextPolicyId;
     uint256 public nextRequestId;
     uint256 public nextResourceId;
+    uint256 public scopeRegistryRoot;
 
     // Mappings
     mapping(uint256 => PolicyCommitment) public policies;
@@ -365,7 +368,8 @@ contract PolicyPrivacy {
     /**
      * @dev Core verification path.
      *
-     * _pubSignals = [isAuthorized, policyCommitment, paramsCommitment, contextHash, requestEpoch].
+     * _pubSignals = [isAuthorized, policyCommitment, paramsCommitment,
+     *                contextHash, requestEpoch, scopeRegistryRoot].
      * contextHash = Poseidon(requesterId || resourceId || nonce) is constrained
      * in-circuit by a hard equality, so a proof is bound to exactly one
      * authorization context: it cannot be replayed for a different requester,
@@ -387,7 +391,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) internal returns (uint256) {
         require(policies[_policyId].isActive, "Policy not active");
 
@@ -412,6 +416,7 @@ contract PolicyPrivacy {
             resourceId: _resourceId,
             contextHash: _pubSignals[3],
             requestEpoch: _pubSignals[4],
+            scopeRegistryRoot: _pubSignals[5],
             policyId: _policyId,
             timestamp: block.timestamp,
             isProcessed: true,
@@ -445,7 +450,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) external notPaused returns (uint256) {
         _policyId; _idReq; _pA; _pB; _pC; _pubSignals;
         revert("V2 requires requestAccessBound");
@@ -460,7 +465,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals,
+        uint[6] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256) {
         _policyId; _idReq; _pA; _pB; _pC; _pubSignals; targetGas;
@@ -497,8 +502,22 @@ contract PolicyPrivacy {
     function isAuthorizationCurrent(uint256 _requestId) external view returns (bool) {
         AccessRequest memory request = accessRequests[_requestId];
         if (!request.isGranted || request.requestEpoch != block.timestamp / EPOCH_SECONDS) return false;
+        // A non-zero root means the authorization depended on a scoped
+        // affiliation. Revoking/updating the global registry invalidates the
+        // historical grant immediately; ontology-only grants use the zero
+        // sentinel and remain independent of registry churn.
+        if (request.scopeRegistryRoot != 0 && request.scopeRegistryRoot != scopeRegistryRoot) return false;
         Resource memory resource = resources[request.resourceId];
         return resource.isActive && resource.policyId == request.policyId && policies[request.policyId].isActive;
+    }
+
+    /** Publish the current global US/PS/IS affiliation registry root. */
+    function setScopeRegistryRoot(uint256 _newRoot) external onlyOwner {
+        require(_newRoot != 0, "Scope registry root is zero");
+        require(_newRoot < SNARK_SCALAR_FIELD, "Scope registry root outside field");
+        uint256 previousRoot = scopeRegistryRoot;
+        scopeRegistryRoot = _newRoot;
+        emit ScopeRegistryRootUpdated(previousRoot, _newRoot);
     }
 
     /**
@@ -662,7 +681,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) external notPaused returns (uint256 requestId) {
         requestId = _requestAccessBound(
             _policyId, _resourceId, _nonce, _idReq, _requestEpoch, _pA, _pB, _pC, _pubSignals
@@ -686,7 +705,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals,
+        uint[6] calldata _pubSignals,
         uint256 targetGas
     ) external notPaused returns (uint256 requestId) {
         uint256 startGas = gasleft();
@@ -709,7 +728,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) internal returns (uint256 requestId) {
         require(policies[_policyId].isActive, "Policy not active");
         require(resources[_resourceId].isActive, "Resource not active");
@@ -720,6 +739,10 @@ contract PolicyPrivacy {
         require(_idReq < SNARK_SCALAR_FIELD && _nonce < SNARK_SCALAR_FIELD, "Context value outside SNARK field");
         require(_requestEpoch == block.timestamp / EPOCH_SECONDS, "Stale request epoch");
         require(_pubSignals[4] == _requestEpoch, "Request epoch mismatch");
+        require(
+            _pubSignals[5] == 0 || _pubSignals[5] == scopeRegistryRoot,
+            "Scope registry root mismatch"
+        );
 
         // Authorization-context binding: the proof's public signal must be the
         // digest of THIS request's context. The circuit constrains
@@ -761,7 +784,7 @@ contract PolicyPrivacy {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[5] calldata _pubSignals
+        uint[6] calldata _pubSignals
     ) external view returns (bool) {
         return verifier.verifyProof(_pA, _pB, _pC, _pubSignals);
     }

@@ -137,10 +137,10 @@ router.post('/verify', async (req, res, next) => {
       });
     }
 
-    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 33) {
+    if (!Array.isArray(proof.pubSignals) || proof.pubSignals.length !== 6) {
       return res.status(400).json({
         error: 'Invalid proof format',
-        message: 'pubSignals must be an array of 33 elements'
+        message: 'pubSignals must be an array of 6 elements'
       });
     }
 
@@ -183,12 +183,9 @@ router.post('/verify', async (req, res, next) => {
           isAuthorized: formattedProof.pubSignals[0],
           policyCommitment: formattedProof.pubSignals[1],
           paramsCommitment: formattedProof.pubSignals[2],
-          merkleRoots: formattedProof.pubSignals.slice(3, 8),
-          credPublicKeys: formattedProof.pubSignals.slice(8, 13),
-          rangeMin: formattedProof.pubSignals.slice(13, 18),
-          rangeMax: formattedProof.pubSignals.slice(18, 23),
-          ontologyPolicyIds: formattedProof.pubSignals.slice(23, 28),
-          ontologyEpochs: formattedProof.pubSignals.slice(28, 33)
+          contextHash: formattedProof.pubSignals[3],
+          requestEpoch: formattedProof.pubSignals[4],
+          scopeRegistryRoot: formattedProof.pubSignals[5]
         }
       }
     });

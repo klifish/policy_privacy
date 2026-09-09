@@ -26,7 +26,7 @@ describe('PolicyPrivacy V2 restricted access-time consent', function () {
   async function submit(policyId, resourceId, nonce, requesterId, commitment = 111n) {
     const requestEpoch = await epoch();
     const ctx = await calculateContextHash(requesterId, resourceId, nonce);
-    const signals = [1n, commitment, paramsCommitment, BigInt(ctx), requestEpoch];
+    const signals = [1n, commitment, paramsCommitment, BigInt(ctx), requestEpoch, 0n];
     const tx = await contract.connect(provider).requestAccessBound(
       policyId, resourceId, nonce, requesterId, requestEpoch,
       proof[0], proof[1], proof[2], signals
@@ -58,7 +58,7 @@ describe('PolicyPrivacy V2 restricted access-time consent', function () {
     const ctx = await calculateContextHash(7n, resourceId, 9n);
     await expect(contract.connect(provider).requestAccessBound(
       policyId, resourceId, 9n, 7n, currentEpoch - 1n,
-      proof[0], proof[1], proof[2], [1n, 111n, paramsCommitment, BigInt(ctx), currentEpoch - 1n]
+      proof[0], proof[1], proof[2], [1n, 111n, paramsCommitment, BigInt(ctx), currentEpoch - 1n, 0n]
     )).to.be.revertedWith('Stale request epoch');
 
     const requestId = await submit(policyId, resourceId, 10n, 7n);
@@ -90,5 +90,35 @@ describe('PolicyPrivacy V2 restricted access-time consent', function () {
 
     await expect(contract.connect(other).rebindResourcePolicy(resourceId, 2n)).to.be.revertedWith('Not resource provider');
     await expect(contract.connect(provider).rebindResourcePolicy(resourceId, oldPolicy)).to.be.revertedWith('Not direct successor');
+  });
+
+  it('invalidates scoped grants after root rotation without affecting ontology-only grants', async function () {
+    const policyId = await commitRoot();
+    const resourceId = await contract.connect(provider).registerResource.staticCall(policyId);
+    await contract.connect(provider).registerResource(policyId);
+    const requestEpoch = await epoch();
+    const rootA = 123456n;
+    const rootB = 654321n;
+    await contract.setScopeRegistryRoot(rootA);
+
+    const ctxScoped = await calculateContextHash(10n, resourceId, 31n);
+    await contract.connect(provider).requestAccessBound(
+      policyId, resourceId, 31n, 10n, requestEpoch,
+      proof[0], proof[1], proof[2], [1n, 111n, paramsCommitment, BigInt(ctxScoped), requestEpoch, rootA]
+    );
+    const scopedRequest = 1n;
+    const ontologyOnly = await submit(policyId, resourceId, 32n, 11n);
+    expect(await contract.isAuthorizationCurrent(scopedRequest)).to.equal(true);
+    expect(await contract.isAuthorizationCurrent(ontologyOnly)).to.equal(true);
+
+    await contract.setScopeRegistryRoot(rootB);
+    expect(await contract.isAuthorizationCurrent(scopedRequest)).to.equal(false);
+    expect(await contract.isAuthorizationCurrent(ontologyOnly)).to.equal(true);
+  });
+
+  it('allows only the owner to publish a non-zero scoped registry root', async function () {
+    await expect(contract.connect(other).setScopeRegistryRoot(1n)).to.be.revertedWith('Only owner can call this function');
+    await expect(contract.setScopeRegistryRoot(0n)).to.be.revertedWith('Scope registry root is zero');
+    await expect(contract.setScopeRegistryRoot(99n)).to.emit(contract, 'ScopeRegistryRootUpdated').withArgs(0n, 99n);
   });
 });

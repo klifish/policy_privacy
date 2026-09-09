@@ -1,20 +1,17 @@
 'use strict';
 
 /**
- * Requester routes for TPS-ZKPI (Stages 3, 4, 5).
+ * Requester metadata routes for TPS-ZKPI.
  *
  * Stage 3: Requester fetches resource metadata (policyId, commitment, pp).
- * Stage 4+5: Requester submits evidence to TPS; TPS generates proof and calls
- *   requestAccessBound() with its own chain account (submitOnChain=true),
- *   so the requester's address is never recorded on-chain.
+ * Authorization and controlled release are handled by /api/gateway, whose
+ * wallet challenge binds a server-owned requester pseudonym.
  *
- * POST /api/requester/request-access
+ * POST /api/requester/request-access (retired: use /api/gateway/request-access)
  * GET  /api/requester/resource/:resourceId  (Stage 3 resource metadata)
  */
 
 const express = require('express');
-const crypto = require('crypto');
-const { prove } = require('../../lib/tps-client');
 
 const router = express.Router();
 
@@ -56,83 +53,15 @@ router.get('/resource/:resourceId', async (req, res, next) => {
 });
 
 /**
- * POST /api/requester/request-access
- *
- * Stages 3-4-5 in one call.
- *
- * Body:
- *   requesterAddress : string   – Ethereum address of the requester
- *   resourceId       : string   – The protected resource ID
- *   evidence         : object   – Authorization evidence submitted to TPS:
- *     attributes       : number[]  – Boolean attribute vector (e.g. [1,0,0,0,0,0,0])
- *     predicateTypes   : number[]  – (optional) predicate type selectors
- *     merkleLeaves, merklePathElements, ... : (optional) predicate witnesses
- *   useGasPad        : boolean  – (optional, default true)
- *
- * Returns:
- *   { requestId, status, sessionId, transactionHash, gasUsed }
+ * This pre-gateway route is intentionally retired in V2. It accepted a
+ * browser-controlled requesterAddress and therefore could not represent a
+ * server-authenticated wallet-to-requesterId binding.
  */
-router.post('/request-access', async (req, res, next) => {
-    try {
-        const {
-            requesterAddress,
-            resourceId,
-            evidence,
-            useGasPad = true
-        } = req.body;
-
-        if (!requesterAddress || !ethers.isAddress(requesterAddress)) {
-            return res.status(400).json({ error: 'Valid requesterAddress is required' });
-        }
-        if (!resourceId) {
-            return res.status(400).json({ error: 'resourceId is required' });
-        }
-        if (!evidence || !Array.isArray(evidence.attributes)) {
-            return res.status(400).json({ error: 'evidence.attributes (array) is required' });
-        }
-
-        // ── Stage 3: fetch resource metadata from chain ─────────────────────
-        let policyId, commitment, paramsCommitment;
-        try {
-            [policyId, , ] = await req.contract.getResource(BigInt(resourceId));
-            [, commitment, paramsCommitment, ] = await req.contract.getPolicy(policyId);
-        } catch (err) {
-            return res.status(404).json({ error: `Resource or policy not found: ${err.message}` });
-        }
-
-        policyId = policyId.toString();
-        const policyCommitment = commitment.toString();
-
-        // ── Stage 4+5: TPS generates proof and submits on-chain ─────────────
-        // submitOnChain=true: TPS calls requestAccessBound() with its own chain
-        // account, so the requester's address never appears in on-chain events.
-        const nonce = BigInt('0x' + crypto.randomBytes(16).toString('hex')).toString();
-
-        const tpsResult = await prove({
-            policyId,
-            resourceId: resourceId.toString(),
-            nonce,
-            policyCommitment,
-            evidence: {
-                ...evidence,
-                requesterId: requesterAddress
-            },
-            submitOnChain: true
-        });
-
-        const { sessionId, chainResult } = tpsResult;
-
-        return res.json({
-            requestId: chainResult.requestId,
-            status: chainResult.isGranted ? 'granted' : 'denied',
-            sessionId,
-            transactionHash: chainResult.transactionHash,
-            gasUsed: chainResult.gasUsed
-        });
-    } catch (err) {
-        if (err.message && err.message.includes('revert')) err.type = 'blockchain';
-        next(err);
-    }
+router.post('/request-access', (_req, res) => {
+    return res.status(410).json({
+        error: 'Requester submission route retired',
+        message: 'Authenticate with /api/gateway/challenge and use /api/gateway/request-access'
+    });
 });
 
 module.exports = router;

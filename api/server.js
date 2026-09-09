@@ -16,6 +16,7 @@ const proofRoutes = require('./routes/proof');
 const providerRoutes = require('./routes/provider');
 const requesterRoutes = require('./routes/requester');
 const accessRoutes = require('./routes/access');
+const { createGatewayRouter } = require('./routes/gateway');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
@@ -107,6 +108,11 @@ class PolicyPrivacyAPI {
     this.app.use('/api/provider', providerRoutes);
     this.app.use('/api/requester', requesterRoutes);
     this.app.use('/api/access', accessRoutes);
+    this.app.use('/api/gateway', createGatewayRouter({
+      identities: this.config.gatewayIdentities || {},
+      auditPath: this.config.gatewayAuditPath,
+      tpsSharedSecret: this.config.gatewayTpsSharedSecret
+    }));
 
     // Health check
     this.app.get('/health', (req, res) => {

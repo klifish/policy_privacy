@@ -32,6 +32,8 @@ const NAMESPACE_ALIASES = Object.freeze({
 const NAMESPACE_BITS = 16n;
 const TERM_BITS = 128n;
 const EPOCH_BITS = 32n;
+// Keep ontology leaves in a domain different from scoped affiliation records.
+const ONTOLOGY_TERM_V1 = 2000n;
 
 const TERM_MASK = (1n << TERM_BITS) - 1n;
 const EPOCH_MASK = (1n << EPOCH_BITS) - 1n;
@@ -274,7 +276,7 @@ async function buildWhitelist(config) {
   const leaves = new Array(treeSize).fill(0n);
   const entries = normalized.map((term, index) => {
     const { termHashFull, termHashTruncated, packed } = computeLeafComponents(term);
-    const leaf = FtoBig(poseidon, poseidon([packed]));
+    const leaf = FtoBig(poseidon, poseidon([ONTOLOGY_TERM_V1, packed]));
     leaves[index] = leaf;
     const entry = {
       namespace: term.namespace,
@@ -358,6 +360,7 @@ module.exports = {
   NAMESPACE_BITS,
   TERM_BITS,
   EPOCH_BITS,
+  ONTOLOGY_TERM_V1,
   TERM_MASK,
   EPOCH_MASK,
   getPoseidon,

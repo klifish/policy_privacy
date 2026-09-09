@@ -81,8 +81,8 @@ const validationMiddleware = (req, res, next) => {
         throw new ValidationError(`Invalid ${fieldName}.pC: must be an array of 2 elements`);
       }
 
-      if (!Array.isArray(pubSignals) || pubSignals.length !== 33) {
-        throw new ValidationError(`Invalid ${fieldName}.pubSignals: must be an array of 33 elements`);
+      if (!Array.isArray(pubSignals) || pubSignals.length !== 6) {
+        throw new ValidationError(`Invalid ${fieldName}.pubSignals: must be an array of 6 elements`);
       }
 
       return proof;
