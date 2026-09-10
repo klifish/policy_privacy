@@ -24,7 +24,8 @@ describe('V2 typed institutional approval', function () {
     const paramsCommitment = await calculateParamsCommitment({
       predicateTypes: [1, 4, 4, 4, 4], predicateSchemaTags: [1001, 0, 0, 0, 0],
       credPublicKeys: [issuer.committed, 0, 0, 0, 0],
-      policyValidFromEpoch: 0, policyValidUntilEpoch: 4294967295
+      policyValidFromEpoch: 0, policyValidUntilEpoch: 4294967295,
+      moratoriumUntilEpoch: 0, timeLimitEpochs: 0
     });
     const input = {
       policy, requesterAttrs: [0, 0, 0, 0, 0, 0], predicateTypes: [1, 4, 4, 4, 4],
@@ -40,7 +41,8 @@ describe('V2 typed institutional approval', function () {
       contextHash: await calculateContextHash(idReq, idRes, nonce), requestEpoch,
       merkleRoots: [0, 0, 0, 0, 0], credPublicKeys: [issuer.committed, 0, 0, 0, 0],
       rangeMin: [0, 0, 0, 0, 0], rangeMax: [0, 0, 0, 0, 0], ontologyPolicyIds: [0, 0, 0, 0, 0], ontologyEpochs: [0, 0, 0, 0, 0],
-      policyValidFromEpoch: 0, policyValidUntilEpoch: 4294967295
+      policyValidFromEpoch: 0, policyValidUntilEpoch: 4294967295,
+      moratoriumUntilEpoch: 0, timeLimitEpochs: 0
     };
     await snarkjs.wtns.calculate(input, WASM, { type: 'mem' });
     for (const tampered of [

@@ -43,9 +43,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
-    // V2 parameter layout includes predicate type/schema and temporal fields.
-    // A distinct domain prevents accidental V1/V2 parameter-commitment reuse.
-    var PARAM_DOMAIN_SEPARATOR = 4;
+    // Parameter layout v5 adds MOR/TS obligation values.
+    var PARAM_DOMAIN_SEPARATOR = 5;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -57,7 +56,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Predicate types and schema tags are provider-provisioned policy
     // parameters.  They are committed through paramsCommitment below, so the
     // requester cannot reinterpret a slot under a weaker verifier.
-    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled, 5=scoped
+    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled, 5=scoped, 6=MOR, 7=TS
     signal input predicateSchemaTags[M];
     signal input scopeKinds[M];                         // 26=US, 27=PS, 28=IS
     signal input approvedScopeIds[M];
@@ -129,6 +128,10 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input ontologyEpochs[M];                     // Policy epochs for ontology-linked terms
     signal input policyValidFromEpoch;
     signal input policyValidUntilEpoch;
+    // MOR is private policy-bound obligation metadata. TS duration is also
+    // committed here; its requester-specific runtime enforcement is on-chain.
+    signal input moratoriumUntilEpoch;
+    signal input timeLimitEpochs;
     
     // ═══════════════════════════════════════════════════════════════════════
     // OUTPUT
@@ -164,7 +167,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component ontologyEpochHashers[M];
     component scopeKindHashers[M];
     component approvedScopeIdHashers[M];
-    component paramsDigestHashers[13];
+    component paramsDigestHashers[15];
     signal disabledFlags[M];
     signal scopedFlags[M];
     signal predicateTypeHashChain[M + 1];
@@ -177,7 +180,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal ontologyEpochHashChain[M + 1];
     signal scopeKindHashChain[M + 1];
     signal approvedScopeIdHashChain[M + 1];
-    signal paramsDigestChain[14];
+    signal paramsDigestChain[16];
     component finalAnd;
     component contextHasher;
     component policyValidityVerifier;
@@ -237,6 +240,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].requestEpoch <== requestEpoch;
         predicateVerifiers[i].scopeKind <== scopeKinds[i];
         predicateVerifiers[i].approvedScopeId <== approvedScopeIds[i];
+        predicateVerifiers[i].moratoriumUntilEpoch <== moratoriumUntilEpoch;
+        predicateVerifiers[i].timeLimitEpochs <== timeLimitEpochs;
         disabledCheckers[i] = IsEqual();
         disabledCheckers[i].in[0] <== predicateTypes[i];
         disabledCheckers[i].in[1] <== 4;
@@ -422,10 +427,20 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     paramsDigestHashers[12] = Poseidon(2);
     paramsDigestHashers[12].inputs[0] <== paramsDigestChain[12];
-    paramsDigestHashers[12].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestHashers[12].inputs[1] <== moratoriumUntilEpoch;
     paramsDigestChain[13] <== paramsDigestHashers[12].out;
 
-    paramsCommitment === paramsDigestChain[13];
+    paramsDigestHashers[13] = Poseidon(2);
+    paramsDigestHashers[13].inputs[0] <== paramsDigestChain[13];
+    paramsDigestHashers[13].inputs[1] <== timeLimitEpochs;
+    paramsDigestChain[14] <== paramsDigestHashers[13].out;
+
+    paramsDigestHashers[14] = Poseidon(2);
+    paramsDigestHashers[14].inputs[0] <== paramsDigestChain[14];
+    paramsDigestHashers[14].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestChain[15] <== paramsDigestHashers[14].out;
+
+    paramsCommitment === paramsDigestChain[15];
 
     // A type-5 credential identifies its holder as Poseidon(holderSecret).
     // Non-scoped policies cannot smuggle an unused secret into the witness.
@@ -513,6 +528,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal tmp2[M];
     signal tmp3[M];
     signal tmp4[M];
+    signal tmp5[M];
+    signal tmp6[M];
     
     // ═══════════════════════════════════════════════════════════════════════
     // ADDITIONAL CONSTRAINTS
@@ -523,14 +540,16 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         requesterAttrs[i] * (requesterAttrs[i] - 1) === 0;
     }
     
-    // Ensure predicate types are valid (0 through 5) using quadratic constraints.
+    // Ensure predicate types are valid (0 through 7) using quadratic constraints.
     for (var i = 0; i < M; i++) {
-        // Check the product of (type - 0) through (type - 5) is zero.
+        // Check the product of (type - 0) through (type - 7) is zero.
         // Break down into quadratic operations
         tmp1[i] <== predicateTypes[i] * (predicateTypes[i] - 1);
         tmp2[i] <== (predicateTypes[i] - 2) * (predicateTypes[i] - 3);
         tmp3[i] <== tmp1[i] * tmp2[i];
         tmp4[i] <== (predicateTypes[i] - 4) * (predicateTypes[i] - 5);
-        tmp3[i] * tmp4[i] === 0;
+        tmp5[i] <== (predicateTypes[i] - 6) * (predicateTypes[i] - 7);
+        tmp6[i] <== tmp3[i] * tmp4[i];
+        tmp6[i] * tmp5[i] === 0;
     }
 }

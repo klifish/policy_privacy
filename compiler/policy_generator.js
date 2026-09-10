@@ -36,6 +36,15 @@ const SCOPED_DUO_TERMS = Object.freeze({
   IS: { code: 'IS', duoId: 'DUO0000028', scopeKind: 28 }
 });
 const SCOPED_AFFILIATION_CREDENTIAL_V1 = 2002;
+const MORATORIUM_OBLIGATION_V1 = 2003;
+const TIME_LIMIT_OBLIGATION_V1 = 2004;
+const EPOCHS_PER_30_DAY_MONTH = 720n;
+const MAX_UINT32 = 4294967295n;
+
+const OBLIGATION_DUO_TERMS = Object.freeze({
+  MOR: { code: 'MOR', duoId: 'DUO0000024', predicateType: 6, schemaTag: MORATORIUM_OBLIGATION_V1 },
+  TS: { code: 'TS', duoId: 'DUO0000025', predicateType: 7, schemaTag: TIME_LIMIT_OBLIGATION_V1 }
+});
 
 // Flexible identifier mapping for DUO attributes.
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
@@ -80,9 +89,14 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
 });
 
 const SCOPED_ALIAS_MAP = Object.freeze({
-  US: 'US', USER_SPECIFIC: 'US', USER_SPECIFIC_RESTRICTION: 'US', DUO0000026: 'US',
-  PS: 'PS', PROJECT_SPECIFIC: 'PS', PROJECT_SPECIFIC_RESTRICTION: 'PS', DUO0000027: 'PS',
-  IS: 'IS', INSTITUTION_SPECIFIC: 'IS', INSTITUTION_SPECIFIC_RESTRICTION: 'IS', DUO0000028: 'IS'
+  US: 'US', USER_SPECIFIC: 'US', USER_SPECIFIC_RESTRICTION: 'US', DUO0000026: 'US', DUO_0000026: 'US',
+  PS: 'PS', PROJECT_SPECIFIC: 'PS', PROJECT_SPECIFIC_RESTRICTION: 'PS', DUO0000027: 'PS', DUO_0000027: 'PS',
+  IS: 'IS', INSTITUTION_SPECIFIC: 'IS', INSTITUTION_SPECIFIC_RESTRICTION: 'IS', DUO0000028: 'IS', DUO_0000028: 'IS'
+});
+
+const OBLIGATION_ALIAS_MAP = Object.freeze({
+  MOR: 'MOR', PUBLICATION_MORATORIUM: 'MOR', DUO0000024: 'MOR', DUO_0000024: 'MOR',
+  TS: 'TS', TIME_LIMIT_ON_USE: 'TS', TIME_LIMIT_USE: 'TS', DUO0000025: 'TS', DUO_0000025: 'TS'
 });
 
 // Operator table used by shunting-yard during logic parsing.
@@ -131,6 +145,22 @@ function canonicalizeScopedTerm(name) {
   if (!name) return null;
   const key = String(name).trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
   return SCOPED_ALIAS_MAP[key] || null;
+}
+
+function canonicalizeObligationTerm(name) {
+  if (!name) return null;
+  const key = String(name).trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
+  return OBLIGATION_ALIAS_MAP[key] || null;
+}
+
+function parsePositiveUint32(value, label) {
+  try {
+    const parsed = BigInt(value);
+    if (parsed <= 0n || parsed > MAX_UINT32) throw new Error('outside uint32');
+    return parsed;
+  } catch (_) {
+    throw new Error(`${label} must be a positive uint32 integer`);
+  }
 }
 
 // Normalize ontology namespace identifiers by consulting alias table.
@@ -220,6 +250,7 @@ function buildPredicateContext(predicates = []) {
   const bySlot = new Map();
   const namespaceToSlot = new Map();
   const scopeToSlot = new Map();
+  const obligationToSlot = new Map();
 
   predicates.forEach((raw, idx) => {
     if (typeof raw !== 'object' || raw === null) {
@@ -233,7 +264,33 @@ function buildPredicateContext(predicates = []) {
     }
     const rawDuo = raw.duo ?? raw.code ?? raw.attribute;
     const scopedTerm = canonicalizeScopedTerm(rawDuo);
-    if (scopedTerm) {
+    const obligationTerm = canonicalizeObligationTerm(rawDuo);
+    if (obligationTerm) {
+      if (raw.namespace ?? raw.ns ?? raw.ontology) {
+        throw new Error(`Obligation predicate ${obligationTerm} must not declare an ontology namespace`);
+      }
+      if (obligationToSlot.has(obligationTerm)) {
+        throw new Error(`Only one ${obligationTerm} obligation predicate is allowed per policy`);
+      }
+      if (obligationTerm === 'MOR') {
+        const deadline = parsePositiveUint32(raw.moratoriumUntilEpoch, 'MOR moratoriumUntilEpoch');
+        bySlot.set(raw.slot, {
+          slot: raw.slot, duo: obligationTerm, kind: 'moratorium',
+          moratoriumUntilEpoch: deadline.toString(), description: raw.description ?? null
+        });
+      } else {
+        const months = parsePositiveUint32(raw.durationMonths, 'TS durationMonths');
+        const duration = months * EPOCHS_PER_30_DAY_MONTH;
+        if (duration > MAX_UINT32) {
+          throw new Error('TS durationMonths produces a duration outside uint32');
+        }
+        bySlot.set(raw.slot, {
+          slot: raw.slot, duo: obligationTerm, kind: 'time-limit',
+          durationMonths: months.toString(), timeLimitEpochs: duration.toString(), description: raw.description ?? null
+        });
+      }
+      obligationToSlot.set(obligationTerm, raw.slot);
+    } else if (scopedTerm) {
       if (raw.scopeId === undefined || raw.scopeId === null || raw.scopeId === '') {
         throw new Error(`Scoped predicate ${scopedTerm} requires scopeId`);
       }
@@ -297,6 +354,11 @@ function buildPredicateContext(predicates = []) {
     slots: slots.map((slot) => bySlot.get(slot)),
     namespaceToSlot,
     scopeToSlot,
+    obligationToSlot,
+    obligationParameters: {
+      moratoriumUntilEpoch: (Array.from(bySlot.values()).find((p) => p.kind === 'moratorium') || {}).moratoriumUntilEpoch || '0',
+      timeLimitEpochs: (Array.from(bySlot.values()).find((p) => p.kind === 'time-limit') || {}).timeLimitEpochs || '0'
+    },
     scopeParameters: slots.map((slot) => {
       const predicate = bySlot.get(slot);
       return predicate.kind === 'scoped'
@@ -357,7 +419,8 @@ function tokenizeLogic(expr) {
         throw new Error('Empty predicate identifier inside P[...]');
       }
       const scopedTerm = canonicalizeScopedTerm(inner);
-      pushToken('PREDICATE', scopedTerm || canonicalizeNamespace(inner));
+      const obligationTerm = canonicalizeObligationTerm(inner);
+      pushToken('PREDICATE', scopedTerm || obligationTerm || canonicalizeNamespace(inner));
       i = endIdx + 1;
       continue;
     }
@@ -378,8 +441,9 @@ function tokenizeLogic(expr) {
       throw new Error('Boolean constants TRUE/FALSE are not supported in policy logic');
     } else {
       const scopedTerm = canonicalizeScopedTerm(raw);
-      if (scopedTerm) {
-        pushToken('PREDICATE', scopedTerm);
+      const obligationTerm = canonicalizeObligationTerm(raw);
+      if (scopedTerm || obligationTerm) {
+        pushToken('PREDICATE', scopedTerm || obligationTerm);
       } else {
         pushToken('ATTRIBUTE', canonicalizeAttribute(raw));
       }
@@ -682,6 +746,7 @@ function generateRandomizerBytes(byteLength = 31) {
 function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M = PRODUCTION_M) {
   const namespaceToSlot = predicateCtx.namespaceToSlot;
   const scopeToSlot = predicateCtx.scopeToSlot;
+  const obligationToSlot = predicateCtx.obligationToSlot;
   const attributeIndexByCode = attributeCtx.indexByCode;
 
   const tokens = [];
@@ -700,7 +765,7 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
     } else if (tok.type === 'PREDICATE') {
       const slot = namespaceToSlot.has(tok.value)
         ? namespaceToSlot.get(tok.value)
-        : scopeToSlot.get(tok.value);
+        : (scopeToSlot.has(tok.value) ? scopeToSlot.get(tok.value) : obligationToSlot.get(tok.value));
       if (slot === undefined) {
         throw new Error(`No predicate slot declared for ${tok.value}`);
       }
@@ -742,7 +807,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   }
 
   predicateCtx.slots.forEach((slotInfo) => {
-    if (slotInfo.kind === 'scoped') {
+    if (slotInfo.kind === 'scoped' || slotInfo.kind === 'moratorium' || slotInfo.kind === 'time-limit') {
       return;
     }
     const expectedNamespace = attributeCtx.namespaceByCode[slotInfo.duo];
@@ -845,14 +910,23 @@ async function generatePolicyArtifacts(config, options = {}) {
       slots: predicateCtx.slots,
       namespaceToSlot: Object.fromEntries(predicateCtx.namespaceToSlot.entries()),
       scopeToSlot: Object.fromEntries(predicateCtx.scopeToSlot.entries()),
+      obligationToSlot: Object.fromEntries(predicateCtx.obligationToSlot.entries()),
       scopeParameters: {
         predicateTypes: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'scoped' ? 5 : 4;
+          if (!p) return 4;
+          if (p.kind === 'scoped') return 5;
+          if (p.kind === 'moratorium') return 6;
+          if (p.kind === 'time-limit') return 7;
+          return 4;
         }),
         predicateSchemaTags: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'scoped' ? SCOPED_AFFILIATION_CREDENTIAL_V1 : 0;
+          if (!p) return 0;
+          if (p.kind === 'scoped') return SCOPED_AFFILIATION_CREDENTIAL_V1;
+          if (p.kind === 'moratorium') return MORATORIUM_OBLIGATION_V1;
+          if (p.kind === 'time-limit') return TIME_LIMIT_OBLIGATION_V1;
+          return 0;
         }),
         scopeKinds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
@@ -865,7 +939,9 @@ async function generatePolicyArtifacts(config, options = {}) {
         credPublicKeys: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           return p && p.kind === 'scoped' ? p.issuerKeyCommitment : '0';
-        })
+        }),
+        moratoriumUntilEpoch: predicateCtx.obligationParameters.moratoriumUntilEpoch,
+        timeLimitEpochs: predicateCtx.obligationParameters.timeLimitEpochs
       }
     },
     logic: {

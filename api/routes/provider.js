@@ -77,6 +77,14 @@ router.post('/register-resource', async (req, res, next) => {
             }
             return supplied;
         };
+        const bindObligation = (name) => {
+            const generated = scoped[name] ?? '0';
+            const supplied = policyParameters[name] ?? generated;
+            if (String(supplied) !== String(generated)) {
+                throw new Error(`policyParameters.${name} must match the compiled obligation predicate`);
+            }
+            return generated;
+        };
         const v2Params = {
             predicateTypes: bindScoped('predicateTypes', 4),
             predicateSchemaTags: bindScoped('predicateSchemaTags', 0),
@@ -89,7 +97,9 @@ router.post('/register-resource', async (req, res, next) => {
             ontologyPolicyIds: slots(policyParameters.ontologyPolicyIds, 'ontologyPolicyIds', '0'),
             ontologyEpochs: slots(policyParameters.ontologyEpochs, 'ontologyEpochs', '0'),
             policyValidFromEpoch: policyParameters.policyValidFromEpoch ?? Math.floor(Date.now() / 3_600_000),
-            policyValidUntilEpoch: policyParameters.policyValidUntilEpoch ?? 4294967295
+            policyValidUntilEpoch: policyParameters.policyValidUntilEpoch ?? 4294967295,
+            moratoriumUntilEpoch: bindObligation('moratoriumUntilEpoch'),
+            timeLimitEpochs: bindObligation('timeLimitEpochs')
         };
         const paramsCommitment = await calculateParamsCommitment(v2Params);
 
@@ -105,7 +115,23 @@ router.post('/register-resource', async (req, res, next) => {
         const contractWithSigner = req.contract.connect(signer);
 
         let tx, receipt;
-        if (useGasPad) {
+        const hasTimeLimit = BigInt(v2Params.timeLimitEpochs) > 0n;
+        if (hasTimeLimit && useGasPad) {
+            tx = await contractWithSigner.commitPolicyWithTimeLimitAndGasPad(
+                BigInt(commitment),
+                BigInt(paramsCommitment),
+                metadataURI,
+                BigInt(v2Params.timeLimitEpochs),
+                gasPadTarget()
+            );
+        } else if (hasTimeLimit) {
+            tx = await contractWithSigner.commitPolicyWithTimeLimit(
+                BigInt(commitment),
+                BigInt(paramsCommitment),
+                metadataURI,
+                BigInt(v2Params.timeLimitEpochs)
+            );
+        } else if (useGasPad) {
             tx = await contractWithSigner.commitPolicyWithGasPad(
                 BigInt(commitment),
                 BigInt(paramsCommitment),
@@ -170,6 +196,9 @@ router.post('/register-resource', async (req, res, next) => {
             resourceId,
             commitment: commitment.toString(),
             paramsCommitment: paramsCommitment.toString(),
+            // TS is intentionally public because the ACM enforces it.  MOR
+            // stays only inside paramsCommitment and is never returned here.
+            timeLimitEpochs: v2Params.timeLimitEpochs,
             transactionHash: tx.hash,
             resourceTransactionHash: resourceTx.hash,
             gasUsed: receipt.gasUsed.toString()

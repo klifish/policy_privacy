@@ -43,6 +43,9 @@ const router = express.Router();
 // Base resolves from app.locals.accessGasPadTarget (runtime/injectable) first,
 // then the TPS_ACCESS_GAS_PAD_TARGET env var.
 const ACCESS_GAS_PAD_VARIANCE = 0.1; // ±10%
+const MAX_UINT32 = 4_294_967_295n;
+const MOR_SCHEMA_TAG = 2003;
+const TS_SCHEMA_TAG = 2004;
 
 function resolveAccessGasPadBase(app) {
     const fromLocals = app && app.locals && app.locals.accessGasPadTarget;
@@ -57,6 +60,40 @@ function randomizedAccessGasTarget(base) {
     const r = crypto.randomBytes(4).readUInt32BE(0) / 0xFFFFFFFF; // [0,1]
     const factor = 1 + (r - 0.5) * 2 * ACCESS_GAS_PAD_VARIANCE;
     return BigInt(Math.floor(b * factor));
+}
+
+function validateObligationMaterial(material) {
+    const morSlots = [];
+    const tsSlots = [];
+    for (let slot = 0; slot < material.predicateTypes.length; slot += 1) {
+        const type = Number(material.predicateTypes[slot]);
+        if (type === 6) morSlots.push(slot);
+        if (type === 7) tsSlots.push(slot);
+    }
+    if (morSlots.length > 1 || tsSlots.length > 1) {
+        throw new Error('material may contain at most one MOR and one TS predicate');
+    }
+
+    const deadline = BigInt(material.moratoriumUntilEpoch);
+    const duration = BigInt(material.timeLimitEpochs);
+    if (deadline < 0n || deadline > MAX_UINT32 || duration < 0n || duration > MAX_UINT32) {
+        throw new Error('material MOR/TS policy parameters must be uint32 integers');
+    }
+    if ((morSlots.length === 1 && deadline === 0n) || (morSlots.length === 0 && deadline !== 0n)) {
+        throw new Error('material MOR deadline must be non-zero exactly when a MOR slot is present');
+    }
+    if ((tsSlots.length === 1 && duration === 0n) || (tsSlots.length === 0 && duration !== 0n)) {
+        throw new Error('material TS duration must be non-zero exactly when a TS slot is present');
+    }
+    for (const slot of [...morSlots, ...tsSlots]) {
+        const expectedSchema = material.predicateTypes[slot] == 6 ? MOR_SCHEMA_TAG : TS_SCHEMA_TAG;
+        if (Number(material.predicateSchemaTags[slot]) !== expectedSchema) {
+            throw new Error(`material obligation schema is invalid at slot ${slot}`);
+        }
+        if (BigInt(material.scopeKinds[slot]) !== 0n || BigInt(material.approvedScopeIds[slot]) !== 0n) {
+            throw new Error(`material obligation scope fields must be zero at slot ${slot}`);
+        }
+    }
 }
 
 // ── POST /tps/provision ───────────────────────────────────────────────────────
@@ -80,6 +117,14 @@ router.post('/provision', async (req, res) => {
         }
         if (material.policyValidFromEpoch === undefined || material.policyValidUntilEpoch === undefined) {
             return res.status(400).json({ error: 'material policy validity epochs are required' });
+        }
+        if (material.moratoriumUntilEpoch === undefined || material.timeLimitEpochs === undefined) {
+            return res.status(400).json({ error: 'material MOR/TS policy parameters are required' });
+        }
+        try {
+            validateObligationMaterial(material);
+        } catch (err) {
+            return res.status(400).json({ error: err.message });
         }
 
         store.provisionPolicy(policyId, material);
@@ -133,6 +178,15 @@ router.post('/prove', async (req, res) => {
         if (!material) {
             return res.status(404).json({
                 error: `Policy material not provisioned for policyId=${policyId}`
+            });
+        }
+
+        // A time-limited policy is only authoritative once the ACM performs
+        // its first-use/expiry state transition. Proof-oracle mode cannot make
+        // that decision independently.
+        if (BigInt(material.timeLimitEpochs || 0) > 0n && !submitOnChain) {
+            return res.status(400).json({
+                error: 'TS policies require submitOnChain=true for contract-enforced time limits'
             });
         }
 

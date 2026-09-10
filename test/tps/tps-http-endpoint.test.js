@@ -76,6 +76,10 @@ function buildMaterial(artifacts, paramsCommitment) {
         rangeMax: zeros,
         ontologyPolicyIds: zeros,
         ontologyEpochs: zeros,
+        policyValidFromEpoch: 0,
+        policyValidUntilEpoch: 4294967295,
+        moratoriumUntilEpoch: 0,
+        timeLimitEpochs: 0,
         numOperations: artifacts.numOperations
     };
 }
@@ -109,12 +113,8 @@ describe('TPS Chain Submission', function () {
         // Use explicit zero arrays so paramsCommitment matches what the circuit
         // recomputes internally from those same parameter arrays.
         sharedArtifacts = await compilePolicy('GR');
-        const zeros = Array(5).fill('0');
-        sharedParamsCommitment = await calculateParamsCommitment({
-            merkleRoots: zeros, credPublicKeys: zeros,
-            rangeMin: zeros, rangeMax: zeros,
-            ontologyPolicyIds: zeros, ontologyEpochs: zeros
-        });
+        const material = buildMaterial(sharedArtifacts, '0');
+        sharedParamsCommitment = await calculateParamsCommitment(material);
 
         const commitTx = await contract.connect(provider)['commitPolicy(uint256,uint256,string)'](
             BigInt(sharedArtifacts.policyCommitment),

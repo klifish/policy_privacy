@@ -281,6 +281,29 @@ template SignedScopedCredentialVerifier() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 2c. POLICY OBLIGATION VERIFIER (MOR / TS)
+// ═══════════════════════════════════════════════════════════════════════════
+
+template PolicyObligationVerifier(SCHEMA_TAG) {
+    signal input schemaTag;
+    signal input epochValue;
+    signal output isValid;
+
+    // MOR and TS parameters are policy parameters, not requester claims.
+    // Keep the value inside the 32-bit epoch representation used everywhere
+    // else in the circuit and reject the canonical zero sentinel.
+    component schemaMatches = IsEqual();
+    schemaMatches.in[0] <== schemaTag;
+    schemaMatches.in[1] <== SCHEMA_TAG;
+    component epochBits = Num2Bits(32);
+    epochBits.in <== epochValue;
+    component isZero = IsEqual();
+    isZero.in[0] <== epochValue;
+    isZero.in[1] <== 0;
+    isValid <== schemaMatches.out * (1 - isZero.out);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 3. RANGE/THRESHOLD PROOF VERIFIER
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -396,7 +419,7 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 
 template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked,
-    // 4=disabled, 5=scoped membership)
+    // 4=disabled, 5=scoped credential, 6=MOR, 7=TS)
     signal input predicateType;
     
     // Merkle proof inputs
@@ -438,6 +461,8 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // the credential fields and signature remain private witness values.
     signal input scopeKind;
     signal input approvedScopeId;
+    signal input moratoriumUntilEpoch;
+    signal input timeLimitEpochs;
     
     // Output
     signal output isValid;
@@ -448,7 +473,9 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     component rangeVerifier;
     component ontologyVerifier;
     component scopedVerifier;
-    component type0Check, type1Check, type2Check, type3Check, type5Check;
+    component moratoriumVerifier;
+    component timeLimitVerifier;
+    component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check;
     
     // Select result based on predicate type using manual selection
     // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
@@ -472,6 +499,20 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     type5Check = IsEqual();
     type5Check.in[0] <== predicateType;
     type5Check.in[1] <== 5;
+    type6Check = IsEqual();
+    type6Check.in[0] <== predicateType;
+    type6Check.in[1] <== 6;
+    type7Check = IsEqual();
+    type7Check.in[0] <== predicateType;
+    type7Check.in[1] <== 7;
+
+    // MOR and TS are policy-level obligations, not scoped credentials.  Their
+    // slots must not carry a scope kind or scope identifier that could be
+    // confused with a US/PS/IS assertion.
+    signal obligationTypeSelected;
+    obligationTypeSelected <== type6Check.out + type7Check.out;
+    scopeKind * obligationTypeSelected === 0;
+    approvedScopeId * obligationTypeSelected === 0;
 
     // Instantiate all verifiers
     merkleVerifier = MerkleProofVerifier(MERKLE_LEVELS);
@@ -479,6 +520,8 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     rangeVerifier = RangeProof(RANGE_BITS);
     ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
     scopedVerifier = SignedScopedCredentialVerifier();
+    moratoriumVerifier = PolicyObligationVerifier(2003);
+    timeLimitVerifier = PolicyObligationVerifier(2004);
     
     // Connect merkle verifier
     merkleVerifier.leaf <== merkleLeaf;
@@ -524,6 +567,11 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     scopedVerifier.issuerAx <== credIssuerAx;
     scopedVerifier.issuerAy <== credIssuerAy;
     scopedVerifier.publicKey <== credPublicKey;
+
+    moratoriumVerifier.schemaTag <== predicateSchemaTag;
+    moratoriumVerifier.epochValue <== moratoriumUntilEpoch;
+    timeLimitVerifier.schemaTag <== predicateSchemaTag;
+    timeLimitVerifier.epochValue <== timeLimitEpochs;
     
     // Connect range verifier
     rangeVerifier.value <== rangeValue;
@@ -547,15 +595,20 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal rangeSelected;
     signal ontologySelected;
     signal scopedSelected;
-    signal partialSum1, partialSum2;
+    signal moratoriumSelected;
+    signal timeLimitSelected;
+    signal partialSum1, partialSum2, partialSum3;
     
     merkleSelected <== type0Check.out * merkleVerifier.isValid;
     signatureSelected <== type1Check.out * signatureVerifier.isValid;
     rangeSelected <== type2Check.out * rangeVerifier.isValid;
     ontologySelected <== type3Check.out * ontologyVerifier.pred;
     scopedSelected <== type5Check.out * scopedVerifier.isValid;
+    moratoriumSelected <== type6Check.out * moratoriumVerifier.isValid;
+    timeLimitSelected <== type7Check.out * timeLimitVerifier.isValid;
     
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
-    isValid <== partialSum2 + ontologySelected + scopedSelected;
+    partialSum3 <== partialSum2 + ontologySelected;
+    isValid <== partialSum3 + scopedSelected + moratoriumSelected + timeLimitSelected;
 }

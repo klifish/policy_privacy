@@ -61,6 +61,8 @@ contract PolicyPrivacy {
     event PolicyRevoked(address indexed dataSubject, uint256 indexed policyId);
     event PolicyVersionCommitted(uint256 indexed policyId, uint256 indexed supersedesPolicyId);
     event ResourcePolicyRebound(uint256 indexed resourceId, uint256 indexed oldPolicyId, uint256 indexed newPolicyId);
+    event PolicyTimeLimitConfigured(uint256 indexed policyId, uint256 timeLimitEpochs);
+    event RequesterTimeLimitStarted(uint256 indexed policyId, uint256 indexed requesterId, uint256 startEpoch, uint256 expiryEpoch);
 
     // Struct for policy commitments
     struct PolicyCommitment {
@@ -93,6 +95,11 @@ contract PolicyPrivacy {
         bool isActive;
     }
 
+    struct RequesterTimeLimit {
+        uint256 startEpoch;
+        uint256 expiryEpoch;
+    }
+
     // Contract state
     IVerifier public immutable verifier;
     IPoseidon3 public immutable contextHasher;
@@ -111,6 +118,10 @@ contract PolicyPrivacy {
     // cannot be reused to record an authorization for another.
     mapping(bytes32 => bool) public usedNonces;
     mapping(uint256 => uint256) public policySuccessor;
+    // A non-zero duration makes TS public and contract-enforced. The state is
+    // shared by all resources governed by the same policy.
+    mapping(uint256 => uint256) public policyTimeLimitEpochs;
+    mapping(uint256 => mapping(uint256 => RequesterTimeLimit)) private requesterTimeLimits;
 
     // Emergency controls
     address public immutable owner;
@@ -329,6 +340,35 @@ contract PolicyPrivacy {
         string calldata _metadataURI
     ) external notPaused returns (uint256) {
         return _commitPolicy(_commitment, 0, _metadataURI, 0);
+    }
+
+    /** Commit a policy with a public, requester-first-use TS duration. */
+    function commitPolicyWithTimeLimit(
+        uint256 _commitment,
+        uint256 _paramsCommitment,
+        string calldata _metadataURI,
+        uint256 _timeLimitEpochs
+    ) public notPaused returns (uint256 policyId) {
+        require(_timeLimitEpochs > 0, "Time limit is zero");
+        policyId = _commitPolicy(_commitment, _paramsCommitment, _metadataURI, 0);
+        policyTimeLimitEpochs[policyId] = _timeLimitEpochs;
+        emit PolicyTimeLimitConfigured(policyId, _timeLimitEpochs);
+    }
+
+    /** Time-limited policy commit with optional gas normalization. */
+    function commitPolicyWithTimeLimitAndGasPad(
+        uint256 _commitment,
+        uint256 _paramsCommitment,
+        string calldata _metadataURI,
+        uint256 _timeLimitEpochs,
+        uint256 targetGas
+    ) external notPaused returns (uint256 policyId) {
+        uint256 startGas = gasleft();
+        require(_timeLimitEpochs > 0, "Time limit is zero");
+        policyId = _commitPolicy(_commitment, _paramsCommitment, _metadataURI, 0);
+        policyTimeLimitEpochs[policyId] = _timeLimitEpochs;
+        emit PolicyTimeLimitConfigured(policyId, _timeLimitEpochs);
+        _padGasToTarget(startGas, targetGas);
     }
 
     /**
@@ -601,6 +641,29 @@ contract PolicyPrivacy {
         return policyId;
     }
 
+    /**
+     * @dev Commit a direct successor carrying a public TS duration.  A new
+     * policy ID deliberately gets fresh requester windows, even when it
+     * supersedes a time-limited predecessor.
+     */
+    function commitPolicyVersionWithTimeLimit(
+        uint256 _commitment,
+        uint256 _paramsCommitment,
+        string calldata _metadataURI,
+        uint256 _supersedesPolicyId,
+        uint256 _timeLimitEpochs
+    ) external notPaused returns (uint256 policyId) {
+        require(_timeLimitEpochs > 0, "Time limit is zero");
+        require(_supersedesPolicyId != 0, "Missing predecessor");
+        require(policies[_supersedesPolicyId].isActive, "Predecessor not active");
+        require(policies[_supersedesPolicyId].dataSubject == msg.sender, "Not predecessor subject");
+        require(policySuccessor[_supersedesPolicyId] == 0, "Predecessor already superseded");
+        policyId = _commitPolicy(_commitment, _paramsCommitment, _metadataURI, _supersedesPolicyId);
+        policySuccessor[_supersedesPolicyId] = policyId;
+        policyTimeLimitEpochs[policyId] = _timeLimitEpochs;
+        emit PolicyTimeLimitConfigured(policyId, _timeLimitEpochs);
+    }
+
     /** Rebind one resource to its policy's direct successor. */
     function rebindResourcePolicy(uint256 _resourceId, uint256 _newPolicyId) external notPaused {
         Resource storage resource = resources[_resourceId];
@@ -717,6 +780,13 @@ contract PolicyPrivacy {
         require(_idReq < SNARK_SCALAR_FIELD && _nonce < SNARK_SCALAR_FIELD, "Context value outside SNARK field");
         require(_requestEpoch == block.timestamp / EPOCH_SECONDS, "Stale request epoch");
         require(_pubSignals[4] == _requestEpoch, "Request epoch mismatch");
+        uint256 timeLimitEpochs = policyTimeLimitEpochs[_policyId];
+        RequesterTimeLimit storage timeLimit = requesterTimeLimits[_policyId][_idReq];
+        if (timeLimitEpochs != 0 && timeLimit.expiryEpoch != 0) {
+            // The TS interval is [startEpoch, expiryEpoch): at the expiry
+            // epoch and later, no further authorization decision is allowed.
+            require(_requestEpoch < timeLimit.expiryEpoch, "Time limit expired");
+        }
         // Authorization-context binding: the proof's public signal must be the
         // digest of THIS request's context. The circuit constrains
         // contextHash === Poseidon(id_req || id_res || nonce), so recomputing
@@ -744,6 +814,31 @@ contract PolicyPrivacy {
         requestId = _requestAccess(
             _policyId, _idReq, _resourceId, _pA, _pB, _pC, _pubSignals
         );
+
+        // Start the policy-wide TS window only after a valid, authorized
+        // request. Failed proofs and denials cannot consume the requester’s
+        // time-limited use period.
+        if (timeLimitEpochs != 0 && timeLimit.expiryEpoch == 0 && accessRequests[requestId].isGranted) {
+            require(_requestEpoch <= type(uint256).max - timeLimitEpochs, "Time limit overflow");
+            timeLimit.startEpoch = _requestEpoch;
+            timeLimit.expiryEpoch = _requestEpoch + timeLimitEpochs;
+            emit RequesterTimeLimitStarted(_policyId, _idReq, timeLimit.startEpoch, timeLimit.expiryEpoch);
+        }
+    }
+
+    /** Return the public TS duration configured for a policy (zero = no TS). */
+    function getPolicyTimeLimit(uint256 _policyId) external view returns (uint256) {
+        return policyTimeLimitEpochs[_policyId];
+    }
+
+    /** Return the TS window for one requester under one policy. */
+    function getRequesterTimeLimit(uint256 _policyId, uint256 _requesterId)
+        external
+        view
+        returns (uint256 startEpoch, uint256 expiryEpoch)
+    {
+        RequesterTimeLimit memory limit = requesterTimeLimits[_policyId][_requesterId];
+        return (limit.startEpoch, limit.expiryEpoch);
     }
 
     /**

@@ -192,6 +192,8 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         ontologyEpochs: exactPolicyArray(policyMaterial.ontologyEpochs, 'ontologyEpochs'),
         policyValidFromEpoch: String(policyMaterial.policyValidFromEpoch),
         policyValidUntilEpoch: String(policyMaterial.policyValidUntilEpoch),
+        moratoriumUntilEpoch: String(policyMaterial.moratoriumUntilEpoch ?? 0),
+        timeLimitEpochs: String(policyMaterial.timeLimitEpochs ?? 0),
         requestEpoch: String(requestEpoch)
     };
 
@@ -236,7 +238,9 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
         scopeKinds: witness.scopeKinds,
         approvedScopeIds: witness.approvedScopeIds,
         policyValidFromEpoch: witness.policyValidFromEpoch,
-        policyValidUntilEpoch: witness.policyValidUntilEpoch
+        policyValidUntilEpoch: witness.policyValidUntilEpoch,
+        moratoriumUntilEpoch: witness.moratoriumUntilEpoch,
+        timeLimitEpochs: witness.timeLimitEpochs
     });
 
     if (policyMaterial.paramsCommitment && String(policyMaterial.paramsCommitment) !== witness.paramsCommitment) {
