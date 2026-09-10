@@ -46,6 +46,7 @@ const ACCESS_GAS_PAD_VARIANCE = 0.1; // ±10%
 const MAX_UINT32 = 4_294_967_295n;
 const MOR_SCHEMA_TAG = 2003;
 const TS_SCHEMA_TAG = 2004;
+const USER_ALLOWLIST_SCHEMA_TAG = 2005;
 
 function resolveAccessGasPadBase(app) {
     const fromLocals = app && app.locals && app.locals.accessGasPadTarget;
@@ -96,6 +97,46 @@ function validateObligationMaterial(material) {
     }
 }
 
+function validateUserAllowlistMaterial(material) {
+    const userSlots = [];
+    for (let slot = 0; slot < material.predicateTypes.length; slot += 1) {
+        if (Number(material.predicateTypes[slot]) === 8) userSlots.push(slot);
+    }
+    for (const slot of userSlots) {
+        if (Number(material.predicateSchemaTags[slot]) !== USER_ALLOWLIST_SCHEMA_TAG) {
+            throw new Error(`material requester allowlist schema is invalid at slot ${slot}`);
+        }
+        if (BigInt(material.merkleRoots[slot]) === 0n) {
+            throw new Error(`material requester allowlist root must be non-zero at slot ${slot}`);
+        }
+        const scopeKind = BigInt(material.scopeKinds[slot]);
+        const scopeId = BigInt(material.approvedScopeIds[slot]);
+        if (![26n, 27n, 28n].includes(scopeKind) ||
+            (scopeKind === 26n && scopeId !== 0n) ||
+            (scopeKind !== 26n && scopeId <= 0n) ||
+            BigInt(material.credPublicKeys[slot]) !== 0n) {
+            throw new Error(`material requester allowlist metadata is invalid at slot ${slot}`);
+        }
+    }
+}
+
+function validateUserAllowlistEvidence(material, evidence) {
+    const userSlots = material.predicateTypes
+        .map((type, slot) => (Number(type) === 8 ? slot : -1))
+        .filter((slot) => slot >= 0);
+    for (const slot of userSlots) {
+        const elements = evidence.merklePathElements?.[slot];
+        const indices = evidence.merklePathIndices?.[slot];
+        if (!Array.isArray(elements) || elements.length !== 8 ||
+            !Array.isArray(indices) || indices.length !== 8) {
+            throw new Error(`evidence requires an 8-level Merkle path for requester allowlist slot ${slot}`);
+        }
+        if (indices.some((index) => Number(index) !== 0 && Number(index) !== 1)) {
+            throw new Error(`evidence requester allowlist path indices must be bits at slot ${slot}`);
+        }
+    }
+}
+
 // ── POST /tps/provision ───────────────────────────────────────────────────────
 // Stage 2: Provider provisions policy-bound proving material.
 router.post('/provision', async (req, res) => {
@@ -123,6 +164,7 @@ router.post('/provision', async (req, res) => {
         }
         try {
             validateObligationMaterial(material);
+            validateUserAllowlistMaterial(material);
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -200,13 +242,17 @@ router.post('/prove', async (req, res) => {
             });
         }
 
-        // Scoped credentials are holder-bound: never trust a requesterId sent
-        // alongside the credential. The trusted TPS derives it from the secret
-        // that the credential issuer signed into the claim.
-        const usesScopedCredential = material.predicateTypes.some((type) => Number(type) === 5);
-        if (usesScopedCredential) {
+        // Signed scoped credentials and requester allowlist proofs are holder-bound:
+        // never trust a requesterId alongside either proof. The TPS derives
+        // it from holderSecret; type 8 then proves that pseudonym is in the
+        // provider-committed US, PS, or IS requester allowlist.
+        const usesHolderBoundProof = material.predicateTypes.some((type) => {
+            const predicateType = Number(type);
+            return predicateType === 5 || predicateType === 8;
+        });
+        if (usesHolderBoundProof) {
             if (evidence.holderSecret === undefined || evidence.holderSecret === null || evidence.holderSecret === '') {
-                return res.status(400).json({ error: 'evidence.holderSecret is required for signed scoped credentials' });
+                return res.status(400).json({ error: 'evidence.holderSecret is required for holder-bound credentials or requester allowlists' });
             }
             try {
                 evidence.requesterId = await calculateRequesterId(evidence.holderSecret);
@@ -216,6 +262,11 @@ router.post('/prove', async (req, res) => {
         }
         if (evidence.requesterId === undefined || evidence.requesterId === null || evidence.requesterId === '') {
             return res.status(400).json({ error: 'evidence.requesterId is required (bound into the proof statement)' });
+        }
+        try {
+            validateUserAllowlistEvidence(material, evidence);
+        } catch (err) {
+            return res.status(400).json({ error: err.message });
         }
 
         // Create session record for audit trail

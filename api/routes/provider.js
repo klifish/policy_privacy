@@ -65,14 +65,15 @@ router.post('/register-resource', async (req, res, next) => {
             return actual;
         };
         const scoped = artifacts.predicates.scopeParameters;
-        const bindScoped = (name, fallback) => {
-            const generated = scoped[name];
+        const bindPolicyBound = (name, fallback) => {
+            const generated = scoped[name] ?? Array(5).fill(fallback);
             const supplied = policyParameters[name]
                 ? slots(policyParameters[name], name, fallback)
                 : generated.slice();
             for (const predicate of artifacts.predicates.slots) {
-                if (predicate.kind === 'scoped' && String(supplied[predicate.slot]) !== String(generated[predicate.slot])) {
-                    throw new Error(`policyParameters.${name}[${predicate.slot}] must match the compiled scoped predicate`);
+                if ((predicate.kind === 'scoped' || predicate.kind === 'requester-allowlist') &&
+                    String(supplied[predicate.slot]) !== String(generated[predicate.slot])) {
+                    throw new Error(`policyParameters.${name}[${predicate.slot}] must match the compiled policy predicate`);
                 }
             }
             return supplied;
@@ -86,12 +87,12 @@ router.post('/register-resource', async (req, res, next) => {
             return generated;
         };
         const v2Params = {
-            predicateTypes: bindScoped('predicateTypes', 4),
-            predicateSchemaTags: bindScoped('predicateSchemaTags', 0),
-            scopeKinds: bindScoped('scopeKinds', 0),
-            approvedScopeIds: bindScoped('approvedScopeIds', '0'),
-            merkleRoots: slots(policyParameters.merkleRoots, 'merkleRoots', '0'),
-            credPublicKeys: bindScoped('credPublicKeys', '0'),
+            predicateTypes: bindPolicyBound('predicateTypes', 4),
+            predicateSchemaTags: bindPolicyBound('predicateSchemaTags', 0),
+            scopeKinds: bindPolicyBound('scopeKinds', 0),
+            approvedScopeIds: bindPolicyBound('approvedScopeIds', '0'),
+            merkleRoots: bindPolicyBound('merkleRoots', '0'),
+            credPublicKeys: bindPolicyBound('credPublicKeys', '0'),
             rangeMin: slots(policyParameters.rangeMin, 'rangeMin', '0'),
             rangeMax: slots(policyParameters.rangeMax, 'rangeMax', '0'),
             ontologyPolicyIds: slots(policyParameters.ontologyPolicyIds, 'ontologyPolicyIds', '0'),

@@ -56,9 +56,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // Predicate types and schema tags are provider-provisioned policy
     // parameters.  They are committed through paramsCommitment below, so the
     // requester cannot reinterpret a slot under a weaker verifier.
-    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled, 5=scoped, 6=MOR, 7=TS
+    signal input predicateTypes[M];                     // 0=Merkle, 1=typed approval, 2=range, 3=ontology, 4=disabled, 5=signed scoped, 6=MOR, 7=TS, 8=US allowlist
     signal input predicateSchemaTags[M];
-    signal input scopeKinds[M];                         // 26=US, 27=PS, 28=IS
+    signal input scopeKinds[M];                         // requester terms: 26=US, 27=PS, 28=IS
     signal input approvedScopeIds[M];
     
     // Merkle proof inputs (for predicates that use them)
@@ -157,6 +157,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component predicateVerifiers[M];
     component disabledCheckers[M];
     component scopedCheckers[M];
+    component userAllowlistCheckers[M];
     component merkleRootHashers[M];
     component predicateTypeHashers[M];
     component predicateSchemaTagHashers[M];
@@ -249,7 +250,13 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         scopedCheckers[i] = IsEqual();
         scopedCheckers[i].in[0] <== predicateTypes[i];
         scopedCheckers[i].in[1] <== 5;
-        scopedFlags[i] <== scopedCheckers[i].out;
+        userAllowlistCheckers[i] = IsEqual();
+        userAllowlistCheckers[i].in[0] <== predicateTypes[i];
+        userAllowlistCheckers[i].in[1] <== 8;
+        // Signed scoped credentials and all requester allowlists bind idReq to
+        // holderSecret. A policy may combine multiple type-8 allowlists; the
+        // cumulative flag only gates the shared holder binding below.
+        scopedFlags[i] <== scopedCheckers[i].out + userAllowlistCheckers[i].out;
         scopedFlagSum[i + 1] <== scopedFlagSum[i] + scopedFlags[i];
         
         // Connect Merkle proof inputs
@@ -442,8 +449,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     paramsCommitment === paramsDigestChain[15];
 
-    // A type-5 credential identifies its holder as Poseidon(holderSecret).
-    // Non-scoped policies cannot smuggle an unused secret into the witness.
+    // Holder-bound credentials (type 5) and requester allowlists (type 8)
+    // identify their holder as Poseidon(holderSecret). Non-holder-bound
+    // policies cannot smuggle an unused secret into the witness.
     noScopedPredicate = IsEqual();
     noScopedPredicate.in[0] <== scopedFlagSum[M];
     noScopedPredicate.in[1] <== 0;
@@ -530,6 +538,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal tmp4[M];
     signal tmp5[M];
     signal tmp6[M];
+    signal tmp7[M];
     
     // ═══════════════════════════════════════════════════════════════════════
     // ADDITIONAL CONSTRAINTS
@@ -540,9 +549,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         requesterAttrs[i] * (requesterAttrs[i] - 1) === 0;
     }
     
-    // Ensure predicate types are valid (0 through 7) using quadratic constraints.
+    // Ensure predicate types are valid (0 through 8) using quadratic constraints.
     for (var i = 0; i < M; i++) {
-        // Check the product of (type - 0) through (type - 7) is zero.
+        // Check the product of (type - 0) through (type - 8) is zero.
         // Break down into quadratic operations
         tmp1[i] <== predicateTypes[i] * (predicateTypes[i] - 1);
         tmp2[i] <== (predicateTypes[i] - 2) * (predicateTypes[i] - 3);
@@ -550,6 +559,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         tmp4[i] <== (predicateTypes[i] - 4) * (predicateTypes[i] - 5);
         tmp5[i] <== (predicateTypes[i] - 6) * (predicateTypes[i] - 7);
         tmp6[i] <== tmp3[i] * tmp4[i];
-        tmp6[i] * tmp5[i] === 0;
+        tmp7[i] <== tmp6[i] * tmp5[i];
+        tmp7[i] * (predicateTypes[i] - 8) === 0;
     }
 }

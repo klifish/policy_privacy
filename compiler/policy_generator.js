@@ -38,6 +38,8 @@ const SCOPED_DUO_TERMS = Object.freeze({
 const SCOPED_AFFILIATION_CREDENTIAL_V1 = 2002;
 const MORATORIUM_OBLIGATION_V1 = 2003;
 const TIME_LIMIT_OBLIGATION_V1 = 2004;
+const USER_ALLOWLIST_V1 = 2005;
+const BN254_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 const EPOCHS_PER_30_DAY_MONTH = 720n;
 const MAX_UINT32 = 4294967295n;
 
@@ -290,6 +292,45 @@ function buildPredicateContext(predicates = []) {
         });
       }
       obligationToSlot.set(obligationTerm, raw.slot);
+    } else if (scopedTerm && raw.legacySignedCredential !== true) {
+      const allowlistRoot = raw.allowlistRoot ?? raw.requesterAllowlistRoot;
+      if (allowlistRoot === undefined || allowlistRoot === null || allowlistRoot === '') {
+        throw new Error(`${scopedTerm} predicate requires a non-zero allowlistRoot`);
+      }
+      try {
+        const root = BigInt(allowlistRoot);
+        if (root <= 0n || root >= BN254_SCALAR_FIELD) throw new Error('root outside field');
+      } catch (_) {
+        throw new Error(`${scopedTerm} predicate requires a non-zero BN254 field allowlistRoot`);
+      }
+      if (raw.namespace ?? raw.ns ?? raw.ontology) {
+        throw new Error(`${scopedTerm} predicate must not declare an ontology namespace`);
+      }
+      const isUS = scopedTerm === 'US';
+      const scopeId = raw.scopeId ?? raw.projectId ?? raw.institutionId ?? 0;
+      try {
+        if ((isUS && BigInt(scopeId) !== 0n) ||
+            (!isUS && (BigInt(scopeId) <= 0n || BigInt(scopeId) >= BN254_SCALAR_FIELD))) {
+          throw new Error('invalid scope id');
+        }
+      } catch (_) {
+        throw new Error(isUS
+          ? 'US requester allowlist requires scopeId to be zero or omitted'
+          : `${scopedTerm} requester allowlist requires a non-zero numeric scopeId`);
+      }
+      if (scopeToSlot.has(scopedTerm)) {
+        throw new Error(`Only one ${scopedTerm} requester allowlist predicate is allowed per policy`);
+      }
+      bySlot.set(raw.slot, {
+        slot: raw.slot,
+        duo: scopedTerm,
+        kind: 'requester-allowlist',
+        scopeKind: SCOPED_DUO_TERMS[scopedTerm].scopeKind,
+        scopeId: String(scopeId),
+        allowlistRoot: String(allowlistRoot),
+        description: raw.description ?? null
+      });
+      scopeToSlot.set(scopedTerm, raw.slot);
     } else if (scopedTerm) {
       if (raw.scopeId === undefined || raw.scopeId === null || raw.scopeId === '') {
         throw new Error(`Scoped predicate ${scopedTerm} requires scopeId`);
@@ -314,7 +355,7 @@ function buildPredicateContext(predicates = []) {
       bySlot.set(raw.slot, {
         slot: raw.slot,
         duo: scopedTerm,
-        kind: 'scoped',
+        kind: 'scoped', // Explicit legacySignedCredential compatibility only.
         scopeKind: SCOPED_DUO_TERMS[scopedTerm].scopeKind,
         scopeId: raw.scopeId,
         issuerKeyCommitment: String(issuerKeyCommitment),
@@ -361,7 +402,7 @@ function buildPredicateContext(predicates = []) {
     },
     scopeParameters: slots.map((slot) => {
       const predicate = bySlot.get(slot);
-      return predicate.kind === 'scoped'
+      return predicate.kind === 'scoped' || predicate.kind === 'requester-allowlist'
         ? {
           slot,
           scopeKind: predicate.scopeKind,
@@ -649,6 +690,25 @@ function bindAttributes(ast, attributeCtx) {
   return simplify(bind(ast));
 }
 
+// A Merkle membership witness establishes inclusion only. A failed path is
+// not a non-membership proof, so permitting a negated requester restriction would let a requester
+// satisfy it by supplying arbitrary invalid siblings. Compile-time rejection
+// keeps the policy language aligned with the proof system's actual semantics.
+function rejectNegatedRequesterAllowlist(ast, negated = false) {
+  if (ast.type === 'PREDICATE') {
+    if (negated && ['US', 'PS', 'IS'].includes(ast.value)) {
+      throw new Error(`NOT ${ast.value} is unsupported: requester restrictions only provide Merkle membership, not non-membership`);
+    }
+    return;
+  }
+  if (ast.type !== 'OP') return;
+  if (ast.op === 'NOT') {
+    rejectNegatedRequesterAllowlist(ast.children[0], !negated);
+    return;
+  }
+  ast.children.forEach((child) => rejectNegatedRequesterAllowlist(child, negated));
+}
+
 // Convert AST back to RPN sequence after binding.
 function astToRPN(ast) {
   if (ast.type === 'ATTRIBUTE' || ast.type === 'PREDICATE') {
@@ -807,7 +867,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   }
 
   predicateCtx.slots.forEach((slotInfo) => {
-    if (slotInfo.kind === 'scoped' || slotInfo.kind === 'moratorium' || slotInfo.kind === 'time-limit') {
+    if (slotInfo.kind === 'scoped' || slotInfo.kind === 'requester-allowlist' || slotInfo.kind === 'moratorium' || slotInfo.kind === 'time-limit') {
       return;
     }
     const expectedNamespace = attributeCtx.namespaceByCode[slotInfo.duo];
@@ -835,6 +895,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   // console.log(`Parsed AST: ${JSON.stringify(ast, null, 2)}`);
 
   const boundAst = bindAttributes(ast, attributeCtx);
+  rejectNegatedRequesterAllowlist(boundAst);
   // console.log(`AST after attribute binding: ${JSON.stringify(boundAst, null, 2)}`);
 
   const expandedRpn = astToRPN(boundAst);
@@ -916,6 +977,7 @@ async function generatePolicyArtifacts(config, options = {}) {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           if (!p) return 4;
           if (p.kind === 'scoped') return 5;
+          if (p.kind === 'requester-allowlist') return 8;
           if (p.kind === 'moratorium') return 6;
           if (p.kind === 'time-limit') return 7;
           return 4;
@@ -924,21 +986,26 @@ async function generatePolicyArtifacts(config, options = {}) {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           if (!p) return 0;
           if (p.kind === 'scoped') return SCOPED_AFFILIATION_CREDENTIAL_V1;
+          if (p.kind === 'requester-allowlist') return USER_ALLOWLIST_V1;
           if (p.kind === 'moratorium') return MORATORIUM_OBLIGATION_V1;
           if (p.kind === 'time-limit') return TIME_LIMIT_OBLIGATION_V1;
           return 0;
         }),
         scopeKinds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'scoped' ? p.scopeKind : 0;
+          return p && (p.kind === 'scoped' || p.kind === 'requester-allowlist') ? p.scopeKind : 0;
         }),
         approvedScopeIds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'scoped' ? String(p.scopeId) : '0';
+          return p && (p.kind === 'scoped' || p.kind === 'requester-allowlist') ? String(p.scopeId) : '0';
         }),
         credPublicKeys: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           return p && p.kind === 'scoped' ? p.issuerKeyCommitment : '0';
+        }),
+        merkleRoots: Array.from({ length: PRODUCTION_M }, (_, slot) => {
+          const p = predicateCtx.slots.find((entry) => entry.slot === slot);
+          return p && p.kind === 'requester-allowlist' ? p.allowlistRoot : '0';
         }),
         moratoriumUntilEpoch: predicateCtx.obligationParameters.moratoriumUntilEpoch,
         timeLimitEpochs: predicateCtx.obligationParameters.timeLimitEpochs

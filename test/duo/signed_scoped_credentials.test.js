@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const fs = require('fs');
 const path = require('path');
 const snarkjs = require('snarkjs');
-const { generatePolicyArtifacts } = require('../compiler/policy_generator');
+const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const {
   calculateParamsCommitment,
   calculateContextHash,
@@ -12,15 +12,15 @@ const {
   calculateScopedCredentialDigest,
   createCircuitInput,
   signScopedCredential
-} = require('../lib/prover');
+} = require('../../lib/prover');
 
-const WASM = path.resolve(__dirname, '../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
+const WASM = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
 const ISSUER_PRIVATE_KEY = new Uint8Array(32).fill(17);
 
 async function scopedInput(duo, scopeKind) {
   const holderSecret = 987654321n;
   const requesterId = await calculateRequesterId(holderSecret);
-  const scopeId = duo === 'US' ? requesterId : 1001n;
+  const scopeId = 1001n;
   const credentialId = 700n + BigInt(scopeKind);
   const signed = await signScopedCredential(ISSUER_PRIVATE_KEY, {
     scopeKind,
@@ -31,7 +31,13 @@ async function scopedInput(duo, scopeKind) {
     credentialId
   });
   const artifacts = await generatePolicyArtifacts({
-    predicates: [{ slot: 0, duo, scopeId: scopeId.toString(), issuerKeyCommitment: signed.issuerKeyCommitment }],
+    predicates: [{
+      slot: 0,
+      duo,
+      scopeId: scopeId.toString(),
+      issuerKeyCommitment: signed.issuerKeyCommitment,
+      legacySignedCredential: true
+    }],
     logic: duo
   });
   const scope = artifacts.predicates.scopeParameters;
@@ -79,28 +85,28 @@ async function scopedInput(duo, scopeKind) {
   return { input, requesterId, scopeId, signed };
 }
 
-describe('signed scoped credentials (US / PS / IS)', function () {
+describe('legacy signed scoped credentials (PS / IS)', function () {
   this.timeout(120_000);
 
   before(function () {
     if (!fs.existsSync(WASM)) this.skip();
   });
 
-  it('accepts issuer-signed, holder-bound US, PS and IS credentials', async function () {
-    for (const [duo, scopeKind] of [['US', 26], ['PS', 27], ['IS', 28]]) {
+  it('accepts issuer-signed, holder-bound PS and IS credentials', async function () {
+    for (const [duo, scopeKind] of [['PS', 27], ['IS', 28]]) {
       const { input } = await scopedInput(duo, scopeKind);
       await snarkjs.wtns.calculate(input, WASM, { type: 'mem' });
     }
   });
 
-  it('rejects a wrong holder secret, signature, issuer key, scope kind or US scope ID', async function () {
-    const { input, requesterId, signed } = await scopedInput('US', 26);
+  it('rejects a wrong holder secret, signature, issuer key, scope kind or scope ID', async function () {
+    const { input, signed } = await scopedInput('PS', 27);
     const invalidInputs = [
       { ...input, holderSecret: '123' },
       { ...input, credSignatures: ['1', '0', '0', '0', '0'] },
       { ...input, credIssuerAx: ['1', '0', '0', '0', '0'] },
-      { ...input, scopeKinds: [27, 0, 0, 0, 0] },
-      { ...input, approvedScopeIds: [(BigInt(requesterId) + 1n).toString(), '0', '0', '0', '0'] }
+      { ...input, scopeKinds: [28, 0, 0, 0, 0] },
+      { ...input, approvedScopeIds: ['1002', '0', '0', '0', '0'] }
     ];
     expect(signed.issuerKeyCommitment).to.not.equal('0');
     for (const candidate of invalidInputs) {

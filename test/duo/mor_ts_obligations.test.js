@@ -5,15 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const snarkjs = require('snarkjs');
 const { ethers } = require('hardhat');
-const { deployPoseidon3 } = require('../lib/poseidon_contract');
-const { generatePolicyArtifacts } = require('../compiler/policy_generator');
+const { deployPoseidon3 } = require('../../lib/poseidon_contract');
+const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const {
   calculateContextHash,
   calculateParamsCommitment,
   createCircuitInput
-} = require('../lib/prover');
+} = require('../../lib/prover');
 
-const WASM = path.resolve(__dirname, '../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
+const WASM = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
 const ZEROES = Array(5).fill('0');
 const proof = [[0, 0], [[0, 0], [0, 0]], [0, 0]];
 
@@ -113,7 +113,7 @@ describe('MOR / TS access-time obligations', function () {
       const { paramsCommitment } = await buildObligationInput();
       expect(alteredDeadlineCommitment).to.not.equal(paramsCommitment);
 
-      const verificationKeyPath = path.resolve(__dirname, '../build/circuits/policy_privacy_main_vk.json');
+      const verificationKeyPath = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_vk.json');
       if (fs.existsSync(verificationKeyPath)) {
         expect(JSON.parse(fs.readFileSync(verificationKeyPath, 'utf8')).nPublic).to.equal(5);
       }

@@ -17,10 +17,10 @@ categories below correspond to four distinct proof mechanisms:
 | --- | --- | --- |
 | Ontology-linked | The request's code is a member of an approved set in an external ontology | Merkle membership proof against an ontology whitelist |
 | Obligation-required | The requester has accepted a duty that persists after access | Policy-level obligation predicate, checked at access time |
-| Authorization-bound | A named authority approved this specific user, project, or institution | Signed scoped credential |
+| Requester-allowlist | The provider selected the requesters permitted under a user, project, or institution restriction | Merkle membership proof against a requester allowlist |
 | Boolean-only | Nothing beyond the attribute value itself | Direct boolean attribute |
 
-Grouping matters because only the first three consume a predicate slot in the
+Grouping matters because the first four categories consume a predicate slot in the
 circuit. Boolean-only terms are evaluated as plain attributes and cost no
 external verification.
 
@@ -84,10 +84,12 @@ PUB, COL, and RTN describe duties that come due after access and cannot be
 decided at request time; they are carried as commitments in the data access
 agreement rather than as circuit predicates.
 
-## Authorization-bound terms
+## Requester-allowlist terms
 
-An external authority has approved a specific subject. The requester presents
-a signed credential scoped to that subject.
+The provider commits a separate Merkle root for each restriction. A requester
+proves that `Poseidon(2005, scopeKind, scopeId, requesterId)` is in the
+relevant root, without revealing the membership path. US uses `scopeId = 0`;
+PS and IS bind a non-zero project or institution identifier respectively.
 
 | DUO ID | Code | Label | Scope kind |
 | --- | --- | --- | --- |
@@ -103,10 +105,12 @@ Descriptions:
 - **IS** — This data use modifier indicates that use is limited to use within an approved institution.
 - **IRB** — This data use modifier indicates that the requestor must provide documentation of local IRB/ERB approval.
 
-Implementation: US, PS, and IS use predicate type `5` (scoped credential),
-defined in `SCOPED_DUO_TERMS` in
-[compiler/policy_generator.js](../compiler/policy_generator.js). The scope
-kind numerically matches the DUO term's numeric suffix.
+Implementation: US, PS, and IS all use predicate type `8` (requester
+allowlist, schema `2005`), defined from `SCOPED_DUO_TERMS` in
+[compiler/policy_generator.js](../compiler/policy_generator.js). Their
+`scopeKind` values (26, 27, and 28) retain the DUO label, while the proof
+mechanism is identical. Predicate type `5` is retained only for explicit
+`legacySignedCredential: true` compatibility configurations.
 
 IRB requires documentary evidence reviewed by a human committee, so it is
 handled as an out-of-circuit authorization step.
@@ -155,9 +159,10 @@ Values passed as `predicateType` into the circuit
 | 1 | Signature | — (generic) |
 | 2 | Range | — (generic) |
 | 3 | Ontology-linked | DS, RS, POA, GS, CC |
-| 5 | Scoped credential | US, PS, IS |
+| 5 | Legacy signed scoped credential | Explicit compatibility mode only |
 | 6 | Publication moratorium | MOR |
 | 7 | Time limit on use | TS |
+| 8 | Requester Merkle allowlist | US, PS, IS |
 
 ## Identifier normalization
 

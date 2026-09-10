@@ -55,7 +55,7 @@ router.get('/resource/:resourceId', async (req, res, next) => {
 });
 
 /**
- * Submit a request to the TPS. For a type-5 policy, `holderSecret` is private
+ * Submit a request to the TPS. For a holder-bound type-5 or type-8 policy, `holderSecret` is private
  * evidence: the TPS derives requesterId from it and ignores any caller-supplied
  * requesterId. This endpoint performs authorization only; it never delivers
  * protected data.

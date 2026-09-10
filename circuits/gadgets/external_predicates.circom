@@ -249,7 +249,11 @@ template SignedScopedCredentialVerifier() {
     // DUO:0000026 denotes a particular approved user, rather than membership
     // in a named group. Project and institution scopes intentionally do not
     // impose this equality.
-    (requesterId - approvedScopeId) * isUS.out === 0;
+    // This legacy-only constraint must be gated. Type-8 allowlist policies
+    // reuse scopeKind=26 but do not use a signed-credential scope identifier.
+    signal legacyUserScopeRelation;
+    legacyUserScopeRelation <== (requesterId - approvedScopeId) * isUS.out;
+    legacyUserScopeRelation * enabled === 0;
     signal supportedKind;
     supportedKind <== isUS.out + isPS.out + isIS.out;
 
@@ -281,7 +285,89 @@ template SignedScopedCredentialVerifier() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 2c. POLICY OBLIGATION VERIFIER (MOR / TS)
+// 2c. REQUESTER ALLOWLIST VERIFIER (DUO US / PS / IS)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+    A multi-user US, PS, or IS policy commits a Poseidon Merkle root of requester
+    pseudonyms.  The leaf is derived in-circuit from requesterId rather than
+    accepted from the prover, so a membership path is unambiguously bound to
+    the holder pseudonym that the main circuit derives from holderSecret.
+
+    Keep this distinct from SignedScopedCredentialVerifier (schema 2002): an
+    old one-user credential must never be reinterpreted as an allowlist proof.
+*/
+template RequesterAllowlistVerifier(LEVELS) {
+    signal input enabled;
+    signal input requesterId;
+    signal input merkleLeaf;
+    signal input merklePathElements[LEVELS];
+    signal input merklePathIndices[LEVELS];
+    signal input merkleRoot;
+    signal input schemaTag;
+    signal input scopeKind;
+    signal input approvedScopeId;
+    signal input credPublicKey;
+    signal output isValid;
+
+    var USER_ALLOWLIST_V1 = 2005;
+
+    component leafHasher = Poseidon(4);
+    leafHasher.inputs[0] <== USER_ALLOWLIST_V1;
+    leafHasher.inputs[1] <== scopeKind;
+    leafHasher.inputs[2] <== approvedScopeId;
+    leafHasher.inputs[3] <== requesterId;
+    (merkleLeaf - leafHasher.out) * enabled === 0;
+
+    component membership = MerkleProofVerifier(LEVELS);
+    membership.leaf <== leafHasher.out;
+    membership.root <== merkleRoot;
+    for (var i = 0; i < LEVELS; i++) {
+        membership.pathElements[i] <== merklePathElements[i];
+        membership.pathIndices[i] <== merklePathIndices[i];
+    }
+
+    // Metadata is policy-bound through paramsCommitment. Constrain it rather
+    // than merely returning false: a malformed type-8 slot must not turn into
+    // a successful negated requester-allowlist branch in a policy expression.
+    (schemaTag - USER_ALLOWLIST_V1) * enabled === 0;
+    // Scope kind retains the DUO policy label while all three terms share the
+    // same requester membership mechanism: 26=US, 27=PS, 28=IS.
+    component scopeIsUS = IsEqual();
+    component scopeIsPS = IsEqual();
+    component scopeIsIS = IsEqual();
+    scopeIsUS.in[0] <== scopeKind;
+    scopeIsUS.in[1] <== 26;
+    scopeIsPS.in[0] <== scopeKind;
+    scopeIsPS.in[1] <== 27;
+    scopeIsIS.in[0] <== scopeKind;
+    scopeIsIS.in[1] <== 28;
+    signal isRequesterScope;
+    isRequesterScope <== scopeIsUS.out + scopeIsPS.out + scopeIsIS.out;
+    isRequesterScope * enabled === enabled;
+    // US has no project/institution identifier. PS and IS require one, and it
+    // is included in the leaf to prevent a path crossing scope boundaries.
+    signal userScopeId;
+    userScopeId <== approvedScopeId * scopeIsUS.out;
+    userScopeId * enabled === 0;
+    component approvedScopeIdIsZero = IsEqual();
+    approvedScopeIdIsZero.in[0] <== approvedScopeId;
+    approvedScopeIdIsZero.in[1] <== 0;
+    signal projectOrInstitution;
+    projectOrInstitution <== scopeIsPS.out + scopeIsIS.out;
+    signal missingScopedId;
+    missingScopedId <== approvedScopeIdIsZero.out * projectOrInstitution;
+    missingScopedId * enabled === 0;
+    credPublicKey * enabled === 0;
+    component rootIsZero = IsEqual();
+    rootIsZero.in[0] <== merkleRoot;
+    rootIsZero.in[1] <== 0;
+    rootIsZero.out * enabled === 0;
+    isValid <== enabled * membership.isValid;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2d. POLICY OBLIGATION VERIFIER (MOR / TS)
 // ═══════════════════════════════════════════════════════════════════════════
 
 template PolicyObligationVerifier(SCHEMA_TAG) {
@@ -419,7 +505,8 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 
 template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked,
-    // 4=disabled, 5=scoped credential, 6=MOR, 7=TS)
+    // 4=disabled, 5=legacy signed scoped credential, 6=MOR, 7=TS,
+    // 8=US/PS/IS requester allowlist)
     signal input predicateType;
     
     // Merkle proof inputs
@@ -473,9 +560,10 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     component rangeVerifier;
     component ontologyVerifier;
     component scopedVerifier;
+    component allowlistVerifier;
     component moratoriumVerifier;
     component timeLimitVerifier;
-    component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check;
+    component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check, type8Check;
     
     // Select result based on predicate type using manual selection
     // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
@@ -505,6 +593,9 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     type7Check = IsEqual();
     type7Check.in[0] <== predicateType;
     type7Check.in[1] <== 7;
+    type8Check = IsEqual();
+    type8Check.in[0] <== predicateType;
+    type8Check.in[1] <== 8;
 
     // MOR and TS are policy-level obligations, not scoped credentials.  Their
     // slots must not carry a scope kind or scope identifier that could be
@@ -520,6 +611,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     rangeVerifier = RangeProof(RANGE_BITS);
     ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
     scopedVerifier = SignedScopedCredentialVerifier();
+    allowlistVerifier = RequesterAllowlistVerifier(MERKLE_LEVELS);
     moratoriumVerifier = PolicyObligationVerifier(2003);
     timeLimitVerifier = PolicyObligationVerifier(2004);
     
@@ -568,6 +660,19 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     scopedVerifier.issuerAy <== credIssuerAy;
     scopedVerifier.publicKey <== credPublicKey;
 
+    allowlistVerifier.requesterId <== requesterId;
+    allowlistVerifier.enabled <== type8Check.out;
+    allowlistVerifier.merkleLeaf <== merkleLeaf;
+    allowlistVerifier.merkleRoot <== merkleRoot;
+    allowlistVerifier.schemaTag <== predicateSchemaTag;
+    allowlistVerifier.scopeKind <== scopeKind;
+    allowlistVerifier.approvedScopeId <== approvedScopeId;
+    allowlistVerifier.credPublicKey <== credPublicKey;
+    for (var i = 0; i < MERKLE_LEVELS; i++) {
+        allowlistVerifier.merklePathElements[i] <== merklePathElements[i];
+        allowlistVerifier.merklePathIndices[i] <== merklePathIndices[i];
+    }
+
     moratoriumVerifier.schemaTag <== predicateSchemaTag;
     moratoriumVerifier.epochValue <== moratoriumUntilEpoch;
     timeLimitVerifier.schemaTag <== predicateSchemaTag;
@@ -595,6 +700,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal rangeSelected;
     signal ontologySelected;
     signal scopedSelected;
+    signal allowlistSelected;
     signal moratoriumSelected;
     signal timeLimitSelected;
     signal partialSum1, partialSum2, partialSum3;
@@ -604,11 +710,12 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     rangeSelected <== type2Check.out * rangeVerifier.isValid;
     ontologySelected <== type3Check.out * ontologyVerifier.pred;
     scopedSelected <== type5Check.out * scopedVerifier.isValid;
+    allowlistSelected <== type8Check.out * allowlistVerifier.isValid;
     moratoriumSelected <== type6Check.out * moratoriumVerifier.isValid;
     timeLimitSelected <== type7Check.out * timeLimitVerifier.isValid;
     
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
     partialSum3 <== partialSum2 + ontologySelected;
-    isValid <== partialSum3 + scopedSelected + moratoriumSelected + timeLimitSelected;
+    isValid <== partialSum3 + scopedSelected + moratoriumSelected + timeLimitSelected + allowlistSelected;
 }

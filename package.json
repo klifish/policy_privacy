@@ -48,6 +48,7 @@
     "tps:start": "node tps/index.js",
     "tps:dev": "nodemon tps/index.js",
     "test:tps": "npx hardhat test test/tps/tps-protocol-stages.test.js test/tps/tps-http-endpoint.test.js",
+    "test:duo": "npx hardhat test test/duo/ds_ontology_e2e.test.js test/duo/gs_ontology_e2e.test.js test/duo/mor_ts_obligations.test.js test/duo/signed_scoped_credentials.test.js test/duo/us_requester_allowlist_e2e.test.js",
     "hardhat:test": "npx hardhat test",
     "hardhat:test:verbose": "npx hardhat test --verbose",
     "api:start": "node api/server.js",
