@@ -60,6 +60,14 @@ describe('DUO V3 tamper matrix (witness level)', function () {
     it('T3c HARD: credentialId zeroed after signing (digest mismatch)', async function () {
       await hard(base, grant(), { mutateInput: (input) => { input.credentialIds[10] = '0'; } });
     });
+    it('T3d HARD: profile slot carries scope metadata', async function () {
+      await hard(base, grant(), {
+        mutateInput: async (input) => {
+          input.scopeKinds[10] = 26;
+          await H.recomputeParamsCommitment(input);
+        }
+      });
+    });
     for (const [label, field] of [['policyCommitment', 'policyCommitment'], ['resourceId', 'resourceId'], ['requesterId', 'requesterId']]) {
       it(`T4 HARD: credential issued for another ${label}`, async function () {
         await hard(base, grant(), {
@@ -133,23 +141,25 @@ describe('DUO V3 tamper matrix (witness level)', function () {
     it('T10d HARD: scopeKind outside {26,27,28} on an enabled allowlist slot', async function () {
       await hard(base, grant(), { mutateInput: async (input) => { input.scopeKinds[5] = 29; await H.recomputeParamsCommitment(input); } });
     });
-    it('T7 PINNED: a PS allowlist (scopeKind 27) provisioned in the US slot is accepted by the circuit', async function () {
-      // TODO(circuit): the main circuit does not bind scopeKind to the slot
-      // index (ProductionPredicateVerifier does, but is unused). The compiler
-      // is the only guard (see duo_v3_compiler_rejections "fixed slots").
-      const ctx = await H.compilePolicy('US', fx, { predicateOverrides: { US: { allowlistRoot: fx.allowlists.PS.root.toString() } } });
-      const alicePs = fx.allowlists.PS.entries.find((e) => e.requesterId === BigInt(fx.requesterIds.alice));
-      await ok(ctx, grant(), {
+    for (const [declared, substituted] of [['US', 'PS'], ['PS', 'IS'], ['IS', 'PS']]) {
+      it(`T7 HARD: ${substituted} allowlist metadata cannot satisfy the ${declared} slot`, async function () {
+        const ctx = await H.compilePolicy(declared, fx);
+        const slot = H.SCOPED_TERMS[declared].slot;
+        const alternate = fx.allowlists[substituted];
+        const aliceAlternate = alternate.entries.find((e) => e.requesterId === BigInt(fx.requesterIds.alice));
+        await hard(ctx, grant(), {
         mutateInput: async (input) => {
-          input.scopeKinds[5] = 27;
-          input.approvedScopeIds[5] = '9001';
-          input.merkleLeaves[5] = alicePs.leaf.toString();
-          input.merklePathElements[5] = alicePs.pathElements.map(String);
-          input.merklePathIndices[5] = alicePs.pathIndices.slice();
+          input.scopeKinds[slot] = H.SCOPED_TERMS[substituted].scopeKind;
+          input.approvedScopeIds[slot] = String(H.SCOPED_TERMS[substituted].scopeId);
+          input.merkleRoots[slot] = alternate.root.toString();
+          input.merkleLeaves[slot] = aliceAlternate.leaf.toString();
+          input.merklePathElements[slot] = aliceAlternate.pathElements.map(String);
+          input.merklePathIndices[slot] = aliceAlternate.pathIndices.slice();
           await H.recomputeParamsCommitment(input);
         }
+        });
       });
-    });
+    }
   });
 
   describe('disabled-slot padding (slot 1 disabled)', function () {

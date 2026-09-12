@@ -1,0 +1,35 @@
+name: ZKPI verification
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 3 * * *'
+
+jobs:
+  core:
+    name: Core circuit, TPS, and proof tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run test:ci
+
+  full-proof-matrix:
+    name: Full DUO proof matrix
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run test:ci:full

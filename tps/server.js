@@ -50,6 +50,7 @@ const USER_ALLOWLIST_SCHEMA_TAG = 2005;
 const DUO_PROFILE_SCHEMA_TAG = 2006;
 const DUO_PROFILE_SLOT = 10;
 const V3_PREDICATE_SLOTS = 11;
+const V3_ALLOWLIST_SCOPE_BY_SLOT = [null, null, null, null, null, 26n, 27n, 28n, null, null, null];
 
 function resolveAccessGasPadBase(app) {
     const fromLocals = app && app.locals && app.locals.accessGasPadTarget;
@@ -114,7 +115,11 @@ function validateUserAllowlistMaterial(material) {
         }
         const scopeKind = BigInt(material.scopeKinds[slot]);
         const scopeId = BigInt(material.approvedScopeIds[slot]);
+        const expectedV3ScopeKind = material.predicateTypes.length === V3_PREDICATE_SLOTS
+            ? V3_ALLOWLIST_SCOPE_BY_SLOT[slot]
+            : null;
         if (![26n, 27n, 28n].includes(scopeKind) ||
+            (material.predicateTypes.length === V3_PREDICATE_SLOTS && scopeKind !== expectedV3ScopeKind) ||
             (scopeKind === 26n && scopeId !== 0n) ||
             (scopeKind !== 26n && scopeId <= 0n) ||
             BigInt(material.credPublicKeys[slot]) !== 0n) {

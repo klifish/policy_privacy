@@ -229,21 +229,36 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     scopedFlagSum[0] <== 0;
 
     for (var i = 0; i < M; i++) {
-        predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS);
         // DUO V3 has fixed semantic slots.  Small generic test instances keep
         // their legacy predicate freedom; only the production shape is fixed.
+        //
+        // Each production slot is constrained below to a single predicate type
+        // (or 4 = disabled), so the other eight verifiers inside
+        // ExternalPredicateVerifier can never be selected there.  An arithmetic
+        // circuit still expands every instantiated verifier into R1CS, so the
+        // slot's ALLOWED mask drops the unreachable ones at compile time.  The
+        // mask mirrors the equality constraint immediately below it: narrowing
+        // it without narrowing that constraint would make a reachable type
+        // silently evaluate to 0 instead of being verified.
         if (N == 13 && M == 11) {
             if (i < 5) {
+                predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, 8);
                 (predicateTypes[i] - 3) * (predicateTypes[i] - 4) === 0;
             } else if (i < 8) {
+                predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, 256);
                 (predicateTypes[i] - 8) * (predicateTypes[i] - 4) === 0;
             } else if (i == 8) {
+                predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, 64);
                 (predicateTypes[i] - 6) * (predicateTypes[i] - 4) === 0;
             } else if (i == 9) {
+                predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, 128);
                 (predicateTypes[i] - 7) * (predicateTypes[i] - 4) === 0;
             } else {
+                predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, 512);
                 (predicateTypes[i] - 9) * (predicateTypes[i] - 4) === 0;
             }
+        } else {
+            predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, ALL_PREDICATE_TYPES());
         }
         
         // Connect predicate type
@@ -269,6 +284,14 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         userAllowlistCheckers[i] = IsEqual();
         userAllowlistCheckers[i].in[0] <== predicateTypes[i];
         userAllowlistCheckers[i].in[1] <== 8;
+        // The production DUO layout reserves slots 5, 6, and 7 for US, PS,
+        // and IS respectively.  RequesterAllowlistVerifier accepts all three
+        // scope kinds by design, so bind the kind to the slot here rather than
+        // relying solely on the off-chain compiler.  The selected flag also
+        // makes the canonical value zero when the slot is disabled.
+        if (N == 13 && M == 11 && i >= 5 && i < 8) {
+            scopeKinds[i] === (i + 21) * userAllowlistCheckers[i].out;
+        }
         profileCheckers[i] = IsEqual();
         profileCheckers[i].in[0] <== predicateTypes[i];
         profileCheckers[i].in[1] <== 9;
@@ -331,10 +354,17 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
         predicateValues[i] * disabledFlags[i] === 0;
 
-        // Scope values are canonical zero padding unless the slot selects the
-        // signed scoped-credential verifier.
-        scopeKinds[i] * (1 - scopedFlags[i]) === 0;
-        approvedScopeIds[i] * (1 - scopedFlags[i]) === 0;
+        // In the production DUO layout, scope metadata belongs exclusively to
+        // the three requester-allowlist slots.  In particular, profile slot 10
+        // must not carry unconstrained scope data merely because it is
+        // holder-bound too. Preserve the generic circuit's legacy behaviour.
+        if (N == 13 && M == 11) {
+            scopeKinds[i] * (1 - userAllowlistCheckers[i].out) === 0;
+            approvedScopeIds[i] * (1 - userAllowlistCheckers[i].out) === 0;
+        } else {
+            scopeKinds[i] * (1 - scopedFlags[i]) === 0;
+            approvedScopeIds[i] * (1 - scopedFlags[i]) === 0;
+        }
 
         // Hash chains for parameter commitment
         predicateTypeHashers[i] = Poseidon(2);
