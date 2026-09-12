@@ -34,6 +34,9 @@ include "../gadgets/multimux.circom";
 
     Design notes:
       * Uses a stack model encoded in arrays (no dynamic indexing).
+      * The stack has floor((DEPTH+1)/2) slots, not DEPTH: that is the largest
+        depth any well-formed program of DEPTH tokens can reach, so the smaller
+        stack accepts exactly the same programs at about half the mux cost.
       * Each step writes exactly one slot: push (sp), unary overwrite (sp-1), binary reduce (sp-2).
       * Conditional write pattern: new = old + flag * (val - old) keeps constraints quadratic.
       * Backward compatibility: when M=0, behaves identically to original implementation.
@@ -41,12 +44,24 @@ include "../gadgets/multimux.circom";
 
 template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     // ───────────── Derived sizes ─────────────
+    // DEPTH is the program length (number of interpreter steps). The stack
+    // needs fewer slots: a well-formed program of length L that ends with a
+    // single value pushes at most d operands and must then consume them with
+    // at least d-1 binary operators, so L >= 2d-1 and d <= (L+1)/2. Sizing the
+    // stack at SDEPTH therefore changes nothing about which programs are
+    // accepted; it only removes stack slots no well-formed program can reach.
+    var SDEPTH = (DEPTH + 1) \ 2;           // stack capacity (slots)
     var KP = 0;
-    while ((1 << KP) < DEPTH) { KP++; }     // bits for stack pointer
+    while ((1 << KP) < SDEPTH) { KP++; }    // bits for a stack INDEX in [0, SDEPTH-1]
+    var DP2 = 1 << KP;                      // next power-of-two for stack capacity (mux width)
+    // sp counts elements and can equal SDEPTH when the stack is full, so its
+    // range check needs one more value than an index does. Keeping the two
+    // widths separate matters exactly when SDEPTH is a power of two.
+    var KSP = 0;
+    while ((1 << KSP) < SDEPTH + 1) { KSP++; }  // bits for sp in [0, SDEPTH]
     var KSEL = 0;
     while ((1 << KSEL) < (N + M)) { KSEL++; }  // bits for operand selection (N+M operands)
     var NMP2 = 1 << KSEL;                   // next power-of-two for operands (N+M)
-    var DP2 = 1 << KP;                      // next power-of-two for stack depth
 
     // ───────────── Inputs / Outputs ─────────────
     signal input postfixExpr[DEPTH];
@@ -57,7 +72,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
 
     // ───────────── Global state ─────────────
     signal sp[DEPTH + 1];                   // stack height (sp[0] = 0)
-    signal stackState[DEPTH + 1][DEPTH];    // stack snapshot after each step
+    signal stackState[DEPTH + 1][SDEPTH];   // stack snapshot after each step
 
     // Padded arrays for mux components
     signal operandPad[NMP2];
@@ -93,8 +108,8 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     // Destination index expression & equality flags
     signal destIdx[DEPTH];
     signal destBits[DEPTH][KP];
-    signal eqDest[DEPTH][DEPTH];
-    signal writeFlag[DEPTH][DEPTH];
+    signal eqDest[DEPTH][SDEPTH];
+    signal writeFlag[DEPTH][SDEPTH];
 
     // Stack pointer delta
     signal spDelta[DEPTH];
@@ -134,11 +149,11 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     component cmpDepth1[DEPTH];
     component cmpDepth2[DEPTH];
     component destBitsNC[DEPTH];
-    component eqDestCmp[DEPTH][DEPTH];
+    component eqDestCmp[DEPTH][SDEPTH];
 
     // ───────────── Initialization ─────────────
     sp[0] <== 0;
-    for (var j = 0; j < DEPTH; j++) {
+    for (var j = 0; j < SDEPTH; j++) {
         stackState[0][j] <== 0;
     }
     // Initialize operandPad with requesterPolicy and predicateValues
@@ -153,10 +168,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     for (var j = N + M; j < NMP2; j++) {
         operandPad[j] <== 0;
     }
-    for (var j = 0; j < DEPTH; j++) {
-        stackPad[0][j] <== 0;
-    }
-    for (var j = DEPTH; j < DP2; j++) {
+    for (var j = 0; j < DP2; j++) {
         stackPad[0][j] <== 0;
     }
 
@@ -166,9 +178,9 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         // Component instantiation per step
         attrBits[i] = Num2Bits(KSEL);        // Updated to use KSEL for operand selection
         opBits[i]   = Num2Bits(2);          // up to 4 operators
-        spBits[i]   = Num2Bits(KP);
-        spM1Bits[i] = Num2Bits(KP);
-        spM2Bits[i] = Num2Bits(KP);
+        spBits[i]   = Num2Bits(KSP);        // range check on sp (element count, may equal SDEPTH)
+        spM1Bits[i] = Num2Bits(KP);         // index sp-1
+        spM2Bits[i] = Num2Bits(KP);         // index sp-2
         attrMux[i]  = MultiMux(NMP2, KSEL);  // Updated to use NMP2 and KSEL
         topMuxA[i]  = MultiMux(DP2, KP);
         topMuxB[i]  = MultiMux(DP2, KP);
@@ -182,10 +194,10 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
 
         // Activate row padding
         if (i > 0) {
-            for (var j = 0; j < DEPTH; j++) {
+            for (var j = 0; j < SDEPTH; j++) {
                 stackPad[i][j] <== stackState[i][j];
             }
-            for (var j = DEPTH; j < DP2; j++) {
+            for (var j = SDEPTH; j < DP2; j++) {
                 stackPad[i][j] <== 0;
             }
         }
@@ -290,14 +302,20 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         tmpDestBinary[i] <== isBinary[i] * (sp[i] - 2);
         destIdx[i] <== tmpDestOpnd[i] + tmpDestUnary[i] + tmpDestBinary[i];
 
-        // Bits for equality (only used; not fed to another Num2Bits)
+        // Bits for equality (only used; not fed to another Num2Bits).
+        // Stack overflow needs no separate guard: reaching depth SDEPTH+1 takes
+        // at least SDEPTH+1 pushes and returning to depth 1 at least SDEPTH
+        // binary operators, i.e. >= 2*SDEPTH+1 > DEPTH active steps, so no
+        // execution that overflows can satisfy the final sp == 1 check. (When
+        // SDEPTH is a power of two, destIdx = SDEPTH also fails this KP-bit
+        // decomposition and the witness is rejected at the push itself.)
         destBitsNC[i].in <== destIdx[i];
         for (var b = 0; b < KP; b++) {
             destBits[i][b] <== destBitsNC[i].out[b];
         }
 
         // Equality & conditional write
-        for (var j = 0; j < DEPTH; j++) {
+        for (var j = 0; j < SDEPTH; j++) {
             eqDestCmp[i][j] = IsEqual();
             eqDestCmp[i][j].in[0] <== j;
             eqDestCmp[i][j].in[1] <== destIdx[i];
