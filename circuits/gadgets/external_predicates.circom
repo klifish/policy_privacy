@@ -699,7 +699,26 @@ template ProductionPredicateVerifier(SLOT, MERKLE_LEVELS) {
 // 6. UNIFIED EXTERNAL PREDICATE VERIFIER (legacy/test only)
 // ═══════════════════════════════════════════════════════════════════════════
 
-template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
+// ALLOWED is a compile-time bitmask of the predicate types this instance may
+// carry: bit t set means type t is reachable here. Arithmetic circuits cannot
+// branch at proving time, so every verifier instantiated below is expanded into
+// R1CS whether or not its type is selected. Slots whose type is already fixed
+// (DUO V3 pins each of the eleven production slots to one type — see the
+// per-slot equality constraints in policy_privacy_main.circom) therefore pay for
+// eight verifiers they can never select. Passing a narrow ALLOWED drops those
+// branches at compile time; the omitted selectors contribute 0 to isValid, which
+// is exactly what the type equality check would have forced them to contribute.
+// Pass ALL_PREDICATE_TYPES to keep the fully generic behaviour.
+//
+// This is a compile-time specialisation only: for any witness both shapes accept
+// exactly the same statements, because a type outside ALLOWED is already
+// unsatisfiable in the caller.
+function ALL_PREDICATE_TYPES() {
+    // types 0,1,2,3,5,6,7,8,9 (4 = disabled carries no verifier)
+    return 1 + 2 + 4 + 8 + 32 + 64 + 128 + 256 + 512;
+}
+
+template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS, ALLOWED) {
     // Predicate type selector (0=merkle, 1=signature, 2=range, 3=ontology-linked,
     // 4=disabled, 5=legacy signed scoped credential, 6=MOR, 7=TS,
     // 8=US/PS/IS requester allowlist)
@@ -763,159 +782,212 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     component profileVerifier;
     component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check, type8Check, type9Check;
     
-    // Select result based on predicate type using manual selection
+    // Select result based on predicate type using manual selection.
     // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
-    type0Check = IsEqual();
-    type1Check = IsEqual();
-    type2Check = IsEqual();
-    type3Check = IsEqual();
-    
-    type0Check.in[0] <== predicateType;
-    type0Check.in[1] <== 0;
-    
-    type1Check.in[0] <== predicateType;
-    type1Check.in[1] <== 1;
-    
-    type2Check.in[0] <== predicateType;
-    type2Check.in[1] <== 2;
-    
-    type3Check.in[0] <== predicateType;
-    type3Check.in[1] <== 3;
+    // A selector is built only for a type this instance may carry; excluded
+    // types keep a constant-0 selector so the sum below is unchanged.
+    signal sel0, sel1, sel2, sel3, sel5, sel6, sel7, sel8, sel9;
 
-    type5Check = IsEqual();
-    type5Check.in[0] <== predicateType;
-    type5Check.in[1] <== 5;
-    type6Check = IsEqual();
-    type6Check.in[0] <== predicateType;
-    type6Check.in[1] <== 6;
-    type7Check = IsEqual();
-    type7Check.in[0] <== predicateType;
-    type7Check.in[1] <== 7;
-    type8Check = IsEqual();
-    type8Check.in[0] <== predicateType;
-    type8Check.in[1] <== 8;
-    type9Check = IsEqual();
-    type9Check.in[0] <== predicateType;
-    type9Check.in[1] <== 9;
+    if (ALLOWED & 1) {
+        type0Check = IsEqual();
+        type0Check.in[0] <== predicateType;
+        type0Check.in[1] <== 0;
+        sel0 <== type0Check.out;
+    } else { sel0 <== 0; }
+
+    if (ALLOWED & 2) {
+        type1Check = IsEqual();
+        type1Check.in[0] <== predicateType;
+        type1Check.in[1] <== 1;
+        sel1 <== type1Check.out;
+    } else { sel1 <== 0; }
+
+    if (ALLOWED & 4) {
+        type2Check = IsEqual();
+        type2Check.in[0] <== predicateType;
+        type2Check.in[1] <== 2;
+        sel2 <== type2Check.out;
+    } else { sel2 <== 0; }
+
+    if (ALLOWED & 8) {
+        type3Check = IsEqual();
+        type3Check.in[0] <== predicateType;
+        type3Check.in[1] <== 3;
+        sel3 <== type3Check.out;
+    } else { sel3 <== 0; }
+
+    if (ALLOWED & 32) {
+        type5Check = IsEqual();
+        type5Check.in[0] <== predicateType;
+        type5Check.in[1] <== 5;
+        sel5 <== type5Check.out;
+    } else { sel5 <== 0; }
+
+    if (ALLOWED & 64) {
+        type6Check = IsEqual();
+        type6Check.in[0] <== predicateType;
+        type6Check.in[1] <== 6;
+        sel6 <== type6Check.out;
+    } else { sel6 <== 0; }
+
+    if (ALLOWED & 128) {
+        type7Check = IsEqual();
+        type7Check.in[0] <== predicateType;
+        type7Check.in[1] <== 7;
+        sel7 <== type7Check.out;
+    } else { sel7 <== 0; }
+
+    if (ALLOWED & 256) {
+        type8Check = IsEqual();
+        type8Check.in[0] <== predicateType;
+        type8Check.in[1] <== 8;
+        sel8 <== type8Check.out;
+    } else { sel8 <== 0; }
+
+    if (ALLOWED & 512) {
+        type9Check = IsEqual();
+        type9Check.in[0] <== predicateType;
+        type9Check.in[1] <== 9;
+        sel9 <== type9Check.out;
+    } else { sel9 <== 0; }
 
     // MOR and TS are policy-level obligations, not scoped credentials.  Their
     // slots must not carry a scope kind or scope identifier that could be
-    // confused with a US/PS/IS assertion.
+    // confused with a US/PS/IS assertion.  On a slot that can carry neither the
+    // guard is vacuous (both selectors are 0), so it is kept unconditionally.
     signal obligationTypeSelected;
-    obligationTypeSelected <== type6Check.out + type7Check.out;
+    obligationTypeSelected <== sel6 + sel7;
     scopeKind * obligationTypeSelected === 0;
     approvedScopeId * obligationTypeSelected === 0;
 
-    // Instantiate all verifiers
-    merkleVerifier = MerkleProofVerifier(MERKLE_LEVELS);
-    signatureVerifier = CredentialSignatureVerifier();
-    rangeVerifier = RangeProof(RANGE_BITS);
-    ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
-    scopedVerifier = SignedScopedCredentialVerifier();
-    allowlistVerifier = RequesterAllowlistVerifier(MERKLE_LEVELS);
-    moratoriumVerifier = PolicyObligationVerifier(2003);
-    timeLimitVerifier = PolicyObligationVerifier(2004);
-    profileVerifier = DuoProfileCredentialVerifier();
-    
-    // Connect merkle verifier
-    merkleVerifier.leaf <== merkleLeaf;
-    for (var i = 0; i < MERKLE_LEVELS; i++) {
-        merkleVerifier.pathElements[i] <== merklePathElements[i];
-        merkleVerifier.pathIndices[i] <== merklePathIndices[i];
-    }
-    merkleVerifier.root <== merkleRoot;
-    
-    // Connect signature verifier
-    signatureVerifier.schemaTag <== predicateSchemaTag;
-    signatureVerifier.policyCommitment <== policyCommitment;
-    signatureVerifier.requesterId <== requesterId;
-    signatureVerifier.resourceId <== resourceId;
-    signatureVerifier.purposeCode <== purposeCode;
-    signatureVerifier.validFromEpoch <== credValidFromEpoch;
-    signatureVerifier.validUntilEpoch <== credValidUntilEpoch;
-    signatureVerifier.approvalId <== credentialId;
-    signatureVerifier.requestEpoch <== requestEpoch;
-    signatureVerifier.signature <== credSignature;
-    signatureVerifier.sigR8x <== credSigR8x;
-    signatureVerifier.sigR8y <== credSigR8y;
-    signatureVerifier.issuerAx <== credIssuerAx;
-    signatureVerifier.issuerAy <== credIssuerAy;
-    signatureVerifier.publicKey <== credPublicKey;
-    // Run the EdDSA check only for slots whose predicate type selects it.
-    // predicateType is range-constrained by the caller, so this is not a
-    // prover-controlled switch.
-    signatureVerifier.enabled <== type1Check.out;
-
-    profileVerifier.enabled <== type9Check.out;
-    profileVerifier.schemaTag <== predicateSchemaTag;
-    profileVerifier.policyCommitment <== policyCommitment;
-    profileVerifier.requesterId <== requesterId;
-    profileVerifier.resourceId <== resourceId;
-    profileVerifier.profileClaims <== profileClaims;
-    profileVerifier.validFromEpoch <== credValidFromEpoch;
-    profileVerifier.validUntilEpoch <== credValidUntilEpoch;
-    profileVerifier.credentialId <== credentialId;
-    profileVerifier.requestEpoch <== requestEpoch;
-    profileVerifier.signature <== credSignature;
-    profileVerifier.sigR8x <== credSigR8x;
-    profileVerifier.sigR8y <== credSigR8y;
-    profileVerifier.issuerAx <== credIssuerAx;
-    profileVerifier.issuerAy <== credIssuerAy;
-    profileVerifier.publicKey <== credPublicKey;
-
-    scopedVerifier.enabled <== type5Check.out;
-    scopedVerifier.schemaTag <== predicateSchemaTag;
-    scopedVerifier.scopeKind <== scopeKind;
-    scopedVerifier.approvedScopeId <== approvedScopeId;
-    scopedVerifier.requesterId <== requesterId;
-    scopedVerifier.validFromEpoch <== credValidFromEpoch;
-    scopedVerifier.validUntilEpoch <== credValidUntilEpoch;
-    scopedVerifier.credentialId <== credentialId;
-    scopedVerifier.requestEpoch <== requestEpoch;
-    scopedVerifier.signature <== credSignature;
-    scopedVerifier.sigR8x <== credSigR8x;
-    scopedVerifier.sigR8y <== credSigR8y;
-    scopedVerifier.issuerAx <== credIssuerAx;
-    scopedVerifier.issuerAy <== credIssuerAy;
-    scopedVerifier.publicKey <== credPublicKey;
-
-    allowlistVerifier.requesterId <== requesterId;
-    allowlistVerifier.enabled <== type8Check.out;
-    allowlistVerifier.merkleLeaf <== merkleLeaf;
-    allowlistVerifier.merkleRoot <== merkleRoot;
-    allowlistVerifier.schemaTag <== predicateSchemaTag;
-    allowlistVerifier.scopeKind <== scopeKind;
-    allowlistVerifier.approvedScopeId <== approvedScopeId;
-    allowlistVerifier.credPublicKey <== credPublicKey;
-    for (var i = 0; i < MERKLE_LEVELS; i++) {
-        allowlistVerifier.merklePathElements[i] <== merklePathElements[i];
-        allowlistVerifier.merklePathIndices[i] <== merklePathIndices[i];
+    // Instantiate only the verifiers this instance may select. An omitted
+    // verifier contributes 0 to isValid through its constant-0 selector.
+    if (ALLOWED & 1) {
+        merkleVerifier = MerkleProofVerifier(MERKLE_LEVELS);
+        merkleVerifier.leaf <== merkleLeaf;
+        for (var i = 0; i < MERKLE_LEVELS; i++) {
+            merkleVerifier.pathElements[i] <== merklePathElements[i];
+            merkleVerifier.pathIndices[i] <== merklePathIndices[i];
+        }
+        merkleVerifier.root <== merkleRoot;
     }
 
-    moratoriumVerifier.schemaTag <== predicateSchemaTag;
-    moratoriumVerifier.epochValue <== moratoriumUntilEpoch;
-    timeLimitVerifier.schemaTag <== predicateSchemaTag;
-    timeLimitVerifier.epochValue <== timeLimitEpochs;
-    
+    if (ALLOWED & 2) {
+        signatureVerifier = CredentialSignatureVerifier();
+        signatureVerifier.schemaTag <== predicateSchemaTag;
+        signatureVerifier.policyCommitment <== policyCommitment;
+        signatureVerifier.requesterId <== requesterId;
+        signatureVerifier.resourceId <== resourceId;
+        signatureVerifier.purposeCode <== purposeCode;
+        signatureVerifier.validFromEpoch <== credValidFromEpoch;
+        signatureVerifier.validUntilEpoch <== credValidUntilEpoch;
+        signatureVerifier.approvalId <== credentialId;
+        signatureVerifier.requestEpoch <== requestEpoch;
+        signatureVerifier.signature <== credSignature;
+        signatureVerifier.sigR8x <== credSigR8x;
+        signatureVerifier.sigR8y <== credSigR8y;
+        signatureVerifier.issuerAx <== credIssuerAx;
+        signatureVerifier.issuerAy <== credIssuerAy;
+        signatureVerifier.publicKey <== credPublicKey;
+        // Run the EdDSA check only for slots whose predicate type selects it.
+        // predicateType is range-constrained by the caller, so this is not a
+        // prover-controlled switch.
+        signatureVerifier.enabled <== sel1;
+    }
+
+    if (ALLOWED & 512) {
+        profileVerifier = DuoProfileCredentialVerifier();
+        profileVerifier.enabled <== sel9;
+        profileVerifier.schemaTag <== predicateSchemaTag;
+        profileVerifier.policyCommitment <== policyCommitment;
+        profileVerifier.requesterId <== requesterId;
+        profileVerifier.resourceId <== resourceId;
+        profileVerifier.profileClaims <== profileClaims;
+        profileVerifier.validFromEpoch <== credValidFromEpoch;
+        profileVerifier.validUntilEpoch <== credValidUntilEpoch;
+        profileVerifier.credentialId <== credentialId;
+        profileVerifier.requestEpoch <== requestEpoch;
+        profileVerifier.signature <== credSignature;
+        profileVerifier.sigR8x <== credSigR8x;
+        profileVerifier.sigR8y <== credSigR8y;
+        profileVerifier.issuerAx <== credIssuerAx;
+        profileVerifier.issuerAy <== credIssuerAy;
+        profileVerifier.publicKey <== credPublicKey;
+    }
+
+    if (ALLOWED & 32) {
+        scopedVerifier = SignedScopedCredentialVerifier();
+        scopedVerifier.enabled <== sel5;
+        scopedVerifier.schemaTag <== predicateSchemaTag;
+        scopedVerifier.scopeKind <== scopeKind;
+        scopedVerifier.approvedScopeId <== approvedScopeId;
+        scopedVerifier.requesterId <== requesterId;
+        scopedVerifier.validFromEpoch <== credValidFromEpoch;
+        scopedVerifier.validUntilEpoch <== credValidUntilEpoch;
+        scopedVerifier.credentialId <== credentialId;
+        scopedVerifier.requestEpoch <== requestEpoch;
+        scopedVerifier.signature <== credSignature;
+        scopedVerifier.sigR8x <== credSigR8x;
+        scopedVerifier.sigR8y <== credSigR8y;
+        scopedVerifier.issuerAx <== credIssuerAx;
+        scopedVerifier.issuerAy <== credIssuerAy;
+        scopedVerifier.publicKey <== credPublicKey;
+    }
+
+    if (ALLOWED & 256) {
+        allowlistVerifier = RequesterAllowlistVerifier(MERKLE_LEVELS);
+        allowlistVerifier.requesterId <== requesterId;
+        allowlistVerifier.enabled <== sel8;
+        allowlistVerifier.merkleLeaf <== merkleLeaf;
+        allowlistVerifier.merkleRoot <== merkleRoot;
+        allowlistVerifier.schemaTag <== predicateSchemaTag;
+        allowlistVerifier.scopeKind <== scopeKind;
+        allowlistVerifier.approvedScopeId <== approvedScopeId;
+        allowlistVerifier.credPublicKey <== credPublicKey;
+        for (var i = 0; i < MERKLE_LEVELS; i++) {
+            allowlistVerifier.merklePathElements[i] <== merklePathElements[i];
+            allowlistVerifier.merklePathIndices[i] <== merklePathIndices[i];
+        }
+    }
+
+    if (ALLOWED & 64) {
+        moratoriumVerifier = PolicyObligationVerifier(2003);
+        moratoriumVerifier.schemaTag <== predicateSchemaTag;
+        moratoriumVerifier.epochValue <== moratoriumUntilEpoch;
+    }
+    if (ALLOWED & 128) {
+        timeLimitVerifier = PolicyObligationVerifier(2004);
+        timeLimitVerifier.schemaTag <== predicateSchemaTag;
+        timeLimitVerifier.epochValue <== timeLimitEpochs;
+    }
+
     // Connect range verifier
-    rangeVerifier.value <== rangeValue;
-    rangeVerifier.minValue <== rangeMin;
-    rangeVerifier.maxValue <== rangeMax;
-    
-    // Connect ontology-linked terms verifier
-    ontologyVerifier.icdCode <== ontologyCode;
-    ontologyVerifier.allowedRoot <== merkleRoot;  // Reuse merkleRoot for ontology verification
-    ontologyVerifier.policyId <== ontologyPolicyId;
-    ontologyVerifier.epoch <== ontologyEpoch;
-    for (var i = 0; i < MERKLE_LEVELS; i++) {
-        ontologyVerifier.merklePathElements[i] <== merklePathElements[i];
-        ontologyVerifier.merklePathIndices[i] <== merklePathIndices[i];
+    if (ALLOWED & 4) {
+        rangeVerifier = RangeProof(RANGE_BITS);
+        rangeVerifier.value <== rangeValue;
+        rangeVerifier.minValue <== rangeMin;
+        rangeVerifier.maxValue <== rangeMax;
     }
-    
-    
-    // Multiply each result by its selector and sum (break into quadratic constraints)
+
+    // Connect ontology-linked terms verifier
+    if (ALLOWED & 8) {
+        ontologyVerifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
+        ontologyVerifier.icdCode <== ontologyCode;
+        ontologyVerifier.allowedRoot <== merkleRoot;  // Reuse merkleRoot for ontology verification
+        ontologyVerifier.policyId <== ontologyPolicyId;
+        ontologyVerifier.epoch <== ontologyEpoch;
+        for (var i = 0; i < MERKLE_LEVELS; i++) {
+            ontologyVerifier.merklePathElements[i] <== merklePathElements[i];
+            ontologyVerifier.merklePathIndices[i] <== merklePathIndices[i];
+        }
+    }
+
+
+    // Multiply each result by its selector and sum (break into quadratic
+    // constraints). A type outside ALLOWED has no verifier and a constant-0
+    // selector, so its term is the constant 0.
     signal merkleSelected;
-    signal signatureSelected; 
+    signal signatureSelected;
     signal rangeSelected;
     signal ontologySelected;
     signal scopedSelected;
@@ -924,17 +996,26 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal timeLimitSelected;
     signal profileSelected;
     signal partialSum1, partialSum2, partialSum3, partialSum4;
-    
-    merkleSelected <== type0Check.out * merkleVerifier.isValid;
-    signatureSelected <== type1Check.out * signatureVerifier.isValid;
-    rangeSelected <== type2Check.out * rangeVerifier.isValid;
-    ontologySelected <== type3Check.out * ontologyVerifier.pred;
-    scopedSelected <== type5Check.out * scopedVerifier.isValid;
-    allowlistSelected <== type8Check.out * allowlistVerifier.isValid;
-    moratoriumSelected <== type6Check.out * moratoriumVerifier.isValid;
-    timeLimitSelected <== type7Check.out * timeLimitVerifier.isValid;
-    profileSelected <== type9Check.out * profileVerifier.isValid;
-    
+
+    if (ALLOWED & 1)   { merkleSelected <== sel0 * merkleVerifier.isValid; }
+    else               { merkleSelected <== 0; }
+    if (ALLOWED & 2)   { signatureSelected <== sel1 * signatureVerifier.isValid; }
+    else               { signatureSelected <== 0; }
+    if (ALLOWED & 4)   { rangeSelected <== sel2 * rangeVerifier.isValid; }
+    else               { rangeSelected <== 0; }
+    if (ALLOWED & 8)   { ontologySelected <== sel3 * ontologyVerifier.pred; }
+    else               { ontologySelected <== 0; }
+    if (ALLOWED & 32)  { scopedSelected <== sel5 * scopedVerifier.isValid; }
+    else               { scopedSelected <== 0; }
+    if (ALLOWED & 256) { allowlistSelected <== sel8 * allowlistVerifier.isValid; }
+    else               { allowlistSelected <== 0; }
+    if (ALLOWED & 64)  { moratoriumSelected <== sel6 * moratoriumVerifier.isValid; }
+    else               { moratoriumSelected <== 0; }
+    if (ALLOWED & 128) { timeLimitSelected <== sel7 * timeLimitVerifier.isValid; }
+    else               { timeLimitSelected <== 0; }
+    if (ALLOWED & 512) { profileSelected <== sel9 * profileVerifier.isValid; }
+    else               { profileSelected <== 0; }
+
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
     partialSum3 <== partialSum2 + ontologySelected;
