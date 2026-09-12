@@ -47,6 +47,9 @@ const MAX_UINT32 = 4_294_967_295n;
 const MOR_SCHEMA_TAG = 2003;
 const TS_SCHEMA_TAG = 2004;
 const USER_ALLOWLIST_SCHEMA_TAG = 2005;
+const DUO_PROFILE_SCHEMA_TAG = 2006;
+const DUO_PROFILE_SLOT = 10;
+const V3_PREDICATE_SLOTS = 11;
 
 function resolveAccessGasPadBase(app) {
     const fromLocals = app && app.locals && app.locals.accessGasPadTarget;
@@ -137,6 +140,24 @@ function validateUserAllowlistEvidence(material, evidence) {
     }
 }
 
+function validateDuoProfileMaterial(material) {
+    const type = Number(material.predicateTypes[DUO_PROFILE_SLOT]);
+    if (type !== 4 && type !== 9) throw new Error('DUO_PROFILE is reserved for predicate slot 10');
+    if (type === 9 && (Number(material.predicateSchemaTags[DUO_PROFILE_SLOT]) !== DUO_PROFILE_SCHEMA_TAG || BigInt(material.credPublicKeys[DUO_PROFILE_SLOT]) === 0n)) {
+        throw new Error('DUO_PROFILE requires schema tag 2006 and a non-zero issuer key commitment');
+    }
+}
+
+function validateFixedSlotTypes(material) {
+    const expected = [3, 3, 3, 3, 3, 8, 8, 8, 6, 7, 9];
+    for (let slot = 0; slot < expected.length; slot += 1) {
+        const type = Number(material.predicateTypes[slot]);
+        if (type !== 4 && type !== expected[slot]) {
+            throw new Error(`predicate type ${type} is invalid for fixed DUO V3 slot ${slot}`);
+        }
+    }
+}
+
 // ── POST /tps/provision ───────────────────────────────────────────────────────
 // Stage 2: Provider provisions policy-bound proving material.
 router.post('/provision', async (req, res) => {
@@ -152,8 +173,8 @@ router.post('/provision', async (req, res) => {
             });
         }
         for (const name of ['predicateTypes', 'predicateSchemaTags', 'scopeKinds', 'approvedScopeIds', 'merkleRoots', 'credPublicKeys', 'rangeMin', 'rangeMax', 'ontologyPolicyIds', 'ontologyEpochs']) {
-            if (!Array.isArray(material[name]) || material[name].length !== 5) {
-                return res.status(400).json({ error: `material.${name} must contain exactly 5 entries` });
+            if (!Array.isArray(material[name]) || material[name].length !== V3_PREDICATE_SLOTS) {
+                return res.status(400).json({ error: `material.${name} must contain exactly ${V3_PREDICATE_SLOTS} entries` });
             }
         }
         if (material.policyValidFromEpoch === undefined || material.policyValidUntilEpoch === undefined) {
@@ -165,6 +186,8 @@ router.post('/provision', async (req, res) => {
         try {
             validateObligationMaterial(material);
             validateUserAllowlistMaterial(material);
+            validateDuoProfileMaterial(material);
+            validateFixedSlotTypes(material);
         } catch (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -248,11 +271,11 @@ router.post('/prove', async (req, res) => {
         // provider-committed US, PS, or IS requester allowlist.
         const usesHolderBoundProof = material.predicateTypes.some((type) => {
             const predicateType = Number(type);
-            return predicateType === 5 || predicateType === 8;
+            return predicateType === 8 || predicateType === 9;
         });
         if (usesHolderBoundProof) {
             if (evidence.holderSecret === undefined || evidence.holderSecret === null || evidence.holderSecret === '') {
-                return res.status(400).json({ error: 'evidence.holderSecret is required for holder-bound credentials or requester allowlists' });
+                return res.status(400).json({ error: 'evidence.holderSecret is required for DUO_PROFILE credentials or requester allowlists' });
             }
             try {
                 evidence.requesterId = await calculateRequesterId(evidence.holderSecret);
@@ -262,6 +285,10 @@ router.post('/prove', async (req, res) => {
         }
         if (evidence.requesterId === undefined || evidence.requesterId === null || evidence.requesterId === '') {
             return res.status(400).json({ error: 'evidence.requesterId is required (bound into the proof statement)' });
+        }
+        if (Number(material.predicateTypes[DUO_PROFILE_SLOT]) === 9 &&
+            (!Number.isInteger(Number(evidence.duoProfileClaims)) || Number(evidence.duoProfileClaims) < 0 || Number(evidence.duoProfileClaims) > 127)) {
+            return res.status(400).json({ error: 'evidence.duoProfileClaims must be a 7-bit integer for DUO_PROFILE policies' });
         }
         try {
             validateUserAllowlistEvidence(material, evidence);

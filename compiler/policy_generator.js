@@ -10,25 +10,40 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const circomlibjs = require('circomlibjs');
+const DUO_TERMS = require('../duo_terms.json');
 
 const {
   NAMESPACE_ALIASES,
   toHex
 } = require('../utils/merkle/ontology_whitelist');
 
-// Canonical attribute ordering and metadata.
+// Canonical DUO V3 attribute ordering and metadata.  This is deliberately
+// fixed: the production circuit derives the profile-backed entries from a
+// signed credential rather than accepting requester supplied assertions.
 const ATTRIBUTE_DEFINITIONS = [
-  { code: 'GR', label: 'General research use', namespace: null, requiresPredicate: false },
+  { code: 'GRU', label: 'General research use', namespace: null, requiresProfile: true },
   { code: 'DS', label: 'Disease-specific research', namespace: 'ICD10', requiresPredicate: true },
   { code: 'RS', label: 'Research-specific restrictions', namespace: 'OBI', requiresPredicate: true },
   { code: 'POA', label: 'Population origins/ancestry', namespace: 'HANCESTRO', requiresPredicate: true },
   { code: 'GS', label: 'Geographical restriction', namespace: 'ISO3166', requiresPredicate: true },
   { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true },
-  { code: 'CU', label: 'Commercial use', namespace: null, requiresPredicate: false }
+  { code: 'HMB', label: 'Health/medical/biomedical research', namespace: null, requiresProfile: true },
+  { code: 'NMDS', label: 'No methods development research', namespace: null, requiresProfile: true },
+  { code: 'GSO', label: 'Genetic studies only', namespace: null, requiresProfile: true },
+  { code: 'NPUNCU', label: 'Not-for-profit, non-commercial use only', namespace: null, requiresProfile: true },
+  { code: 'NPOA', label: 'Population origins/ancestry prohibited', namespace: null, requiresProfile: true },
+  { code: 'NPU', label: 'Not-for-profit organisation use only', namespace: null, requiresProfile: true },
+  { code: 'NCU', label: 'Non-commercial use only', namespace: null, requiresProfile: true }
 ];
-const PRODUCTION_ATTRIBUTE_ORDER = Object.freeze(['GR', 'DS', 'RS', 'POA', 'GS', 'CC']);
-const PRODUCTION_N = 6;
-const PRODUCTION_M = 5;
+const PRODUCTION_ATTRIBUTE_ORDER = Object.freeze(['GRU', 'DS', 'RS', 'POA', 'GS', 'CC', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU']);
+const PRODUCTION_N = 13;
+const PRODUCTION_M = 11;
+const DUO_PROFILE_CREDENTIAL_V1 = 2006;
+const PROFILE_SLOT = 10;
+const FIXED_SLOTS = Object.freeze({ DS: 0, RS: 1, POA: 2, GS: 3, CC: 4, US: 5, PS: 6, IS: 7, MOR: 8, TS: 9, DUO_PROFILE: 10 });
+const PROFILE_TERMS = new Set(['GRU', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU']);
+const PROCEDURAL_TERMS = new Set(['PUB', 'COL', 'RTN', 'IRB']);
+const DUO_CODE_BY_ID = Object.freeze(Object.fromEntries(DUO_TERMS.map(({ term, shorthand }) => [term.replace(/[^A-Z0-9]/gi, '').toUpperCase(), shorthand])));
 
 const SCOPED_DUO_TERMS = Object.freeze({
   US: { code: 'US', duoId: 'DUO0000026', scopeKind: 26 },
@@ -50,44 +65,44 @@ const OBLIGATION_DUO_TERMS = Object.freeze({
 
 // Flexible identifier mapping for DUO attributes.
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
-  GR: 'GR',
-  GENERAL_RESEARCH: 'GR',
-  GENERAL_RESEARCH_USE: 'GR',
-  GENERALRESEARCH: 'GR',
-  DUO0000042: 'GR',
+  GRU: 'GRU', GR: 'GRU', GENERAL_RESEARCH: 'GRU', GENERAL_RESEARCH_USE: 'GRU', GENERALRESEARCH: 'GRU',
+  DUO0000042: 'GRU', DUO_0000042: 'GRU',
 
   DS: 'DS',
   DISEASE_SPECIFIC: 'DS',
   DISEASE_SPECIFIC_RESEARCH: 'DS',
   DISEASESPECIFIC: 'DS',
-  DUO0000007: 'DS',
+  DUO0000007: 'DS', DUO_0000007: 'DS',
 
   RS: 'RS',
   RESEARCH_SPECIFIC: 'RS',
   RESEARCH_SPECIFIC_RESTRICTIONS: 'RS',
   RESEARCHSPECIFIC: 'RS',
-  DUO0000012: 'RS',
+  DUO0000012: 'RS', DUO_0000012: 'RS',
 
   POA: 'POA',
   POPULATION_ORIGINS_ANCESTRY: 'POA',
   POPULATION_ANCESTRY: 'POA',
   POPULATIONORIGINS: 'POA',
-  DUO0000011: 'POA',
+  DUO0000011: 'POA', DUO_0000011: 'POA',
 
   GS: 'GS',
   GEOGRAPHICAL_RESTRICTION: 'GS',
   GEOGRAPHIC_RESTRICTION: 'GS',
-  DUO0000022: 'GS',
+  DUO0000022: 'GS', DUO_0000022: 'GS',
 
   CC: 'CC',
   CLINICAL_CARE: 'CC',
   CLINICALCARE: 'CC',
-  DUO0000043: 'CC',
+  DUO0000043: 'CC', DUO_0000043: 'CC',
 
-  CU: 'CU',
-  COMMERCIAL_USE: 'CU',
-  COMMERCIAL: 'CU',
-  DUO0000046: 'CU'
+  HMB: 'HMB', HEALTH_MEDICAL_BIOMEDICAL_RESEARCH: 'HMB', DUO0000006: 'HMB', DUO_0000006: 'HMB',
+  NMDS: 'NMDS', NO_GENERAL_METHODS_RESEARCH: 'NMDS', DUO0000015: 'NMDS', DUO_0000015: 'NMDS',
+  GSO: 'GSO', GENETIC_STUDIES_ONLY: 'GSO', DUO0000016: 'GSO', DUO_0000016: 'GSO',
+  NPUNCU: 'NPUNCU', NOT_FOR_PROFIT_NON_COMMERCIAL_USE_ONLY: 'NPUNCU', DUO0000018: 'NPUNCU', DUO_0000018: 'NPUNCU',
+  NPOA: 'NPOA', POPULATION_ORIGINS_ANCESTRY_RESEARCH_PROHIBITED: 'NPOA', DUO0000044: 'NPOA', DUO_0000044: 'NPOA',
+  NPU: 'NPU', NOT_FOR_PROFIT_ORGANISATION_USE_ONLY: 'NPU', DUO0000045: 'NPU', DUO_0000045: 'NPU',
+  NCU: 'NCU', NON_COMMERCIAL_USE_ONLY: 'NCU', DUO0000046: 'NCU', DUO_0000046: 'NCU'
 });
 
 const SCOPED_ALIAS_MAP = Object.freeze({
@@ -136,11 +151,29 @@ function canonicalizeAttribute(name) {
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '_');
+  const sourceCode = DUO_CODE_BY_ID[key.replace(/_/g, '')];
+  if (sourceCode && PROCEDURAL_TERMS.has(sourceCode)) {
+    throw new Error(`DUO term ${name} is procedural and must be handled by an out-of-circuit governance workflow`);
+  }
+  if (sourceCode === 'NRES') return 'NRES';
+  if (sourceCode && ATTRIBUTE_ALIAS_MAP[sourceCode]) return ATTRIBUTE_ALIAS_MAP[sourceCode];
+  if (key === 'NRES' || key === 'DUO0000004' || key === 'DUO_0000004') {
+    return 'NRES';
+  }
+  if (PROCEDURAL_TERMS.has(key) || ['DUO0000019', 'DUO_0000019', 'DUO0000020', 'DUO_0000020', 'DUO0000021', 'DUO_0000021', 'DUO0000029', 'DUO_0000029'].includes(key)) {
+    throw new Error(`DUO term ${name} is procedural and must be handled by an out-of-circuit governance workflow`);
+  }
   const mapped = ATTRIBUTE_ALIAS_MAP[key];
   if (!mapped) {
     throw new Error(`Unknown attribute identifier: ${name}`);
   }
   return mapped;
+}
+
+function canonicalizeProfileTerm(name) {
+  if (!name) return null;
+  const key = String(name).trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
+  return key === 'DUO_PROFILE' || key === 'DUO_PROFILE_CREDENTIAL' ? 'DUO_PROFILE' : null;
 }
 
 function canonicalizeScopedTerm(name) {
@@ -238,6 +271,10 @@ function buildAttributeContext(attributeDefs, inputAttributes = {}) {
       acc[def.code] = Boolean(def.requiresPredicate && def.namespace);
       return acc;
     }, {}),
+    requiresProfileByCode: attributeDefs.reduce((acc, def) => {
+      acc[def.code] = Boolean(def.requiresProfile);
+      return acc;
+    }, {}),
     definitions: attributeDefs
   };
 }
@@ -253,6 +290,7 @@ function buildPredicateContext(predicates = []) {
   const namespaceToSlot = new Map();
   const scopeToSlot = new Map();
   const obligationToSlot = new Map();
+  let profileSlot = null;
 
   predicates.forEach((raw, idx) => {
     if (typeof raw !== 'object' || raw === null) {
@@ -265,12 +303,30 @@ function buildPredicateContext(predicates = []) {
       throw new Error(`Duplicate predicate slot: ${raw.slot}`);
     }
     const rawDuo = raw.duo ?? raw.code ?? raw.attribute;
+    const profileTerm = canonicalizeProfileTerm(rawDuo);
     const scopedTerm = canonicalizeScopedTerm(rawDuo);
     const obligationTerm = canonicalizeObligationTerm(rawDuo);
-    if (obligationTerm) {
+    if (profileTerm) {
+      if (raw.slot !== PROFILE_SLOT) {
+        throw new Error(`DUO_PROFILE must use reserved predicate slot ${PROFILE_SLOT}`);
+      }
+      if (profileSlot !== null) throw new Error('Only one DUO_PROFILE predicate is allowed per policy');
+      if (raw.namespace ?? raw.ns ?? raw.ontology ?? raw.root ?? raw.allowlistRoot ?? raw.requesterAllowlistRoot) {
+        throw new Error('DUO_PROFILE must not declare namespace, Merkle root, or allowlist root');
+      }
+      const issuerKeyCommitment = raw.issuerKeyCommitment ?? raw.issuerPublicKeyCommitment;
+      try {
+        if (BigInt(issuerKeyCommitment) <= 0n || BigInt(issuerKeyCommitment) >= BN254_SCALAR_FIELD) throw new Error('invalid');
+      } catch (_) {
+        throw new Error('DUO_PROFILE requires a non-zero BN254 issuerKeyCommitment');
+      }
+      bySlot.set(raw.slot, { slot: raw.slot, duo: 'DUO_PROFILE', kind: 'duo-profile', issuerKeyCommitment: String(issuerKeyCommitment), description: raw.description ?? null });
+      profileSlot = raw.slot;
+    } else if (obligationTerm) {
       if (raw.namespace ?? raw.ns ?? raw.ontology) {
         throw new Error(`Obligation predicate ${obligationTerm} must not declare an ontology namespace`);
       }
+      if (raw.slot !== FIXED_SLOTS[obligationTerm]) throw new Error(`${obligationTerm} must use reserved predicate slot ${FIXED_SLOTS[obligationTerm]}`);
       if (obligationToSlot.has(obligationTerm)) {
         throw new Error(`Only one ${obligationTerm} obligation predicate is allowed per policy`);
       }
@@ -293,6 +349,7 @@ function buildPredicateContext(predicates = []) {
       }
       obligationToSlot.set(obligationTerm, raw.slot);
     } else if (scopedTerm && raw.legacySignedCredential !== true) {
+      if (raw.slot !== FIXED_SLOTS[scopedTerm]) throw new Error(`${scopedTerm} must use reserved predicate slot ${FIXED_SLOTS[scopedTerm]}`);
       const allowlistRoot = raw.allowlistRoot ?? raw.requesterAllowlistRoot;
       if (allowlistRoot === undefined || allowlistRoot === null || allowlistRoot === '') {
         throw new Error(`${scopedTerm} predicate requires a non-zero allowlistRoot`);
@@ -332,6 +389,7 @@ function buildPredicateContext(predicates = []) {
       });
       scopeToSlot.set(scopedTerm, raw.slot);
     } else if (scopedTerm) {
+      throw new Error('legacySignedCredential is not supported by the DUO V3 production circuit');
       if (raw.scopeId === undefined || raw.scopeId === null || raw.scopeId === '') {
         throw new Error(`Scoped predicate ${scopedTerm} requires scopeId`);
       }
@@ -364,6 +422,10 @@ function buildPredicateContext(predicates = []) {
       scopeToSlot.set(scopedTerm, raw.slot);
     } else {
       const duoCode = canonicalizeAttribute(rawDuo);
+      if (duoCode === 'NRES' || PROFILE_TERMS.has(duoCode)) {
+        throw new Error(`${duoCode} is not an external predicate; use DUO_PROFILE for profile-backed terms`);
+      }
+      if (raw.slot !== FIXED_SLOTS[duoCode]) throw new Error(`${duoCode} must use reserved predicate slot ${FIXED_SLOTS[duoCode]}`);
       const namespace = canonicalizeNamespace(raw.namespace ?? raw.ns ?? raw.ontology);
       bySlot.set(raw.slot, {
         slot: raw.slot,
@@ -380,22 +442,14 @@ function buildPredicateContext(predicates = []) {
     }
   });
 
-  if (bySlot.size === 0) {
-    throw new Error('At least one predicate slot must be defined');
-  }
-
   const slots = Array.from(bySlot.keys()).sort((a, b) => a - b);
-  slots.forEach((slot, idx) => {
-    if (slot !== idx) {
-      throw new Error(`Predicate slots must be contiguous starting at 0 (missing slot ${idx})`);
-    }
-  });
 
   return {
     slots: slots.map((slot) => bySlot.get(slot)),
     namespaceToSlot,
     scopeToSlot,
     obligationToSlot,
+    profileSlot,
     obligationParameters: {
       moratoriumUntilEpoch: (Array.from(bySlot.values()).find((p) => p.kind === 'moratorium') || {}).moratoriumUntilEpoch || '0',
       timeLimitEpochs: (Array.from(bySlot.values()).find((p) => p.kind === 'time-limit') || {}).timeLimitEpochs || '0'
@@ -619,8 +673,12 @@ function nodesEqual(a, b) {
 function bindAttributes(ast, attributeCtx) {
   function bind(node) {
     if (node.type === 'ATTRIBUTE') {
+      if (node.value === 'NRES') {
+        return { type: 'CONSTANT', value: 'TRUE' };
+      }
       const namespace = attributeCtx.namespaceByCode[node.value];
       const requiresPredicate = attributeCtx.requiresPredicateByCode[node.value];
+      const requiresProfile = attributeCtx.requiresProfileByCode[node.value];
       if (requiresPredicate) {
         if (!namespace) {
           throw new Error(`Missing namespace binding for attribute ${node.value}`);
@@ -633,6 +691,15 @@ function bindAttributes(ast, attributeCtx) {
             { type: 'PREDICATE', value: namespace, autoInserted: true }
           ],
           autoInserted: true
+        };
+      }
+      if (requiresProfile) {
+        return {
+          type: 'OP', op: 'AND',
+          children: [
+            { type: 'ATTRIBUTE', value: node.value },
+            { type: 'PREDICATE', value: 'DUO_PROFILE', autoInserted: true }
+          ], autoInserted: true
         };
       }
       return {
@@ -695,9 +762,10 @@ function bindAttributes(ast, attributeCtx) {
 // satisfy it by supplying arbitrary invalid siblings. Compile-time rejection
 // keeps the policy language aligned with the proof system's actual semantics.
 function rejectNegatedRequesterAllowlist(ast, negated = false) {
-  if (ast.type === 'PREDICATE') {
-    if (negated && ['US', 'PS', 'IS'].includes(ast.value)) {
-      throw new Error(`NOT ${ast.value} is unsupported: requester restrictions only provide Merkle membership, not non-membership`);
+  if (ast.type === 'PREDICATE' || ast.type === 'ATTRIBUTE' || ast.type === 'CONSTANT') {
+    if (negated) {
+      const label = ast.type === 'PREDICATE' ? ast.value : ast.value;
+      throw new Error(`NOT ${label} is unsupported for DUO terms; use an explicit DUO restriction instead`);
     }
     return;
   }
@@ -711,7 +779,7 @@ function rejectNegatedRequesterAllowlist(ast, negated = false) {
 
 // Convert AST back to RPN sequence after binding.
 function astToRPN(ast) {
-  if (ast.type === 'ATTRIBUTE' || ast.type === 'PREDICATE') {
+  if (ast.type === 'ATTRIBUTE' || ast.type === 'PREDICATE' || ast.type === 'CONSTANT') {
     return [ast];
   }
   if (ast.type === 'OP') {
@@ -729,6 +797,7 @@ function astToRPN(ast) {
 
 // Pretty-print AST for debugging/documentation.
 function astToInfix(ast) {
+  if (ast.type === 'CONSTANT') return ast.value;
   if (ast.type === 'ATTRIBUTE') {
     return ast.value;
   }
@@ -811,7 +880,10 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
 
   const tokens = [];
   rpnTokens.forEach((tok) => {
-    if (tok.type === 'ATTRIBUTE') {
+    if (tok.type === 'CONSTANT') {
+      if (tok.value !== 'TRUE') throw new Error(`Unsupported constant ${tok.value}`);
+      tokens.push(N + M + 3);
+    } else if (tok.type === 'ATTRIBUTE') {
       // The production circuit uses a stable six-slot operand layout even
       // when an author provides a shorter presentation order.
       const idx = PRODUCTION_ATTRIBUTE_ORDER.indexOf(tok.value);
@@ -825,7 +897,7 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
     } else if (tok.type === 'PREDICATE') {
       const slot = namespaceToSlot.has(tok.value)
         ? namespaceToSlot.get(tok.value)
-        : (scopeToSlot.has(tok.value) ? scopeToSlot.get(tok.value) : obligationToSlot.get(tok.value));
+        : (scopeToSlot.has(tok.value) ? scopeToSlot.get(tok.value) : (obligationToSlot.has(tok.value) ? obligationToSlot.get(tok.value) : (tok.value === 'DUO_PROFILE' ? predicateCtx.profileSlot : undefined)));
       if (slot === undefined) {
         throw new Error(`No predicate slot declared for ${tok.value}`);
       }
@@ -852,7 +924,7 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
  * Main entry point: normalize policy JSON and emit circuit artifacts.
  */
 async function generatePolicyArtifacts(config, options = {}) {
-  const { depth = 20, randomizer, attributeOrder } = options;
+  const { depth = 64, randomizer, attributeOrder } = options;
   if (!Number.isInteger(depth) || depth <= 0) {
     throw new Error('depth must be a positive integer');
   }
@@ -867,7 +939,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   }
 
   predicateCtx.slots.forEach((slotInfo) => {
-    if (slotInfo.kind === 'scoped' || slotInfo.kind === 'requester-allowlist' || slotInfo.kind === 'moratorium' || slotInfo.kind === 'time-limit') {
+    if (slotInfo.kind === 'scoped' || slotInfo.kind === 'requester-allowlist' || slotInfo.kind === 'moratorium' || slotInfo.kind === 'time-limit' || slotInfo.kind === 'duo-profile') {
       return;
     }
     const expectedNamespace = attributeCtx.namespaceByCode[slotInfo.duo];
@@ -888,6 +960,22 @@ async function generatePolicyArtifacts(config, options = {}) {
   });
 
   const tokens = tokenizeLogic(config.logic);
+  const sourceAttributes = tokens.filter((tok) => tok.type === 'ATTRIBUTE').map((tok) => tok.value);
+  if (sourceAttributes.includes('NRES') && (tokens.length !== 1 || sourceAttributes.length !== 1)) {
+    throw new Error('NRES must be the sole DUO term in a policy');
+  }
+  const seenAttributes = new Set();
+  for (const attribute of sourceAttributes) {
+    if (seenAttributes.has(attribute)) throw new Error(`DUO term ${attribute} may appear at most once per policy`);
+    seenAttributes.add(attribute);
+  }
+  const needsProfile = sourceAttributes.some((attribute) => PROFILE_TERMS.has(attribute));
+  if (needsProfile && predicateCtx.profileSlot !== PROFILE_SLOT) {
+    throw new Error(`Policies using ${sourceAttributes.filter((attribute) => PROFILE_TERMS.has(attribute)).join(', ')} require a DUO_PROFILE predicate at slot ${PROFILE_SLOT}`);
+  }
+  if (!needsProfile && predicateCtx.profileSlot !== null) {
+    throw new Error('DUO_PROFILE may only be configured for policies using profile-backed DUO terms');
+  }
   // console.log(`Tokenized logic: ${tokens.map((t) => t.value).join(' ')}`);
   const baseRpn = infixToRPN(tokens);
   // console.log(baseRpn.map((t) => `${t.type}(${t.value})`).join(' '));
@@ -958,13 +1046,15 @@ async function generatePolicyArtifacts(config, options = {}) {
     operators: {
       AND: PRODUCTION_N + PRODUCTION_M + 0,
       OR: PRODUCTION_N + PRODUCTION_M + 1,
-      NOT: PRODUCTION_N + PRODUCTION_M + 2
+      NOT: PRODUCTION_N + PRODUCTION_M + 2,
+      TRUE: PRODUCTION_N + PRODUCTION_M + 3
     },
     attributes: {
       order: attributeCtx.order,
       bitmap: attributeCtx.bitmap,
       namespaceByCode: attributeCtx.namespaceByCode,
       requiresPredicateByCode: attributeCtx.requiresPredicateByCode,
+      requiresProfileByCode: attributeCtx.requiresProfileByCode,
       definitions: attributeCtx.definitions
     },
     predicates: {
@@ -976,36 +1066,37 @@ async function generatePolicyArtifacts(config, options = {}) {
         predicateTypes: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           if (!p) return 4;
-          if (p.kind === 'scoped') return 5;
+          if (p.kind === 'ontology') return 3;
           if (p.kind === 'requester-allowlist') return 8;
           if (p.kind === 'moratorium') return 6;
           if (p.kind === 'time-limit') return 7;
+          if (p.kind === 'duo-profile') return 9;
           return 4;
         }),
         predicateSchemaTags: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
           if (!p) return 0;
-          if (p.kind === 'scoped') return SCOPED_AFFILIATION_CREDENTIAL_V1;
           if (p.kind === 'requester-allowlist') return USER_ALLOWLIST_V1;
           if (p.kind === 'moratorium') return MORATORIUM_OBLIGATION_V1;
           if (p.kind === 'time-limit') return TIME_LIMIT_OBLIGATION_V1;
+          if (p.kind === 'duo-profile') return DUO_PROFILE_CREDENTIAL_V1;
           return 0;
         }),
         scopeKinds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && (p.kind === 'scoped' || p.kind === 'requester-allowlist') ? p.scopeKind : 0;
+          return p && p.kind === 'requester-allowlist' ? p.scopeKind : 0;
         }),
         approvedScopeIds: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && (p.kind === 'scoped' || p.kind === 'requester-allowlist') ? String(p.scopeId) : '0';
+          return p && p.kind === 'requester-allowlist' ? String(p.scopeId) : '0';
         }),
         credPublicKeys: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'scoped' ? p.issuerKeyCommitment : '0';
+          return p && p.kind === 'duo-profile' ? p.issuerKeyCommitment : '0';
         }),
         merkleRoots: Array.from({ length: PRODUCTION_M }, (_, slot) => {
           const p = predicateCtx.slots.find((entry) => entry.slot === slot);
-          return p && p.kind === 'requester-allowlist' ? p.allowlistRoot : '0';
+          return p && (p.kind === 'requester-allowlist' || p.kind === 'ontology') ? (p.allowlistRoot ?? p.root ?? '0') : '0';
         }),
         moratoriumUntilEpoch: predicateCtx.obligationParameters.moratoriumUntilEpoch,
         timeLimitEpochs: predicateCtx.obligationParameters.timeLimitEpochs
@@ -1017,6 +1108,7 @@ async function generatePolicyArtifacts(config, options = {}) {
       rpn: expandedRpn.map((tok) => {
         if (tok.type === 'ATTRIBUTE') return tok.value;
         if (tok.type === 'PREDICATE') return `P[${tok.value}]`;
+        if (tok.type === 'CONSTANT') return tok.value;
         if (tok.type === 'OP') return tok.value;
         throw new Error(`Unexpected token type during serialization: ${tok.type}`);
       })

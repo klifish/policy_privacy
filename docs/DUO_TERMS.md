@@ -1,7 +1,8 @@
 # DUO Term Reference
 
-Reference for the 23 Data Use Ontology (DUO) terms supported by this system,
-grouped by the enforcement mechanism each term requires.
+Reference for the 23 Data Use Ontology (DUO) terms recognized by this system.
+DUO V3 mechanically enforces the 19 terms decidable at access time; the four
+procedural terms are explicitly handled outside the circuit.
 
 Source ontology: [Data Use Ontology](https://ega-archive.org/access/data-access-committee/data-use-ontology/) (EGA / GA4GH).
 Machine-readable copy of these terms (ID, shorthand, label, description):
@@ -115,10 +116,13 @@ mechanism is identical. Predicate type `5` is retained only for explicit
 IRB requires documentary evidence reviewed by a human committee, so it is
 handled as an out-of-circuit authorization step.
 
-## Boolean-only terms
+## Profile-backed terms
 
-Satisfied or not by the attribute value alone. No external verification, no
-predicate slot.
+These terms are derived from a seven-bit issuer-signed DUO profile credential
+in fixed predicate slot 10 (type `9`, schema `2006`), never from requester
+self-assertion. The profile is bound to the policy, resource, requester and
+validity window. There is no active revocation in this release; expiry is the
+only invalidation control.
 
 | DUO ID | Code | Label |
 | --- | --- | --- |
@@ -175,11 +179,15 @@ the alias maps in
 
 ## Scope of implementation
 
-The 23 terms above are the vocabulary this system recognizes. Terms marked
-"procedural (out of circuit)" — PUB, COL, RTN, IRB — are part of the
-vocabulary but are satisfied through data access agreements and committee
-review rather than through zero-knowledge predicates, because they cannot be
-mechanically decided at request time.
+All 23 terms are recognized. The 19 non-procedural terms compile to DUO V3.
+`NRES` is a standalone unconditional policy and cannot be combined with any
+other DUO term. `PUB`, `COL`, `RTN`, and `IRB` are rejected by the compiler
+with an out-of-circuit-governance error: they require agreements, committee
+review, and post-access audit rather than a request-time ZK predicate.
+
+DUO V3 uses fixed slots: DS/RS/POA/GS/CC = 0–4, US/PS/IS = 5–7, MOR = 8,
+TS = 9, and the DUO profile = 10. The production circuit has 13 attributes,
+11 predicates, and a 64-token RPN program limit.
 
 Additionally, the experimental data generator
 ([experiments/core/data_generator.js](../experiments/core/data_generator.js))

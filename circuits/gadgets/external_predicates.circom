@@ -500,7 +500,203 @@ template OntologyLinkedTermsVerifier(LEVELS) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 5. UNIFIED EXTERNAL PREDICATE VERIFIER
+// 5. DUO PROFILE CREDENTIAL (V1 / schema 2006)
+// ═══════════════════════════════════════════════════════════════════════════
+
+template DuoProfileCredentialVerifier() {
+    signal input enabled;
+    signal input schemaTag;
+    signal input policyCommitment;
+    signal input requesterId;
+    signal input resourceId;
+    // Seven packed bits, least significant first: research, health/medical,
+    // methods-development, genetic-study, ancestry, commercial, non-profit.
+    signal input profileClaims;
+    signal input validFromEpoch;
+    signal input validUntilEpoch;
+    signal input credentialId;
+    signal input requestEpoch;
+    signal input signature;
+    signal input sigR8x;
+    signal input sigR8y;
+    signal input issuerAx;
+    signal input issuerAy;
+    signal input publicKey;
+    signal output isValid;
+
+    component claimBits = Num2Bits(7);
+    claimBits.in <== profileClaims;
+    component fromBits = Num2Bits(32);
+    fromBits.in <== validFromEpoch;
+    component untilBits = Num2Bits(32);
+    untilBits.in <== validUntilEpoch;
+    component credentialIdZero = IsEqual();
+    credentialIdZero.in[0] <== credentialId;
+    credentialIdZero.in[1] <== 0;
+    component schemaMatches = IsEqual();
+    schemaMatches.in[0] <== schemaTag;
+    schemaMatches.in[1] <== 2006;
+    component keyDigest = Poseidon(2);
+    keyDigest.inputs[0] <== issuerAx;
+    keyDigest.inputs[1] <== issuerAy;
+    component keyMatches = IsEqual();
+    keyMatches.in[0] <== keyDigest.out;
+    keyMatches.in[1] <== publicKey;
+    component startsBeforeRequest = GreaterEqThan(32);
+    startsBeforeRequest.in[0] <== requestEpoch;
+    startsBeforeRequest.in[1] <== validFromEpoch;
+    component endsAfterRequest = LessEqThan(32);
+    endsAfterRequest.in[0] <== requestEpoch;
+    endsAfterRequest.in[1] <== validUntilEpoch;
+    component digest = Poseidon(14);
+    digest.inputs[0] <== schemaTag;
+    digest.inputs[1] <== policyCommitment;
+    digest.inputs[2] <== requesterId;
+    digest.inputs[3] <== resourceId;
+    for (var i = 0; i < 7; i++) digest.inputs[4 + i] <== claimBits.out[i];
+    digest.inputs[11] <== validFromEpoch;
+    digest.inputs[12] <== validUntilEpoch;
+    digest.inputs[13] <== credentialId;
+    component eddsa = EdDSAPoseidonVerifier();
+    eddsa.enabled <== enabled;
+    eddsa.Ax <== issuerAx;
+    eddsa.Ay <== issuerAy;
+    eddsa.S <== signature;
+    eddsa.R8x <== sigR8x;
+    eddsa.R8y <== sigR8y;
+    eddsa.M <== digest.out;
+    signal keyAndSchema;
+    signal validity;
+    signal nonZeroId;
+    signal validIdentity;
+    keyAndSchema <== keyMatches.out * schemaMatches.out;
+    validity <== startsBeforeRequest.out * endsAfterRequest.out;
+    nonZeroId <== 1 - credentialIdZero.out;
+    validIdentity <== keyAndSchema * validity;
+    isValid <== validIdentity * nonZeroId;
+}
+
+// Fixed semantic production slots avoid instantiating every verifier in every
+// slot.  V3 permits only the documented DUO layout: ontology 0..4, requester
+// allowlists 5..7, MOR 8, TS 9, and DUO_PROFILE 10.
+template ProductionPredicateVerifier(SLOT, MERKLE_LEVELS) {
+    signal input predicateType;
+    signal input predicateSchemaTag;
+    signal input policyCommitment;
+    signal input requesterId;
+    signal input resourceId;
+    signal input requestEpoch;
+    signal input merkleLeaf;
+    signal input merklePathElements[MERKLE_LEVELS];
+    signal input merklePathIndices[MERKLE_LEVELS];
+    signal input merkleRoot;
+    signal input ontologyCode;
+    signal input ontologyPolicyId;
+    signal input ontologyEpoch;
+    signal input scopeKind;
+    signal input approvedScopeId;
+    signal input moratoriumUntilEpoch;
+    signal input timeLimitEpochs;
+    signal input profileClaims;
+    signal input credValidFromEpoch;
+    signal input credValidUntilEpoch;
+    signal input credentialId;
+    signal input credSignature;
+    signal input credSigR8x;
+    signal input credSigR8y;
+    signal input credIssuerAx;
+    signal input credIssuerAy;
+    signal input credPublicKey;
+    signal output isValid;
+
+    component disabled = IsEqual();
+    disabled.in[0] <== predicateType;
+    disabled.in[1] <== 4;
+    if (SLOT < 5) {
+        component selected = IsEqual();
+        selected.in[0] <== predicateType;
+        selected.in[1] <== 3;
+        selected.out + disabled.out === 1;
+        predicateSchemaTag === 0;
+        scopeKind === 0;
+        approvedScopeId === 0;
+        credPublicKey === 0;
+        component verifier = OntologyLinkedTermsVerifier(MERKLE_LEVELS);
+        verifier.icdCode <== ontologyCode;
+        verifier.allowedRoot <== merkleRoot;
+        verifier.policyId <== ontologyPolicyId;
+        verifier.epoch <== ontologyEpoch;
+        for (var i = 0; i < MERKLE_LEVELS; i++) {
+            verifier.merklePathElements[i] <== merklePathElements[i];
+            verifier.merklePathIndices[i] <== merklePathIndices[i];
+        }
+        isValid <== selected.out * verifier.pred;
+    } else if (SLOT < 8) {
+        component selected = IsEqual();
+        selected.in[0] <== predicateType;
+        selected.in[1] <== 8;
+        selected.out + disabled.out === 1;
+        component verifier = RequesterAllowlistVerifier(MERKLE_LEVELS);
+        verifier.enabled <== selected.out;
+        verifier.requesterId <== requesterId;
+        verifier.merkleLeaf <== merkleLeaf;
+        verifier.merkleRoot <== merkleRoot;
+        verifier.schemaTag <== predicateSchemaTag;
+        verifier.scopeKind <== scopeKind;
+        verifier.approvedScopeId <== approvedScopeId;
+        verifier.credPublicKey <== credPublicKey;
+        for (var i = 0; i < MERKLE_LEVELS; i++) {
+            verifier.merklePathElements[i] <== merklePathElements[i];
+            verifier.merklePathIndices[i] <== merklePathIndices[i];
+        }
+        scopeKind === (SLOT + 21) * selected.out;
+        isValid <== selected.out * verifier.isValid;
+    } else if (SLOT == 8 || SLOT == 9) {
+        component selected = IsEqual();
+        selected.in[0] <== predicateType;
+        selected.in[1] <== (SLOT == 8 ? 6 : 7);
+        selected.out + disabled.out === 1;
+        predicateSchemaTag === (SLOT == 8 ? 2003 : 2004) * selected.out;
+        scopeKind === 0;
+        approvedScopeId === 0;
+        component verifier = PolicyObligationVerifier(SLOT == 8 ? 2003 : 2004);
+        verifier.schemaTag <== predicateSchemaTag;
+        verifier.epochValue <== (SLOT == 8 ? moratoriumUntilEpoch : timeLimitEpochs);
+        isValid <== selected.out * verifier.isValid;
+    } else {
+        component selected = IsEqual();
+        selected.in[0] <== predicateType;
+        selected.in[1] <== 9;
+        selected.out + disabled.out === 1;
+        predicateSchemaTag === 2006 * selected.out;
+        merkleRoot === 0;
+        ontologyPolicyId === 0;
+        ontologyEpoch === 0;
+        scopeKind === 0;
+        approvedScopeId === 0;
+        component verifier = DuoProfileCredentialVerifier();
+        verifier.enabled <== selected.out;
+        verifier.schemaTag <== predicateSchemaTag;
+        verifier.policyCommitment <== policyCommitment;
+        verifier.requesterId <== requesterId;
+        verifier.resourceId <== resourceId;
+        verifier.profileClaims <== profileClaims;
+        verifier.validFromEpoch <== credValidFromEpoch;
+        verifier.validUntilEpoch <== credValidUntilEpoch;
+        verifier.credentialId <== credentialId;
+        verifier.requestEpoch <== requestEpoch;
+        verifier.signature <== credSignature;
+        verifier.sigR8x <== credSigR8x;
+        verifier.sigR8y <== credSigR8y;
+        verifier.issuerAx <== credIssuerAx;
+        verifier.issuerAy <== credIssuerAy;
+        verifier.publicKey <== credPublicKey;
+        isValid <== selected.out * verifier.isValid;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 6. UNIFIED EXTERNAL PREDICATE VERIFIER (legacy/test only)
 // ═══════════════════════════════════════════════════════════════════════════
 
 template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
@@ -521,6 +717,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal input requesterId;
     signal input resourceId;
     signal input purposeCode;
+    signal input profileClaims;
     signal input credValidFromEpoch;
     signal input credValidUntilEpoch;
     signal input credentialId;
@@ -563,7 +760,8 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     component allowlistVerifier;
     component moratoriumVerifier;
     component timeLimitVerifier;
-    component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check, type8Check;
+    component profileVerifier;
+    component type0Check, type1Check, type2Check, type3Check, type5Check, type6Check, type7Check, type8Check, type9Check;
     
     // Select result based on predicate type using manual selection
     // predicateType: 0=Merkle, 1=Signature, 2=Range, 3=Ontology-Linked
@@ -596,6 +794,9 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     type8Check = IsEqual();
     type8Check.in[0] <== predicateType;
     type8Check.in[1] <== 8;
+    type9Check = IsEqual();
+    type9Check.in[0] <== predicateType;
+    type9Check.in[1] <== 9;
 
     // MOR and TS are policy-level obligations, not scoped credentials.  Their
     // slots must not carry a scope kind or scope identifier that could be
@@ -614,6 +815,7 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     allowlistVerifier = RequesterAllowlistVerifier(MERKLE_LEVELS);
     moratoriumVerifier = PolicyObligationVerifier(2003);
     timeLimitVerifier = PolicyObligationVerifier(2004);
+    profileVerifier = DuoProfileCredentialVerifier();
     
     // Connect merkle verifier
     merkleVerifier.leaf <== merkleLeaf;
@@ -643,6 +845,23 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     // predicateType is range-constrained by the caller, so this is not a
     // prover-controlled switch.
     signatureVerifier.enabled <== type1Check.out;
+
+    profileVerifier.enabled <== type9Check.out;
+    profileVerifier.schemaTag <== predicateSchemaTag;
+    profileVerifier.policyCommitment <== policyCommitment;
+    profileVerifier.requesterId <== requesterId;
+    profileVerifier.resourceId <== resourceId;
+    profileVerifier.profileClaims <== profileClaims;
+    profileVerifier.validFromEpoch <== credValidFromEpoch;
+    profileVerifier.validUntilEpoch <== credValidUntilEpoch;
+    profileVerifier.credentialId <== credentialId;
+    profileVerifier.requestEpoch <== requestEpoch;
+    profileVerifier.signature <== credSignature;
+    profileVerifier.sigR8x <== credSigR8x;
+    profileVerifier.sigR8y <== credSigR8y;
+    profileVerifier.issuerAx <== credIssuerAx;
+    profileVerifier.issuerAy <== credIssuerAy;
+    profileVerifier.publicKey <== credPublicKey;
 
     scopedVerifier.enabled <== type5Check.out;
     scopedVerifier.schemaTag <== predicateSchemaTag;
@@ -703,7 +922,8 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     signal allowlistSelected;
     signal moratoriumSelected;
     signal timeLimitSelected;
-    signal partialSum1, partialSum2, partialSum3;
+    signal profileSelected;
+    signal partialSum1, partialSum2, partialSum3, partialSum4;
     
     merkleSelected <== type0Check.out * merkleVerifier.isValid;
     signatureSelected <== type1Check.out * signatureVerifier.isValid;
@@ -713,9 +933,11 @@ template ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS) {
     allowlistSelected <== type8Check.out * allowlistVerifier.isValid;
     moratoriumSelected <== type6Check.out * moratoriumVerifier.isValid;
     timeLimitSelected <== type7Check.out * timeLimitVerifier.isValid;
+    profileSelected <== type9Check.out * profileVerifier.isValid;
     
     partialSum1 <== merkleSelected + signatureSelected;
     partialSum2 <== partialSum1 + rangeSelected;
     partialSum3 <== partialSum2 + ontologySelected;
-    isValid <== partialSum3 + scopedSelected + moratoriumSelected + timeLimitSelected + allowlistSelected;
+    partialSum4 <== partialSum3 + scopedSelected + moratoriumSelected;
+    isValid <== partialSum4 + timeLimitSelected + allowlistSelected + profileSelected;
 }

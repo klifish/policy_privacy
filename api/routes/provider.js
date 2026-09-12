@@ -44,12 +44,11 @@ router.post('/register-resource', async (req, res, next) => {
         }
 
         // ── Stage 1a: compile policy → penc + randomizer ────────────────────
-        // generatePolicyArtifacts requires config.logic + config.predicates
-        // For simple Boolean-only policies (GR, CU) we supply a dummy predicate
-        // slot for DS (the canonical ontology-linked attribute at slot 0).
+        // DUO V3 accepts predicate-free NRES policies. Profile-backed terms
+        // must explicitly carry their reserved DUO_PROFILE predicate.
         const artifacts = await generatePolicyArtifacts({
             logic: policy,
-            predicates: predicates || [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: null }]
+            predicates: predicates || []
         });
         // artifacts = { tokens, policy, randomizer (hex), policyCommitment (hex), numOperations, ... }
 
@@ -58,15 +57,15 @@ router.post('/register-resource', async (req, res, next) => {
         const { numOperations } = artifacts;
 
         const slots = (value, name, fallback) => {
-            const actual = value ?? Array(5).fill(fallback);
-            if (!Array.isArray(actual) || actual.length !== 5) {
-                throw new Error(`policyParameters.${name} must contain exactly 5 entries`);
+            const actual = value ?? Array(11).fill(fallback);
+            if (!Array.isArray(actual) || actual.length !== 11) {
+                throw new Error(`policyParameters.${name} must contain exactly 11 entries`);
             }
             return actual;
         };
         const scoped = artifacts.predicates.scopeParameters;
         const bindPolicyBound = (name, fallback) => {
-            const generated = scoped[name] ?? Array(5).fill(fallback);
+            const generated = scoped[name] ?? Array(11).fill(fallback);
             const supplied = policyParameters[name]
                 ? slots(policyParameters[name], name, fallback)
                 : generated.slice();

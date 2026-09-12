@@ -11,7 +11,7 @@
  * before calling snarkjs to generate the Groth16 proof.
  *
  * Circuit parameters (must match policy_privacy_main_instance.circom):
- *   N=7 attributes, M=5 predicates, DEPTH=20, K=4
+ *   N=13 attributes, M=11 fixed predicates, DEPTH=64, K=5
  */
 
 const path = require('path');
@@ -33,7 +33,7 @@ const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
 // circuits/policy_privacy_main_instance.circom
-const CIRCUIT = { N: 6, M: 5, DEPTH: 20, K: 4, MERKLE_LEVELS: 8 };
+const CIRCUIT = { N: 13, M: 11, DEPTH: 64, K: 5, MERKLE_LEVELS: 8 };
 
 /**
  * Build the full circuit witness from policy material + requester evidence.
@@ -143,6 +143,13 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
     const credValidUntilEpochs = (evidence.credValidUntilEpochs || zeroStr(M)).slice(0, M);
     const credentialIds = (evidence.credentialIds || zeroStr(M)).slice(0, M);
     const holderSecret = evidence.holderSecret ?? 0;
+    const duoProfileClaims = evidence.duoProfileClaims ?? 0;
+    if (!Number.isInteger(Number(duoProfileClaims)) || Number(duoProfileClaims) < 0 || Number(duoProfileClaims) > 127) {
+        throw new Error('evidence.duoProfileClaims must be a 7-bit integer');
+    }
+    if (!Number.isInteger(policyMaterial.numOperations) || policyMaterial.numOperations <= 0 || policyMaterial.numOperations > DEPTH) {
+        throw new Error(`policyMaterial.numOperations must be an integer in [1, ${DEPTH}]`);
+    }
 
     // HTTP callers pass the chain-hour bucket explicitly. Keep the direct TPS
     // library ergonomic by deriving the same bucket when it is omitted.
@@ -169,12 +176,13 @@ function buildWitness(policyMaterial, evidence, publicInputs) {
         rangeValues,
         ontologyCodes,
         purposeCode: String(purposeCode),
+        duoProfileClaims: String(duoProfileClaims),
         credValidFromEpochs,
         credValidUntilEpochs,
         credentialIds,
         holderSecret: String(holderSecret),
         randomizer: policyMaterial.randomizer.toString(),
-        numOperations: policyMaterial.numOperations || policy.filter(t => t !== 0).length,
+        numOperations: policyMaterial.numOperations,
 
         // Authorization context (private witness; only its digest is public)
         idReq: String(publicInputs.idReq),
@@ -244,7 +252,7 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
     });
 
     if (policyMaterial.paramsCommitment && String(policyMaterial.paramsCommitment) !== witness.paramsCommitment) {
-        throw new Error('Provisioned paramsCommitment does not match V2 policy parameters');
+        throw new Error('Provisioned paramsCommitment does not match DUO V3 policy parameters');
     }
 
     // Bind the authorization context into the statement: the digest is a public

@@ -24,7 +24,7 @@
 
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
-const { loadFixture } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
+const { loadFixture, time } = require('@nomicfoundation/hardhat-toolbox/network-helpers');
 
 const { deployPoseidon3 } = require('../lib/poseidon_contract');
 const { calculateContextHash } = require('../lib/prover');
@@ -74,8 +74,12 @@ describe('On-chain authorization-context binding', function () {
     return { contract, contextHasher, provider, tps };
   }
 
-  function pubSignals(contextHash) {
-    return [1n, POLICY_COMMITMENT, PARAMS_COMMITMENT, BigInt(contextHash)];
+  async function requestEpoch() {
+    return BigInt(Math.floor(await time.latest() / 3600));
+  }
+
+  function pubSignals(contextHash, epoch) {
+    return [1n, POLICY_COMMITMENT, PARAMS_COMMITMENT, BigInt(contextHash), epoch];
   }
 
   it('computes the same digest on-chain as the circuit does off-chain', async function () {
@@ -94,14 +98,15 @@ describe('On-chain authorization-context binding', function () {
   it('accepts a request whose parameters match the proved context', async function () {
     const { contract, tps } = await loadFixture(deployFixture);
     const ctx = await calculateContextHash(ALICE, 1n, SESSION_1);
+    const epoch = await requestEpoch();
 
     // The mock proof fails verification, so the request is recorded as a
     // denial -- but it is recorded, which is what matters here: the context
     // check passed rather than reverting.
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 1, SESSION_1, ALICE,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx)
+        1, 1, SESSION_1, ALICE, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx, epoch)
       )
     ).to.emit(contract, 'AccessRequested');
 
@@ -114,11 +119,12 @@ describe('On-chain authorization-context binding', function () {
     const { contract, tps } = await loadFixture(deployFixture);
     // Digest proved for Alice, request submitted naming Bob.
     const ctx = await calculateContextHash(ALICE, 1n, SESSION_1);
+    const epoch = await requestEpoch();
 
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 1, SESSION_1, BOB,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx)
+        1, 1, SESSION_1, BOB, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx, epoch)
       )
     ).to.be.revertedWith('Context binding mismatch');
   });
@@ -126,13 +132,14 @@ describe('On-chain authorization-context binding', function () {
   it('rejects a request citing a proof bound to a different session', async function () {
     const { contract, tps } = await loadFixture(deployFixture);
     const ctx = await calculateContextHash(ALICE, 1n, SESSION_1);
+    const epoch = await requestEpoch();
 
     // This is the replay the nonce check cannot catch on its own: the nonce is
     // fresh, so usedNonces sees no repeat.
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 1, SESSION_2, ALICE,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx)
+        1, 1, SESSION_2, ALICE, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx, epoch)
       )
     ).to.be.revertedWith('Context binding mismatch');
   });
@@ -142,11 +149,12 @@ describe('On-chain authorization-context binding', function () {
     await contract.connect(provider).registerResource(1); // resourceId 2
 
     const ctx = await calculateContextHash(ALICE, 1n, SESSION_1);
+    const epoch = await requestEpoch();
 
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 2, SESSION_1, ALICE,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx)
+        1, 2, SESSION_1, ALICE, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctx, epoch)
       )
     ).to.be.revertedWith('Context binding mismatch');
   });
@@ -155,9 +163,10 @@ describe('On-chain authorization-context binding', function () {
     const { contract, tps } = await loadFixture(deployFixture);
 
     const ctxAlice = await calculateContextHash(ALICE, 1n, SESSION_1);
+    const epoch = await requestEpoch();
     await contract.connect(tps).requestAccessBound(
-      1, 1, SESSION_1, ALICE,
-      MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxAlice)
+      1, 1, SESSION_1, ALICE, epoch,
+      MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxAlice, epoch)
     );
 
     // Same nonce, same resource, different requester: allowed, because the
@@ -165,16 +174,16 @@ describe('On-chain authorization-context binding', function () {
     const ctxBob = await calculateContextHash(BOB, 1n, SESSION_1);
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 1, SESSION_1, BOB,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxBob)
+        1, 1, SESSION_1, BOB, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxBob, epoch)
       )
     ).to.emit(contract, 'AccessRequested');
 
     // Replaying Alice's exact tuple is still rejected.
     await expect(
       contract.connect(tps).requestAccessBound(
-        1, 1, SESSION_1, ALICE,
-        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxAlice)
+        1, 1, SESSION_1, ALICE, epoch,
+        MOCK_PROOF.pA, MOCK_PROOF.pB, MOCK_PROOF.pC, pubSignals(ctxAlice, epoch)
       )
     ).to.be.revertedWith('Nonce already used');
   });

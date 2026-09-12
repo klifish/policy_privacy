@@ -54,11 +54,11 @@ describe('policy_generator', function () {
     expect(artifacts.policyId).to.equal('policy-123');
     expect(artifacts.datasetId).to.equal('dataset-xyz');
     expect(artifacts.depth).to.equal(10);
-    expect(artifacts.numAttributes).to.equal(5);
-    expect(artifacts.numPredicates).to.equal(2);
+    expect(artifacts.numAttributes).to.equal(13);
+    expect(artifacts.numPredicates).to.equal(11);
     expect(artifacts.numOperations).to.equal(7);
-    expect(artifacts.tokens).to.deep.equal([0, 5, 7, 1, 6, 7, 8]);
-    expect(artifacts.policy.slice(0, 7)).to.deep.equal([0, 5, 7, 1, 6, 7, 8]);
+    expect(artifacts.tokens).to.deep.equal([1, 13, 24, 2, 14, 24, 25]);
+    expect(artifacts.policy.slice(0, 7)).to.deep.equal([1, 13, 24, 2, 14, 24, 25]);
     expect(new Set(artifacts.policy.slice(7))).to.deep.equal(new Set([0]));
 
     expect(artifacts.attributes.order).to.deep.equal(['DS', 'RS', 'POA', 'GS', 'CC']);
@@ -70,7 +70,7 @@ describe('policy_generator', function () {
     expect(artifacts.logic.normalized).to.equal('((DS & P[ICD10]) | (RS & P[OBI]))');
     expect(artifacts.logic.rpn).to.deep.equal(['DS', 'P[ICD10]', 'AND', 'RS', 'P[OBI]', 'AND', 'OR']);
 
-    expect(artifacts.operators).to.deep.equal({ AND: 7, OR: 8, NOT: 9 });
+    expect(artifacts.operators).to.deep.equal({ AND: 24, OR: 25, NOT: 26, TRUE: 27 });
 
     expect(artifacts.randomizer).to.equal(randomizerHex.toLowerCase());
     expect(artifacts.policyCommitment).to.match(/^0x[0-9a-f]+$/);

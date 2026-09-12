@@ -16,7 +16,7 @@ include "../gadgets/multimux.circom";
       - N+M + 0 (code 0)  : AND (binary)
       - N+M + 1 (code 1)  : OR  (binary)
       - N+M + 2 (code 2)  : NOT (unary)
-      - N+M + 3 (code 3)  : reserved / unused
+      - N+M + 3 (code 3)  : TRUE literal (pushes 1)
 
     Inputs:
       postfixExpr[DEPTH]  : token array (only first numOperations meaningful)
@@ -114,10 +114,10 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
     signal tmpDestUnary[DEPTH];
     signal tmpDestBinary[DEPTH];
 
-    // Reserved operator code (11b) detection
+    // TRUE literal (operator code 11b) detection
     signal tmpCode3Bits[DEPTH];   // MSB * LSB
     signal code3Flag[DEPTH];      // isOper * tmpCode3Bits
-    signal _dummyZero[DEPTH];     // forced to 0 for constraint
+    signal isConstant[DEPTH];
 
     // ───────────── Component arrays ─────────────
     component attrBits[DEPTH];
@@ -236,10 +236,10 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         tmpUnary1[i] <== isOper[i] * opMSB[i];         // degree 2
         isUnary[i]   <== tmpUnary1[i] * notOpLSB[i];   // degree 2
 
-        // ----- Disallow reserved operator code 3 (bit pattern 11) -----
+        // TRUE literal: operator code 3 (bit pattern 11) pushes constant 1.
         tmpCode3Bits[i] <== opBits[i].out[1] * opBits[i].out[0];   // degree 2
         code3Flag[i]    <== isOper[i] * tmpCode3Bits[i];           // degree 2
-        active[i] * code3Flag[i] === 0 ; // active step cannot have code 3
+        isConstant[i] <== code3Flag[i];
 
         // Binary needs depth >=2 ; Unary needs depth >=1
         isBinary[i] * (1 - have2[i]) === 0;
@@ -272,7 +272,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         valMux[i].in[0] <== andRes[i];
         valMux[i].in[1] <== orRes[i];
         valMux[i].in[2] <== notRes[i];
-        valMux[i].in[3] <== 0;
+        valMux[i].in[3] <== 1;
         for (var b = 0; b < 2; b++) {
             valMux[i].sel[b] <== opBits[i].out[b];
         }
@@ -285,7 +285,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
 
         // Destination index expression
         // destIdx = (operand ? sp) + (unary ? sp-1) + (binary ? sp-2)
-        tmpDestOpnd[i]  <== isOperand[i] * sp[i];
+        tmpDestOpnd[i]  <== (isOperand[i] + isConstant[i]) * sp[i];
         tmpDestUnary[i] <== isUnary[i] * (sp[i] - 1);
         tmpDestBinary[i] <== isBinary[i] * (sp[i] - 2);
         destIdx[i] <== tmpDestOpnd[i] + tmpDestUnary[i] + tmpDestBinary[i];
@@ -308,7 +308,7 @@ template PostfixPolicyInterpreter(N, M, DEPTH, K) {
         }
 
         // Stack pointer delta: push +1, binary -1, unary 0
-        spDelta[i] <== isOperand[i] - isBinary[i];
+        spDelta[i] <== isOperand[i] + isConstant[i] - isBinary[i];
         sp[i + 1] <== sp[i] + active[i] * spDelta[i];
 
         // Optional: enforce Boolean nature of writeVal (cheap assurance)

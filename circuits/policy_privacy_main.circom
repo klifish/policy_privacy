@@ -43,8 +43,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
-    // Parameter layout v5 adds MOR/TS obligation values.
-    var PARAM_DOMAIN_SEPARATOR = 5;
+    // DUO V3 adds fixed semantic slots and a signed DUO profile credential.
+    var PARAM_DOMAIN_SEPARATOR = 6;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -83,6 +83,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // in calldata or the public statement; it is bound only inside a typed
     // institutional-approval signature.
     signal input purposeCode;
+    signal input duoProfileClaims;
     signal input credValidFromEpochs[M];
     signal input credValidUntilEpochs[M];
     signal input credentialIds[M];
@@ -158,6 +159,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component disabledCheckers[M];
     component scopedCheckers[M];
     component userAllowlistCheckers[M];
+    component profileCheckers[M];
     component merkleRootHashers[M];
     component predicateTypeHashers[M];
     component predicateSchemaTagHashers[M];
@@ -190,6 +192,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component holderIdHasher;
     component holderIdMatches;
     component holderSecretIsZero;
+    component profileClaimBits;
     
     // ───────────────────────────────────────────────────────────────────────
     // 1. VERIFY POLICY COMMITMENT: Com(P;r) = h
@@ -227,6 +230,21 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     for (var i = 0; i < M; i++) {
         predicateVerifiers[i] = ExternalPredicateVerifier(MERKLE_LEVELS, RANGE_BITS);
+        // DUO V3 has fixed semantic slots.  Small generic test instances keep
+        // their legacy predicate freedom; only the production shape is fixed.
+        if (N == 13 && M == 11) {
+            if (i < 5) {
+                (predicateTypes[i] - 3) * (predicateTypes[i] - 4) === 0;
+            } else if (i < 8) {
+                (predicateTypes[i] - 8) * (predicateTypes[i] - 4) === 0;
+            } else if (i == 8) {
+                (predicateTypes[i] - 6) * (predicateTypes[i] - 4) === 0;
+            } else if (i == 9) {
+                (predicateTypes[i] - 7) * (predicateTypes[i] - 4) === 0;
+            } else {
+                (predicateTypes[i] - 9) * (predicateTypes[i] - 4) === 0;
+            }
+        }
         
         // Connect predicate type
         predicateVerifiers[i].predicateType <== predicateTypes[i];
@@ -235,6 +253,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].requesterId <== idReq;
         predicateVerifiers[i].resourceId <== idRes;
         predicateVerifiers[i].purposeCode <== purposeCode;
+        predicateVerifiers[i].profileClaims <== duoProfileClaims;
         predicateVerifiers[i].credValidFromEpoch <== credValidFromEpochs[i];
         predicateVerifiers[i].credValidUntilEpoch <== credValidUntilEpochs[i];
         predicateVerifiers[i].credentialId <== credentialIds[i];
@@ -247,16 +266,16 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         disabledCheckers[i].in[0] <== predicateTypes[i];
         disabledCheckers[i].in[1] <== 4;
         disabledFlags[i] <== disabledCheckers[i].out;
-        scopedCheckers[i] = IsEqual();
-        scopedCheckers[i].in[0] <== predicateTypes[i];
-        scopedCheckers[i].in[1] <== 5;
         userAllowlistCheckers[i] = IsEqual();
         userAllowlistCheckers[i].in[0] <== predicateTypes[i];
         userAllowlistCheckers[i].in[1] <== 8;
+        profileCheckers[i] = IsEqual();
+        profileCheckers[i].in[0] <== predicateTypes[i];
+        profileCheckers[i].in[1] <== 9;
         // Signed scoped credentials and all requester allowlists bind idReq to
         // holderSecret. A policy may combine multiple type-8 allowlists; the
         // cumulative flag only gates the shared holder binding below.
-        scopedFlags[i] <== scopedCheckers[i].out + userAllowlistCheckers[i].out;
+        scopedFlags[i] <== userAllowlistCheckers[i].out + profileCheckers[i].out;
         scopedFlagSum[i + 1] <== scopedFlagSum[i] + scopedFlags[i];
         
         // Connect Merkle proof inputs
@@ -274,7 +293,6 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         predicateVerifiers[i].credIssuerAx <== credIssuerAx[i];
         predicateVerifiers[i].credIssuerAy <== credIssuerAy[i];
         predicateVerifiers[i].credPublicKey <== credPublicKeys[i];
-        
         // Connect range proof inputs
         predicateVerifiers[i].rangeValue <== rangeValues[i];
         predicateVerifiers[i].rangeMin <== rangeMin[i];
@@ -369,6 +387,11 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         approvedScopeIdHashers[i].inputs[1] <== approvedScopeIds[i];
         approvedScopeIdHashChain[i + 1] <== approvedScopeIdHashers[i].out;
     }
+    // Canonical profile padding: a policy without the reserved profile slot
+    // must not carry unused profile claims in its witness.
+    if (M > 10) {
+        duoProfileClaims * disabledFlags[10] === 0;
+    }
 
     paramsDigestChain[0] <== 0;
 
@@ -449,7 +472,8 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
 
     paramsCommitment === paramsDigestChain[15];
 
-    // Holder-bound credentials (type 5) and requester allowlists (type 8)
+    // Holder-bound DUO profile credentials (type 9) and requester allowlists
+    // (type 8) identify their holder as Poseidon(holderSecret).
     // identify their holder as Poseidon(holderSecret). Non-holder-bound
     // policies cannot smuggle an unused secret into the witness.
     noScopedPredicate = IsEqual();
@@ -472,6 +496,21 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // ───────────────────────────────────────────────────────────────────────
     
     policyInterpreter = PostfixPolicyInterpreter(N, M, DEPTH, K);
+
+    // Profile-backed DUO terms are derived from the signed seven-bit claim
+    // vector, never from a requester supplied boolean assertion.
+    if (N >= 13) {
+        profileClaimBits = Num2Bits(7);
+        profileClaimBits.in <== duoProfileClaims;
+        requesterAttrs[0] === profileClaimBits.out[0];
+        requesterAttrs[6] === profileClaimBits.out[1] * (1 - profileClaimBits.out[4]);
+        requesterAttrs[7] === 1 - profileClaimBits.out[2];
+        requesterAttrs[8] === profileClaimBits.out[3];
+        requesterAttrs[9] === profileClaimBits.out[6] * (1 - profileClaimBits.out[5]);
+        requesterAttrs[10] === 1 - profileClaimBits.out[4];
+        requesterAttrs[11] === profileClaimBits.out[6];
+        requesterAttrs[12] === 1 - profileClaimBits.out[5];
+    }
     
     // Connect policy  
     for (var i = 0; i < DEPTH; i++) {
@@ -539,6 +578,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal tmp5[M];
     signal tmp6[M];
     signal tmp7[M];
+    signal tmp8[M];
     
     // ═══════════════════════════════════════════════════════════════════════
     // ADDITIONAL CONSTRAINTS
@@ -549,7 +589,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         requesterAttrs[i] * (requesterAttrs[i] - 1) === 0;
     }
     
-    // Ensure predicate types are valid (0 through 8) using quadratic constraints.
+    // Ensure predicate types are valid (0 through 9) using quadratic constraints.
     for (var i = 0; i < M; i++) {
         // Check the product of (type - 0) through (type - 8) is zero.
         // Break down into quadratic operations
@@ -560,6 +600,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
         tmp5[i] <== (predicateTypes[i] - 6) * (predicateTypes[i] - 7);
         tmp6[i] <== tmp3[i] * tmp4[i];
         tmp7[i] <== tmp6[i] * tmp5[i];
-        tmp7[i] * (predicateTypes[i] - 8) === 0;
+        tmp8[i] <== tmp7[i] * (predicateTypes[i] - 8);
+        tmp8[i] * (predicateTypes[i] - 9) === 0;
     }
 }

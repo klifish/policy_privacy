@@ -24,7 +24,7 @@
 ```
 
 - **attributes**: Boolean switches for DUO terms. Attribute names accept common aliases (e.g. `Disease_Specific` → `DS`).
-- **predicates**: Bind ontology namespaces to predicate slots. Slots must be contiguous starting at 0. Ontology-linked attributes (DS, RS, POA, GS, CC) must have matching predicate entries.
+- **predicates**: Use DUO V3 fixed slots: DS/RS/POA/GS/CC = 0–4, US/PS/IS = 5–7, MOR = 8, TS = 9, and `DUO_PROFILE` = 10. Sparse declarations are allowed; unused slots are disabled.
 - **logic**: Infix expression over attributes and optional explicit predicates. If `P[...]` terms are omitted, the generator automatically expands ontology-linked attributes into conjunctions (e.g. `DS` → `DS & P[ICD10]`).
 
 ## CLI Usage
@@ -41,7 +41,7 @@ node compiler/policy_generator.js \
 Options:
 - `--in`: path to author JSON.
 - `--out`: output path.
-- `--depth`: policy token array length (default 10).
+- `--depth`: policy token array length (default 64).
 - `--randomizer`: optional Poseidon commitment randomizer. Omit to auto-generate.
 - `--pretty`: pretty-print JSON output.
 
