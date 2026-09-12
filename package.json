@@ -88,7 +88,8 @@
     "exp:full": "npx hardhat node &>/tmp/hardhat-node.log & until curl -sf http://127.0.0.1:8545 -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' -H 'Content-Type:application/json' >/dev/null 2>&1; do sleep 1; done && npm run unified && npm run exp:all && kill $(lsof -ti:8545)",
     "viz:pch": "cd python/supervised_analysis && ./refresh_viz.sh pch",
     "viz:spp": "cd python/supervised_analysis && ./refresh_viz.sh spp",
-    "viz:pi": "cd python/supervised_analysis && ./refresh_viz.sh pi"
+    "viz:pi": "cd python/supervised_analysis && ./refresh_viz.sh pi",
+    "build:rapidsnark": "bash scripts/build_rapidsnark.sh"
   },
   "author": "",
   "license": "ISC",
