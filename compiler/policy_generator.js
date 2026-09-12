@@ -761,20 +761,41 @@ function bindAttributes(ast, attributeCtx) {
 // not a non-membership proof, so permitting a negated requester restriction would let a requester
 // satisfy it by supplying arbitrary invalid siblings. Compile-time rejection
 // keeps the policy language aligned with the proof system's actual semantics.
-function rejectNegatedRequesterAllowlist(ast, negated = false) {
-  if (ast.type === 'PREDICATE' || ast.type === 'ATTRIBUTE' || ast.type === 'CONSTANT') {
-    if (negated) {
-      const label = ast.type === 'PREDICATE' ? ast.value : ast.value;
-      throw new Error(`NOT ${label} is unsupported for DUO terms; use an explicit DUO restriction instead`);
-    }
-    return;
-  }
+// Every NOT node is rejected outright (not just odd-depth ones): a doubly
+// negated sub-expression is semantically the sub-expression itself and would
+// only waste program tokens, so there is no legitimate use of NOT.
+function rejectNegation(ast) {
   if (ast.type !== 'OP') return;
   if (ast.op === 'NOT') {
-    rejectNegatedRequesterAllowlist(ast.children[0], !negated);
-    return;
+    const child = ast.children[0];
+    const label = child.type === 'OP' ? astToInfix(child) : child.value;
+    throw new Error(`NOT ${label} is unsupported for DUO terms; use an explicit DUO restriction instead`);
   }
-  ast.children.forEach((child) => rejectNegatedRequesterAllowlist(child, negated));
+  ast.children.forEach((child) => rejectNegation(child));
+}
+
+// MOR/TS obligations are accepted-at-proof-time terms: the circuit only checks
+// that the obligation is configured (schema tag + non-zero epoch), so inside a
+// disjunction the obligation branch is always true and the other branch becomes
+// vacuous. Obligations may therefore only be conjoined.
+function rejectObligationUnderOr(ast) {
+  const obligationIn = (node) => {
+    if (node.type === 'PREDICATE') return OBLIGATION_DUO_TERMS[node.value] ? node.value : null;
+    if (node.type !== 'OP') return null;
+    for (const child of node.children) {
+      const found = obligationIn(child);
+      if (found) return found;
+    }
+    return null;
+  };
+  if (ast.type !== 'OP') return;
+  if (ast.op === 'OR') {
+    const term = obligationIn(ast);
+    if (term) {
+      throw new Error(`Obligation term ${term} must not appear under OR: obligations are always satisfied in-circuit and would make the disjunction vacuous`);
+    }
+  }
+  ast.children.forEach((child) => rejectObligationUnderOr(child));
 }
 
 // Convert AST back to RPN sequence after binding.
@@ -964,10 +985,13 @@ async function generatePolicyArtifacts(config, options = {}) {
   if (sourceAttributes.includes('NRES') && (tokens.length !== 1 || sourceAttributes.length !== 1)) {
     throw new Error('NRES must be the sole DUO term in a policy');
   }
-  const seenAttributes = new Set();
-  for (const attribute of sourceAttributes) {
-    if (seenAttributes.has(attribute)) throw new Error(`DUO term ${attribute} may appear at most once per policy`);
-    seenAttributes.add(attribute);
+  // Every DUO term - attribute-backed or predicate-only (US/PS/IS/MOR/TS) -
+  // may appear at most once; a repeated term is either a typo or a no-op.
+  const seenTerms = new Set();
+  for (const tok of tokens) {
+    if (tok.type !== 'ATTRIBUTE' && tok.type !== 'PREDICATE') continue;
+    if (seenTerms.has(tok.value)) throw new Error(`DUO term ${tok.value} may appear at most once per policy`);
+    seenTerms.add(tok.value);
   }
   const needsProfile = sourceAttributes.some((attribute) => PROFILE_TERMS.has(attribute));
   if (needsProfile && predicateCtx.profileSlot !== PROFILE_SLOT) {
@@ -981,9 +1005,10 @@ async function generatePolicyArtifacts(config, options = {}) {
   // console.log(baseRpn.map((t) => `${t.type}(${t.value})`).join(' '));
   const ast = rpnToAst(baseRpn);
   // console.log(`Parsed AST: ${JSON.stringify(ast, null, 2)}`);
+  rejectNegation(ast);
+  rejectObligationUnderOr(ast);
 
   const boundAst = bindAttributes(ast, attributeCtx);
-  rejectNegatedRequesterAllowlist(boundAst);
   // console.log(`AST after attribute binding: ${JSON.stringify(boundAst, null, 2)}`);
 
   const expandedRpn = astToRPN(boundAst);

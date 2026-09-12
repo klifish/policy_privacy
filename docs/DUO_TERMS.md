@@ -189,6 +189,14 @@ DUO V3 uses fixed slots: DS/RS/POA/GS/CC = 0–4, US/PS/IS = 5–7, MOR = 8,
 TS = 9, and the DUO profile = 10. The production circuit has 13 attributes,
 11 predicates, and a 64-token RPN program limit.
 
+Combination rules enforced by the compiler: every term (including the
+predicate-only terms US/PS/IS/MOR/TS) may appear at most once per policy;
+`NOT` is rejected everywhere, since a Merkle membership witness proves
+inclusion only and double negation is a no-op; and the obligation terms
+MOR/TS may only be conjoined (`AND`) — the circuit treats a configured
+obligation as satisfied, so placing one under `OR` would make the other
+branch vacuous.
+
 Additionally, the experimental data generator
 ([experiments/core/data_generator.js](../experiments/core/data_generator.js))
 exercises a seven-term subset (GR, DS, RS, POA, GS, CC, CU) chosen to cover

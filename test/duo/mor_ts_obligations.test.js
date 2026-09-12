@@ -14,14 +14,17 @@ const {
 } = require('../../lib/prover');
 
 const WASM = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
-const ZEROES = Array(5).fill('0');
+const ZEROES = Array(11).fill('0');
+// Canonical attribute vector when the profile slot is disabled (claims = 0):
+// [GRU, DS, RS, POA, GS, CC, HMB, NMDS, GSO, NPUNCU, NPOA, NPU, NCU]
+const NO_PROFILE_ATTRS = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1];
 const proof = [[0, 0], [[0, 0], [0, 0]], [0, 0]];
 
 async function buildObligationInput({ requestEpoch = 500 } = {}) {
   const artifacts = await generatePolicyArtifacts({
     predicates: [
-      { slot: 0, duo: 'MOR', moratoriumUntilEpoch: 100 },
-      { slot: 1, duo: 'TS', durationMonths: 12 }
+      { slot: 8, duo: 'MOR', moratoriumUntilEpoch: 100 },
+      { slot: 9, duo: 'TS', durationMonths: 12 }
     ],
     logic: 'MOR AND TS'
   });
@@ -46,7 +49,7 @@ async function buildObligationInput({ requestEpoch = 500 } = {}) {
     policy: artifacts.policy,
     randomizer: BigInt(artifacts.randomizer),
     numOperations: artifacts.numOperations,
-    requesterAttrs: [0, 0, 0, 0, 0, 0],
+    requesterAttrs: NO_PROFILE_ATTRS,
     predicateTypes: parameters.predicateTypes,
     predicateSchemaTags: parameters.predicateSchemaTags,
     scopeKinds: parameters.scopeKinds,
@@ -86,11 +89,11 @@ describe('MOR / TS access-time obligations', function () {
   describe('compiler and circuit', function () {
     it('compiles MOR and TS into private parameter-bound slots', async function () {
       const { artifacts, parameters } = await buildObligationInput();
-      expect(artifacts.predicates.obligationToSlot).to.deep.equal({ MOR: 0, TS: 1 });
-      expect(parameters.predicateTypes.slice(0, 2)).to.deep.equal([6, 7]);
-      expect(parameters.predicateSchemaTags.slice(0, 2)).to.deep.equal([2003, 2004]);
-      expect(parameters.scopeKinds).to.deep.equal([0, 0, 0, 0, 0]);
-      expect(parameters.approvedScopeIds).to.deep.equal(['0', '0', '0', '0', '0']);
+      expect(artifacts.predicates.obligationToSlot).to.deep.equal({ MOR: 8, TS: 9 });
+      expect(parameters.predicateTypes).to.deep.equal([4, 4, 4, 4, 4, 4, 4, 4, 6, 7, 4]);
+      expect(parameters.predicateSchemaTags.slice(8, 10)).to.deep.equal([2003, 2004]);
+      expect(parameters.scopeKinds).to.deep.equal(Array(11).fill(0));
+      expect(parameters.approvedScopeIds).to.deep.equal(ZEROES);
       expect(parameters.moratoriumUntilEpoch).to.equal('100');
       expect(parameters.timeLimitEpochs).to.equal('8640');
 
@@ -120,13 +123,17 @@ describe('MOR / TS access-time obligations', function () {
 
       await expect(generatePolicyArtifacts({
         predicates: [
-          { slot: 0, duo: 'MOR', moratoriumUntilEpoch: 10 },
-          { slot: 1, duo: 'MOR', moratoriumUntilEpoch: 11 }
+          { slot: 8, duo: 'MOR', moratoriumUntilEpoch: 10 },
+          { slot: 8, duo: 'MOR', moratoriumUntilEpoch: 11 }
         ], logic: 'MOR'
-      })).to.be.rejectedWith('Only one MOR');
+      })).to.be.rejectedWith('Duplicate predicate slot');
 
       await expect(generatePolicyArtifacts({
-        predicates: [{ slot: 0, duo: 'TS', durationMonths: 0 }], logic: 'TS'
+        predicates: [{ slot: 0, duo: 'MOR', moratoriumUntilEpoch: 10 }], logic: 'MOR'
+      })).to.be.rejectedWith('must use reserved predicate slot 8');
+
+      await expect(generatePolicyArtifacts({
+        predicates: [{ slot: 9, duo: 'TS', durationMonths: 0 }], logic: 'TS'
       })).to.be.rejectedWith('positive uint32');
     });
 
@@ -135,8 +142,9 @@ describe('MOR / TS access-time obligations', function () {
       const { input } = await buildObligationInput({ requestEpoch: 500 }); // deadline is 100
       await snarkjs.wtns.calculate(input, WASM, { type: 'mem' });
 
-      await mustReject({ ...input, predicateSchemaTags: [2004, 2004, 0, 0, 0] });
-      await mustReject({ ...input, scopeKinds: [1, 0, 0, 0, 0] });
+      // Swapped schema tags no longer match the committed parameters.
+      await mustReject({ ...input, predicateSchemaTags: input.predicateSchemaTags.map((t, i) => (i === 8 ? 2004 : t)) });
+      await mustReject({ ...input, scopeKinds: input.scopeKinds.map((k, i) => (i === 8 ? 1 : k)) });
       await mustReject({ ...input, moratoriumUntilEpoch: '0' });
       await mustReject({ ...input, timeLimitEpochs: '0' });
     });
@@ -179,8 +187,8 @@ describe('MOR / TS access-time obligations', function () {
     beforeEach(async function () {
       [provider, other] = await ethers.getSigners();
       paramsCommitment = BigInt(await calculateParamsCommitment({
-        predicateTypes: [7, 4, 4, 4, 4],
-        predicateSchemaTags: [2004, 0, 0, 0, 0],
+        predicateTypes: [4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 4],
+        predicateSchemaTags: [0, 0, 0, 0, 0, 0, 0, 0, 0, 2004, 0],
         policyValidFromEpoch: 0,
         policyValidUntilEpoch: 4294967295,
         moratoriumUntilEpoch: 0,
