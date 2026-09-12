@@ -18,6 +18,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run build:rapidsnark
+      - run: npm run test:rapidsnark
       - run: npm run test:ci
 
   full-proof-matrix:
@@ -32,4 +34,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run build:rapidsnark
+      - run: npm run test:rapidsnark
       - run: npm run test:ci:full

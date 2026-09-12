@@ -12,7 +12,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RS_DIR="$REPO_ROOT/build/rapidsnark"
-RS_REF="${RAPIDSNARK_REF:-main}"
+# This commit was built and validated against the production DUO V3 zkey.
+# Keep the default immutable so local and CI prover binaries are reproducible.
+RS_REF="${RAPIDSNARK_REF:-81eddf1a536d26497b237c0b8a04fe90baf7e439}"
 
 case "$(uname -s)-$(uname -m)" in
     Darwin-arm64)  PLATFORM=macos_arm64 ;;
@@ -25,10 +27,19 @@ esac
 command -v cmake >/dev/null || { echo "cmake is required (macOS: brew install cmake)" >&2; exit 1; }
 
 if [ ! -d "$RS_DIR/.git" ]; then
-    git clone --depth 1 --branch "$RS_REF" --recurse-submodules --shallow-submodules \
-        https://github.com/iden3/rapidsnark.git "$RS_DIR"
+    git clone --no-checkout https://github.com/iden3/rapidsnark.git "$RS_DIR"
 fi
 cd "$RS_DIR"
+
+# A branch name is mutable, and an existing local checkout may point at a
+# different revision. Fetch and detach at the requested ref every time.
+git fetch --depth 1 origin "$RS_REF"
+TARGET_REV="$(git rev-parse FETCH_HEAD)"
+if [ "$(git rev-parse HEAD 2>/dev/null || true)" != "$TARGET_REV" ]; then
+    git checkout --detach "$TARGET_REV"
+fi
+git submodule sync --recursive
+git submodule update --init --recursive --depth 1
 
 if [ ! -d "depends/gmp/package_$PLATFORM" ] && [ ! -d "depends/gmp/package" ]; then
     ./build_gmp.sh "$PLATFORM"

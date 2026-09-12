@@ -54,6 +54,7 @@
     "test:duo": "npx hardhat test test/duo/duo_v3_compiler_rejections.test.js test/duo/duo_profile_credential.test.js test/duo/mor_ts_obligations.test.js test/duo/duo_v3_tamper.test.js test/duo/duo_v3_singles_e2e.test.js test/duo/duo_v3_pairwise_e2e.test.js test/duo/duo_v3_complex_e2e.test.js",
     "test:duo:fast": "DUO_E2E_WITNESS_ONLY=1 npm run test:duo",
     "test:duo:full": "DUO_E2E_FULL=1 DUO_E2E_LOG_TIMINGS=1 npm run test:duo",
+    "test:rapidsnark": "PROVER_BACKEND=rapidsnark DUO_E2E_LOG_TIMINGS=1 npx hardhat test test/duo/duo_v3_singles_e2e.test.js --grep 'S-DS'",
     "test:ci": "npm run build:circuit:full && npm run verify:artifacts && npm run test:tps && npm run test:duo",
     "test:ci:full": "npm run build:circuit:full && npm run verify:artifacts && npm run test:tps && npm run test:duo:full",
     "hardhat:test": "npx hardhat test",
