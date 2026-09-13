@@ -21,7 +21,7 @@ const path = require('path');
 const {
   buildPairsFromExecutionResults,
   PI_DEFAULT_CONFIG
-} = require('../experiments/policy_indistinguishability/pi_data_generator');
+} = require('../experiments/analysis/crosscheck/pi/pi_data_generator');
 
 function parseArgs(argv) {
   const args = {

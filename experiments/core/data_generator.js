@@ -13,7 +13,20 @@ const { ethers } = require('hardhat');
 const { id, getBytes } = require('ethers');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
 const { buildWhitelist } = require('../../utils/merkle/ontology_whitelist');
-const { calculatePolicyCommitment, calculateParamsCommitment } = require('../../test/utils/proofGenerator');
+const {
+  calculatePolicyCommitment,
+  calculateParamsCommitment,
+  calculateRequesterId,
+  signDuoProfileCredential
+} = require('../../lib/prover');
+const {
+  DUO_V3_ATTRIBUTE_ORDER,
+  DUO_V3_M,
+  DUO_V3_DEPTH,
+  DUO_V3_PROFILE_SLOT,
+  DUO_V3_PROFILE_TERMS,
+  deriveDuoV3RequesterAttrs
+} = require('../../lib/duo_v3');
 const tpsClient = require('../../lib/tps-client');
 const { retryRpc, waitForTx, waitForTransactionReceipt } = require('../../lib/rpc-retry');
 const { getExperimentSigner } = require('./blockchain');
@@ -51,19 +64,20 @@ const DUO_TERMS = {
   POPULATION_ANCESTRY: 3,      // DUO:0000011 - Population origins/ancestry (ontology-linked → HANCESTRO)
   GEOGRAPHICAL_RESTRICTION: 4, // DUO:0000022 - Geographical restriction (ontology-linked → ISO 3166)
   CLINICAL_CARE: 5,            // DUO:0000043 - Clinical care use (ontology-linked → SNOMED CT)
-  COMMERCIAL_USE: 6            // DUO:0000046 - Commercial purpose (non-ontology-linked)
+  NON_COMMERCIAL_USE: 6,       // DUO:0000046 - Non-commercial use only
+  COMMERCIAL_USE: 6,           // Deprecated compatibility alias; DUO:0000046 is NCU, not commercial use
+  HEALTH_MEDICAL_BIOMEDICAL: 7,
+  NO_METHODS_DEVELOPMENT: 8,
+  GENETIC_STUDIES_ONLY: 9,
+  NON_PROFIT_NON_COMMERCIAL: 10,
+  NO_POPULATION_ANCESTRY: 11,
+  NON_PROFIT_ONLY: 12
 };
 
-// Attribute configuration for policy generation within the experiment.
-// The main circuit instance currently supports N=6 attributes and M=5 predicates.
-// Circuit parameters: PolicyPrivacyMain(6, 5, 10, 4, 8, 32)
-// Attributes: GR, DS, RS, POA, GS, CC (6 total, matching circuit N=6)
-// Note: CU is defined but excluded from circuit inputs due to N=6 limitation
-const POLICY_ATTRIBUTE_ORDER = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC'];
-
-// Full set of recognized attribute codes (including CU for validation/filtering)
-// This allows configurations to reference CU even though it's not in circuit inputs
-const POLICY_ATTRIBUTE_CODES = ['GR', 'DS', 'RS', 'POA', 'GS', 'CC', 'CU'];
+// Production DUO V3 circuit layout: N=13 attributes, M=11 fixed predicate slots.
+const POLICY_ATTRIBUTE_ORDER = DUO_V3_ATTRIBUTE_ORDER;
+const POLICY_ATTRIBUTE_CODES = DUO_V3_ATTRIBUTE_ORDER;
+const POLICY_PREDICATE_COUNT = DUO_V3_M;
 
 const POLICY_PREDICATE_SLOTS = [
   {
@@ -104,21 +118,28 @@ const POLICY_PREDICATE_SLOTS = [
 ];
 
 const DUO_TO_ATTRIBUTE_CODE = {
-  [DUO_TERMS.GENERAL_RESEARCH]: 'GR',
+  [DUO_TERMS.GENERAL_RESEARCH]: 'GRU',
   [DUO_TERMS.DISEASE_SPECIFIC]: 'DS',
   [DUO_TERMS.RESEARCH_SPECIFIC]: 'RS',
   [DUO_TERMS.POPULATION_ANCESTRY]: 'POA',
   [DUO_TERMS.GEOGRAPHICAL_RESTRICTION]: 'GS',
   [DUO_TERMS.CLINICAL_CARE]: 'CC',
-  [DUO_TERMS.COMMERCIAL_USE]: 'CU'
+  [DUO_TERMS.NON_COMMERCIAL_USE]: 'NCU',
+  [DUO_TERMS.HEALTH_MEDICAL_BIOMEDICAL]: 'HMB',
+  [DUO_TERMS.NO_METHODS_DEVELOPMENT]: 'NMDS',
+  [DUO_TERMS.GENETIC_STUDIES_ONLY]: 'GSO',
+  [DUO_TERMS.NON_PROFIT_NON_COMMERCIAL]: 'NPUNCU',
+  [DUO_TERMS.NO_POPULATION_ANCESTRY]: 'NPOA',
+  [DUO_TERMS.NON_PROFIT_ONLY]: 'NPU'
 };
 
 const ATTRIBUTE_ALIAS_MAP = Object.freeze({
-  GR: 'GR',
-  GENERAL_RESEARCH: 'GR',
-  GENERAL_RESEARCH_USE: 'GR',
-  GENERALRESEARCH: 'GR',
-  DUO0000042: 'GR',
+  GR: 'GRU',
+  GRU: 'GRU',
+  GENERAL_RESEARCH: 'GRU',
+  GENERAL_RESEARCH_USE: 'GRU',
+  GENERALRESEARCH: 'GRU',
+  DUO0000042: 'GRU',
 
   DS: 'DS',
   DISEASE_SPECIFIC: 'DS',
@@ -150,10 +171,30 @@ const ATTRIBUTE_ALIAS_MAP = Object.freeze({
   CLINICALCARE: 'CC',
   DUO0000043: 'CC',
 
-  CU: 'CU',
-  COMMERCIAL_USE: 'CU',
-  COMMERCIAL: 'CU',
-  DUO0000046: 'CU'
+  CU: 'NCU',
+  NCU: 'NCU',
+  NON_COMMERCIAL_USE: 'NCU',
+  NON_COMMERCIAL_USE_ONLY: 'NCU',
+  DUO0000046: 'NCU',
+
+  HMB: 'HMB',
+  HEALTH_MEDICAL_BIOMEDICAL: 'HMB',
+  DUO0000006: 'HMB',
+  NMDS: 'NMDS',
+  NO_METHODS_DEVELOPMENT: 'NMDS',
+  DUO0000015: 'NMDS',
+  GSO: 'GSO',
+  GENETIC_STUDIES_ONLY: 'GSO',
+  DUO0000016: 'GSO',
+  NPUNCU: 'NPUNCU',
+  NON_PROFIT_NON_COMMERCIAL: 'NPUNCU',
+  DUO0000018: 'NPUNCU',
+  NPOA: 'NPOA',
+  NO_POPULATION_ANCESTRY: 'NPOA',
+  DUO0000044: 'NPOA',
+  NPU: 'NPU',
+  NON_PROFIT_ONLY: 'NPU',
+  DUO0000045: 'NPU'
 });
 
 const ATTRIBUTE_PREDICATE_SLOT = {
@@ -241,12 +282,11 @@ const SNOMED_TERMS = {
 const DEFAULT_POLICY_COUNT = 200;
 const DEFAULT_EXECUTIONS_PER_POLICY = 20;
 const DEFAULT_SATISFY_RATIO = 0.5;
-// Circom instance is compiled with DEPTH=20 (see circuits/policy_privacy_main_instance.circom)
-// so dataset generator must not emit policies longer than 20 tokens.
-const DEFAULT_POLICY_DEPTH = 20;
+// Must match PolicyPrivacyMain(13, 11, 64, 5, 8, 32).
+const DEFAULT_POLICY_DEPTH = DUO_V3_DEPTH;
 
 const DEFAULT_WHITELIST_BUCKETS = Object.freeze([4, 8, 16, 24, 32]);
-const DEFAULT_MERKLE_DEPTH_OPTIONS = Object.freeze([3, 4, 5, 6, 7]);
+const DEFAULT_MERKLE_DEPTH_OPTIONS = Object.freeze([8]);
 const DEFAULT_PROOF_TYPES = Object.freeze([
   'merkle_proof',
   'range_proof',
@@ -304,8 +344,36 @@ function getRandomGasTarget(baseTarget, variance = GAS_PAD_VARIANCE) {
 }
 
 const DEFAULT_PROOF_PAD_TARGET_BYTES = 1200;
-const DISABLED_PREDICATE_TYPE = 4;
-const DEFAULT_DISABLED_NUMBER = 0;
+const ONTOLOGY_EPOCH = 2026;
+const POLICY_VALID_FROM_EPOCH = 0;
+const POLICY_VALID_UNTIL_EPOCH = 4294967295;
+const PROFILE_TERM_SET = new Set(DUO_V3_PROFILE_TERMS);
+const EXPERIMENT_PROFILE_ISSUER_PRIVATE_KEY = Uint8Array.from(
+  crypto.createHash('sha256').update('policy-privacy-experiment-duo-v3-profile-issuer').digest()
+);
+let experimentProfileIssuerPromise = null;
+
+async function getExperimentProfileIssuer() {
+  if (!experimentProfileIssuerPromise) {
+    experimentProfileIssuerPromise = signDuoProfileCredential(
+      EXPERIMENT_PROFILE_ISSUER_PRIVATE_KEY,
+      {
+        policyCommitment: 1,
+        requesterId: 1,
+        resourceId: 1,
+        profileClaims: 0,
+        validFromEpoch: 0,
+        validUntilEpoch: 1,
+        credentialId: 1
+      }
+    ).then(({ issuerAx, issuerAy, issuerKeyCommitment }) => ({
+      issuerAx,
+      issuerAy,
+      issuerKeyCommitment
+    }));
+  }
+  return experimentProfileIssuerPromise;
+}
 
 const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
   {
@@ -923,128 +991,48 @@ function evaluatePolicyTokens(tokens, numOperations, attrs, predicateTruth, attr
   return Boolean(stack[stack.length - 1]);
 }
 
-function buildAttrsFromMask(mask, length) {
-  return Array.from({ length }, (_, idx) => ((mask >> idx) & 1) ? 1 : 0);
-}
-
-function toBigInt(value) {
-  if (typeof value === 'bigint') {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return BigInt(value);
-  }
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return 0n;
-    }
-    return BigInt(trimmed);
-  }
-  throw new Error(`Unsupported value for BigInt conversion: ${value}`);
-}
-
-
-function findAssignmentForPolicy({
+function findDuoV3AssignmentForPolicy({
   targetTruth,
-  attributeOrder,
   activeIndices,
-  policyTokens,
-  numOperations,
-  predicateCount
+  policyTokens = null,
+  numOperations = null,
+  predicateCount = POLICY_PREDICATE_COUNT
 }) {
-  if (!Array.isArray(policyTokens) || policyTokens.length === 0) {
-    return null;
-  }
-  const attributeCount = attributeOrder.length;
-  if (attributeCount === 0 || attributeCount > 20) {
-    return null;
-  }
   const predicateTruth = Array.from({ length: predicateCount }, () => 1);
-  const filteredActive = activeIndices.filter((idx) => idx >= 0);
-  const requiredSet = new Set(filteredActive);
-  const maxMask = 1 << attributeCount;
-  let bestPrimary = null;
-  let bestFallback = null;
+  const ontologyCodes = ['DS', 'RS', 'POA', 'GS', 'CC'];
+  let fallback = null;
 
-  for (let mask = 0; mask < maxMask; mask += 1) {
-    const attrs = buildAttrsFromMask(mask, attributeCount);
-    const evalResult = evaluatePolicyTokens(
-      policyTokens,
-      numOperations,
-      attrs,
-      predicateTruth,
-      attributeCount,
-      predicateCount
-    );
-    if (evalResult !== targetTruth) {
-      continue;
-    }
-    const meetsPrimary = targetTruth
-      ? activeIndices.every((idx) => idx < 0 || attrs[idx] === 1)
-      : activeIndices.some((idx) => idx >= 0 && attrs[idx] === 0);
-    const extraOnes = attrs.reduce(
-      (sum, value, idx) => sum + (value && !requiredSet.has(idx) ? 1 : 0),
-      0
-    );
-    if (targetTruth) {
-      const missingRequired = filteredActive.reduce(
-        (sum, idx) => sum + (attrs[idx] === 1 ? 0 : 1),
-        0
+  for (let profileClaims = 0; profileClaims < 128; profileClaims += 1) {
+    for (let ontologyMask = 0; ontologyMask < 32; ontologyMask += 1) {
+      const ontologyAttrs = Object.fromEntries(
+        ontologyCodes.map((code, index) => [code, Boolean((ontologyMask >> index) & 1)])
       );
-      const candidate = { attrs, mask, missingRequired, extraOnes };
-      if (meetsPrimary) {
-        if (
-          !bestPrimary ||
-          missingRequired < bestPrimary.missingRequired ||
-          (missingRequired === bestPrimary.missingRequired && extraOnes < bestPrimary.extraOnes) ||
-          (missingRequired === bestPrimary.missingRequired &&
-            extraOnes === bestPrimary.extraOnes &&
-            mask < bestPrimary.mask)
-        ) {
-          bestPrimary = candidate;
-        }
-      } else if (
-        !bestFallback ||
-        missingRequired < bestFallback.missingRequired ||
-        (missingRequired === bestFallback.missingRequired && extraOnes < bestFallback.extraOnes) ||
-        (missingRequired === bestFallback.missingRequired &&
-          extraOnes === bestFallback.extraOnes &&
-          mask < bestFallback.mask)
-      ) {
-        bestFallback = candidate;
-      }
-    } else {
-      const requiredTrue = filteredActive.reduce(
-        (sum, idx) => sum + (attrs[idx] === 1 ? 1 : 0),
-        0
-      );
-      const candidate = { attrs, mask, requiredTrue, extraOnes };
-      if (meetsPrimary) {
-        if (
-          !bestPrimary ||
-          requiredTrue < bestPrimary.requiredTrue ||
-          (requiredTrue === bestPrimary.requiredTrue && extraOnes < bestPrimary.extraOnes) ||
-          (requiredTrue === bestPrimary.requiredTrue &&
-            extraOnes === bestPrimary.extraOnes &&
-            mask < bestPrimary.mask)
-        ) {
-          bestPrimary = candidate;
-        }
-      } else if (
-        !bestFallback ||
-        requiredTrue < bestFallback.requiredTrue ||
-        (requiredTrue === bestFallback.requiredTrue && extraOnes < bestFallback.extraOnes) ||
-        (requiredTrue === bestFallback.requiredTrue &&
-          extraOnes === bestFallback.extraOnes &&
-          mask < bestFallback.mask)
-      ) {
-        bestFallback = candidate;
-      }
+      const attributes = deriveDuoV3RequesterAttrs(profileClaims, ontologyAttrs);
+      const evaluatesToTarget = Array.isArray(policyTokens) && policyTokens.length > 0
+        ? evaluatePolicyTokens(
+          policyTokens,
+          numOperations,
+          attributes,
+          predicateTruth,
+          POLICY_ATTRIBUTE_ORDER.length,
+          predicateCount
+        ) === targetTruth
+        : (targetTruth
+          ? activeIndices.every((index) => attributes[index] === 1)
+          : activeIndices.some((index) => attributes[index] === 0));
+
+      if (!evaluatesToTarget) continue;
+
+      const preferred = targetTruth
+        ? activeIndices.every((index) => attributes[index] === 1)
+        : activeIndices.some((index) => attributes[index] === 0);
+      const candidate = { attributes, duoProfileClaims: profileClaims };
+      if (preferred) return candidate;
+      if (!fallback) fallback = candidate;
     }
   }
 
-  return (bestPrimary || bestFallback)?.attrs ?? null;
+  return fallback;
 }
 
 function applyProofPadding(originalProof, targetLength = DEFAULT_PROOF_PAD_TARGET_BYTES, baseLengthHint) {
@@ -1086,7 +1074,7 @@ function incrementCounter(map, key, amount = 1) {
   map.set(key, current + amount);
 }
 
-// Use POLICY_ATTRIBUTE_CODES for validation (includes CU) but POLICY_ATTRIBUTE_ORDER for circuit inputs (excludes CU)
+// Validate against the complete production DUO V3 attribute set.
 const ATTRIBUTE_CODE_SET = new Set(POLICY_ATTRIBUTE_CODES);
 
 const ATTRIBUTE_CODE_TO_DUO_TERM = Object.freeze(
@@ -1170,8 +1158,8 @@ function maybeNegate(rng, token, probability, budget) {
 
 function buildLogicFromCombination(rng, combo, options = {}) {
   const {
-    notProbability = 0.2,
-    groupNotProbability = 0.1,
+    notProbability = 0,
+    groupNotProbability = 0,
     operators = ['AND', 'OR'],
     maxNotOperators = Infinity,
     ensureMixedOperators = false
@@ -1287,7 +1275,7 @@ async function buildOntologyWhitelistForScope(options) {
     availableTerms,
     whitelistSize,
     merkleDepth,
-    epoch = 0
+    epoch = ONTOLOGY_EPOCH
   } = options;
 
 
@@ -1317,7 +1305,13 @@ async function buildOntologyWhitelistForScope(options) {
     configHash: whitelist.metadata.configHash,
     leafCount: whitelist.metadata.leafCount,
     treeSize: whitelist.metadata.treeSize,
-    terms: selectedTerms
+    terms: selectedTerms,
+    memberEvidence: {
+      ontologyCode: whitelist.entries[0].packed.toString(),
+      leaf: whitelist.entries[0].leaf.toString(),
+      pathElements: whitelist.entries[0].pathElements.map(String),
+      pathIndices: whitelist.entries[0].pathIndices.slice()
+    }
   };
 }
 
@@ -1359,6 +1353,12 @@ async function createPolicyBlueprint(params) {
     layerConfig.logicOptions,
     variantProfile?.logicOptions
   );
+  if (Number(logicOptions.notProbability || 0) > 0 || Number(logicOptions.groupNotProbability || 0) > 0) {
+    throw new Error(
+      `[layer:${layerName} combo:${combination.join('+')}] DUO V3 does not support NOT; ` +
+      'set notProbability and groupNotProbability to 0'
+    );
+  }
   const depthLimit = config.policyDepth || DEFAULT_POLICY_DEPTH;
   const baseTokenEstimate = estimateBaseTokenCount(combination);
   if (baseTokenEstimate > depthLimit) {
@@ -1387,6 +1387,11 @@ async function createPolicyBlueprint(params) {
     config.merkleDepthOptions,
     DEFAULT_MERKLE_DEPTH_OPTIONS
   ) || DEFAULT_MERKLE_DEPTH_OPTIONS;
+  if (merkleDepthOptions.some((depth) => depth !== 8)) {
+    throw new Error(
+      `[layer:${layerName} combo:${combination.join('+')}] DUO V3 requires merkleDepthOptions=[8]`
+    );
+  }
 
   const proofTypes = resolveOptionArray(
     variantProfile?.proofTypes,
@@ -1434,6 +1439,7 @@ async function createPolicyBlueprint(params) {
   };
 
   const variantLabel = variantProfile?.name || variantProfile?.label || variantProfile?.id || null;
+  const hasProfile = combination.some((code) => PROFILE_TERM_SET.has(code));
 
   const semantics = {
     layer: layerName,
@@ -1443,9 +1449,10 @@ async function createPolicyBlueprint(params) {
     primaryDuoTerm: combination[0],
     primaryDuoTermValue: ATTRIBUTE_CODE_TO_DUO_TERM[combination[0]],
     hasOntology: combination.some((code) => ATTRIBUTE_PREDICATE_SLOT[code] !== undefined),
+    hasProfile,
     hasObligation: combination.includes('RS'),
     hasCredential: proofType === 'credential_proof',
-    predicateCount: combination.filter((code) => ATTRIBUTE_PREDICATE_SLOT[code] !== undefined).length,
+    predicateCount: combination.filter((code) => ATTRIBUTE_PREDICATE_SLOT[code] !== undefined).length + (hasProfile ? 1 : 0),
     icd10Scope: null,
     obiScope: null,
     populationScope: null,
@@ -1455,6 +1462,7 @@ async function createPolicyBlueprint(params) {
 
   const predicateSlots = [];
   const predicateValuesBySlot = {};
+  const predicateEvidenceBySlot = {};
 
   const icdScopes = variantProfile?.icd10Scopes || layerConfig.icd10Scopes || config.icd10Scopes || ICD10_SCOPE_LIBRARY;
   const obiScopes = variantProfile?.obiScopes || layerConfig.obiScopes || config.obiScopes || OBI_SCOPE_LIBRARY;
@@ -1503,6 +1511,7 @@ async function createPolicyBlueprint(params) {
 
     predicateSlots.push(slot);
     predicateValuesBySlot[slot] = chosenScope.value;
+    predicateEvidenceBySlot[slot] = whitelist.memberEvidence;
     semantics[semanticsKey] = {
       id: chosenScope.id,
       label: chosenScope.label,
@@ -1580,13 +1589,25 @@ async function createPolicyBlueprint(params) {
     attributes[code] = combination.includes(code);
   });
 
-  const predicateTemplates = POLICY_PREDICATE_SLOTS.map((slot) => {
+  const predicateTemplates = POLICY_PREDICATE_SLOTS
+    .filter((slot) => predicateSlots.includes(slot.slot))
+    .map((slot) => {
     const copy = { ...slot };
     if (structure.predicateRoots[slot.slot]) {
       copy.root = structure.predicateRoots[slot.slot];
     }
     return copy;
   });
+
+  if (hasProfile) {
+    const profileIssuer = await getExperimentProfileIssuer();
+    predicateTemplates.push({
+      slot: DUO_V3_PROFILE_SLOT,
+      duo: 'DUO_PROFILE',
+      issuerKeyCommitment: profileIssuer.issuerKeyCommitment
+    });
+    predicateSlots.push(DUO_V3_PROFILE_SLOT);
+  }
 
   const policyId = `${layerName || 'layer'}-${index}`;
   let artifacts;
@@ -1630,6 +1651,7 @@ async function createPolicyBlueprint(params) {
     artifacts,
     predicateSlots,
     predicateValuesBySlot,
+    predicateEvidenceBySlot,
     attributeOrder,
     satisfyPlanSeed: rng()
   };
@@ -1769,7 +1791,7 @@ function buildSatisfactionPlan(executionsPerPolicy, satisfyRatio, rng) {
  */
 function selectDepthSubset(blueprints, { perStructure, structures, rng }) {
   const { analyzeLogicShape, classifyLogicStructure } =
-    require('../structure_and_parameter_privacy/data_generator');
+    require('../analysis/crosscheck/spp/data_generator');
 
   const byStructure = new Map();
   for (const bp of blueprints) {
@@ -1845,17 +1867,31 @@ async function generatePolicy(duoTerm, ontologyValue = null) {
   });
 
   const requiresOntology = Boolean(ATTRIBUTE_PREDICATE_SLOT[attributeCode] !== undefined);
+  const requiresProfile = PROFILE_TERM_SET.has(attributeCode);
   const namespace = requiresOntology ? getOntologyNamespace(duoTerm) : null;
+  const predicates = [];
+  if (requiresOntology) {
+    const slot = POLICY_PREDICATE_SLOTS.find((entry) => entry.duo === attributeCode);
+    predicates.push({ ...slot });
+  }
+  if (requiresProfile) {
+    const profileIssuer = await getExperimentProfileIssuer();
+    predicates.push({
+      slot: DUO_V3_PROFILE_SLOT,
+      duo: 'DUO_PROFILE',
+      issuerKeyCommitment: profileIssuer.issuerKeyCommitment
+    });
+  }
 
   const artifacts = await generatePolicyArtifacts(
     {
       policy_id: `duo-${attributeCode.toLowerCase()}`,
       attributes: attributeMap,
-      predicates: POLICY_PREDICATE_SLOTS,
+      predicates,
       logic: attributeCode
     },
     {
-      depth: 10,
+      depth: DEFAULT_POLICY_DEPTH,
       attributeOrder: POLICY_ATTRIBUTE_ORDER
     }
   );
@@ -1870,7 +1906,11 @@ async function generatePolicy(duoTerm, ontologyValue = null) {
     ontologyNamespace: requiresOntology ? namespace : null,
     ontologyValue: requiresOntology ? ontologyValue : null,
     requiresOntology,
-    predicateSlots: requiresOntology && predicateSlot !== null ? [predicateSlot] : [],
+    predicateSlots: [
+      ...(requiresOntology && predicateSlot !== null ? [predicateSlot] : []),
+      ...(requiresProfile ? [DUO_V3_PROFILE_SLOT] : [])
+    ],
+    requiresProfile,
     numOperations: artifacts.numOperations,
     description: requiresOntology
       ? `DUO:${attributeCode} & ${namespace}${ontologyValue !== null ? `:${ontologyValue}` : ''}`
@@ -1899,66 +1939,40 @@ function resolveActiveCodes(selection) {
   return canonicalizeDuoCombination([selection]);
 }
 
-function generateRequesterAttrs(selection, satisfy, options = {}) {
+function generateRequesterProfile(selection, satisfy, options = {}) {
   const {
     attributeOrder = POLICY_ATTRIBUTE_ORDER,
-    rng = Math.random,
     policyTokens = null,
     numOperations = null,
-    predicateCount = POLICY_PREDICATE_SLOTS.length
+    predicateCount = POLICY_PREDICATE_COUNT
   } = options;
+
+  if (attributeOrder.join(',') !== POLICY_ATTRIBUTE_ORDER.join(',')) {
+    throw new Error(
+      `DUO V3 requester generation requires the canonical attribute order: ${POLICY_ATTRIBUTE_ORDER.join(',')}`
+    );
+  }
 
   const activeCodes = resolveActiveCodes(selection);
   const activeIndices = activeCodes
     .map((code) => attributeOrder.indexOf(code))
     .filter((idx) => idx >= 0);
 
-  if (Array.isArray(policyTokens) && policyTokens.length > 0) {
-    const attrs = findAssignmentForPolicy({
-      targetTruth: satisfy,
-      attributeOrder,
-      activeIndices,
-      policyTokens,
-      numOperations,
-      predicateCount
-    });
-    if (attrs) {
-      return attrs;
-    }
-    console.warn(
-      'generateRequesterAttrs: unable to find assignment matching satisfy flag; falling back to heuristic generation.'
-    );
-  }
-
-  const activeSet = new Set(activeCodes);
-  const attrs = attributeOrder.map(() => 0);
-
-  if (satisfy) {
-    activeCodes.forEach((code) => {
-      const idx = attributeOrder.indexOf(code);
-      if (idx >= 0) {
-        attrs[idx] = 1;
-      }
-    });
-    return attrs;
-  }
-
-  if (activeCodes.length === 0) {
-    return attrs;
-  }
-
-  const failCount = randomInt(rng, 1, activeCodes.length);
-  const codesToFail = sampleWithoutReplacement(rng, activeCodes, failCount);
-  const codesToPartiallySatisfy = activeCodes.filter((code) => !codesToFail.includes(code));
-
-  codesToPartiallySatisfy.forEach((code) => {
-    const idx = attributeOrder.indexOf(code);
-    if (idx >= 0 && rng() < 0.6) {
-      attrs[idx] = 1;
-    }
+  const assignment = findDuoV3AssignmentForPolicy({
+    targetTruth: Boolean(satisfy),
+    activeIndices,
+    policyTokens,
+    numOperations,
+    predicateCount
   });
+  if (!assignment) {
+    throw new Error(`Unable to construct a DUO V3 requester profile with satisfy=${Boolean(satisfy)}`);
+  }
+  return assignment;
+}
 
-  return attrs;
+function generateRequesterAttrs(selection, satisfy, options = {}) {
+  return generateRequesterProfile(selection, satisfy, options).attributes;
 }
 
 /**
@@ -1966,6 +1980,7 @@ function generateRequesterAttrs(selection, satisfy, options = {}) {
  */
 async function generateDataset(config = {}) {
   const {
+    protocolVersion = 'duo-v3',
     seed = 'policy-dataset',
     policyCount = DEFAULT_POLICY_COUNT,
     executionsPerPolicy = DEFAULT_EXECUTIONS_PER_POLICY,
@@ -1977,7 +1992,7 @@ async function generateDataset(config = {}) {
     coverageExecutions = null,
     depthExecutions = null,
     depthSubsetPerStructure = 8,
-    depthStructures = ['and_only', 'or_only', 'negation_heavy', 'and_or_mixed'],
+    depthStructures = ['and_only', 'or_only', 'and_or_mixed'],
     satisfyRatio = DEFAULT_SATISFY_RATIO,
     semanticLayers = DEFAULT_SEMANTIC_LAYERS,
     duoTerms = null,
@@ -1996,6 +2011,15 @@ async function generateDataset(config = {}) {
     policyDepth = DEFAULT_POLICY_DEPTH
   } = config;
 
+  if (policyDepth !== DUO_V3_DEPTH) {
+    throw new Error(`DUO V3 capture generation requires policyDepth=${DUO_V3_DEPTH}`);
+  }
+  if (attributeOrder.join(',') !== POLICY_ATTRIBUTE_ORDER.join(',')) {
+    throw new Error(
+      `DUO V3 capture generation requires the canonical attribute order: ${POLICY_ATTRIBUTE_ORDER.join(',')}`
+    );
+  }
+
   const rng = createDeterministicRng(seed); // random number generator  
 
   const allowedCodes = Array.isArray(duoTerms) && duoTerms.length > 0
@@ -2004,7 +2028,7 @@ async function generateDataset(config = {}) {
 
   console.log('Allowed codes:', allowedCodes);
 
-  // Filter for circuit-supported attributes (N=6, excludes CU)
+  // Filter against the canonical 13-attribute DUO V3 circuit layout.
   const circuitSupportedCodes = new Set(attributeOrder);
 
   const normalizedLayers = (semanticLayers || DEFAULT_SEMANTIC_LAYERS)
@@ -2093,7 +2117,6 @@ async function generateDataset(config = {}) {
     : null;
   const effectiveCoverageExecutions = coverageExecutions != null ? coverageExecutions : 1;
 
-  // TODO: need to be confirmed further, seems not consider ontology predicates when generate requester attributes
   blueprints.forEach((blueprint, blueprintIndex) => {
     const isDepth = Boolean(depthSubset && depthSubset.has(blueprint.id));
     const execCount = twoLayer
@@ -2101,11 +2124,11 @@ async function generateDataset(config = {}) {
       : executionsPerPolicy;
     const plan = buildSatisfactionPlan(execCount, satisfyRatio, rng);
     plan.forEach((satisfy, execIndex) => {
-      const requesterAttrs = generateRequesterAttrs(blueprint.duoTerms, satisfy, {
+      const requesterProfile = generateRequesterProfile(blueprint.duoTerms, satisfy, {
         attributeOrder,
-        rng,
         policyTokens: blueprint.artifacts.policy,
-        numOperations: blueprint.artifacts.numOperations
+        numOperations: blueprint.artifacts.numOperations,
+        predicateCount: POLICY_PREDICATE_COUNT
       });
       const datasetEntry = {
         policyIndex: blueprintIndex,
@@ -2124,8 +2147,20 @@ async function generateDataset(config = {}) {
         numOperations: blueprint.artifacts.numOperations,
         predicateSlots: blueprint.predicateSlots.slice(),
         predicateValuesBySlot: { ...blueprint.predicateValuesBySlot },
+        predicateEvidenceBySlot: { ...blueprint.predicateEvidenceBySlot },
+        predicateParameters: {
+          predicateTypes: blueprint.artifacts.predicates.scopeParameters.predicateTypes.slice(),
+          predicateSchemaTags: blueprint.artifacts.predicates.scopeParameters.predicateSchemaTags.slice(),
+          scopeKinds: blueprint.artifacts.predicates.scopeParameters.scopeKinds.slice(),
+          approvedScopeIds: blueprint.artifacts.predicates.scopeParameters.approvedScopeIds.slice(),
+          merkleRoots: blueprint.artifacts.predicates.scopeParameters.merkleRoots.slice(),
+          credPublicKeys: blueprint.artifacts.predicates.scopeParameters.credPublicKeys.slice(),
+          moratoriumUntilEpoch: blueprint.artifacts.predicates.scopeParameters.moratoriumUntilEpoch,
+          timeLimitEpochs: blueprint.artifacts.predicates.scopeParameters.timeLimitEpochs
+        },
         attributeOrder: blueprint.attributeOrder.slice(),
-        requesterAttrs,
+        requesterAttrs: requesterProfile.attributes,
+        duoProfileClaims: requesterProfile.duoProfileClaims,
         satisfy,
         randomizer: blueprint.artifacts.randomizer,
         policyCommitment: blueprint.artifacts.policyCommitment,
@@ -2133,8 +2168,9 @@ async function generateDataset(config = {}) {
         executionTier: twoLayer ? (isDepth ? 'depth' : 'coverage') : 'single'
       };
 
-      if (datasetEntry.predicateSlots.length > 0) {
-        const primarySlot = datasetEntry.predicateSlots[0];
+      const ontologySlots = datasetEntry.predicateSlots.filter((slot) => slot >= 0 && slot <= 4);
+      if (ontologySlots.length > 0) {
+        const primarySlot = ontologySlots[0];
         const slotInfo = POLICY_PREDICATE_SLOTS.find((slot) => slot.slot === primarySlot);
         datasetEntry.ontologyNamespace = slotInfo ? slotInfo.namespace : null;
         datasetEntry.ontologyValue = datasetEntry.predicateValuesBySlot.hasOwnProperty(primarySlot)
@@ -2154,6 +2190,13 @@ async function generateDataset(config = {}) {
   });
 
   dataset.__meta = {
+    protocolVersion,
+    circuit: {
+      numAttributes: POLICY_ATTRIBUTE_ORDER.length,
+      numPredicates: POLICY_PREDICATE_COUNT,
+      policyDepth,
+      merkleLevels: 8
+    },
     seed,
     policyCount: blueprints.length,
     executionsPerPolicy,
@@ -2181,19 +2224,74 @@ async function generateDataset(config = {}) {
   return dataset;
 }
 
+async function buildDuoV3PolicyMaterial(policyData) {
+  const { policy, numOperations } = policyData;
+  const parameters = policyData.predicateParameters;
+  if (!parameters) {
+    throw new Error('DUO V3 policy data is missing compiler-derived predicateParameters');
+  }
+  const exactParameterArray = (name) => {
+    const values = parameters[name];
+    if (!Array.isArray(values) || values.length !== POLICY_PREDICATE_COUNT) {
+      throw new Error(
+        `DUO V3 predicateParameters.${name} must contain exactly ${POLICY_PREDICATE_COUNT} entries`
+      );
+    }
+    return values.slice();
+  };
+
+  const predicateTypes = exactParameterArray('predicateTypes');
+  const predicateSchemaTags = exactParameterArray('predicateSchemaTags');
+  const scopeKinds = exactParameterArray('scopeKinds');
+  const approvedScopeIds = exactParameterArray('approvedScopeIds');
+  const merkleRoots = exactParameterArray('merkleRoots');
+  const credPublicKeys = exactParameterArray('credPublicKeys');
+  const rangeMin = Array(POLICY_PREDICATE_COUNT).fill('0');
+  const rangeMax = Array(POLICY_PREDICATE_COUNT).fill('0');
+  const ontologyPolicyIds = predicateTypes.map((type, slot) => Number(type) === 3 ? String(100 + slot) : '0');
+  const ontologyEpochs = predicateTypes.map((type) => Number(type) === 3 ? String(ONTOLOGY_EPOCH) : '0');
+  const policyValidFromEpoch = String(POLICY_VALID_FROM_EPOCH);
+  const policyValidUntilEpoch = String(POLICY_VALID_UNTIL_EPOCH);
+  const moratoriumUntilEpoch = String(parameters.moratoriumUntilEpoch ?? 0);
+  const timeLimitEpochs = String(parameters.timeLimitEpochs ?? 0);
+  const randomizer = policyData.randomizer !== undefined
+    ? BigInt(policyData.randomizer)
+    : BigInt(Math.floor(Math.random() * 1000000));
+  const effectiveNumOperations = numOperations || policy.filter((token) => token !== 0).length;
+  const policyCommitment = await calculatePolicyCommitment(policy, randomizer, effectiveNumOperations);
+  const parameterInputs = {
+    predicateTypes,
+    predicateSchemaTags,
+    scopeKinds,
+    approvedScopeIds,
+    merkleRoots,
+    credPublicKeys,
+    rangeMin,
+    rangeMax,
+    ontologyPolicyIds,
+    ontologyEpochs,
+    policyValidFromEpoch,
+    policyValidUntilEpoch,
+    moratoriumUntilEpoch,
+    timeLimitEpochs
+  };
+  const paramsCommitment = await calculateParamsCommitment(parameterInputs);
+  const material = {
+    penc: policy.slice(),
+    randomizer: randomizer.toString(),
+    paramsCommitment: paramsCommitment.toString(),
+    ...parameterInputs,
+    numOperations: effectiveNumOperations
+  };
+
+  return { material, policyCommitment, paramsCommitment };
+}
+
 /**
  * Provider behavior: commit policy on-chain, then provision material to TPS (Stage 1→2).
  */
 async function providerCommitAndProvision(policyData, contract, options = {}) {
   const protectionProfile = normalizeProtectionProfile(options.protectionProfile);
-  const {
-    policy,
-    numOperations,
-    predicateSlots = [],
-    predicateValuesBySlot = {},
-    structure = {}
-  } = policyData;
-
   // Explicit gas-price override for provider txs (commit / registerResource).
   // On networks with an enforced minimum tip (e.g. Amoy's 25 gwei), an RPC
   // timeout+retry can otherwise fall back to a default ~1 gwei EIP-1559 tip and
@@ -2207,44 +2305,7 @@ async function providerCommitAndProvision(policyData, contract, options = {}) {
     ? { gasPrice: BigInt(Math.round(parseFloat(providerGasGwei) * 1e9)) }
     : {};
 
-  const predicateCount = POLICY_PREDICATE_SLOTS.length;
-  const zeroStringArray = (length) => Array.from({ length }, () => '0');
-  const zeroNumberArray = (length, value = 0) => Array.from({ length }, () => value);
-
-  // Build merkle roots from policy structure (provider-side data)
-  const merkleRoots = zeroStringArray(predicateCount);
-  const predicateRoots = structure.predicateRoots || {};
-  Object.entries(predicateRoots).forEach(([slotKey, root]) => {
-    const slot = parseInt(slotKey, 10);
-    if (slot >= 0 && slot < predicateCount && typeof root === 'string') {
-      merkleRoots[slot] = root;
-    }
-  });
-
-  const credPublicKeys = zeroStringArray(predicateCount);
-  const rangeMin = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const rangeMax = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const ontologyPolicyIds = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-  const ontologyEpochs = zeroNumberArray(predicateCount, DEFAULT_DISABLED_NUMBER);
-
-  // Use randomizer from policy artifacts (generated at dataset creation time)
-  const randomizer = policyData.randomizer !== undefined
-    ? BigInt(policyData.randomizer)
-    : BigInt(Math.floor(Math.random() * 1000000));
-  // The program length is bound into the commitment preimage, so the value
-  // committed here must be exactly the numOperations handed to the circuit
-  // (and provisioned to the TPS below).
-  const effectiveNumOperations = numOperations || policy.filter(t => t !== 0).length;
-  const policyCommitment = await calculatePolicyCommitment(policy, randomizer, effectiveNumOperations);
-
-  const paramsCommitment = await calculateParamsCommitment({
-    merkleRoots,
-    credPublicKeys,
-    rangeMin,
-    rangeMax,
-    ontologyPolicyIds,
-    ontologyEpochs
-  });
+  const { material, policyCommitment, paramsCommitment } = await buildDuoV3PolicyMaterial(policyData);
 
   if (policyData.structure) {
     policyData.structure.paramsCommitment = paramsCommitment;
@@ -2303,19 +2364,7 @@ async function providerCommitAndProvision(policyData, contract, options = {}) {
   if (!resourceId) throw new Error('ResourceRegistered event not found in receipt');
   console.log(`[Provider] Registered resourceId=${resourceId} for policyId=${blockchainPolicyId}`);
 
-  // Stage 2: provision policy material to TPS (provider)
-  const material = {
-    penc: policy,
-    randomizer: randomizer.toString(),
-    paramsCommitment: paramsCommitment.toString(),
-    merkleRoots,
-    credPublicKeys,
-    rangeMin: rangeMin.map(String),
-    rangeMax: rangeMax.map(String),
-    ontologyPolicyIds: ontologyPolicyIds.map(String),
-    ontologyEpochs: ontologyEpochs.map(String),
-    numOperations: effectiveNumOperations
-  };
+  // Stage 2: provision compiler-derived DUO V3 policy material to TPS (provider)
   await tpsClient.provision(blockchainPolicyId.toString(), material);
   console.log(`[Provider] Provisioned policyId=${blockchainPolicyId} to TPS`);
 
@@ -2333,6 +2382,92 @@ async function providerCommitAndProvision(policyData, contract, options = {}) {
   };
 }
 
+async function buildDuoV3RequesterEvidence(policyData, { resourceId, policyCommitment }) {
+  const predicateTypes = policyData.predicateParameters?.predicateTypes;
+  if (!Array.isArray(predicateTypes) || predicateTypes.length !== POLICY_PREDICATE_COUNT) {
+    throw new Error(`DUO V3 requester evidence requires exactly ${POLICY_PREDICATE_COUNT} predicate types`);
+  }
+  const usesProfile = Number(predicateTypes[DUO_V3_PROFILE_SLOT]) === 9;
+  const randomNonZeroField = () => {
+    const value = BigInt('0x' + crypto.randomBytes(16).toString('hex'));
+    return value === 0n ? 1n : value;
+  };
+  const holderSecret = usesProfile ? randomNonZeroField() : 0n;
+  const requesterId = usesProfile
+    ? await calculateRequesterId(holderSecret)
+    : randomNonZeroField().toString();
+  const zeroStrings = () => Array(POLICY_PREDICATE_COUNT).fill('0');
+  const zeroPaths = () => Array.from(
+    { length: POLICY_PREDICATE_COUNT },
+    () => Array(8).fill('0')
+  );
+  const zeroPathIndices = () => Array.from(
+    { length: POLICY_PREDICATE_COUNT },
+    () => Array(8).fill(0)
+  );
+  const merkleLeaves = zeroStrings();
+  const merklePathElements = zeroPaths();
+  const merklePathIndices = zeroPathIndices();
+  const ontologyCodes = zeroStrings();
+
+  for (const [slotKey, member] of Object.entries(policyData.predicateEvidenceBySlot || {})) {
+    const slot = Number(slotKey);
+    if (Number(predicateTypes[slot]) !== 3) continue;
+    if (!member || !Array.isArray(member.pathElements) || member.pathElements.length !== 8) {
+      throw new Error(`DUO V3 ontology evidence for slot ${slot} must contain an 8-level Merkle path`);
+    }
+    merkleLeaves[slot] = String(member.leaf);
+    merklePathElements[slot] = member.pathElements.map(String);
+    merklePathIndices[slot] = member.pathIndices.slice();
+    ontologyCodes[slot] = String(member.ontologyCode);
+  }
+
+  const evidence = {
+    attributes: policyData.requesterAttrs.slice(),
+    requesterId,
+    holderSecret: holderSecret.toString(),
+    duoProfileClaims: policyData.duoProfileClaims ?? 0,
+    merkleLeaves,
+    merklePathElements,
+    merklePathIndices,
+    ontologyCodes,
+    credSignatures: zeroStrings(),
+    credSigR8x: zeroStrings(),
+    credSigR8y: zeroStrings(),
+    credIssuerAx: zeroStrings(),
+    credIssuerAy: zeroStrings(),
+    credValidFromEpochs: zeroStrings(),
+    credValidUntilEpochs: zeroStrings(),
+    credentialIds: zeroStrings()
+  };
+
+  if (usesProfile) {
+    const credentialId = randomNonZeroField();
+    const signed = await signDuoProfileCredential(
+      EXPERIMENT_PROFILE_ISSUER_PRIVATE_KEY,
+      {
+        policyCommitment,
+        requesterId,
+        resourceId,
+        profileClaims: evidence.duoProfileClaims,
+        validFromEpoch: POLICY_VALID_FROM_EPOCH,
+        validUntilEpoch: POLICY_VALID_UNTIL_EPOCH,
+        credentialId
+      }
+    );
+    evidence.credSignatures[DUO_V3_PROFILE_SLOT] = signed.S;
+    evidence.credSigR8x[DUO_V3_PROFILE_SLOT] = signed.R8x;
+    evidence.credSigR8y[DUO_V3_PROFILE_SLOT] = signed.R8y;
+    evidence.credIssuerAx[DUO_V3_PROFILE_SLOT] = signed.issuerAx;
+    evidence.credIssuerAy[DUO_V3_PROFILE_SLOT] = signed.issuerAy;
+    evidence.credValidFromEpochs[DUO_V3_PROFILE_SLOT] = String(POLICY_VALID_FROM_EPOCH);
+    evidence.credValidUntilEpochs[DUO_V3_PROFILE_SLOT] = String(POLICY_VALID_UNTIL_EPOCH);
+    evidence.credentialIds[DUO_V3_PROFILE_SLOT] = credentialId.toString();
+  }
+
+  return evidence;
+}
+
 /**
  * Requester behavior: submit evidence to TPS; TPS generates proof and submits
  * on-chain via requestAccessBound() (Stage 4+5).
@@ -2344,18 +2479,7 @@ async function requesterRequestAccess(policyData, commitResult) {
   // Generate nonce for replay prevention (both TPS-side and on-chain)
   const nonce = BigInt('0x' + crypto.randomBytes(16).toString('hex')).toString();
 
-  // Requester pseudonym. It is bound into the proof statement via
-  // contextHash = Poseidon(id_req || id_res || nonce), so it must be a stable
-  // field element rather than an address; it never appears on-chain in clear.
-  const requesterId = BigInt(
-    '0x' + crypto.randomBytes(16).toString('hex')
-  ).toString();
-
-  // Build evidence: only requester-controlled attributes
-  const evidence = {
-    attributes: policyData.requesterAttrs,
-    requesterId
-  };
+  const evidence = await buildDuoV3RequesterEvidence(policyData, { resourceId, policyCommitment });
 
   // Stage 4+5: TPS generates proof and submits requestAccessBound() on-chain.
   // submitOnChain=true hides the requester address — on-chain msg.sender = TPS.
@@ -2513,11 +2637,15 @@ module.exports = {
   getOntologyNamespace,
   getOntologyValues,
   POLICY_ATTRIBUTE_ORDER,
+  POLICY_PREDICATE_COUNT,
   POLICY_PREDICATE_SLOTS,
   evaluatePolicyTokens,
   generatePolicy,
+  generateRequesterProfile,
   generateRequesterAttrs,
   generateDataset,
+  buildDuoV3PolicyMaterial,
+  buildDuoV3RequesterEvidence,
   executePolicy,
   executeDataset
 };

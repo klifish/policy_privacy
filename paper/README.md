@@ -13,7 +13,7 @@ evaluation follows the intended argument order:
 5. gas-padding ablation as mechanism attribution.
 
 Every committed result in the supervised tables is transcribed from the current
-deterministic multi-seed verdict files (`experiments/*/results/polygonAmoy/*report.json`),
+deterministic multi-seed verdict files (`experiments/results/crosscheck/*/polygonAmoy/*report.json`),
 not from older single-split or non-deterministic-RNG batches.
 
 ## How to use
@@ -70,10 +70,10 @@ access-gas-padded dataset and 30 policy-disjoint seeds.
 | Table | Source of record |
 |---|---|
 | `tab_privacy_summary.tex` | PCH/PI/SPP `multiseedVerdict` in the per-experiment `report.json` files below |
-| `tab_pch_terms.tex` | `experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json` |
-| `tab_pch_icd10.tex` | `experiments/policy_content_hiding/results/polygonAmoy/evaluation_report.json` |
-| `tab_pi_pairs.tex` | `experiments/policy_indistinguishability/results/polygonAmoy/pi_report.json` |
-| `tab_spp_contrasts.tex` | `experiments/structure_and_parameter_privacy/results/polygonAmoy/report.json` |
+| `tab_pch_terms.tex` | `experiments/results/crosscheck/pch/polygonAmoy/evaluation_report.json` |
+| `tab_pch_icd10.tex` | `experiments/results/crosscheck/pch/polygonAmoy/evaluation_report.json` |
+| `tab_pi_pairs.tex` | `experiments/results/crosscheck/pi/polygonAmoy/pi_report.json` |
+| `tab_spp_contrasts.tex` | `experiments/results/crosscheck/spp/polygonAmoy/report.json` |
 
 The PCH numbers are taken from `evaluation_report.json` (deterministic per-seed RNG,
 commit `9261d2c` and later), which **supersedes** the older
@@ -85,20 +85,21 @@ being treated as of-record again.
 ## Clustering Sources
 
 The clustering section is a complementary label-free cross-check over the same
-executions exported to `python/data/polygonAmoy/`.
+executions in `experiments/data/polygonAmoy/`.
 
 | Table / figure | Source |
 |---|---|
-| `tab_clustering_summary.tex` | `python/results/pch_clustering_analysis/pch_global_duo_clustering.csv`, `pch_global_icd10_clustering.csv`, `python/results/pi_clustering_analysis/pi_balanced_debiased.csv`, `python/results/spp_clustering_analysis/spp_clustering_summary.csv` |
-| Fig. `fig:clust-spp` | `paper/figures/spp_detailed_analysis.png` (copied from `python/results/spp_clustering_analysis/`) |
-| Fig. `fig:clust-pi` | `paper/figures/pi_analysis_by_type.png` (copied from `python/results/pi_clustering_analysis/`) |
+| `tab_clustering_summary.tex` | `experiments/results/clustering/pch/pch_global_duo_clustering.csv`, `pch_global_icd10_clustering.csv`, `experiments/results/clustering/pi/pi_balanced_debiased.csv`, `experiments/results/clustering/spp/spp_clustering_summary.csv` |
+| Fig. `fig:clust-spp` | `paper/figures/spp_detailed_analysis.png` (copied from `experiments/results/clustering/spp/`) |
+| Fig. `fig:clust-pi` | `paper/figures/pi_analysis_by_type.png` (copied from `experiments/results/clustering/pi/`) |
 
-`python/results/` is gitignored, so the two clustering PNGs (and the `PP-TPS.png`
-architecture figure) are copied into the tracked `paper/figures/` directory.
+Generated dashboard outputs are gitignored. The source clustering result PNGs
+(and the `PP-TPS.png` architecture figure) are copied into the tracked
+`paper/figures/` directory.
 `sec_clustering.tex` and `main.tex` list `paper/figures/` first in their
 `\graphicspath`, so the paper compiles after a fresh clone without regenerating
-`python/results/`. If you regenerate the clustering analysis, refresh
-`paper/figures/` from `python/results/`.
+`experiments/results/clustering/`. If you regenerate the clustering analysis,
+refresh `paper/figures/` from that directory.
 
 ## Ablation Source
 

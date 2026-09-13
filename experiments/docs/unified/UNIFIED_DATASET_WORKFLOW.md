@@ -7,6 +7,10 @@
 1. **验证阶段**：生成策略定义，验证是否满足所有实验的需求（无链上执行成本）
 2. **执行阶段**：通过验证后，执行链上操作，收集区块链特征
 
+当前生成阶段遵循 DUO V3（13 属性、11 固定谓词槽、DEPTH=64、8 层
+Merkle 路径）。DUO V3 禁止 `NOT`，因此下文涉及 `negation_heavy` 的旧示例
+只代表历史分类器能力，不是当前 capture 的可生成类别。
+
 ## 架构
 
 ```
@@ -105,8 +109,7 @@
 ### 步骤1: 运行验证脚本
 
 ```bash
-cd experiments
-node unified_dataset_validator.js
+npm run unified:validate
 ```
 
 这会：
@@ -117,7 +120,7 @@ node unified_dataset_validator.js
 ### 步骤2: 检查验证结果
 
 ```bash
-cat validation_results.json
+cat experiments/results/capture/validation_results.json
 ```
 
 查看输出：
@@ -138,14 +141,8 @@ cat validation_results.json
 查看具体的失败原因，调整配置：
 
 ```bash
-# 复制示例配置
-cp unified_dataset_config.example.json my_config.json
-
-# 编辑配置
-vim my_config.json
-
 # 使用自定义配置重新验证
-node unified_dataset_validator.js --config=my_config.json
+node experiments/capture/validator.js --config=my_config.json
 ```
 
 常见调整：
@@ -158,9 +155,9 @@ node unified_dataset_validator.js --config=my_config.json
 推荐使用一体化脚本完成“生成一次数据 + 上链一次”：
 
 ```bash
-npx hardhat run experiments/run_unified_dataset.js --network <network> \
-  --config=my_config.json \
-  --artifact-dir=experiments/unified_dataset_artifacts
+UNIFIED_CONFIG_PATH=my_config.json \
+UNIFIED_ARTIFACT_DIR=experiments/data/<network> \
+npx hardhat run experiments/capture/run.js --network <network>
 ```
 
 脚本会自动：
@@ -172,12 +169,12 @@ npx hardhat run experiments/run_unified_dataset.js --network <network> \
 生成完共享数据后，三个实验统一从**阶段2**开始：
 
 ```bash
-node experiments/policy_content_hiding/run_experiment.js --use-unified-dataset --phase 2
-node experiments/structure_and_parameter_privacy/run_experiment.js --use-unified-dataset --phase 2
-node experiments/policy_indistinguishability/run_experiment.js --use-unified-dataset --phase 2
+node experiments/analysis/crosscheck/pch/run_experiment.js --use-unified-dataset --phase 2
+node experiments/analysis/crosscheck/spp/run_experiment.js --use-unified-dataset --phase 2
+node experiments/analysis/crosscheck/pi/run_experiment.js --use-unified-dataset --phase 2
 ```
 
-**重要**：三个实验必须使用同一个共享目录（默认`experiments/unified_dataset_artifacts/`）以确保策略完全一致。
+**重要**：三个实验必须使用同一个共享目录（默认 `experiments/data/<network>/`）以确保策略完全一致。
 
 ## 配置参数
 
@@ -362,7 +359,7 @@ SPP (Structure & Parameter Privacy) Validation
     and_only            :   58 (29.0%)
     or_only             :   45 (22.5%)
     and_or_mixed        :   52 (26.0%)
-    negation_heavy      :   45 (22.5%)
+    trivial             :   45 (22.5%)
     Balance: min/max=0.776, CV=0.134
 
   Nesting Depth:

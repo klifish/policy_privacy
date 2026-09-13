@@ -19,7 +19,7 @@ This repository implements a zero-knowledge approach for privacy-preserving cons
 │   └── *.js                   # Unit and integration tests
 ├── lib/                       # SDK Library (Compiler, Prover, Contracts)
 ├── api/                       # REST API Server
-├── experiments/               # Research experiments (PCH, SPP, PI)
+├── experiments/               # Capture, canonical data, analyses, and results
 ├── utils/                     # Utility scripts
 │   └── validation/            # Validation and debugging tools
 ├── docs/                      # Documentation
@@ -41,10 +41,10 @@ The main zero-knowledge circuit that proves:
 
 **Technical Specifications (Production Instance):**
 
-- Supports N=6 requester attributes (matching DUO V2), M=5 external predicates, DEPTH=20 policy tokens
+- Supports the production DUO V3 layout: N=13 requester attributes, M=11 fixed semantic predicate slots, DEPTH=64 policy tokens, and 8-level Merkle paths
 - Optimized for Groth16 proof system
-- Complete witness structure w = (P, a, p, r)
-- Public inputs: Commitment + Public Parameters (Merkle Roots, Public Keys, Ranges, Ontology IDs)
+- Complete witness includes policy, profile-derived attributes, predicate evidence, commitment opening, and authorization context
+- Public inputs bind policy/parameter commitments, external-verifier parameters, validity epochs, and the authorization-context digest
 
 ## Environment Setup
 
@@ -155,6 +155,40 @@ cd paper_mdpi && tectonic main.tex
 ```
 
 This produces `main.pdf` in the same directory. `pdflatex`/`latexmk`/`bibtex` are not required.
+
+The two manuscript trees preserve different supervised-result provenance:
+
+- `paper_mdpi/` is the active manuscript on this branch. Its supervised tables
+  use the verdicts in `experiments/results/supervised/`; the JavaScript reports
+  under `experiments/results/crosscheck/` are an independent cross-check.
+- `paper/` is the earlier IEEE manuscript and retains its historical
+  JavaScript-report provenance.
+
+For the complete data flow, command map, and source-of-record rules, see
+[docs/EXPERIMENT_PIPELINE.md](docs/EXPERIMENT_PIPELINE.md).
+
+## Reproducing the Evaluation
+
+The canonical Polygon Amoy capture lives under
+`experiments/data/polygonAmoy/`. Both analysis implementations read that
+capture directly; regenerable intermediates live under ignored
+`experiments/.work/`.
+
+```bash
+# Read-only validation of committed datasets, verdicts, and provenance links
+npm run evaluation:verify
+
+# Rebuild MDPI analyses, JS cross-checks, and compare the verdicts
+npm run evaluation:reproduce
+```
+
+Data generation is intentionally separate because an Amoy run submits new
+transactions:
+
+```bash
+npm run data:generate:local
+npm run data:generate:amoy
+```
 
 ## Code Style
 

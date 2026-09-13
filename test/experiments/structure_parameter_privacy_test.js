@@ -25,7 +25,7 @@ const {
   PREDICATE_COUNTS,
   SET_SIZES,
   RANGE_WIDTHS
-} = require('../../experiments/structure_and_parameter_privacy/data_generator');
+} = require('../../experiments/analysis/crosscheck/spp/data_generator');
 
 // Alias for improved classification tests
 const analyzeLogicShapeV2 = analyzeLogicShape;
@@ -37,7 +37,7 @@ const {
   extractFeatures,
   featuresToArray,
   FEATURE_KEYS
-} = require('../../experiments/structure_and_parameter_privacy/attacks');
+} = require('../../experiments/analysis/crosscheck/spp/attacks');
 
 describe('Structure & Parameter Privacy Experiment', function () {
   this.timeout(120000);

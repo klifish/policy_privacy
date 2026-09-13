@@ -13,9 +13,9 @@
 
 | 实验 | of-record 数据文件 | 粒度 |
 |---|---|---|
-| PCH (policy_content_hiding) | `results/polygonAmoy/features.json` | **每实例一条**(2004 条 = 1077 policy × 多执行) |
-| SPP (structure_and_parameter_privacy) | `results/polygonAmoy/report.json` | 聚合(config/dataset/diagnostics/multiseedVerdict) |
-| PI (policy_indistinguishability) | `results/polygonAmoy/pi_report.json` | 聚合(pairTargets/pairCounts/diagnostics/multiseedVerdict) |
+| PCH | `experiments/results/crosscheck/pch/polygonAmoy/features.json` | **每实例一条**(2004 条 = 1077 policy × 多执行) |
+| SPP | `experiments/results/crosscheck/spp/polygonAmoy/report.json` | 聚合(config/dataset/diagnostics/multiseedVerdict) |
+| PI | `experiments/results/crosscheck/pi/polygonAmoy/pi_report.json` | 聚合(pairTargets/pairCounts/diagnostics/multiseedVerdict) |
 
 > 真正的**原始每实例特征**只在 PCH 的 `features.json` 落盘。SPP/PI 报告是聚合判据,不含逐条原始计时/规模。
 
@@ -60,7 +60,7 @@ B2 复用的旧数据这些字段为 null(性能是副指标,不影响隐私判�
 - `policy_indistinguishability/feature_keys.js` 是显式白名单,本就不含它们(注释已更新)。
 
 ### 3. 运行级 provenance —— 已记录
-- `experiments/unified/artifacts.js` 的 `buildProvenance()` 写进 `metadata.json` 的 `provenance` 块:
+- `experiments/capture/artifacts.js` 的 `buildProvenance()` 写进 `metadata.json` 的 `provenance` 块:
   `circuitDepth=20`、`numAttributes=6`、`numPredicates=5`、`wasmBytes`、`zkeyBytes`、`vkeyBytes`、
   `snarkjsVersion`、`nodeVersion`、`network`、`protectionProfile`、`commitHash`(git,best-effort)。
 
@@ -89,4 +89,4 @@ B2 复用的旧数据这些字段为 null(性能是副指标,不影响隐私判�
 - 端到端证明计时(口径不纯):`experiments/core/data_generator.js:2350-2359`
 - `accessCalldataLength` 写死 null:`experiments/core/data_generator.js:2417`
 - 干净但未埋点的证明调用:`test/utils/proofGenerator.js:48`
-- PI 排除 proofGenerationTime:`experiments/policy_indistinguishability/feature_keys.js:10`
+- PI 排除 proofGenerationTime:`experiments/analysis/crosscheck/pi/feature_keys.js:10`

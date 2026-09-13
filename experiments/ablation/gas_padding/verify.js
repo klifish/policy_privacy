@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { getArtifactPaths } = require('../../unified/artifacts');
+const { getArtifactPaths } = require('../../capture/artifacts');
 const { sha256, stableEntryIdentity } = require('./prepare');
 
 function readJson(filePath) {

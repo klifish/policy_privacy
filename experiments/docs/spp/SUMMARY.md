@@ -2,7 +2,7 @@
 
 ## Status
 
-- ✅ Dataset generation now reuses `experiments/policy_content_hiding/data_generator.js`
+- ✅ Dataset generation reuses `experiments/core/data_generator.js`
 - ✅ Policies execute against the real `PolicyPrivacy` contract; no synthetic traces
 - ✅ Each execution is annotated with structure/predicate/parameter buckets before deployment
 - ✅ Attack suite (supervised/statistical/clustering) consumes the on-chain metadata
@@ -28,6 +28,9 @@
 3. `or_only` – disjunction-only policies
 4. `and_or_mixed` – both AND and OR connectives
 5. `negation_heavy` – has 2+ NOT operators
+
+The fifth bucket is retained for historical-capture analysis only. DUO V3
+rejects `NOT`, so it is not generated or balance-gated in new captures.
 
 `predicateCombo` buckets (from `classifyPredicateCount`) tell whether predicates are absent, single-namespace, mixed with attributes, or spanning multiple ontologies.
 

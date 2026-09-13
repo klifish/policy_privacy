@@ -11,37 +11,24 @@ const path = require('path');
 const crypto = require('crypto');
 const circomlibjs = require('circomlibjs');
 const DUO_TERMS = require('../duo_terms.json');
+const {
+  DUO_V3_ATTRIBUTE_DEFINITIONS: ATTRIBUTE_DEFINITIONS,
+  DUO_V3_ATTRIBUTE_ORDER: PRODUCTION_ATTRIBUTE_ORDER,
+  DUO_V3_N: PRODUCTION_N,
+  DUO_V3_M: PRODUCTION_M,
+  DUO_V3_DEPTH: PRODUCTION_DEPTH,
+  DUO_PROFILE_CREDENTIAL_V1,
+  DUO_V3_PROFILE_SLOT: PROFILE_SLOT,
+  DUO_V3_FIXED_SLOTS: FIXED_SLOTS,
+  DUO_V3_PROFILE_TERMS
+} = require('../lib/duo_v3');
 
 const {
   NAMESPACE_ALIASES,
   toHex
 } = require('../utils/merkle/ontology_whitelist');
 
-// Canonical DUO V3 attribute ordering and metadata.  This is deliberately
-// fixed: the production circuit derives the profile-backed entries from a
-// signed credential rather than accepting requester supplied assertions.
-const ATTRIBUTE_DEFINITIONS = [
-  { code: 'GRU', label: 'General research use', namespace: null, requiresProfile: true },
-  { code: 'DS', label: 'Disease-specific research', namespace: 'ICD10', requiresPredicate: true },
-  { code: 'RS', label: 'Research-specific restrictions', namespace: 'OBI', requiresPredicate: true },
-  { code: 'POA', label: 'Population origins/ancestry', namespace: 'HANCESTRO', requiresPredicate: true },
-  { code: 'GS', label: 'Geographical restriction', namespace: 'ISO3166', requiresPredicate: true },
-  { code: 'CC', label: 'Clinical care use', namespace: 'SNOMED', requiresPredicate: true },
-  { code: 'HMB', label: 'Health/medical/biomedical research', namespace: null, requiresProfile: true },
-  { code: 'NMDS', label: 'No methods development research', namespace: null, requiresProfile: true },
-  { code: 'GSO', label: 'Genetic studies only', namespace: null, requiresProfile: true },
-  { code: 'NPUNCU', label: 'Not-for-profit, non-commercial use only', namespace: null, requiresProfile: true },
-  { code: 'NPOA', label: 'Population origins/ancestry prohibited', namespace: null, requiresProfile: true },
-  { code: 'NPU', label: 'Not-for-profit organisation use only', namespace: null, requiresProfile: true },
-  { code: 'NCU', label: 'Non-commercial use only', namespace: null, requiresProfile: true }
-];
-const PRODUCTION_ATTRIBUTE_ORDER = Object.freeze(['GRU', 'DS', 'RS', 'POA', 'GS', 'CC', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU']);
-const PRODUCTION_N = 13;
-const PRODUCTION_M = 11;
-const DUO_PROFILE_CREDENTIAL_V1 = 2006;
-const PROFILE_SLOT = 10;
-const FIXED_SLOTS = Object.freeze({ DS: 0, RS: 1, POA: 2, GS: 3, CC: 4, US: 5, PS: 6, IS: 7, MOR: 8, TS: 9, DUO_PROFILE: 10 });
-const PROFILE_TERMS = new Set(['GRU', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU']);
+const PROFILE_TERMS = new Set(DUO_V3_PROFILE_TERMS);
 const PROCEDURAL_TERMS = new Set(['PUB', 'COL', 'RTN', 'IRB']);
 const DUO_CODE_BY_ID = Object.freeze(Object.fromEntries(DUO_TERMS.map(({ term, shorthand }) => [term.replace(/[^A-Z0-9]/gi, '').toUpperCase(), shorthand])));
 
@@ -905,14 +892,14 @@ function rpnToNumeric(rpnTokens, attributeCtx, predicateCtx, N = PRODUCTION_N, M
       if (tok.value !== 'TRUE') throw new Error(`Unsupported constant ${tok.value}`);
       tokens.push(N + M + 3);
     } else if (tok.type === 'ATTRIBUTE') {
-      // The production circuit uses a stable six-slot operand layout even
+      // The production circuit uses a stable 13-slot operand layout even
       // when an author provides a shorter presentation order.
       const idx = PRODUCTION_ATTRIBUTE_ORDER.indexOf(tok.value);
       if (idx === undefined) {
         throw new Error(`Attribute ${tok.value} was not declared`);
       }
       if (idx < 0) {
-        throw new Error(`Attribute ${tok.value} is not supported by the V2 production circuit`);
+        throw new Error(`Attribute ${tok.value} is not supported by the DUO V3 production circuit`);
       }
       tokens.push(idx);
     } else if (tok.type === 'PREDICATE') {
@@ -956,7 +943,7 @@ async function generatePolicyArtifacts(config, options = {}) {
   // console.log(`Attribute context: ${JSON.stringify(attributeCtx, null, 2)}`);
   const predicateCtx = buildPredicateContext(config.predicates || []);
   if (predicateCtx.slots.length > PRODUCTION_M) {
-    throw new Error(`V2 production circuit supports at most ${PRODUCTION_M} predicate slots`);
+    throw new Error(`DUO V3 production circuit supports at most ${PRODUCTION_M} predicate slots`);
   }
 
   predicateCtx.slots.forEach((slotInfo) => {
@@ -1165,11 +1152,11 @@ async function runCli() {
   const inputPath = argMap.get('in') ?? argMap.get('input');
   const outputPath = argMap.get('out') ?? argMap.get('output');
   if (!inputPath || !outputPath) {
-    console.error('Usage: node compiler/policy_generator.js --in <input.json> --out <output.json> [--depth 20]');
+    console.error(`Usage: node compiler/policy_generator.js --in <input.json> --out <output.json> [--depth ${PRODUCTION_DEPTH}]`);
     process.exit(1);
   }
 
-  const depth = argMap.has('depth') ? parseInt(argMap.get('depth'), 10) : 20;
+  const depth = argMap.has('depth') ? parseInt(argMap.get('depth'), 10) : PRODUCTION_DEPTH;
   const randomizerArg = argMap.get('randomizer');
 
   const absoluteInput = path.resolve(process.cwd(), inputPath);

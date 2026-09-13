@@ -17,17 +17,27 @@ const {
   generatePolicy,
   generateRequesterAttrs,
   generateDataset,
+  buildDuoV3PolicyMaterial,
+  buildDuoV3RequesterEvidence,
   POLICY_ATTRIBUTE_ORDER,
   POLICY_PREDICATE_SLOTS,
   evaluatePolicyTokens
 } = require('../../experiments/core/data_generator');
 const { generatePolicyArtifacts } = require('../../compiler/policy_generator');
+const { calculateRequesterId, calculateContextHash } = require('../../lib/prover');
+const { buildWitness } = require('../../tps/proofGenerator');
+const { witnessDecisionForInput } = require('../duo/helpers/duo_v3_harness');
+const {
+  DUO_V3_M,
+  DUO_V3_PROFILE_SLOT,
+  deriveDuoV3RequesterAttrs
+} = require('../../lib/duo_v3');
 
 const {
   loadDataset,
   evaluateDatasetQuality,
   formatQualityReport
-} = require('../../experiments/policy_content_hiding/dataset_quality');
+} = require('../../experiments/analysis/crosscheck/pch/dataset_quality');
 
 const {
   extractFeatures,
@@ -61,7 +71,7 @@ describe('Policy Content Hiding Evaluation', function () {
       // console.log('Generated Policy:', policy);
 
       expect(policy).to.have.property('policy');
-      expect(policy.policy).to.be.an('array').with.lengthOf(10);
+      expect(policy.policy).to.be.an('array').with.lengthOf(64);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.DISEASE_SPECIFIC);
       expect(policy).to.have.property('ontologyNamespace', 'ICD10');
       expect(policy).to.have.property('ontologyValue', ICD10_CHAPTERS.INFECTIOUS);
@@ -74,7 +84,7 @@ describe('Policy Content Hiding Evaluation', function () {
       const policy = await generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.RCT);
 
       expect(policy).to.have.property('policy');
-      expect(policy.policy).to.be.an('array').with.lengthOf(10);
+      expect(policy.policy).to.be.an('array').with.lengthOf(64);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.RESEARCH_SPECIFIC);
       expect(policy).to.have.property('ontologyNamespace', 'OBI');
       expect(policy).to.have.property('ontologyValue', OBI_RESEARCH_TYPES.RCT);
@@ -87,12 +97,14 @@ describe('Policy Content Hiding Evaluation', function () {
       const policy = await generatePolicy(DUO_TERMS.GENERAL_RESEARCH);
 
       expect(policy).to.have.property('policy');
-      expect(policy.policy).to.be.an('array').with.lengthOf(10);
+      expect(policy.policy).to.be.an('array').with.lengthOf(64);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.GENERAL_RESEARCH);
       expect(policy).to.have.property('ontologyNamespace', null);
       expect(policy).to.have.property('ontologyValue', null);
       expect(policy).to.have.property('requiresOntology', false);
-      expect(policy).to.have.property('numOperations', 1);  // single attr requires 1 token
+      expect(policy).to.have.property('requiresProfile', true);
+      expect(policy.predicateSlots).to.include(DUO_V3_PROFILE_SLOT);
+      expect(policy).to.have.property('numOperations', 3);  // profile attr AND signed profile predicate
     });
 
     it('should correctly identify ontology-linked DUO terms', function () {
@@ -120,10 +132,10 @@ describe('Policy Content Hiding Evaluation', function () {
       const satisfyAttrs = generateRequesterAttrs(DUO_TERMS.GENERAL_RESEARCH, true);
       const nonSatisfyAttrs = generateRequesterAttrs(DUO_TERMS.GENERAL_RESEARCH, false);
 
-      expect(satisfyAttrs).to.be.an('array').with.lengthOf(6);
+      expect(satisfyAttrs).to.be.an('array').with.lengthOf(13);
       expect(satisfyAttrs[0]).to.equal(1);
 
-      expect(nonSatisfyAttrs).to.be.an('array').with.lengthOf(6);
+      expect(nonSatisfyAttrs).to.be.an('array').with.lengthOf(13);
       expect(nonSatisfyAttrs[0]).to.equal(0);
     });
 
@@ -136,16 +148,19 @@ describe('Policy Content Hiding Evaluation', function () {
             DS: true,
             RS: true
           },
-          predicates: POLICY_PREDICATE_SLOTS,
-          logic: '(GR & !DS) | (!RS)'
+          predicates: [
+            ...POLICY_PREDICATE_SLOTS.filter(({ slot }) => slot === 0 || slot === 1),
+            { slot: DUO_V3_PROFILE_SLOT, duo: 'DUO_PROFILE', issuerKeyCommitment: '12345' }
+          ],
+          logic: '(GR & DS) | RS'
         },
         {
-          depth: 20,
+          depth: 64,
           attributeOrder: POLICY_ATTRIBUTE_ORDER
         }
       );
 
-      const predicateTruth = Array(POLICY_PREDICATE_SLOTS.length).fill(1);
+      const predicateTruth = Array(DUO_V3_M).fill(1);
 
       const attrsSatisfy = generateRequesterAttrs(
         [DUO_TERMS.GENERAL_RESEARCH, DUO_TERMS.DISEASE_SPECIFIC, DUO_TERMS.RESEARCH_SPECIFIC],
@@ -163,7 +178,7 @@ describe('Policy Content Hiding Evaluation', function () {
           attrsSatisfy,
           predicateTruth,
           POLICY_ATTRIBUTE_ORDER.length,
-          POLICY_PREDICATE_SLOTS.length
+          DUO_V3_M
         )
       ).to.equal(true);
 
@@ -183,7 +198,7 @@ describe('Policy Content Hiding Evaluation', function () {
           attrsFail,
           predicateTruth,
           POLICY_ATTRIBUTE_ORDER.length,
-          POLICY_PREDICATE_SLOTS.length
+          DUO_V3_M
         )
       ).to.equal(false);
     });
@@ -215,7 +230,7 @@ describe('Policy Content Hiding Evaluation', function () {
           }
         ],
         whitelistBuckets: [4],
-        merkleDepthOptions: [3],
+        merkleDepthOptions: [8],
         proofTypes: ['merkle_proof'],
         executionProtections: {
           path_unify: [false],
@@ -224,7 +239,7 @@ describe('Policy Content Hiding Evaluation', function () {
           proof_pad: [false],
           batch_pattern: ['baseline']
         },
-        policyDepth: 12
+        policyDepth: 64
       });
 
       const quality = evaluateDatasetQuality(dataset);
@@ -253,7 +268,17 @@ describe('Policy Content Hiding Evaluation', function () {
         expect(item).to.have.property('execution');
         expect(item).to.have.property('policy').that.is.an('array');
         expect(item).to.have.property('requesterAttrs').that.is.an('array');
-        expect(item.requesterAttrs).to.have.lengthOf(6);
+        expect(item.requesterAttrs).to.have.lengthOf(13);
+        expect(item).to.have.property('duoProfileClaims').that.is.within(0, 127);
+        const ontologyAttrs = Object.fromEntries(
+          ['DS', 'RS', 'POA', 'GS', 'CC'].map((code) => [
+            code,
+            item.requesterAttrs[POLICY_ATTRIBUTE_ORDER.indexOf(code)]
+          ])
+        );
+        expect(item.requesterAttrs).to.deep.equal(
+          deriveDuoV3RequesterAttrs(item.duoProfileClaims, ontologyAttrs)
+        );
 
         const { semantics, structure } = item;
         expect(semantics.duoTerms).to.be.an('array').that.is.not.empty;
@@ -279,6 +304,50 @@ describe('Policy Content Hiding Evaluation', function () {
           expect(structure.whitelistSize).to.equal(0);
         }
       });
+    });
+
+    it('should build complete DUO V3 TPS material and requester evidence offline', async function () {
+      const dataset = await generateDataset({
+        seed: 'duo-v3-material-test',
+        policyCount: 1,
+        executionsPerPolicy: 1,
+        satisfyRatio: 1,
+        semanticLayers: [{
+          name: 'profile-and-ontology',
+          combos: [['GR', 'DS']],
+          minPolicies: 1,
+          maxPolicies: 1,
+          logicOptions: { operators: ['AND'], notProbability: 0, groupNotProbability: 0 }
+        }],
+        whitelistBuckets: [4],
+        merkleDepthOptions: [8]
+      });
+      const policyData = dataset[0];
+      const { material, policyCommitment } = await buildDuoV3PolicyMaterial(policyData);
+      const evidence = await buildDuoV3RequesterEvidence(policyData, {
+        resourceId: '1',
+        policyCommitment
+      });
+      const witness = buildWitness(material, evidence, {
+        policyCommitment: policyCommitment.toString(),
+        idReq: evidence.requesterId,
+        idRes: '1',
+        nonce: '1',
+        requestEpoch: 2026
+      });
+
+      expect(material.predicateTypes).to.have.lengthOf(11);
+      expect(material.predicateTypes[0]).to.equal(3);
+      expect(material.predicateTypes[DUO_V3_PROFILE_SLOT]).to.equal(9);
+      expect(material.penc).to.have.lengthOf(64);
+      expect(BigInt(policyCommitment)).to.equal(BigInt(policyData.policyCommitment));
+      expect(evidence.attributes).to.have.lengthOf(13);
+      expect(evidence.merklePathElements[0]).to.have.lengthOf(8);
+      expect(BigInt(evidence.credSignatures[DUO_V3_PROFILE_SLOT])).to.not.equal(0n);
+      expect(evidence.requesterId).to.equal(await calculateRequesterId(evidence.holderSecret));
+      expect(witness.predicateTypes).to.deep.equal(material.predicateTypes);
+      witness.contextHash = await calculateContextHash(witness.idReq, witness.idRes, witness.nonce);
+      expect(await witnessDecisionForInput(witness)).to.equal(1n);
     });
   });
 

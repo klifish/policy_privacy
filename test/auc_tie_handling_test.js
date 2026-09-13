@@ -135,7 +135,7 @@ describe('calculateAUC — rank-based with tie handling', () => {
   it('of-record probe: PI controlled_difference RF probabilities are 1/25 multiples (tie surface is real)', () => {
     const p = path.resolve(
       __dirname,
-      '../experiments/policy_indistinguishability/results/polygonAmoy/pi_analysis.json'
+      '../experiments/results/crosscheck/pi/polygonAmoy/pi_analysis.json'
     );
     if (!fs.existsSync(p)) return; // clean checkout — skip without failing
     const a = JSON.parse(fs.readFileSync(p, 'utf8'));

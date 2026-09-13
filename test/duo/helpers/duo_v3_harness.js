@@ -32,26 +32,31 @@ const {
   calculateContextHash
 } = require('../../../lib/prover');
 const { deployPoseidon3 } = require('../../../lib/poseidon_contract');
+const {
+  DUO_V3_ATTRIBUTE_ORDER: ATTR_ORDER,
+  DUO_V3_N: N,
+  DUO_V3_M: M,
+  DUO_V3_DEPTH: DEPTH,
+  DUO_V3_PROFILE_SLOT: PROFILE_SLOT,
+  DUO_V3_PROFILE_TERMS: PROFILE_TERMS,
+  DUO_V3_CLAIM_BITS: CLAIM_BIT,
+  encodeDuoV3ProfileClaims,
+  deriveDuoV3RequesterAttrs
+} = require('../../../lib/duo_v3');
 const { buildWitness, generateProof, WASM_PATH, ZKEY_PATH, VKEY_PATH } = require('../../../tps/proofGenerator');
 
 // ---------------------------------------------------------------------------
 // Constants (must match circuits/policy_privacy_main_instance.circom and the
 // fixed slot layout in compiler/policy_generator.js)
 // ---------------------------------------------------------------------------
-const N = 13;
-const M = 11;
-const DEPTH = 64;
 const MERKLE_LEVELS = 8;
 const MAX_UINT32 = 4294967295;
 const ONTOLOGY_EPOCH = 2026;
 const ONTOLOGY_POLICY_ID = (slot) => 100 + slot;
 const WITNESS_CALCULATOR_PATH = path.join(path.dirname(WASM_PATH), 'witness_calculator.js');
 
-const ATTR_ORDER = ['GRU', 'DS', 'RS', 'POA', 'GS', 'CC', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU'];
 const ATTR_INDEX = Object.fromEntries(ATTR_ORDER.map((code, i) => [code, i]));
-const CLAIM_BIT = { research: 0, health: 1, methods: 2, genetic: 3, ancestry: 4, commercial: 5, nonprofit: 6 };
 
-const PROFILE_TERMS = ['GRU', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'NPU', 'NCU'];
 const ONTOLOGY_TERMS = { DS: ['ICD10', 0], RS: ['OBI', 1], POA: ['HANCESTRO', 2], GS: ['ISO3166', 3], CC: ['SNOMED', 4] };
 const SCOPED_TERMS = {
   US: { slot: 5, scopeKind: 26, scopeId: 0 },
@@ -59,7 +64,6 @@ const SCOPED_TERMS = {
   IS: { slot: 7, scopeKind: 28, scopeId: 9002 }
 };
 const OBLIGATION_TERMS = { MOR: 8, TS: 9 };
-const PROFILE_SLOT = 10;
 const NS_TO_TERM = Object.fromEntries(Object.entries(ONTOLOGY_TERMS).map(([t, [ns]]) => [ns, t]));
 const ALL_TERMS = ['NRES', ...PROFILE_TERMS, ...Object.keys(ONTOLOGY_TERMS), ...Object.keys(SCOPED_TERMS), ...Object.keys(OBLIGATION_TERMS)];
 
@@ -101,11 +105,7 @@ function cloneProfile(profile) {
 }
 
 function claimsToInt(claims) {
-  let value = 0;
-  for (const [name, bit] of Object.entries(CLAIM_BIT)) {
-    if (claims[name]) value |= 1 << bit;
-  }
-  return value;
+  return encodeDuoV3ProfileClaims(claims);
 }
 
 /**
@@ -114,18 +114,7 @@ function claimsToInt(claims) {
  * ontology-term booleans.
  */
 function deriveAttrsFromClaims(claimsInt, attrs = {}) {
-  const b = (i) => (claimsInt >> i) & 1;
-  return [
-    b(0),
-    attrs.DS ? 1 : 0, attrs.RS ? 1 : 0, attrs.POA ? 1 : 0, attrs.GS ? 1 : 0, attrs.CC ? 1 : 0,
-    b(1) * (1 - b(4)),
-    1 - b(2),
-    b(3),
-    b(6) * (1 - b(5)),
-    1 - b(4),
-    b(6),
-    1 - b(5)
-  ];
+  return deriveDuoV3RequesterAttrs(claimsInt, attrs);
 }
 
 /** DUO terms referenced by a logic string (bare shorthands and P[NS] tokens). */

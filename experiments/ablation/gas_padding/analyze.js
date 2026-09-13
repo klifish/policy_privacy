@@ -36,7 +36,7 @@ function run(command, args, { allowVerdictFailure = false, expectedFile = null }
 }
 
 function pythonExecutable() {
-  const venv = path.resolve(__dirname, '../../../python/.venv/bin/python');
+  const venv = path.resolve(__dirname, '../../../.venv/bin/python');
   return fs.existsSync(venv) ? venv : 'python3';
 }
 
@@ -53,19 +53,19 @@ function analyzeProfile(rootDir, profile, options) {
   ];
   const jobs = [
     {
-      script: 'experiments/policy_content_hiding/run_experiment.js',
+      script: 'experiments/analysis/crosscheck/pch/run_experiment.js',
       name: 'pch',
       report: 'evaluation_report.json',
       extra: []
     },
     {
-      script: 'experiments/policy_indistinguishability/run_experiment.js',
+      script: 'experiments/analysis/crosscheck/pi/run_experiment.js',
       name: 'pi',
       report: 'pi_report.json',
       extra: []
     },
     {
-      script: 'experiments/structure_and_parameter_privacy/run_experiment.js',
+      script: 'experiments/analysis/crosscheck/spp/run_experiment.js',
       name: 'spp',
       report: 'report.json',
       extra: ['--balance-method', 'undersample']
@@ -82,9 +82,9 @@ function analyzeProfile(rootDir, profile, options) {
 
   const clusteringBase = path.join(rootDir, 'comparison', 'clustering', profile);
   run(pythonExecutable(), [
-    'python/clustering_analysis/run_all_clustering.py',
+    '-m', 'experiments.analysis.clustering.run_all_clustering',
     '--source-dir', unifiedDir,
-    '--data-dir', path.join(clusteringBase, 'data'),
+    '--work-dir', path.join(clusteringBase, 'work'),
     '--results-dir', path.join(clusteringBase, 'results')
   ]);
 }

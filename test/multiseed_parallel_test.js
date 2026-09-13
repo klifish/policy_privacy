@@ -11,7 +11,7 @@ const {
 } = require('../experiments/core/multiseed_criterion');
 const {
   buildSppRecordsForSeed
-} = require('../experiments/structure_and_parameter_privacy/seed_records');
+} = require('../experiments/analysis/crosscheck/spp/seed_records');
 
 const workerEntry = path.resolve(__dirname, 'fixtures/multiseed_worker_fixture.js');
 

@@ -7,7 +7,7 @@ An interactive web dashboard for visualizing and analyzing the Policy Content Hi
 ### 1. Start the Dashboard Server
 
 ```bash
-cd experiments/policy_content_hiding
+cd experiments/analysis/crosscheck/pch
 node server.js
 ```
 
@@ -115,14 +115,13 @@ Relative: 12.7% - Major privacy issue
 ## 📁 File Structure
 
 ```
-experiments/policy_content_hiding/
+experiments/analysis/crosscheck/pch/
 ├── dashboard.html          # Dashboard UI
-├── server.js              # HTTP server
-├── results/
+├── server.js               # HTTP server
+└── ../../../results/crosscheck/pch/
 │   ├── execution_results.json      # Main data file
 │   ├── evaluation_report.json      # ML attack results
 │   └── features.json              # Extracted features
-└── DASHBOARD_README.md    # This file
 ```
 
 ## 🛠 Troubleshooting

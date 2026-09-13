@@ -27,7 +27,7 @@ describe('Policy Content Hiding Integration (Minimal)', function () {
       return;
     }
 
-    const { runExperiment } = require('../../experiments/policy_content_hiding/run_experiment');
+    const { runExperiment } = require('../../experiments/analysis/crosscheck/pch/run_experiment');
 
     // Run with minimal configuration to keep test lightweight
     const report = await runExperiment({
@@ -37,7 +37,7 @@ describe('Policy Content Hiding Integration (Minimal)', function () {
       testRatio: 0.3,
       outputDir: path.join(
         __dirname,
-        '../../experiments/policy_content_hiding/test_results'
+        '../../experiments/.work/tests/pch'
       )
     });
 

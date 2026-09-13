@@ -4,7 +4,7 @@
 
 The `generateDataset` function is the core data generation pipeline for the Policy Content Hiding experiment. It generates a comprehensive dataset of policy configurations and execution instances to evaluate privacy leakage through blockchain-observable features.
 
-**Location**: [experiments/policy_content_hiding/data_generator.js:1168-1321](../data_generator.js#L1168-L1321)
+**Location**: [`experiments/core/data_generator.js`](../../core/data_generator.js)
 
 **Purpose**: Generate a stratified dataset that:
 - Contains diverse policy configurations (DUO term combinations, ontology scopes)

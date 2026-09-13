@@ -1,5 +1,6 @@
 node_modules
 .env
+.venv/
 
 # Hardhat files
 /cache
@@ -62,13 +63,11 @@ experiments/**/pi/pi_pairs.json
 experiments/**/test_results/
 experiments/unified_dataset_artifacts/
 # Local smoke-run dataset (transient; Amoy datasets are committed for reproducibility)
-experiments/unified/artifacts_data/localhost/
+experiments/data/localhost/
 __pycache__/
 .claude/
 .rerun_logs/
-# Bulky regenerable python-side datasets (exported from the JS Amoy artifacts)
-python/data/polygonAmoy/
-python/data_old_testnet/
+experiments/.work/
 # Interactive viz dashboards; regenerate with npm run viz:pch|viz:spp|viz:pi
-python/results/supervised_analysis/*_protocol_viz.html
-python/results/supervised_analysis/viz_data*.json
+experiments/results/supervised/*_protocol_viz.html
+experiments/results/supervised/viz_data*.json

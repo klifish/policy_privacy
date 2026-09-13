@@ -32,8 +32,8 @@ Policy Indistinguishability is a strengthened privacy evaluation that verifies w
 ## Quickstart
 
 ```bash
-cd experiments/policy_indistinguishability
-node run_experiment.js --output ./results/pi_run
+node experiments/analysis/crosscheck/pi/run_experiment.js \
+  --output ./experiments/.work/pi_run
 ```
 
 **New Feature: Real-time Progress Tracking**

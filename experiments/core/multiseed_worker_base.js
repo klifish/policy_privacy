@@ -4,7 +4,7 @@
  * Shared worker_threads plumbing for the parallel multi-seed verdict.
  *
  * Each experiment ships a tiny worker-entry module (e.g.
- * structure_and_parameter_privacy/multiseed_worker.js) that calls runSeedWorker()
+ * analysis/crosscheck/spp/multiseed_worker.js) that calls runSeedWorker()
  * with two callbacks:
  *
  *   buildCtx(workerData)            -> ctx   (reconstruct the closure's captured

@@ -13,20 +13,20 @@ const {
 const { normalizeFeatures } = require('../experiments/core/feature_extractor');
 const {
   buildPchRecordsForSeed
-} = require('../experiments/policy_content_hiding/seed_records');
+} = require('../experiments/analysis/crosscheck/pch/seed_records');
 const {
   buildPiRecordsForSeed
-} = require('../experiments/policy_indistinguishability/seed_records');
+} = require('../experiments/analysis/crosscheck/pi/seed_records');
 const {
   runSupervisedAttacks
-} = require('../experiments/structure_and_parameter_privacy/attacks');
+} = require('../experiments/analysis/crosscheck/spp/attacks');
 const {
   buildSppRecordsForSeed
-} = require('../experiments/structure_and_parameter_privacy/seed_records');
+} = require('../experiments/analysis/crosscheck/spp/seed_records');
 
-const PCH_WORKER = path.resolve(__dirname, '../experiments/policy_content_hiding/multiseed_worker.js');
-const PI_WORKER = path.resolve(__dirname, '../experiments/policy_indistinguishability/multiseed_worker.js');
-const SPP_WORKER = path.resolve(__dirname, '../experiments/structure_and_parameter_privacy/multiseed_worker.js');
+const PCH_WORKER = path.resolve(__dirname, '../experiments/analysis/crosscheck/pch/multiseed_worker.js');
+const PI_WORKER = path.resolve(__dirname, '../experiments/analysis/crosscheck/pi/multiseed_worker.js');
+const SPP_WORKER = path.resolve(__dirname, '../experiments/analysis/crosscheck/spp/multiseed_worker.js');
 
 const FEATURE_KEYS = [
   'commitGasUsed',

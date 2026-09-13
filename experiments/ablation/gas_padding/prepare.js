@@ -7,14 +7,14 @@ const path = require('path');
 const {
   getArtifactPaths,
   sliceExecutionsForSPP
-} = require('../../unified/artifacts');
+} = require('../../capture/artifacts');
 const {
   calculatePolicyCommitment
 } = require('../../../test/utils/proofGenerator');
 
 const DEFAULT_SOURCE = path.resolve(
   __dirname,
-  '../../unified/artifacts_data/polygonAmoy'
+  '../../data/polygonAmoy'
 );
 const DEFAULT_OUTPUT = path.resolve(__dirname, 'polygonAmoy');
 
@@ -371,7 +371,7 @@ async function main() {
     `UNIFIED_CONFIG_PATH=${path.join(options.outputDir, 'shared/source_config.json')} ` +
     `UNIFIED_ARTIFACT_DIR=${path.join(options.outputDir, 'b1_unpadded')} ` +
     'PROTECTION_PROFILE=b1_unpadded ' +
-    'npx hardhat run experiments/unified/run.js --network polygonAmoy'
+    'npx hardhat run experiments/capture/run.js --network polygonAmoy'
   );
 }
 

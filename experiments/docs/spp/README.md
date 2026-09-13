@@ -3,7 +3,7 @@
 The SPP experiment verifies that our postfix interpreter + padding defenses hide **policy shape and parameter sizes** even when an attacker observes every on-chain metadata field (gas, calldata, proof size, logs, block timing, etc.). The experiment now reuses the same data-generation and execution stack as the **Policy Content Hiding (PCH)** and **Policy Indistinguishability (PI)** studies:
 
 - Policies are compiled with `compiler/policy_generator.js`
-- Contexts/whitelists come from `experiments/policy_content_hiding/data_generator.js`
+- Contexts/whitelists come from `experiments/core/data_generator.js`
 - Proofs are executed against the real `PolicyPrivacy` contract
 - The resulting metadata is analysed with the SPP attack suite
 
@@ -25,6 +25,11 @@ statistical / clustering attacks in `run_experiment.js` (`targetAttributes = ['s
 'predicateCombo', 'paramType']`). So SPP currently attacks 3 axes, not 5.
 
 The attack suite tries to recover those (3) labels using on-chain side channels only. Success would indicate information leakage.
+
+`negation_heavy` remains in the analyzer so historical captures stay readable.
+The production DUO V3 compiler rejects `NOT`, therefore new capture generation
+uses only the other four structure buckets and excludes `negation_heavy` from
+generation-time balance gates.
 
 ## Threat Model
 
@@ -70,8 +75,8 @@ informative but do **not** decide the overall verdict:
 The runner expects a Hardhat environment (same as PCH). Always execute through `npx hardhat run ...` or an equivalent Hardhat task.
 
 ```bash
-npx hardhat run experiments/structure_and_parameter_privacy/run_experiment.js --network <target> -- \
-  --output ./experiments/structure_and_parameter_privacy/results/default \
+node experiments/analysis/crosscheck/spp/run_experiment.js --network <target> \
+  --output ./experiments/.work/spp/default \
   --policy-count 60 \
   --executions-per-policy 3 \
   --satisfy-ratio 0.5 \
@@ -140,8 +145,8 @@ results/<name>/
 
 ## Implementation Notes
 
-- **Shared infrastructure:** Reuses the exact generator + `executePolicy` helper from `experiments/policy_content_hiding`
-- **Annotation logic:** `experiments/structure_and_parameter_privacy/data_generator.js`
+- **Shared infrastructure:** Reuses the generator and execution helpers from `experiments/core/`
+- **Annotation logic:** `experiments/analysis/crosscheck/spp/data_generator.js`
   - Parses normalized logic from the compiler to detect OR depth, predicate diversity, etc.
   - Buckets Merkle depths to approximate “range width” padding
 - **Execution:** `run_experiment.js` deploys new contracts per run (same as PCH/PI)
@@ -152,11 +157,11 @@ results/<name>/
 
 ```bash
 # Phase 1: generate + execute (needs funded signer)
-npx hardhat run experiments/structure_and_parameter_privacy/run_experiment.js --network <net> -- \
+node experiments/analysis/crosscheck/spp/run_experiment.js --network <net> \
   --output ./results/spp_baseline --policy-count 60 --executions-per-policy 3
 
 # Phase 2/3 only (reuse metadata, tweak analysis knobs)
-npx hardhat run experiments/structure_and_parameter_privacy/run_experiment.js --network <net> -- \
+node experiments/analysis/crosscheck/spp/run_experiment.js --network <net> \
   --phase 2 \
   --dataset ./results/spp_baseline/dataset.json \
   --execution-results ./results/spp_baseline/execution_results.json \

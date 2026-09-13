@@ -19,10 +19,10 @@ row and independent-policy coverage.
 ## 2. Smoke-test B1 locally
 
 ```bash
-UNIFIED_CONFIG_PATH=experiments/unified/configs/unified_dataset_config_twolayer_smoke.json \
+UNIFIED_CONFIG_PATH=experiments/capture/configs/unified_dataset_config_twolayer_smoke.json \
 UNIFIED_ARTIFACT_DIR=experiments/ablation/gas_padding/localhost/b1_unpadded \
 PROTECTION_PROFILE=b1_unpadded \
-npx hardhat run experiments/unified/run.js --network localhost
+npx hardhat run experiments/capture/run.js --network localhost
 ```
 
 ## 3. Execute B1 on Polygon Amoy
