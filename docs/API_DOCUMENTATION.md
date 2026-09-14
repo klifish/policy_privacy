@@ -1,5 +1,10 @@
 # PolicyPrivacy API Documentation
 
+> **Legacy prototype reference.** This document contains retired circuit
+> dimensions and public-signal examples and is not normative for DUO V3.
+> The canonical `v3.0.0-rc1` protocol interface is defined by
+> `protocol/releases/v3.0.0-rc1.json` and `docs/PROTOCOL_RELEASE.md`.
+
 ## Overview
 
 The PolicyPrivacy API provides a REST interface for privacy-preserving consent management using zero-knowledge proofs. The API enables data providers to publish data with privacy policies and data requesters to access data by proving policy satisfaction without revealing their attributes.

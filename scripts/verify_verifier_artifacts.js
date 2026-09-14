@@ -14,10 +14,14 @@ const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const CIRCUITS = path.join(ROOT, 'build', 'circuits');
+const CIRCUITS = process.env.PROTOCOL_CIRCUITS_DIR
+    ? path.resolve(process.env.PROTOCOL_CIRCUITS_DIR)
+    : path.join(ROOT, 'build', 'circuits');
 const ZKEY = path.join(CIRCUITS, 'policy_privacy_main_final.zkey');
 const VKEY = path.join(CIRCUITS, 'policy_privacy_main_vk.json');
-const VERIFIER = path.join(ROOT, 'contracts', 'PolicyPrivacyMainVerifier.sol');
+const VERIFIER = process.env.PROTOCOL_VERIFIER_PATH
+    ? path.resolve(process.env.PROTOCOL_VERIFIER_PATH)
+    : path.join(ROOT, 'contracts', 'PolicyPrivacyMainVerifier.sol');
 const SNARKJS = path.join(ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'snarkjs.cmd' : 'snarkjs');
 
 function readJson(file) {
@@ -64,6 +68,7 @@ function main() {
     const verifier = fs.readFileSync(VERIFIER, 'utf8');
 
     assert.equal(checkedInKey.protocol, 'groth16', 'verification key must use Groth16');
+    assert.equal(checkedInKey.curve, 'bn128', 'verification key must use BN254/bn128');
     assert.equal(checkedInKey.nPublic, 5, 'main circuit must expose exactly five public signals');
     assert.equal(checkedInKey.IC.length, checkedInKey.nPublic + 1, 'verification key IC length must equal nPublic + 1');
     assert.match(verifier, /contract\s+PolicyPrivacyMainVerifier\s*\{/, 'unexpected Solidity verifier contract name');

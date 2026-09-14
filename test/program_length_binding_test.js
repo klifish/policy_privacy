@@ -26,6 +26,17 @@
  * witness must not yield isAuthorized = 1. Either outcome is a valid defense --
  * witness generation may fail outright, or the commitment check may fail and
  * force isAuthorized = 0 (commitmentValid is AND-ed into the output).
+ *
+ * Non-vacuity: every attack case first evaluates the honest witness through
+ * the same input builder and requires a real decision from the circuit. A
+ * builder that no longer matches the compiled instance therefore fails the
+ * honest step loudly instead of letting the attack step pass on a rejected
+ * witness. A positive control also commits to the prefix itself and checks
+ * that it authorizes, so the "not 1" assertion is known to be reachable.
+ *
+ * Circuit parameters and the input builder come from the modules the TPS
+ * itself uses (lib/duo_v3, lib/prover), so the test tracks the compiled
+ * instance rather than a private copy of N/M/DEPTH.
  */
 
 const assert = require('assert');
@@ -35,44 +46,42 @@ const fs = require('fs');
 const {
   calculatePolicyCommitment,
   calculateParamsCommitment,
+  calculateContextHash,
   createCircuitInput
-} = require('./utils/proofGenerator');
-
-const CIRCUIT_DEPTH = 20;
-const CIRCUIT_N = 6;   // requester attributes
-const CIRCUIT_M = 5;   // external predicate slots
+} = require('../lib/prover');
+const {
+  DUO_V3_N: N,
+  DUO_V3_M: M,
+  DUO_V3_DEPTH: DEPTH,
+  deriveDuoV3RequesterAttrs
+} = require('../lib/duo_v3');
+const { WASM_PATH } = require('../tps/proofGenerator');
 
 // Opcodes are offset past the operand range: token < N+M is an operand.
-const OP_AND = CIRCUIT_N + CIRCUIT_M + 0; // 11
-const OP_NOT = CIRCUIT_N + CIRCUIT_M + 2; // 13
+const OP_AND = N + M + 0;
+const OP_NOT = N + M + 2;
 
-const BUILD_DIR = path.join(__dirname, '../build/circuits');
-const WASM_PATH = path.join(
-  BUILD_DIR,
-  'policy_privacy_main_instance_js/policy_privacy_main_instance.wasm'
-);
-const WITNESS_CALCULATOR_PATH = path.join(
-  BUILD_DIR,
-  'policy_privacy_main_instance_js/witness_calculator.js'
-);
+// Requester attribute indices used by the exploit. Indices 1..5 are the
+// ontology-backed terms (DS, RS, POA, GS, CC); they are free Boolean inputs
+// when the corresponding predicate slot is disabled. Indices 0 and 6..12 are
+// derived in-circuit from the signed DUO profile claims and must be built
+// with deriveDuoV3RequesterAttrs, never asserted directly.
+const ATTR_DS = 1;
+const ATTR_RS = 2;
+const ATTR_POA = 3;
+
+const WITNESS_CALCULATOR_PATH = path.join(path.dirname(WASM_PATH), 'witness_calculator.js');
 
 const padPolicy = (tokens) => [
   ...tokens,
-  ...Array(CIRCUIT_DEPTH - tokens.length).fill(0)
+  ...Array(DEPTH - tokens.length).fill(0)
 ];
 
-const disabledParams = () => ({
-  merkleRoots: Array(CIRCUIT_M).fill('0'),
-  credPublicKeys: Array(CIRCUIT_M).fill('0'),
-  rangeMin: Array(CIRCUIT_M).fill('0'),
-  rangeMax: Array(CIRCUIT_M).fill('0'),
-  ontologyPolicyIds: Array(CIRCUIT_M).fill('0'),
-  ontologyEpochs: Array(CIRCUIT_M).fill('0')
-});
+// Requester holding only the named ontology attributes and no profile claims.
+const attrsWith = (ontologyAttrs) => deriveDuoV3RequesterAttrs(0, ontologyAttrs);
 
 describe('Program-length binding in the policy commitment', function () {
   let witnessCalculator;
-  let paramsCommitment;
   let circuitAvailable = false;
 
   this.timeout(100000);
@@ -86,19 +95,52 @@ describe('Program-length binding in the policy commitment', function () {
 
     const buildWitnessCalculator = require(WITNESS_CALCULATOR_PATH);
     witnessCalculator = await buildWitnessCalculator(fs.readFileSync(WASM_PATH));
-    paramsCommitment = await calculateParamsCommitment(disabledParams());
     circuitAvailable = true;
   });
 
   /**
-   * Compute the witness and return isAuthorized, or null when the circuit
-   * rejects the witness outright.
+   * Build a full circuit input for a policy with all predicate slots disabled.
+   * paramsCommitment and contextHash are recomputed from the input's own
+   * fields, as the TPS does, so both hard equalities in the circuit hold.
    */
+  async function buildInput(policyCommitment, { policy, requesterAttrs, randomizer, numOperations }) {
+    const input = createCircuitInput(policyCommitment, {
+      policy,
+      requesterAttrs,
+      randomizer,
+      numOperations
+    });
+    input.contextHash = await calculateContextHash(input.idReq, input.idRes, input.nonce);
+    input.paramsCommitment = await calculateParamsCommitment({
+      predicateTypes: input.predicateTypes,
+      predicateSchemaTags: input.predicateSchemaTags,
+      merkleRoots: input.merkleRoots,
+      credPublicKeys: input.credPublicKeys,
+      rangeMin: input.rangeMin,
+      rangeMax: input.rangeMax,
+      ontologyPolicyIds: input.ontologyPolicyIds,
+      ontologyEpochs: input.ontologyEpochs,
+      scopeKinds: input.scopeKinds,
+      approvedScopeIds: input.approvedScopeIds,
+      policyValidFromEpoch: input.policyValidFromEpoch,
+      policyValidUntilEpoch: input.policyValidUntilEpoch,
+      moratoriumUntilEpoch: input.moratoriumUntilEpoch,
+      timeLimitEpochs: input.timeLimitEpochs
+    });
+    return input;
+  }
+
+  /** Compute the witness and return isAuthorized; throws when the circuit rejects it. */
+  async function decide(input) {
+    const witness = await witnessCalculator.calculateWitness(input, true);
+    // Signal 0 is the constant 1; signal 1 is the single public output.
+    return witness[1].toString();
+  }
+
+  /** Like decide(), but returns null when the circuit rejects the witness outright. */
   async function tryAuthorize(input) {
     try {
-      const witness = await witnessCalculator.calculateWitness(input, true);
-      // Signal 0 is the constant 1; signal 1 is the single public output.
-      return witness[1].toString();
+      return await decide(input);
     } catch (error) {
       return null;
     }
@@ -106,7 +148,7 @@ describe('Program-length binding in the policy commitment', function () {
 
   describe('commitment computation', function () {
     it('binds the program length: same tokens and randomizer, different length => different commitment', async function () {
-      const policy = padPolicy([3, OP_NOT]);
+      const policy = padPolicy([ATTR_POA, OP_NOT]);
       const randomizer = 12345n;
 
       const hFull = await calculatePolicyCommitment(policy, randomizer, 2);
@@ -120,7 +162,7 @@ describe('Program-length binding in the policy commitment', function () {
     });
 
     it('rejects a missing program length rather than silently defaulting', async function () {
-      const policy = padPolicy([3, OP_NOT]);
+      const policy = padPolicy([ATTR_POA, OP_NOT]);
       await assert.rejects(
         () => calculatePolicyCommitment(policy, 12345n),
         /requires a programLength/,
@@ -129,9 +171,9 @@ describe('Program-length binding in the policy commitment', function () {
     });
 
     it('rejects an out-of-range program length', async function () {
-      const policy = padPolicy([3, OP_NOT]);
+      const policy = padPolicy([ATTR_POA, OP_NOT]);
       await assert.rejects(
-        () => calculatePolicyCommitment(policy, 12345n, CIRCUIT_DEPTH + 1),
+        () => calculatePolicyCommitment(policy, 12345n, DEPTH + 1),
         /Invalid programLength/
       );
     });
@@ -140,28 +182,23 @@ describe('Program-length binding in the policy commitment', function () {
   describe('prefix-truncation attack', function () {
     // Committed policy: "NOT attr3". Requester holds attr3, so the honest
     // policy denies. The truncated prefix "attr3" would allow.
-    const policyTokens = [3, OP_NOT];
+    const policyTokens = [ATTR_POA, OP_NOT];
     const honestLength = policyTokens.length;
     const truncatedLength = 1;
-    const requesterAttrs = [0, 0, 0, 1, 0, 0]; // attr3 = 1
+    const requesterAttrs = attrsWith({ POA: true });
+    const randomizer = 12345n;
 
     it('evaluates the honest program to deny (isAuthorized = 0)', async function () {
       if (!circuitAvailable) this.skip();
 
       const policy = padPolicy(policyTokens);
-      const randomizer = 12345n;
-      const policyCommitment = await calculatePolicyCommitment(
-        policy,
-        randomizer,
-        honestLength
-      );
+      const policyCommitment = await calculatePolicyCommitment(policy, randomizer, honestLength);
 
-      const isAuthorized = await tryAuthorize(
-        createCircuitInput(policyCommitment, {
+      const isAuthorized = await decide(
+        await buildInput(policyCommitment, {
           policy,
           requesterAttrs,
           randomizer,
-          paramsCommitment,
           numOperations: honestLength
         })
       );
@@ -173,26 +210,57 @@ describe('Program-length binding in the policy commitment', function () {
       );
     });
 
+    it('positive control: the prefix committed at its own length authorizes', async function () {
+      if (!circuitAvailable) this.skip();
+
+      // Same token array, but the provider commits to l = 1, i.e. the policy
+      // really is bare "attr3". This is what the cheating TPS wants the
+      // verifier to accept under the l = 2 commitment.
+      const policy = padPolicy(policyTokens);
+      const prefixCommitment = await calculatePolicyCommitment(policy, randomizer, truncatedLength);
+
+      const isAuthorized = await decide(
+        await buildInput(prefixCommitment, {
+          policy,
+          requesterAttrs,
+          randomizer,
+          numOperations: truncatedLength
+        })
+      );
+
+      assert.strictEqual(
+        isAuthorized,
+        '1',
+        'The prefix "attr3" must authorize a requester holding attr3; ' +
+        'otherwise the truncation case below cannot distinguish a defense from a broken setup'
+      );
+    });
+
     it('does not authorize a truncated prefix of the committed program', async function () {
       if (!circuitAvailable) this.skip();
 
       const policy = padPolicy(policyTokens);
-      const randomizer = 12345n;
 
       // The commitment the provider published, for the FULL program.
-      const policyCommitment = await calculatePolicyCommitment(
-        policy,
-        randomizer,
-        honestLength
-      );
+      const policyCommitment = await calculatePolicyCommitment(policy, randomizer, honestLength);
 
-      // A cheating TPS reuses that commitment but evaluates only the prefix.
-      const isAuthorized = await tryAuthorize(
-        createCircuitInput(policyCommitment, {
+      // Guard against vacuity: the honest witness must go through the circuit.
+      const honest = await decide(
+        await buildInput(policyCommitment, {
           policy,
           requesterAttrs,
           randomizer,
-          paramsCommitment,
+          numOperations: honestLength
+        })
+      );
+      assert.strictEqual(honest, '0', 'honest witness must be decided before testing the attack');
+
+      // A cheating TPS reuses that commitment but evaluates only the prefix.
+      const isAuthorized = await tryAuthorize(
+        await buildInput(policyCommitment, {
+          policy,
+          requesterAttrs,
+          randomizer,
           numOperations: truncatedLength
         })
       );
@@ -208,40 +276,35 @@ describe('Program-length binding in the policy commitment', function () {
     it('binds the length for binary operators as well', async function () {
       if (!circuitAvailable) this.skip();
 
-      // "attr0 AND attr1", requester holds only attr0.
-      const tokens = [0, 1, OP_AND];
+      // "attr1 AND attr2", requester holds only attr1.
+      const tokens = [ATTR_DS, ATTR_RS, OP_AND];
       const policy = padPolicy(tokens);
       const randomizer = 67890n;
-      const policyCommitment = await calculatePolicyCommitment(
-        policy,
-        randomizer,
-        tokens.length
-      );
+      const requesterAttrs = attrsWith({ DS: true });
+      const policyCommitment = await calculatePolicyCommitment(policy, randomizer, tokens.length);
 
-      const honest = await tryAuthorize(
-        createCircuitInput(policyCommitment, {
+      const honest = await decide(
+        await buildInput(policyCommitment, {
           policy,
-          requesterAttrs: [1, 0, 0, 0, 0, 0],
+          requesterAttrs,
           randomizer,
-          paramsCommitment,
           numOperations: tokens.length
         })
       );
-      assert.strictEqual(honest, '0', '"attr0 AND attr1" must deny without attr1');
+      assert.strictEqual(honest, '0', '"attr1 AND attr2" must deny without attr2');
 
       const truncated = await tryAuthorize(
-        createCircuitInput(policyCommitment, {
+        await buildInput(policyCommitment, {
           policy,
-          requesterAttrs: [1, 0, 0, 0, 0, 0],
+          requesterAttrs,
           randomizer,
-          paramsCommitment,
           numOperations: 1
         })
       );
       assert.notStrictEqual(
         truncated,
         '1',
-        'Truncating "attr0 AND attr1" to "attr0" must not authorize'
+        'Truncating "attr1 AND attr2" to "attr1" must not authorize'
       );
     });
   });

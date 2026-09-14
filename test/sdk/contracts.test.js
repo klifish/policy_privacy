@@ -206,17 +206,17 @@ describe('SDK - Contracts Module', function() {
       const abi = Contracts.PolicyPrivacy.abi;
 
       abi.forEach((item, index) => {
-        expect(item).to.have.property('type', `ABI item ${index} missing type`);
+        expect(item, `ABI item ${index} missing type`).to.have.property('type');
 
         if (item.type === 'function') {
-          expect(item).to.have.property('name', `Function at ${index} missing name`);
-          expect(item).to.have.property('inputs', `Function ${item.name} missing inputs`);
-          expect(item).to.have.property('outputs', `Function ${item.name} missing outputs`);
+          expect(item, `Function at ${index} missing name`).to.have.property('name');
+          expect(item, `Function ${item.name} missing inputs`).to.have.property('inputs');
+          expect(item, `Function ${item.name} missing outputs`).to.have.property('outputs');
         }
 
         if (item.type === 'event') {
-          expect(item).to.have.property('name', `Event at ${index} missing name`);
-          expect(item).to.have.property('inputs', `Event ${item.name} missing inputs`);
+          expect(item, `Event at ${index} missing name`).to.have.property('name');
+          expect(item, `Event ${item.name} missing inputs`).to.have.property('inputs');
         }
       });
     });
@@ -231,14 +231,12 @@ describe('SDK - Contracts Module', function() {
 
       functions.forEach(func => {
         func.inputs.forEach((input, idx) => {
-          expect(input).to.have.property('type',
-            `Function ${func.name} input ${idx} missing type`);
+          expect(input, `Function ${func.name} input ${idx} missing type`).to.have.property('type');
           expect(input).to.have.property('name');
         });
 
         func.outputs.forEach((output, idx) => {
-          expect(output).to.have.property('type',
-            `Function ${func.name} output ${idx} missing type`);
+          expect(output, `Function ${func.name} output ${idx} missing type`).to.have.property('type');
         });
       });
     });

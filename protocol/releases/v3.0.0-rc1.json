@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "protocol": "policy-privacy-duo",
+  "version": "3.0.0-rc1",
+  "gitTag": "v3.0.0-rc1",
+  "status": "release-candidate",
+  "scope": {
+    "localValidationOnly": true,
+    "amoyValidated": false,
+    "paperExperimentsRerun": false,
+    "productionMpcCeremony": false
+  },
+  "proofSystem": {
+    "scheme": "groth16",
+    "curve": "bn128"
+  },
+  "circuit": {
+    "entrypoint": "circuits/policy_privacy_main_instance.circom",
+    "template": "PolicyPrivacyMain",
+    "optimization": "O2",
+    "parameters": {
+      "N": 13,
+      "M": 11,
+      "DEPTH": 64,
+      "K": 5,
+      "MERKLE_LEVELS": 8,
+      "RANGE_BITS": 32
+    },
+    "r1cs": {
+      "wires": 80884,
+      "constraints": 81740,
+      "privateInputs": 496,
+      "publicInputs": 4,
+      "outputs": 1
+    }
+  },
+  "statement": {
+    "publicSignals": [
+      {
+        "index": 0,
+        "name": "isAuthorized",
+        "direction": "output",
+        "solidityType": "uint256"
+      },
+      {
+        "index": 1,
+        "name": "policyCommitment",
+        "direction": "input",
+        "solidityType": "uint256"
+      },
+      {
+        "index": 2,
+        "name": "paramsCommitment",
+        "direction": "input",
+        "solidityType": "uint256"
+      },
+      {
+        "index": 3,
+        "name": "contextHash",
+        "direction": "input",
+        "solidityType": "uint256"
+      },
+      {
+        "index": 4,
+        "name": "requestEpoch",
+        "direction": "input",
+        "solidityType": "uint256"
+      }
+    ],
+    "solidityArrayType": "uint256[5]"
+  },
+  "commitments": {
+    "policy": {
+      "hash": "Poseidon",
+      "formula": "chunk[i]=Poseidon16(P[16i..16i+15]); policyHash=Poseidon4(chunk[0..3]); commitment=Poseidon3(policyHash,programLength,randomizer)",
+      "chunkSize": 16,
+      "paddedPolicyLength": 64,
+      "programLengthBound": true
+    },
+    "context": {
+      "hash": "Poseidon",
+      "formula": "Poseidon(idReq, idRes, nonce)"
+    },
+    "parameters": {
+      "hash": "Poseidon",
+      "vectorHashChain": "chain[0]=0; chain[i+1]=Poseidon(chain[i], value[i])",
+      "digestHashChain": "digest[0]=0; digest[i+1]=Poseidon(digest[i], fieldDigest[i])",
+      "fields": [
+        "predicateTypes",
+        "predicateSchemaTags",
+        "merkleRoots",
+        "credPublicKeys",
+        "rangeMin",
+        "rangeMax",
+        "ontologyPolicyIds",
+        "ontologyEpochs",
+        "scopeKinds",
+        "approvedScopeIds",
+        "policyValidFromEpoch",
+        "policyValidUntilEpoch",
+        "moratoriumUntilEpoch",
+        "timeLimitEpochs"
+      ],
+      "domainSeparator": 6
+    }
+  },
+  "goldenVectors": {
+    "policy": {
+      "policy": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "programLength": 1,
+      "randomizer": "12345",
+      "commitment": "6188529263597870953365864003941543971371730781757740254979781499492990398474"
+    },
+    "context": {
+      "idReq": "101",
+      "idRes": "202",
+      "nonce": "303",
+      "contextHash": "16947480294709526194316021992207472708811178304342346590634176743326966425153"
+    },
+    "parameters": {
+      "preset": "all-disabled-v3",
+      "policyValidFromEpoch": "0",
+      "policyValidUntilEpoch": "4294967295",
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0",
+      "commitment": "8332500863955853563283482255278223324701900929119584582255300109767837022176"
+    }
+  },
+  "contractInterface": {
+    "verifier": "verifyProof(uint256[2],uint256[2][2],uint256[2],uint256[5])",
+    "boundRequest": "requestAccessBound(uint256,uint256,uint256,uint256,uint256,uint256[2],uint256[2][2],uint256[2],uint256[5])",
+    "boundRequestWithGasPad": "requestAccessBoundWithGasPad(uint256,uint256,uint256,uint256,uint256,uint256[2],uint256[2][2],uint256[2],uint256[5],uint256)"
+  },
+  "toolchain": {
+    "node": "v22.22.0",
+    "nodePinned": "22.22.0",
+    "npm": "10.9.4",
+    "circom2Package": "0.2.22",
+    "circomCompiler": "circom2 npm package 0.2.22\ncircom compiler 2.2.2",
+    "snarkjs": "0.7.5",
+    "hardhat": "2.26.3",
+    "solidityConfigured": "0.8.27",
+    "packageLock": {
+      "path": "package-lock.json",
+      "bytes": 682654,
+      "sha256": "13847927311da54b67ccf440886001b7fd9c17ef2022bf3e794f9d0bf3cedb1e"
+    }
+  },
+  "ceremony": {
+    "ptau": {
+      "file": "ppot_0080_20.ptau",
+      "url": "https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_20.ptau",
+      "bytes": 1208052882,
+      "sha256": "560412532a1205145d5f21585274fb2cef61273496ddc7186aec855aab01a8cd"
+    },
+    "transcriptAudit": {
+      "status": "previously-audited-by-project-owner",
+      "repeatedForThisRelease": false
+    },
+    "phase2": "single local CSPRNG contribution followed by a fixed final beacon",
+    "productionReady": false
+  },
+  "artifacts": {
+    "r1cs": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_instance.r1cs",
+      "bytes": 32828796,
+      "sha256": "36f6b38714cf7f1541ea39ae4c4413c1d8b8cc13545e8bd79dffa9115dc0f099"
+    },
+    "wasm": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm",
+      "bytes": 8650796,
+      "sha256": "6cc8093dfdce8e3a813993ed010975d9b1fe8ce115dcf321642901972e4682d0"
+    },
+    "symbolMap": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_instance.sym",
+      "bytes": 23540498,
+      "sha256": "c8f71abb75ddc08d107867deaf8c71986bcbf47c2503a6e2e0917c0b14767f1e"
+    },
+    "witnessCalculator": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_instance_js/witness_calculator.js",
+      "bytes": 10356,
+      "sha256": "cc2d37b2cff2a589dd86f8636f1a1dc9fe4a854550b021aa0cea2e235d14e942"
+    },
+    "provingKey": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_final.zkey",
+      "bytes": 52172897,
+      "sha256": "92e616d01026a2744a904be9ad86e7fbfe618a53af2db1a4b4d5b91f5a9c3199"
+    },
+    "verificationKey": {
+      "path": "build/protocol/v3.0.0-rc1/circuits/policy_privacy_main_vk.json",
+      "bytes": 3663,
+      "sha256": "a0e9f689a94069af5e86b3e576053719ab9d087ff6ca9ab0a138062a83da2d96"
+    },
+    "ptauAttestation": {
+      "path": "protocol/trust/ppot_0080_20.json",
+      "bytes": 378,
+      "sha256": "b3a022edfa20536475f01f645c36862f444689e40aac1b177003e3efa389ee80"
+    },
+    "solidityVerifier": {
+      "path": "contracts/PolicyPrivacyMainVerifier.sol",
+      "bytes": 8631,
+      "sha256": "c24b15958019e53d40be5bd84781bbdd4d5e61ae06a5eb2e713463e9b71a5445"
+    },
+    "policyPrivacyAbi": {
+      "path": "build/protocol/v3.0.0-rc1/PolicyPrivacy.abi.json",
+      "bytes": 27365,
+      "sha256": "5bf554b53295c5e7860c2966709b8bad7803ff56e28a6574a313c1f09f1e6370"
+    },
+    "policyPrivacyCreationBytecode": {
+      "path": "build/protocol/v3.0.0-rc1/PolicyPrivacy.bytecode",
+      "bytes": 46047,
+      "sha256": "51113f3a1ada8484768fc5a9db7acbcb5f4c24d34f8c920ce2686f50e7f2ac1d"
+    },
+    "policyPrivacyDeployedBytecode": {
+      "path": "build/protocol/v3.0.0-rc1/PolicyPrivacy.deployed-bytecode",
+      "bytes": 44925,
+      "sha256": "fd6bbd544bdf7219f2ad5f0f7fac75c226b26b04a40f44854c33ea1c7cbdb8c3"
+    },
+    "verifierAbi": {
+      "path": "build/protocol/v3.0.0-rc1/PolicyPrivacyMainVerifier.abi.json",
+      "bytes": 672,
+      "sha256": "4fad9212460f2528b274bbdf5c1911e4690569227a8ea1e9737f991f4fb30f41"
+    },
+    "poseidon3Abi": {
+      "path": "build/protocol/v3.0.0-rc1/Poseidon3.abi.json",
+      "bytes": 769,
+      "sha256": "84b8e64fa7e4392395be2149d2f3f603903f95a00ba6d46a304f76b45a8db460"
+    },
+    "poseidon3Bytecode": {
+      "path": "build/protocol/v3.0.0-rc1/Poseidon3.bytecode",
+      "bytes": 24953,
+      "sha256": "a40301ba062c956837395e0a881afa9c8163b6021a3b8535da3c0e14718c6822"
+    }
+  },
+  "releaseAsset": "policy-privacy-duo-v3.0.0-rc1-groth16.tar.zst"
+}

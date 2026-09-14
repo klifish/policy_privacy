@@ -7,6 +7,15 @@ const PROFILE_TERMS = new Set(['GRU', 'HMB', 'NMDS', 'GSO', 'NPUNCU', 'NPOA', 'N
 const ONTOLOGY = { DS: ['ICD10', 0], RS: ['OBI', 1], POA: ['HANCESTRO', 2], GS: ['ISO3166', 3], CC: ['SNOMED', 4] };
 const SCOPED = { US: [5, 0], PS: [6, 9], IS: [7, 10] };
 
+async function expectRejected(promise, message) {
+  try {
+    await promise;
+    expect.fail(`expected rejection containing: ${message}`);
+  } catch (error) {
+    expect(error.message).to.include(message);
+  }
+}
+
 function configFor(term) {
   if (term === 'NRES') return { logic: term, predicates: [] };
   if (PROFILE_TERMS.has(term)) return { logic: term, predicates: [{ slot: 10, duo: 'DUO_PROFILE', issuerKeyCommitment: '1' }] };
@@ -40,13 +49,13 @@ describe('DUO V3 compiler vocabulary', function () {
     const ds = await generatePolicyArtifacts({ logic: 'DUO:0000007', predicates: [{ slot: 0, duo: 'DUO_0000007', namespace: 'ICD10', root: '1' }] }, { randomizer: 1 });
     expect(ds.logic.rpn).to.deep.equal(['DS', 'P[ICD10]', 'AND']);
     for (const term of ['PUB', 'COL', 'RTN', 'IRB']) {
-      await expect(generatePolicyArtifacts({ logic: term, predicates: [] }, { randomizer: 1 })).to.be.rejectedWith('procedural');
+      await expectRejected(generatePolicyArtifacts({ logic: term, predicates: [] }, { randomizer: 1 }), 'procedural');
     }
   });
 
   it('requires a profile predicate and keeps NRES exclusive', async function () {
-    await expect(generatePolicyArtifacts({ logic: 'HMB', predicates: [] }, { randomizer: 1 })).to.be.rejectedWith('DUO_PROFILE');
-    await expect(generatePolicyArtifacts({ logic: 'NRES AND HMB', predicates: [] }, { randomizer: 1 })).to.be.rejectedWith('NRES must be the sole');
-    await expect(generatePolicyArtifacts({ logic: 'NOT DS', predicates: [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: '1' }] }, { randomizer: 1 })).to.be.rejectedWith('NOT DS is unsupported');
+    await expectRejected(generatePolicyArtifacts({ logic: 'HMB', predicates: [] }, { randomizer: 1 }), 'DUO_PROFILE');
+    await expectRejected(generatePolicyArtifacts({ logic: 'NRES AND HMB', predicates: [] }, { randomizer: 1 }), 'NRES must be the sole');
+    await expectRejected(generatePolicyArtifacts({ logic: 'NOT DS', predicates: [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: '1' }] }, { randomizer: 1 }), 'NOT DS is unsupported');
   });
 });

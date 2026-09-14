@@ -98,8 +98,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal input numOperations;
 
     // Authorization context (requester, resource, session). These are private
-    // witness values: only their Poseidon digest is public, so the requester
-    // identity is bound to the proof without being disclosed on-chain.
+    // circuit inputs and not separate Groth16 public signals. The bound ACM
+    // entry point nevertheless receives them as public transaction calldata
+    // so it can recompute the public digest.
     signal input idReq;
     signal input idRes;
     signal input nonce;
@@ -564,8 +565,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // 3b. BIND THE AUTHORIZATION CONTEXT: ctx = Poseidon(id_req || id_res || nonce)
     // ───────────────────────────────────────────────────────────────────────
     //
-    // The context values stay private; only their digest is public. The digest
-    // is bound by a hard equality rather than folded into isAuthorized, so a
+    // Within the Groth16 statement only the digest is public; the bound ACM
+    // call also carries the preimage values as public calldata. The digest is
+    // bound by a hard equality rather than folded into isAuthorized, so a
     // proof produced for one (requester, resource, session) triple cannot be
     // replayed under another: witness generation fails outright.
     contextHasher = Poseidon(3);

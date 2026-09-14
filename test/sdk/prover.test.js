@@ -8,6 +8,7 @@ const {
 } = require('../../lib/prover');
 const path = require('path');
 const fs = require('fs');
+const { DUO_V3_DEPTH } = require('../../lib/duo_v3');
 
 describe('SDK - Prover Module', function() {
   this.timeout(60000);
@@ -216,25 +217,25 @@ describe('SDK - Prover Module', function() {
       expect(input).to.have.property('requesterAttrs');
       expect(input).to.have.property('predicateTypes');
       expect(input).to.have.property('policyCommitment', testPolicyCommitment);
-      expect(input.policy).to.have.lengthOf(20); // POLICY_DEPTH
+      expect(input.policy).to.have.lengthOf(DUO_V3_DEPTH);
     });
 
     it('should pad policy to POLICY_DEPTH', function() {
       const shortPolicy = [1, 2, 3];
       const input = createCircuitInput(testPolicyCommitment, { policy: shortPolicy });
 
-      expect(input.policy).to.have.lengthOf(20);
+      expect(input.policy).to.have.lengthOf(DUO_V3_DEPTH);
       expect(input.policy[0]).to.equal(1);
       expect(input.policy[1]).to.equal(2);
       expect(input.policy[2]).to.equal(3);
-      expect(input.policy[19]).to.equal(0); // Padded with zeros
+      expect(input.policy[DUO_V3_DEPTH - 1]).to.equal(0); // Padded with zeros
     });
 
     it('should truncate policy if longer than POLICY_DEPTH', function() {
       const longPolicy = Array(25).fill(1);
       const input = createCircuitInput(testPolicyCommitment, { policy: longPolicy });
 
-      expect(input.policy).to.have.lengthOf(20);
+      expect(input.policy).to.have.lengthOf(DUO_V3_DEPTH);
     });
 
     it('should accept custom requester attributes', function() {
@@ -320,7 +321,7 @@ describe('SDK - Prover Module', function() {
 
     it('should throw error if zkey file does not exist', async function() {
       const input = createCircuitInput('12345');
-      const validWasmPath = path.resolve(__dirname, '../../build/circuits/test_policy_commitment_js/test_policy_commitment.wasm');
+      const validWasmPath = require('../../tps/proofGenerator').WASM_PATH;
 
       if (!fs.existsSync(validWasmPath)) {
         this.skip();
@@ -342,13 +343,6 @@ describe('SDK - Prover Module', function() {
         paramsCommitment: '0', // Will be auto-calculated
         merkleRoots: ['100', '200', '0', '0', '0']
       });
-
-      const validWasmPath = path.resolve(__dirname, '../../build/circuits/test_policy_commitment_js/test_policy_commitment.wasm');
-      const validZkeyPath = path.resolve(__dirname, '../../build/circuits/test_policy_commitment_final.zkey');
-
-      if (!fs.existsSync(validWasmPath) || !fs.existsSync(validZkeyPath)) {
-        this.skip();
-      }
 
       // Should not throw error - will calculate paramsCommitment internally
       expect(input.paramsCommitment).to.equal('0');
@@ -413,7 +407,7 @@ describe('SDK - Prover Module', function() {
       });
 
       expect(input).to.be.an('object');
-      expect(input.policy).to.have.lengthOf(20);
+      expect(input.policy).to.have.lengthOf(DUO_V3_DEPTH);
       expect(input.requesterAttrs).to.deep.equal(requesterAttrs);
     });
   });

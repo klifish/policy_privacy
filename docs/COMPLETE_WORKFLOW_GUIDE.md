@@ -1,5 +1,10 @@
 # PolicyPrivacy Complete End-to-End Workflow Guide
 
+> **Legacy prototype workflow.** Commands and examples below include retired
+> circuit dimensions and public-signal layouts. Do not use them to build or
+> verify DUO V3. Follow `docs/PROTOCOL_RELEASE.md`; the machine-readable
+> `protocol/releases/v3.0.0-rc1.json` is normative for the frozen RC.
+
 This guide demonstrates the complete PolicyPrivacy system from initial setup to running the full privacy-preserving consent management workflow.
 
 ## Quick Start (Complete Workflow)

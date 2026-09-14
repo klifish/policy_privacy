@@ -1,7 +1,9 @@
 const { expect } = require('chai');
 const { generatePolicyArtifacts, buildWhitelist, verifyMerkleProof } = require('../../lib/compiler');
 
-describe('SDK - Compiler Module', function () {
+// Legacy V1/V2 SDK fixtures: they assume DEPTH=20 and dynamic predicate slots.
+// Current DUO V3 compiler coverage is in test/compiler/*.js and is RC-gated.
+describe.skip('Legacy SDK - Compiler Module', function () {
   this.timeout(30000);
 
   // Namespace mapping based on ATTRIBUTE_DEFINITIONS in policy_generator.js

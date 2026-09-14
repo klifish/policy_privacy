@@ -13,7 +13,7 @@ const {
   createCircuitInput
 } = require('../../lib/prover');
 
-const WASM = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_instance_js/policy_privacy_main_instance.wasm');
+const { WASM_PATH: WASM, VKEY_PATH } = require('../../tps/proofGenerator');
 const ZEROES = Array(11).fill('0');
 // Canonical attribute vector when the profile slot is disabled (claims = 0):
 // [GRU, DS, RS, POA, GS, CC, HMB, NMDS, GSO, NPUNCU, NPOA, NPU, NCU]
@@ -116,7 +116,7 @@ describe('MOR / TS access-time obligations', function () {
       const { paramsCommitment } = await buildObligationInput();
       expect(alteredDeadlineCommitment).to.not.equal(paramsCommitment);
 
-      const verificationKeyPath = path.resolve(__dirname, '../../build/circuits/policy_privacy_main_vk.json');
+      const verificationKeyPath = VKEY_PATH;
       if (fs.existsSync(verificationKeyPath)) {
         expect(JSON.parse(fs.readFileSync(verificationKeyPath, 'utf8')).nPublic).to.equal(5);
       }

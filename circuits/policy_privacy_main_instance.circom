@@ -27,10 +27,10 @@ include "policy_privacy_main.circom";
     through calldata zero-byte gas pricing (EIP-2028).
 
     contextHash = Poseidon(id_req || id_res || nonce) binds the proof to the
-    authorization context. The three context values themselves remain private
-    witness inputs for the same EIP-2028 reason and to keep the requester
-    pseudonym off-chain; the ACM recomputes the digest from the transaction
-    parameters and rejects a mismatch.
+    authorization context. The three values are private circuit inputs and are
+    not separate Groth16 public signals. In requestAccessBound they are also
+    supplied as public transaction calldata (and selected values are recorded
+    on-chain), allowing the ACM to recompute the digest and reject a mismatch.
 */
 component main {
     public [policyCommitment, paramsCommitment, contextHash, requestEpoch]

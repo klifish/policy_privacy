@@ -10,6 +10,14 @@ const {
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.27",
+  paths: {
+    ...(process.env.HARDHAT_SOURCES ? { sources: process.env.HARDHAT_SOURCES } : {}),
+    ...(process.env.HARDHAT_ARTIFACTS ? { artifacts: process.env.HARDHAT_ARTIFACTS } : {}),
+    ...(process.env.HARDHAT_CACHE ? { cache: process.env.HARDHAT_CACHE } : {})
+  },
+  mocha: {
+    forbidPending: process.env.PROTOCOL_FORBID_PENDING === '1'
+  },
   networks: {
 
     localhost: {

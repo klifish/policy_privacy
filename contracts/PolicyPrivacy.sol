@@ -411,11 +411,10 @@ contract PolicyPrivacy {
      * in-circuit by a hard equality, so a proof is bound to exactly one
      * authorization context: it cannot be replayed for a different requester,
      * resource or session without generating a new proof. The context values
-     * themselves stay off the public statement, keeping the requester pseudonym
-     * out of the verification interface. Callers that supply a context
-     * (_requestAccessBound) have the digest recomputed on-chain before reaching
-     * this point; the digest is also recorded so the binding is auditable from
-     * chain state.
+     * themselves stay off the Groth16 public-signal array. The bound entry point
+     * still receives them as public transaction calldata; it recomputes the
+     * digest on-chain, and the request record stores the requester/resource and
+     * digest so the binding is auditable from chain state.
      *
      * @param _idReq Requester pseudonym bound into the proof statement.
      * @param _resourceId Resource bound into the proof statement (0 for the
