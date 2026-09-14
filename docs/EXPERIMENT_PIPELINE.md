@@ -72,6 +72,15 @@ npm run data:generate:local
 npm run data:generate:amoy
 ```
 
+Both commands pin `PROTOCOL_CIRCUITS_DIR` to the frozen release under
+`build/protocol/v3.0.0-rc1/circuits`, which is the zkey the checked-in
+`PolicyPrivacyMainVerifier.sol` was exported from. `build/circuits` is a
+working build directory and may hold a different phase-2 setup; a proof made
+with a mismatched zkey is rejected on-chain (every access is denied) without any
+local error, so run `npm run verify:artifacts` before any capture that invokes
+`experiments/capture/run.js` directly. The capture records the circuits
+directory and zkey SHA-256 in `metadata.json` provenance.
+
 Validate the current DUO V3 generation configuration without submitting any
 transactions:
 

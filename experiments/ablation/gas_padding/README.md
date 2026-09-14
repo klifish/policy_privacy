@@ -19,6 +19,7 @@ row and independent-policy coverage.
 ## 2. Smoke-test B1 locally
 
 ```bash
+PROTOCOL_CIRCUITS_DIR=$PWD/build/protocol/v3.0.0-rc1/circuits \
 UNIFIED_CONFIG_PATH=experiments/capture/configs/unified_dataset_config_twolayer_smoke.json \
 UNIFIED_ARTIFACT_DIR=experiments/ablation/gas_padding/localhost/b1_unpadded \
 PROTECTION_PROFILE=b1_unpadded \

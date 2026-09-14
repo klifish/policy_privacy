@@ -901,6 +901,12 @@ function formatNumberLike(value) {
   return value;
 }
 
+// Calldata size in bytes from a 0x-prefixed hex string (ethers TransactionResponse.data).
+function calldataBytes(data) {
+  if (typeof data !== 'string') return null;
+  return Math.floor((data.length - (data.startsWith('0x') ? 2 : 0)) / 2);
+}
+
 function serializeTransactionResponse(tx) {
   if (!tx) return null;
   return {
@@ -914,7 +920,7 @@ function serializeTransactionResponse(tx) {
     value: formatNumberLike(tx.value),
     type: tx.type ?? null,
     chainId: typeof tx.chainId === 'number' ? tx.chainId : null,
-    dataLength: tx.data ? tx.data.length : 0
+    dataLength: calldataBytes(tx.data)
   };
 }
 
@@ -2533,11 +2539,17 @@ async function executePolicy(policyData, contract, options = {}) {
     (total, log) => total + computeLogPayloadSizeBytes(log), 0
   );
 
-  // Access receipt is from the TPS chain submission; fetch it via provider
+  // The access tx is submitted by the TPS, so the provider side only knows its
+  // hash: fetch the receipt and the transaction itself (for calldata size).
   const provider = contract.runner.provider;
   const accessReceipt = await waitForTransactionReceipt(provider, chainResult.transactionHash, {
     label: `requestAccessBound receipt ${chainResult.transactionHash}`
   });
+  const accessTxResponse = await retryRpc(
+    `requestAccessBound tx ${chainResult.transactionHash}`,
+    () => provider.getTransaction(chainResult.transactionHash)
+  );
+  const accessTxRecord = accessTxResponse || accessTx;
 
   const accessEventLogs = (accessReceipt ? accessReceipt.logs : []).filter((log) =>
     ACCESS_EVENT_TOPICS.has(log.topics[0])
@@ -2551,9 +2563,10 @@ async function executePolicy(policyData, contract, options = {}) {
 
   const features = {
     commitGasUsed: commitReceipt.gasUsed.toString(),
-    commitCalldataLength: commitTx.data.length,
+    // Calldata sizes in bytes (the on-chain tx input), not hex-string lengths.
+    commitCalldataLength: calldataBytes(commitTx.data),
     accessGasUsed: chainResult.gasUsed,
-    accessCalldataLength: null,
+    accessCalldataLength: accessTxResponse ? calldataBytes(accessTxResponse.data) : null,
     proofSize,
     proofGenerationTime,
     // Server-side, network-free proof costs (ms). null when unavailable (e.g.
@@ -2584,7 +2597,7 @@ async function executePolicy(policyData, contract, options = {}) {
         receipt: serializeReceipt(commitReceipt)
       },
       access: {
-        tx: serializeTransactionResponse(accessTx),
+        tx: serializeTransactionResponse(accessTxRecord),
         receipt: accessReceipt ? serializeReceipt(accessReceipt) : null
       }
     }

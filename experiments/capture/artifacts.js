@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -10,15 +11,27 @@ const {
 
 const DEFAULT_ARTIFACT_DIR = path.resolve(__dirname, '../data');
 
-// Circuit build artefacts — same constants used by the TPS prover.
-const BUILD_DIR = path.resolve(__dirname, '../../build/circuits');
-const CIRCUIT_WASM_PATH = path.join(BUILD_DIR, 'policy_privacy_main_instance_js', 'policy_privacy_main_instance.wasm');
-const CIRCUIT_ZKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_final.zkey');
-const CIRCUIT_VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
+// Circuit build artefacts — imported from the TPS prover so the recorded
+// provenance always describes the artefacts that actually produced the proofs
+// (PROTOCOL_CIRCUITS_DIR overrides the default build/circuits location).
+const {
+  WASM_PATH: CIRCUIT_WASM_PATH,
+  ZKEY_PATH: CIRCUIT_ZKEY_PATH,
+  VKEY_PATH: CIRCUIT_VKEY_PATH
+} = require('../../tps/proofGenerator');
+const ROOT_DIR = path.resolve(__dirname, '../..');
 
 function fileBytes(filePath) {
   try {
     return fs.statSync(filePath).size;
+  } catch (_) {
+    return null;
+  }
+}
+
+function fileSha256(filePath) {
+  try {
+    return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
   } catch (_) {
     return null;
   }
@@ -53,8 +66,10 @@ function buildProvenance({ network, protectionProfile } = {}) {
     circuitDepth: DUO_V3_DEPTH,
     numAttributes: DUO_V3_N,
     numPredicates: DUO_V3_M,
+    circuitsDir: path.relative(ROOT_DIR, path.dirname(CIRCUIT_ZKEY_PATH)),
     wasmBytes: fileBytes(CIRCUIT_WASM_PATH),
     zkeyBytes: fileBytes(CIRCUIT_ZKEY_PATH),
+    zkeySha256: fileSha256(CIRCUIT_ZKEY_PATH),
     vkeyBytes: fileBytes(CIRCUIT_VKEY_PATH),
     snarkjsVersion,
     nodeVersion: process.version,
