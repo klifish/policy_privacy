@@ -225,55 +225,20 @@ const ONTOLOGY_NAMESPACES = {
   SNOMED: 4      // SNOMED CT clinical terminology
 };
 
-// ICD-10 Chapters (for Disease Specific Research - DUO:0000007)
-const ICD10_CHAPTERS = {
-  INFECTIOUS: 0,      // A00-B99
-  NEOPLASMS: 1,       // C00-D49
-  BLOOD: 2,           // D50-D89
-  ENDOCRINE: 3,       // E00-E89
-  MENTAL: 4,          // F01-F99
-  NERVOUS: 5,         // G00-G99
-  CIRCULATORY: 6,     // I00-I99
-  RESPIRATORY: 7,     // J00-J99
-  DIGESTIVE: 8,       // K00-K95
-  MUSCULOSKELETAL: 9  // M00-M99
-};
-
-// OBI Research Design Types (for Research Specific - DUO:0000012)
-const OBI_RESEARCH_TYPES = {
-  RCT: 0,                    // OBI:0000175 - Randomized Controlled Trial
-  COHORT_STUDY: 1,           // OBI:0001185 - Cohort Study
-  CASE_CONTROL: 2,           // OBI:0001556 - Case-Control Study
-  CROSS_SECTIONAL: 3,        // OBI:0001548 - Cross-Sectional Study
-  LONGITUDINAL: 4            // OBI:0001546 - Longitudinal Study
-};
-
-// HANCESTRO Ancestry Groups (for Population Origins - DUO:0000011)
-const HANCESTRO_GROUPS = {
-  EUROPEAN: 0,               // HANCESTRO:0005 - European
-  AFRICAN: 1,                // HANCESTRO:0008 - African
-  ASIAN: 2,                  // HANCESTRO:0010 - Asian
-  HISPANIC_LATIN: 3,         // HANCESTRO:0014 - Hispanic or Latin American
-  NATIVE_AMERICAN: 4         // HANCESTRO:0013 - Native American
-};
-
-// ISO 3166 Geographic Regions (for Geographical Restriction - DUO:0000022)
-const ISO3166_REGIONS = {
-  NORTH_AMERICA: 0,          // USA, Canada, Mexico
-  EUROPE: 1,                 // European countries
-  ASIA: 2,                   // Asian countries
-  OCEANIA: 3,                // Australia, New Zealand
-  AFRICA: 4                  // African countries
-};
-
-// SNOMED CT Clinical Terms (for Clinical Care - DUO:0000043)
-const SNOMED_TERMS = {
-  DIAGNOSTIC: 0,             // Diagnostic procedures
-  THERAPEUTIC: 1,            // Therapeutic procedures
-  PREVENTIVE: 2,             // Preventive care
-  PALLIATIVE: 3,             // Palliative care
-  EMERGENCY: 4               // Emergency care
-};
+// Ontology enums and scope libraries (real ICD-10 / OBI / HANCESTRO / ISO 3166 /
+// SNOMED CT terms with provenance) live in ./ontology_scopes.js.
+const {
+  ICD10_CHAPTERS,
+  OBI_RESEARCH_TYPES,
+  HANCESTRO_GROUPS,
+  ISO3166_REGIONS,
+  SNOMED_TERMS,
+  ICD10_SCOPE_LIBRARY,
+  OBI_SCOPE_LIBRARY,
+  HANCESTRO_SCOPE_LIBRARY,
+  ISO3166_SCOPE_LIBRARY,
+  SNOMED_SCOPE_LIBRARY
+} = require('./ontology_scopes');
 
 // ---------------------------------------------------------------------
 // Layered sampling configuration
@@ -293,14 +258,6 @@ const DEFAULT_PROOF_TYPES = Object.freeze([
   'credential_proof',
   'null_proof'
 ]);
-
-const DEFAULT_EXECUTION_PROTECTIONS = Object.freeze({
-  path_unify: [false, true],
-  gas_pad: [true],
-  event_pad: [false, true],
-  proof_pad: [false],
-  batch_pattern: ['baseline', 'batched', 'staggered']
-});
 
 const GAS_PAD_TARGET_GAS = Object.freeze({
   commit: 300000n,  // Base target for commit transaction
@@ -414,411 +371,6 @@ const DEFAULT_SEMANTIC_LAYERS = Object.freeze([
 const DEFAULT_DUO_CONFLICT_RULES = Object.freeze([
   // Example rule structure – no default conflicts enforced today.
   // { includes: ['DS'], excludes: ['COMMERCIAL'] }
-]);
-
-const ICD10_SCOPE_LIBRARY = Object.freeze([
-  {
-    id: 'INFECTIOUS',
-    value: ICD10_CHAPTERS.INFECTIOUS,
-    level: 'chapter',
-    codeRange: 'A00-B99',
-    label: 'Certain infectious and parasitic diseases',
-    whitelistTerms: [
-      'A00', 'A09', 'A15', 'A32', 'A80', 'B00', 'B05', 'B20', 'B33', 'B50', 'B65', 'B99'
-    ]
-  },
-  {
-    id: 'NEOPLASMS',
-    value: ICD10_CHAPTERS.NEOPLASMS,
-    level: 'chapter',
-    codeRange: 'C00-D49',
-    label: 'Neoplasms',
-    whitelistTerms: [
-      'C00', 'C15', 'C34', 'C50', 'C61', 'C71', 'C91', 'D05', 'D25', 'D35', 'D45', 'D49'
-    ]
-  },
-  {
-    id: 'BLOOD',
-    value: ICD10_CHAPTERS.BLOOD,
-    level: 'chapter',
-    codeRange: 'D50-D89',
-    label: 'Diseases of the blood and blood-forming organs',
-    whitelistTerms: [
-      'D50', 'D55', 'D57', 'D60', 'D65', 'D69', 'D70', 'D72', 'D76', 'D80', 'D83', 'D89'
-    ]
-  },
-  {
-    id: 'ENDOCRINE',
-    value: ICD10_CHAPTERS.ENDOCRINE,
-    level: 'chapter',
-    codeRange: 'E00-E89',
-    label: 'Endocrine, nutritional and metabolic diseases',
-    whitelistTerms: [
-      'E00', 'E03', 'E10', 'E11', 'E40', 'E50', 'E55', 'E70', 'E75', 'E78', 'E83', 'E89'
-    ]
-  },
-  {
-    id: 'MENTAL',
-    value: ICD10_CHAPTERS.MENTAL,
-    level: 'chapter',
-    codeRange: 'F01-F99',
-    label: 'Mental and behavioural disorders',
-    whitelistTerms: [
-      'F01', 'F03', 'F10', 'F20', 'F32', 'F41', 'F43', 'F50', 'F70', 'F80', 'F84', 'F99'
-    ]
-  },
-  {
-    id: 'NERVOUS',
-    value: ICD10_CHAPTERS.NERVOUS,
-    level: 'chapter',
-    codeRange: 'G00-G99',
-    label: 'Diseases of the nervous system',
-    whitelistTerms: [
-      'G00', 'G04', 'G11', 'G20', 'G35', 'G40', 'G47', 'G60', 'G70', 'G81', 'G91', 'G99'
-    ]
-  },
-  {
-    id: 'CIRCULATORY',
-    value: ICD10_CHAPTERS.CIRCULATORY,
-    level: 'chapter',
-    codeRange: 'I00-I99',
-    label: 'Diseases of the circulatory system',
-    whitelistTerms: [
-      'I00', 'I10', 'I20', 'I25', 'I42', 'I48', 'I50', 'I63', 'I70', 'I73', 'I83', 'I99'
-    ]
-  },
-  {
-    id: 'RESPIRATORY',
-    value: ICD10_CHAPTERS.RESPIRATORY,
-    level: 'chapter',
-    codeRange: 'J00-J99',
-    label: 'Diseases of the respiratory system',
-    whitelistTerms: [
-      'J00', 'J02', 'J12', 'J18', 'J20', 'J30', 'J40', 'J44', 'J45', 'J47', 'J60', 'J99'
-    ]
-  },
-  {
-    id: 'DIGESTIVE',
-    value: ICD10_CHAPTERS.DIGESTIVE,
-    level: 'chapter',
-    codeRange: 'K00-K95',
-    label: 'Diseases of the digestive system',
-    whitelistTerms: [
-      'K00', 'K12', 'K21', 'K29', 'K35', 'K50', 'K56', 'K57', 'K70', 'K74', 'K85', 'K95'
-    ]
-  },
-  {
-    id: 'MUSCULOSKELETAL',
-    value: ICD10_CHAPTERS.MUSCULOSKELETAL,
-    level: 'chapter',
-    codeRange: 'M00-M99',
-    label: 'Diseases of the musculoskeletal system',
-    whitelistTerms: [
-      'M00', 'M05', 'M10', 'M17', 'M25', 'M32', 'M40', 'M45', 'M51', 'M60', 'M65', 'M99'
-    ]
-  }
-]);
-
-const OBI_SCOPE_LIBRARY = Object.freeze([
-  {
-    id: 'RCT',
-    value: OBI_RESEARCH_TYPES.RCT,
-    label: 'Randomized controlled trial',
-    termId: 'OBI:0000175',
-    whitelistTerms: [
-      'OBI:0000175',
-      'OBI:0000295',
-      'OBI:0000470',
-      'OBI:0000516',
-      'OBI:0001334',
-      'OBI:0002439',
-      'OBI:0002440',
-      'OBI:0002441',
-      'OBI:0002503',
-      'OBI:0002504',
-      'OBI:0003021',
-      'OBI:0003022'
-    ]
-  },
-  {
-    id: 'COHORT_STUDY',
-    value: OBI_RESEARCH_TYPES.COHORT_STUDY,
-    label: 'Cohort study',
-    termId: 'OBI:0001185',
-    whitelistTerms: [
-      'OBI:0001185',
-      'OBI:0000443',
-      'OBI:0000446',
-      'OBI:0000628',
-      'OBI:0000651',
-      'OBI:0000844',
-      'OBI:0000930',
-      'OBI:0000963',
-      'OBI:0001088',
-      'OBI:0001385',
-      'OBI:0001987',
-      'OBI:0002630'
-    ]
-  },
-  {
-    id: 'CASE_CONTROL',
-    value: OBI_RESEARCH_TYPES.CASE_CONTROL,
-    label: 'Case-control study',
-    termId: 'OBI:0001556',
-    whitelistTerms: [
-      'OBI:0001556',
-      'OBI:0000412',
-      'OBI:0000447',
-      'OBI:0000600',
-      'OBI:0000721',
-      'OBI:0000845',
-      'OBI:0000895',
-      'OBI:0001265',
-      'OBI:0001496',
-      'OBI:0001726',
-      'OBI:0001988',
-      'OBI:0002631'
-    ]
-  },
-  {
-    id: 'CROSS_SECTIONAL',
-    value: OBI_RESEARCH_TYPES.CROSS_SECTIONAL,
-    label: 'Cross-sectional study',
-    termId: 'OBI:0001548',
-    whitelistTerms: [
-      'OBI:0001548',
-      'OBI:0000299',
-      'OBI:0000423',
-      'OBI:0000604',
-      'OBI:0000719',
-      'OBI:0000872',
-      'OBI:0000943',
-      'OBI:0001266',
-      'OBI:0001497',
-      'OBI:0001623',
-      'OBI:0001989',
-      'OBI:0002632'
-    ]
-  },
-  {
-    id: 'LONGITUDINAL',
-    value: OBI_RESEARCH_TYPES.LONGITUDINAL,
-    label: 'Longitudinal study',
-    termId: 'OBI:0001546',
-    whitelistTerms: [
-      'OBI:0001546',
-      'OBI:0000300',
-      'OBI:0000424',
-      'OBI:0000605',
-      'OBI:0000720',
-      'OBI:0000873',
-      'OBI:0000944',
-      'OBI:0001267',
-      'OBI:0001498',
-      'OBI:0001727',
-      'OBI:0001990',
-      'OBI:0002633'
-    ]
-  }
-]);
-
-const HANCESTRO_SCOPE_LIBRARY = Object.freeze([
-  {
-    id: 'EUROPEAN',
-    value: HANCESTRO_GROUPS.EUROPEAN,
-    label: 'European ancestry cohort',
-    whitelistTerms: [
-      'HANCESTRO:0005',
-      'HANCESTRO:0006',
-      'HANCESTRO:0007',
-      'HANCESTRO:0008',
-      'HANCESTRO:0010',
-      'HANCESTRO:0012',
-      'HANCESTRO:0013',
-      'HANCESTRO:0014',
-      'HANCESTRO:0020',
-      'HANCESTRO:0021',
-      'HANCESTRO:0030',
-      'HANCESTRO:0040'
-    ]
-  },
-  {
-    id: 'AFRICAN',
-    value: HANCESTRO_GROUPS.AFRICAN,
-    label: 'African ancestry cohort',
-    whitelistTerms: [
-      'HANCESTRO:0008',
-      'HANCESTRO:0009',
-      'HANCESTRO:0026',
-      'HANCESTRO:0032',
-      'HANCESTRO:0035',
-      'HANCESTRO:0048',
-      'HANCESTRO:0050',
-      'HANCESTRO:0060',
-      'HANCESTRO:0061',
-      'HANCESTRO:0062',
-      'HANCESTRO:0063',
-      'HANCESTRO:0064'
-    ]
-  },
-  {
-    id: 'ASIAN',
-    value: HANCESTRO_GROUPS.ASIAN,
-    label: 'Asian ancestry cohort',
-    whitelistTerms: [
-      'HANCESTRO:0010',
-      'HANCESTRO:0011',
-      'HANCESTRO:0015',
-      'HANCESTRO:0018',
-      'HANCESTRO:0022',
-      'HANCESTRO:0031',
-      'HANCESTRO:0042',
-      'HANCESTRO:0044',
-      'HANCESTRO:0052',
-      'HANCESTRO:0054',
-      'HANCESTRO:0066',
-      'HANCESTRO:0067'
-    ]
-  },
-  {
-    id: 'HISPANIC_LATIN',
-    value: HANCESTRO_GROUPS.HISPANIC_LATIN,
-    label: 'Hispanic or Latin American cohort',
-    whitelistTerms: [
-      'HANCESTRO:0014',
-      'HANCESTRO:0016',
-      'HANCESTRO:0017',
-      'HANCESTRO:0023',
-      'HANCESTRO:0033',
-      'HANCESTRO:0045',
-      'HANCESTRO:0046',
-      'HANCESTRO:0056',
-      'HANCESTRO:0057',
-      'HANCESTRO:0068',
-      'HANCESTRO:0069',
-      'HANCESTRO:0070'
-    ]
-  },
-  {
-    id: 'NATIVE_AMERICAN',
-    value: HANCESTRO_GROUPS.NATIVE_AMERICAN,
-    label: 'Native American cohort',
-    whitelistTerms: [
-      'HANCESTRO:0013',
-      'HANCESTRO:0024',
-      'HANCESTRO:0025',
-      'HANCESTRO:0027',
-      'HANCESTRO:0028',
-      'HANCESTRO:0029',
-      'HANCESTRO:0034',
-      'HANCESTRO:0041',
-      'HANCESTRO:0049',
-      'HANCESTRO:0058',
-      'HANCESTRO:0065',
-      'HANCESTRO:0071'
-    ]
-  }
-]);
-
-const ISO3166_SCOPE_LIBRARY = Object.freeze([
-  {
-    id: 'NORTH_AMERICA',
-    value: ISO3166_REGIONS.NORTH_AMERICA,
-    label: 'North America',
-    whitelistTerms: ['US', 'CA', 'MX', 'BM', 'GL', 'PM', 'PR', 'VI', 'BQ', 'CW', 'SX', 'HT']
-  },
-  {
-    id: 'EUROPE',
-    value: ISO3166_REGIONS.EUROPE,
-    label: 'Europe',
-    whitelistTerms: ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'SE', 'NO', 'FI', 'PL', 'PT', 'IE', 'CH', 'AT']
-  },
-  {
-    id: 'ASIA',
-    value: ISO3166_REGIONS.ASIA,
-    label: 'Asia-Pacific',
-    whitelistTerms: ['CN', 'JP', 'KR', 'HK', 'SG', 'TW', 'TH', 'VN', 'MY', 'PH', 'ID', 'IN', 'PK', 'LK']
-  },
-  {
-    id: 'OCEANIA',
-    value: ISO3166_REGIONS.OCEANIA,
-    label: 'Oceania',
-    whitelistTerms: ['AU', 'NZ', 'PG', 'FJ', 'WS', 'TO', 'SB', 'VU', 'PF', 'NC', 'CK', 'NU']
-  },
-  {
-    id: 'AFRICA',
-    value: ISO3166_REGIONS.AFRICA,
-    label: 'Africa',
-    whitelistTerms: ['ZA', 'NG', 'EG', 'KE', 'TZ', 'GH', 'CI', 'UG', 'DZ', 'MA', 'TN', 'SN', 'ET']
-  }
-]);
-
-const SNOMED_SCOPE_LIBRARY = Object.freeze([
-  {
-    id: 'DIAGNOSTIC',
-    value: SNOMED_TERMS.DIAGNOSTIC,
-    label: 'Diagnostic procedures',
-    whitelistTerms: [
-      'SNOMED:25245007',
-      'SNOMED:363413005',
-      'SNOMED:118227000',
-      'SNOMED:252465000',
-      'SNOMED:113076002',
-      'SNOMED:252465004'
-    ]
-  },
-  {
-    id: 'THERAPEUTIC',
-    value: SNOMED_TERMS.THERAPEUTIC,
-    label: 'Therapeutic procedures',
-    whitelistTerms: [
-      'SNOMED:708339004',
-      'SNOMED:432102000',
-      'SNOMED:23426006',
-      'SNOMED:397956004',
-      'SNOMED:386053000',
-      'SNOMED:225390008'
-    ]
-  },
-  {
-    id: 'PREVENTIVE',
-    value: SNOMED_TERMS.PREVENTIVE,
-    label: 'Preventive care',
-    whitelistTerms: [
-      'SNOMED:703423007',
-      'SNOMED:710815001',
-      'SNOMED:394703006',
-      'SNOMED:243796009',
-      'SNOMED:171828008',
-      'SNOMED:243788004'
-    ]
-  },
-  {
-    id: 'PALLIATIVE',
-    value: SNOMED_TERMS.PALLIATIVE,
-    label: 'Palliative care',
-    whitelistTerms: [
-      'SNOMED:385763009',
-      'SNOMED:385712009',
-      'SNOMED:385725000',
-      'SNOMED:385749007',
-      'SNOMED:385797002',
-      'SNOMED:385795005'
-    ]
-  },
-  {
-    id: 'EMERGENCY',
-    value: SNOMED_TERMS.EMERGENCY,
-    label: 'Emergency care',
-    whitelistTerms: [
-      'SNOMED:50849002',
-      'SNOMED:74074008',
-      'SNOMED:50849003',
-      'SNOMED:114500000',
-      'SNOMED:50849004',
-      'SNOMED:87100002'
-    ]
-  }
 ]);
 
 // ---------------------------------------------------------------------
@@ -1242,16 +794,6 @@ function resolveOptionArray(...options) {
   return null;
 }
 
-function mergeExecutionProtections(...sources) {
-  const merged = {};
-  sources.filter(Boolean).forEach((source) => {
-    Object.entries(source).forEach(([key, value]) => {
-      merged[key] = Array.isArray(value) ? value.slice() : [value];
-    });
-  });
-  return merged;
-}
-
 function estimateBaseTokenCount(combo) {
   let predicateCount = 0;
   let nonPredicateCount = 0;
@@ -1283,7 +825,6 @@ async function buildOntologyWhitelistForScope(options) {
     merkleDepth,
     epoch = ONTOLOGY_EPOCH
   } = options;
-
 
   if (!Array.isArray(availableTerms) || availableTerms.length === 0) {
     throw new Error(`No ontology terms available for namespace ${namespace}`);
@@ -1406,13 +947,6 @@ async function createPolicyBlueprint(params) {
     DEFAULT_PROOF_TYPES
   ) || DEFAULT_PROOF_TYPES;
 
-  const executionProtections = mergeExecutionProtections(
-    DEFAULT_EXECUTION_PROTECTIONS,
-    config.executionProtections,
-    layerConfig.executionProtections,
-    variantProfile?.executionProtections
-  );
-
   const proofType = randomChoice(rng, proofTypes);
 
   const logicOverride = variantProfile?.logic || layerConfig.logic;
@@ -1476,6 +1010,11 @@ async function createPolicyBlueprint(params) {
   const geoScopes = variantProfile?.iso3166Scopes || layerConfig.iso3166Scopes || config.iso3166Scopes || ISO3166_SCOPE_LIBRARY;
   const clinicalScopes = variantProfile?.snomedScopes || layerConfig.snomedScopes || config.snomedScopes || SNOMED_SCOPE_LIBRARY;
 
+  // One whitelist-size draw per policy, shared by every predicate slot. Drawing
+  // per slot makes the recorded whitelistSize (the max over slots) grow with the
+  // predicate count, which couples the SPP setSize axis to predicateCount.
+  let policyWhitelistSize = null;
+
   async function attachPredicate(options) {
     const {
       code,
@@ -1490,9 +1029,11 @@ async function createPolicyBlueprint(params) {
     }
 
     const chosenScope = randomChoice(rng, scopes);
-    const whitelistSize = randomChoice(rng, whitelistBuckets);
+    if (policyWhitelistSize === null) {
+      policyWhitelistSize = randomChoice(rng, whitelistBuckets);
+    }
+    const whitelistSize = policyWhitelistSize;
     const adjustedDepth = ensureDepthForSize(merkleDepthOptions, whitelistSize);
-    structure.whitelistSize = Math.max(structure.whitelistSize, whitelistSize);
     structure.merkleDepth = Math.max(structure.merkleDepth, adjustedDepth);
 
     const whitelist = await buildOntologyWhitelistForScope({
@@ -1502,6 +1043,9 @@ async function createPolicyBlueprint(params) {
       whitelistSize,
       merkleDepth: adjustedDepth
     });
+    // Record what was actually built: a scope with fewer terms than requested
+    // caps the whitelist, and setSize must describe the tree, not the request.
+    structure.whitelistSize = Math.max(structure.whitelistSize, whitelist.leafCount);
 
     const slot = ATTRIBUTE_PREDICATE_SLOT[code];
     structure.predicateRoots[slot] = whitelist.rootHex;
@@ -1510,6 +1054,7 @@ async function createPolicyBlueprint(params) {
       scopeId: chosenScope.id,
       scopeLabel: chosenScope.label,
       configHash: whitelist.configHash,
+      requestedSize: whitelistSize,
       leafCount: whitelist.leafCount,
       selectedTerms: whitelist.terms,
       ...extraMetadata(chosenScope)
@@ -1585,11 +1130,6 @@ async function createPolicyBlueprint(params) {
     structure.whitelistSize = 0;
   }
 
-  const execution = {};
-  Object.entries(executionProtections).forEach(([key, values]) => {
-    execution[key] = randomChoice(rng, values);
-  });
-
   const attributes = {};
   attributeOrder.forEach((code) => {
     attributes[code] = combination.includes(code);
@@ -1653,7 +1193,6 @@ async function createPolicyBlueprint(params) {
       randomizer: artifacts.randomizer,
       policyCommitment: artifacts.policyCommitment
     },
-    execution,
     artifacts,
     predicateSlots,
     predicateValuesBySlot,
@@ -2006,7 +1545,6 @@ async function generateDataset(config = {}) {
     whitelistBuckets = DEFAULT_WHITELIST_BUCKETS,
     merkleDepthOptions = DEFAULT_MERKLE_DEPTH_OPTIONS,
     proofTypes = DEFAULT_PROOF_TYPES,
-    executionProtections = DEFAULT_EXECUTION_PROTECTIONS,
     logicOptions = {},
     duoConflicts = DEFAULT_DUO_CONFLICT_RULES,
     icd10Scopes = ICD10_SCOPE_LIBRARY,
@@ -2061,7 +1599,6 @@ async function generateDataset(config = {}) {
     })
     .filter((layer) => layer.combos.length > 0);
 
-
   const blueprintConfig = {
     seed,
     policyCount,
@@ -2070,7 +1607,6 @@ async function generateDataset(config = {}) {
     whitelistBuckets,
     merkleDepthOptions,
     proofTypes,
-    executionProtections,
     logicOptions,
     duoConflicts,
     icd10Scopes,
@@ -2147,7 +1683,6 @@ async function generateDataset(config = {}) {
         duoTermCodes: blueprint.duoTerms.slice(),
         semantics: blueprint.semantics,
         structure: blueprint.structure,
-        execution: blueprint.execution,
         policy: blueprint.artifacts.policy,
         tokens: blueprint.artifacts.tokens,
         numOperations: blueprint.artifacts.numOperations,

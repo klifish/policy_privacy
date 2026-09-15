@@ -8,7 +8,7 @@
  *
  * Usage (Hardhat does not forward arbitrary script flags, so env vars are the
  * portable CLI interface):
- *   UNIFIED_CONFIG_PATH=experiments/capture/configs/unified_dataset_config_optimized.json \
+ *   UNIFIED_CONFIG_PATH=experiments/capture/configs/unified_dataset_config_decoupled.json \
  *   UNIFIED_ARTIFACT_DIR=experiments/data/<network> \
  *   PROTECTION_PROFILE=b2_padded \
  *   npx hardhat run experiments/capture/run.js --network <network>

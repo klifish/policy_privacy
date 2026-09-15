@@ -32,12 +32,13 @@ const PI_DEFAULT_CONFIG = Object.freeze({
   ensureBalancedSampling: true
 });
 
-// Pair type thresholds (kept from original for compatibility)
+// Pair type thresholds. Pairs are typed by semantic similarity and structure
+// only: every execution in a capture runs under the same run-level protection
+// profile, so there is no per-policy execution difference to type on.
 const PAIR_TYPE_THRESHOLDS = Object.freeze({
-  semantic_equivalent: { similarity: 0.999, structureMustDiffer: true, executionMustDiffer: false },
-  structural_variant: { similarity: 0.999, structureMustDiffer: true, executionMustDiffer: false },
-  weak_equivalent: { similarity: 0.95, structureMustDiffer: false, executionMustDiffer: false },
-  controlled_difference: { similarity: 0.0, structureMustDiffer: false, executionMustDiffer: false }
+  semantic_equivalent: { similarity: 0.999, structureMustDiffer: true },
+  weak_equivalent: { similarity: 0.95, structureMustDiffer: false },
+  controlled_difference: { similarity: 0.0, structureMustDiffer: false }
 });
 
 /**
@@ -124,42 +125,24 @@ function structuralFingerprint(structure) {
 }
 
 /**
- * Count execution profile differences
- */
-function countExecutionDifferences(profileA, profileB) {
-  let diffs = 0;
-  if (profileA.path_unify !== profileB.path_unify) diffs++;
-  if (profileA.gas_pad !== profileB.gas_pad) diffs++;
-  if (profileA.event_pad !== profileB.event_pad) diffs++;
-  if (profileA.proof_pad !== profileB.proof_pad) diffs++;
-  if (profileA.batch_pattern !== profileB.batch_pattern) diffs++;
-  return diffs;
-}
-
-/**
  * Determine pair type based on similarity and differences
  */
 function determinePairType(policyA, policyB) {
   const similarity = computeSemanticSimilarity(policyA.semantics, policyB.semantics);
-  const executionDiffs = countExecutionDifferences(policyA.executionProfile, policyB.executionProfile);
   const structureHashEqual = structuralFingerprint(policyA.structure) === structuralFingerprint(policyB.structure);
 
   // Semantic equivalent: near-identical semantics, different structure
   if (similarity >= PAIR_TYPE_THRESHOLDS.semantic_equivalent.similarity && !structureHashEqual) {
-    // Structural variant: also has execution differences
-    if (executionDiffs > 0) {
-      return { type: 'structural_variant', similarity, executionDiffs, structureHashEqual };
-    }
-    return { type: 'semantic_equivalent', similarity, executionDiffs, structureHashEqual };
+    return { type: 'semantic_equivalent', similarity, structureHashEqual };
   }
 
   // Weak equivalent: high semantic similarity
   if (similarity >= PAIR_TYPE_THRESHOLDS.weak_equivalent.similarity) {
-    return { type: 'weak_equivalent', similarity, executionDiffs, structureHashEqual };
+    return { type: 'weak_equivalent', similarity, structureHashEqual };
   }
 
   // Everything else is controlled difference
-  return { type: 'controlled_difference', similarity, executionDiffs, structureHashEqual };
+  return { type: 'controlled_difference', similarity, structureHashEqual };
 }
 
 /**
@@ -172,7 +155,6 @@ function createPairRecord(policyA, policyB, type, metadata) {
     policies: [policyA, policyB],
     semanticSimilarity: metadata.similarity,
     structuralDistance: metadata.structureHashEqual ? 0 : 1,
-    executionDifferences: metadata.executionDiffs || 0,
     metadata: {
       generatedAt: new Date().toISOString(),
       structureHashEqual: metadata.structureHashEqual,
@@ -197,7 +179,6 @@ function buildPairsOptimal(policies, config = PI_DEFAULT_CONFIG) {
   const allPairs = [];
   const pairsByType = {
     semantic_equivalent: [],
-    structural_variant: [],
     weak_equivalent: [],
     controlled_difference: []
   };

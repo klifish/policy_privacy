@@ -17,7 +17,6 @@ const {
 
 const DEFAULT_PAIR_TARGETS = Object.freeze({
   semantic_equivalent: 5,
-  structural_variant: 5,
   weak_equivalent: 5,
   controlled_difference: 5
 });
@@ -66,7 +65,6 @@ function aggregatePolicies(executionResults) {
         duoTerms: Array.isArray(result.duoTerms) ? result.duoTerms.slice() : [],
         semantics: { ...result.semantics },
         structure: { ...result.structure },
-        executionProfile: { ...(result.execution || {}) },
         predicateSlots: Array.isArray(result.predicateSlots) ? result.predicateSlots.slice() : [],
         ontologyNamespace: result.ontologyNamespace,
         ontologyValue: result.ontologyValue,
@@ -102,15 +100,14 @@ function semanticsSignature(semantics) {
 /**
  * Lightweight structural fingerprint.
  */
-function structuralFingerprint(structure, executionProfile) {
+function structuralFingerprint(structure) {
   return crypto
     .createHash('sha256')
     .update(JSON.stringify({
       policyHash: structure.policyHash,
       proofType: structure.proofType,
       policyDepth: structure.policyDepth,
-      whitelistSize: structure.whitelistSize,
-      executionProfile
+      whitelistSize: structure.whitelistSize
     }))
     .digest('hex');
 }
@@ -166,21 +163,6 @@ function computeSemanticSimilarity(a, b) {
 }
 
 /**
- * Compare two execution profiles and count differing knobs.
- */
-function countExecutionDifferences(a, b) {
-  if (!a || !b) return 0;
-  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-  let diffs = 0;
-  keys.forEach((key) => {
-    if (a[key] !== b[key]) {
-      diffs += 1;
-    }
-  });
-  return diffs;
-}
-
-/**
  * Build pair metadata record.
  */
 function createPairRecord(policyA, policyB, pairType, similarityScore) {
@@ -192,20 +174,17 @@ function createPairRecord(policyA, policyB, pairType, similarityScore) {
         policyId: policyA.policyId,
         semantics: policyA.semantics,
         structure: policyA.structure,
-        executionProfile: policyA.executionProfile,
         features: policyA.features
       },
       {
         policyId: policyB.policyId,
         semantics: policyB.semantics,
         structure: policyB.structure,
-        executionProfile: policyB.executionProfile,
         features: policyB.features
       }
     ],
     semanticSimilarity: similarityScore,
-    structuralDistance: structuralFingerprint(policyA.structure, policyA.executionProfile) === structuralFingerprint(policyB.structure, policyB.executionProfile) ? 0 : 1,
-    executionDifferences: countExecutionDifferences(policyA.executionProfile, policyB.executionProfile)
+    structuralDistance: structuralFingerprint(policyA.structure) === structuralFingerprint(policyB.structure) ? 0 : 1
   };
 }
 
@@ -214,13 +193,9 @@ function createPairRecord(policyA, policyB, pairType, similarityScore) {
  */
 function determinePairType(policyA, policyB) {
   const similarity = computeSemanticSimilarity(policyA.semantics, policyB.semantics);
-  const executionDiffs = countExecutionDifferences(policyA.executionProfile, policyB.executionProfile);
-  const structureHashEqual = structuralFingerprint(policyA.structure, {}) === structuralFingerprint(policyB.structure, {});
+  const structureHashEqual = structuralFingerprint(policyA.structure) === structuralFingerprint(policyB.structure);
 
   if (similarity >= 0.999 && !structureHashEqual) {
-    if (executionDiffs > 0) {
-      return { type: 'structural_variant', similarity };
-    }
     return { type: 'semantic_equivalent', similarity };
   }
 

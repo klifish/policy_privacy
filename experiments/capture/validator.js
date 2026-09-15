@@ -63,18 +63,6 @@ function hasStructuralDifference(policyA, policyB) {
   });
 }
 
-function hasExecutionDifference(policyA, policyB) {
-  const profileA = policyA?.executionProfile || {};
-  const profileB = policyB?.executionProfile || {};
-  const keys = new Set([...Object.keys(profileA), ...Object.keys(profileB)]);
-  for (const key of keys) {
-    if (profileA[key] !== profileB[key]) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -416,7 +404,6 @@ function validatePIRequirements(dataset, config) {
   const similarities = [];
   const pairTypes = {
     semantic_equivalent: 0,
-    structural_variant: 0,
     weak_equivalent: 0,
     controlled_difference: 0
   };
@@ -431,12 +418,9 @@ function validatePIRequirements(dataset, config) {
       similarities.push(similarity);
 
       const structuralDiff = hasStructuralDifference(policyA, policyB);
-      const executionDiff = hasExecutionDifference(policyA, policyB);
 
       if (similarity >= 0.999) {
-        if (structuralDiff && executionDiff) {
-          pairTypes.structural_variant += 1;
-        } else if (structuralDiff) {
+        if (structuralDiff) {
           pairTypes.semantic_equivalent += 1;
         } else {
           pairTypes.weak_equivalent += 1;
@@ -484,7 +468,7 @@ function validatePIRequirements(dataset, config) {
   }
 
   const minPairsPerType = config.validation.pi.minPairsPerType;
-  ['semantic_equivalent', 'structural_variant'].forEach((type) => {
+  ['semantic_equivalent'].forEach((type) => {
     if ((estimatedTotals[type] || 0) < minPairsPerType) {
       issues.push(`Estimated ${type} pairs (${estimatedTotals[type] || 0}) < ${minPairsPerType}`);
     }
@@ -552,7 +536,6 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
     whitelistBuckets: normalizedConfig.whitelistBuckets,
     merkleDepthOptions: normalizedConfig.merkleDepthOptions,
     logicOptions: normalizedConfig.logicOptions,
-    executionProtections: normalizedConfig.executionProtections,
     duoConflicts: normalizedConfig.duoConflicts,
     icd10Scopes: normalizedConfig.icd10Scopes,
     obiScopes: normalizedConfig.obiScopes,

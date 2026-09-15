@@ -35,6 +35,9 @@ from .common import (
     write_split_manifest,
 )
 
+# One one-vs-rest task per DUO term that the corpus carries: the five
+# ontology-bound terms, GR, and the four profile-only terms (DUO V3 ids 6-9).
+# Task keys use the manuscript code "GR"; datasets emit the V3 code "GRU".
 DUO_TERM_ORDER: Sequence[Tuple[int, str]] = (
     (0, "GR"),
     (1, "DS"),
@@ -42,7 +45,12 @@ DUO_TERM_ORDER: Sequence[Tuple[int, str]] = (
     (3, "POA"),
     (4, "GS"),
     (5, "CC"),
+    (6, "NCU"),
+    (7, "HMB"),
+    (8, "NMDS"),
+    (9, "GSO"),
 )
+DUO_CODE_ALIASES = {"GRU": "GR"}
 
 DEFAULT_DATA_DIR = CAPTURE_DATA_DIR
 OUTPUT_DIR = SUPERVISED_RESULTS_DIR
@@ -59,6 +67,7 @@ def _duo_codes(record: dict) -> set:
     primary = semantics.get("primaryDuoTerm")
     if primary:
         codes.add(str(primary))
+    codes.update(DUO_CODE_ALIASES[c] for c in list(codes) if c in DUO_CODE_ALIASES)
     return codes
 
 

@@ -14,10 +14,6 @@ const path = require('path');
 const { parseCommonArgs, printCommonHelp, runMain } = require('../../../core/cli');
 const { resolveDatasetPaths } = require('../../../core/dataset');
 
-const {
-  DUO_TERMS
-} = require('../../../core/data_generator');
-
 // DUO term ID to attribute code mapping
 const {
   loadDataset,
@@ -53,7 +49,12 @@ const { evaluateMultiseed, printVerdict, pickVerdictText } = require('../../../c
 // bothAttacks, buildPchRecordsForSeed and DUO_TO_ATTRIBUTE_CODE live in
 // ./seed_records (a lightweight module the parallel worker can load without the
 // hardhat/ffjavascript graph that core/dataset/data_generator pulls in).
-const { buildPchRecordsForSeed, DUO_TO_ATTRIBUTE_CODE } = require("./seed_records");
+const {
+  buildPchRecordsForSeed,
+  DUO_TO_ATTRIBUTE_CODE,
+  hasDuoTerm,
+  observedDuoTermIdsOf
+} = require("./seed_records");
 function parseArgs(argv = process.argv.slice(2)) {
   const config = parseCommonArgs(argv.filter(a => a !== '--'));
 
@@ -105,7 +106,7 @@ function printUsage() {
 
 async function runExperiment(config = {}) {
   const {
-    numDuoTerms = 6,
+    numDuoTerms = 10,
     executionsPerPolicy = 2,
     policyCount = undefined,
     network = 'localhost',
@@ -194,7 +195,7 @@ async function runExperiment(config = {}) {
   console.log('='.repeat(60));
   console.log();
 
-  const duoTerms = Object.values(DUO_TERMS).slice(0, numDuoTerms);
+  const duoTerms = Object.values(DUO_TO_ATTRIBUTE_CODE).slice(0, numDuoTerms);
   console.log(`Using DUO terms: ${duoTerms.join(', ')}`);
   console.log();
 
@@ -294,7 +295,9 @@ async function runExperiment(config = {}) {
   console.log();
 
   const classificationResults = [];
-  const observedDuoTermIds = Array.from(new Set(normalizedFeatures.map(f => f.duoTerm))).sort((a, b) => a - b);
+  // Multi-label: a term counts as observed when any row carries it, not only
+  // rows whose primary term it is.
+  const observedDuoTermIds = observedDuoTermIdsOf(normalizedFeatures);
 
   const duoTrain = prepareClassificationData(trainData, 'duoTerm');
   const duoTest = prepareClassificationData(testData, 'duoTerm');
@@ -303,19 +306,9 @@ async function runExperiment(config = {}) {
   for (const duoTermId of observedDuoTermIds) {
     console.log(`  Training classifier for DUO term ${duoTermId}...`);
 
-    // Fixed: Use duoTermCodes array to check if term is present (not just primary term)
-    const duoCode = DUO_TO_ATTRIBUTE_CODE[duoTermId];
-    const trainY = trainData.map(f => {
-      // Check if this term is in the duoTermCodes array
-      const hasTerm = f.duoTerm === duoTermId ||
-        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
-      return hasTerm ? 1 : 0;
-    });
-    const testY = testData.map(f => {
-      const hasTerm = f.duoTerm === duoTermId ||
-        (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(duoCode));
-      return hasTerm ? 1 : 0;
-    });
+    // Multi-label: present if primary term or anywhere in duoTermCodes.
+    const trainY = trainData.map(f => (hasDuoTerm(f, duoTermId) ? 1 : 0));
+    const testY = testData.map(f => (hasDuoTerm(f, duoTermId) ? 1 : 0));
 
     // Log label distribution
     const trainPositives = trainY.filter(y => y === 1).length;

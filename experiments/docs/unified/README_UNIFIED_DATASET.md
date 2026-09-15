@@ -16,7 +16,7 @@ npm run unified:validate
 
 ```bash
 node experiments/capture/validator.js \
-  --config=experiments/capture/configs/unified_dataset_config_optimized.json
+  --config=experiments/capture/configs/unified_dataset_config_decoupled.json
 ```
 
 validator 只生成策略定义并检查分布，不部署合约、不发送交易。它会检查：

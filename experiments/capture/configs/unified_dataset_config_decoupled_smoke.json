@@ -1,0 +1,307 @@
+{
+  "protocolVersion": "duo-v3",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Smoke: structure-decoupled strata (localhost)",
+  "description": "Tiny end-to-end smoke of the decoupled design: every namespace, profile-only and profile/ontology mixes, k=1..5, both access outcomes.",
+  "policyCount": 17,
+  "policyCountTarget": 17,
+  "coverageExecutions": 1,
+  "depthExecutions": 2,
+  "depthSubsetPerStructure": 1,
+  "depthStructures": [
+    "and_only",
+    "or_only",
+    "and_or_mixed"
+  ],
+  "satisfyRatio": 0.5,
+  "seed": "decoupled-smoke-2026",
+  "semanticLayers": [
+    {
+      "name": "trivial_ontology",
+      "comment": "smoke: 3 combos, one policy each",
+      "combos": [
+        [
+          "DS"
+        ],
+        [
+          "GS"
+        ],
+        [
+          "CC"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 3,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "trivial_profile",
+      "comment": "smoke: 2 combos, one policy each",
+      "combos": [
+        [
+          "HMB"
+        ],
+        [
+          "NCU"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 2,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      }
+    },
+    {
+      "name": "and_chain",
+      "comment": "smoke: 3 combos, one policy each",
+      "combos": [
+        [
+          "GRU",
+          "DS"
+        ],
+        [
+          "HMB",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "DS",
+          "RS"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 3,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "or_chain",
+      "comment": "smoke: 3 combos, one policy each",
+      "combos": [
+        [
+          "NMDS",
+          "CC"
+        ],
+        [
+          "NCU",
+          "RS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "NCU",
+          "RS"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 3,
+      "logicOptions": {
+        "operators": [
+          "OR"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "mixed_chain",
+      "comment": "smoke: 3 combos, one policy each",
+      "combos": [
+        [
+          "GRU",
+          "HMB",
+          "RS"
+        ],
+        [
+          "NMDS",
+          "GSO",
+          "RS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO",
+          "POA"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 3,
+      "logicOptions": {
+        "operators": [
+          "AND",
+          "OR"
+        ],
+        "ensureMixedOperators": true,
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "profile_only",
+      "comment": "smoke: 3 combos, one policy each",
+      "combos": [
+        [
+          "GRU",
+          "HMB"
+        ],
+        [
+          "NMDS",
+          "NCU",
+          "HMB"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO",
+          "NCU"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 3,
+      "logicOptions": {
+        "operators": [
+          "AND",
+          "OR"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      }
+    }
+  ],
+  "whitelistBuckets": [
+    2,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32
+  ],
+  "merkleDepthOptions": [
+    8
+  ],
+  "logicOptions": {
+    "notProbability": 0,
+    "groupNotProbability": 0,
+    "operators": [
+      "AND",
+      "OR"
+    ]
+  },
+  "duoConflicts": [
+    {
+      "includes": [
+        "POA"
+      ],
+      "excludes": [
+        "NPOA"
+      ]
+    },
+    {
+      "includes": [
+        "NCU"
+      ],
+      "excludes": [
+        "NPU",
+        "NPUNCU"
+      ]
+    },
+    {
+      "includes": [
+        "NPU"
+      ],
+      "excludes": [
+        "NPUNCU"
+      ]
+    }
+  ],
+  "validation": {
+    "pch": {
+      "minPoliciesPerDUO": 1,
+      "minMaxRatio": 0.1
+    },
+    "spp": {
+      "minPoliciesPerCategory": 1,
+      "minMaxRatio": 0.1,
+      "maxCV": 1.5,
+      "skipDimensions": [
+        "logicStructures",
+        "nestingDepths",
+        "predicateCounts",
+        "setSizes",
+        "rangeWidths"
+      ]
+    },
+    "pi": {
+      "minPairsPerType": 0,
+      "minSemanticDiversity": 0.1
+    }
+  },
+  "notes": [
+    "Smoke configuration for localhost; not an experiment design. Run with UNIFIED_ARTIFACT_DIR pointing outside experiments/data."
+  ]
+}

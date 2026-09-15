@@ -81,13 +81,13 @@ describe('Policy Content Hiding Evaluation', function () {
 
     it('should generate ontology-linked policy for research-specific with OBI', async function () {
       // RESEARCH_SPECIFIC is ontology-linked, requires OBI
-      const policy = await generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.RCT);
+      const policy = await generatePolicy(DUO_TERMS.RESEARCH_SPECIFIC, OBI_RESEARCH_TYPES.CLINICAL_TRIAL);
 
       expect(policy).to.have.property('policy');
       expect(policy.policy).to.be.an('array').with.lengthOf(64);
       expect(policy).to.have.property('duoTerm', DUO_TERMS.RESEARCH_SPECIFIC);
       expect(policy).to.have.property('ontologyNamespace', 'OBI');
-      expect(policy).to.have.property('ontologyValue', OBI_RESEARCH_TYPES.RCT);
+      expect(policy).to.have.property('ontologyValue', OBI_RESEARCH_TYPES.CLINICAL_TRIAL);
       expect(policy).to.have.property('requiresOntology', true);
       expect(policy).to.have.property('numOperations', 3);  // attr AND predicate requires 3 tokens
     });
@@ -232,13 +232,6 @@ describe('Policy Content Hiding Evaluation', function () {
         whitelistBuckets: [4],
         merkleDepthOptions: [8],
         proofTypes: ['merkle_proof'],
-        executionProtections: {
-          path_unify: [false],
-          gas_pad: [false],
-          event_pad: [false],
-          proof_pad: [false],
-          batch_pattern: ['baseline']
-        },
         policyDepth: 64
       });
 
@@ -265,7 +258,6 @@ describe('Policy Content Hiding Evaluation', function () {
       dataset.forEach((item) => {
         expect(item).to.have.property('semantics');
         expect(item).to.have.property('structure');
-        expect(item).to.have.property('execution');
         expect(item).to.have.property('policy').that.is.an('array');
         expect(item).to.have.property('requesterAttrs').that.is.an('array');
         expect(item.requesterAttrs).to.have.lengthOf(13);

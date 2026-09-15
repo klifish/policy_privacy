@@ -21,14 +21,50 @@ const {
 } = require('../../../core/evaluator');
 const { createRng } = require('../../../core/random');
 
+// Task labels per DUO term id (keys must match the Python pipeline's
+// DUO_TERM_ORDER so compare_with_js_verdict can pair the tasks). Datasets emit
+// the V3 code 'GRU' for term 0; the task keeps the manuscript label 'GR'.
 const DUO_TO_ATTRIBUTE_CODE = {
-  0: 'GR',  // GENERAL_RESEARCH
-  1: 'DS',  // DISEASE_SPECIFIC
-  2: 'RS',  // RESEARCH_SPECIFIC
-  3: 'POA', // POPULATION_ANCESTRY
-  4: 'GS',  // GEOGRAPHICAL_RESTRICTION
-  5: 'CC'   // CLINICAL_CARE
+  0: 'GR',   // GENERAL_RESEARCH
+  1: 'DS',   // DISEASE_SPECIFIC
+  2: 'RS',   // RESEARCH_SPECIFIC
+  3: 'POA',  // POPULATION_ANCESTRY
+  4: 'GS',   // GEOGRAPHICAL_RESTRICTION
+  5: 'CC',   // CLINICAL_CARE
+  6: 'NCU',  // NON_COMMERCIAL_USE
+  7: 'HMB',  // HEALTH_MEDICAL_BIOMEDICAL
+  8: 'NMDS', // NO_METHODS_DEVELOPMENT
+  9: 'GSO'   // GENETIC_STUDIES_ONLY
 };
+const DUO_CODE_ALIASES = { GRU: 'GR' };
+const CODE_TO_DUO_TERM_ID = Object.fromEntries(
+  Object.entries(DUO_TO_ATTRIBUTE_CODE).map(([id, code]) => [code, Number(id)])
+);
+
+function normalizeDuoCode(code) {
+  return DUO_CODE_ALIASES[code] || code;
+}
+
+/** Multi-label membership: the term is the primary term or appears anywhere in duoTermCodes. */
+function hasDuoTerm(feature, termId) {
+  if (feature.duoTerm === termId) return true;
+  const code = DUO_TO_ATTRIBUTE_CODE[termId];
+  return Array.isArray(feature.duoTermCodes) &&
+    feature.duoTermCodes.some((c) => normalizeDuoCode(c) === code);
+}
+
+/** Every DUO term id carried by any feature row (primary or not), sorted. */
+function observedDuoTermIdsOf(features) {
+  const ids = new Set();
+  features.forEach((f) => {
+    if (Number.isInteger(f.duoTerm)) ids.add(f.duoTerm);
+    (Array.isArray(f.duoTermCodes) ? f.duoTermCodes : []).forEach((c) => {
+      const id = CODE_TO_DUO_TERM_ID[normalizeDuoCode(c)];
+      if (id !== undefined) ids.add(id);
+    });
+  });
+  return Array.from(ids).sort((a, b) => a - b);
+}
 
 /**
  * Run BOTH attackers (LR and RF) on one binary inference task and return ONE
@@ -117,8 +153,7 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   const records = [];
   for (const termId of observedDuoTermIds) {
     const code = DUO_TO_ATTRIBUTE_CODE[termId];
-    const labelOf = f => (f.duoTerm === termId ||
-      (Array.isArray(f.duoTermCodes) && f.duoTermCodes.includes(code))) ? 1 : 0;
+    const labelOf = f => (hasDuoTerm(f, termId) ? 1 : 0);
     const trY = train.map(labelOf);
     const teY = test.map(labelOf);
     if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
@@ -181,4 +216,10 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   return records;
 }
 
-module.exports = { buildPchRecordsForSeed, bothAttacks, DUO_TO_ATTRIBUTE_CODE };
+module.exports = {
+  buildPchRecordsForSeed,
+  bothAttacks,
+  DUO_TO_ATTRIBUTE_CODE,
+  hasDuoTerm,
+  observedDuoTermIdsOf
+};

@@ -100,7 +100,6 @@ function aggregatePoliciesByDefinition(dataset) {
         duoTerms: Array.isArray(result.duoTerms) ? result.duoTerms.slice() : [],
         semantics: { ...(result.semantics || {}) },
         structure: { ...(result.structure || {}) },
-        executionProfile: { ...(result.execution || {}) },
         predicateSlots: Array.isArray(result.predicateSlots) ? result.predicateSlots.slice() : [],
         ontologyNamespace: result.ontologyNamespace,
         ontologyValue: result.ontologyValue,
