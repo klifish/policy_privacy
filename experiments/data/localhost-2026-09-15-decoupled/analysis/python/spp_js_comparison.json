@@ -1,0 +1,49 @@
+{
+  "experiment": "spp",
+  "pythonVerdict": "results_local_rehearsal/spp_supervised_verdict.json",
+  "jsReport": "experiments/results/crosscheck/spp/localhost/report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 21,
+    "js": 21,
+    "shared": 15
+  },
+  "expectedTaskCount": 28,
+  "onlyPython": [
+    "paramType: none/large",
+    "paramType: none/medium",
+    "paramType: none/small",
+    "paramType: small/large",
+    "paramType: small/medium",
+    "structureType: or_only/and_only"
+  ],
+  "onlyJs": [
+    "paramType: large/none",
+    "paramType: large/small",
+    "paramType: medium/none",
+    "paramType: medium/small",
+    "paramType: small/none",
+    "structureType: and_only/or_only"
+  ],
+  "taskDiffs": [],
+  "matches": false
+}

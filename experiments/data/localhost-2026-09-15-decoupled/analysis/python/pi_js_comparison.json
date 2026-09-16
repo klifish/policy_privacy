@@ -1,0 +1,45 @@
+{
+  "experiment": "pi",
+  "pythonVerdict": "results_local_rehearsal/pi_supervised_verdict.json",
+  "jsReport": "experiments/results/crosscheck/pi/localhost/pi_report.json",
+  "overall": {
+    "python": false,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 4,
+    "js": 4,
+    "shared": 4
+  },
+  "expectedTaskCount": 5,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [
+    {
+      "key": "overall",
+      "diffs": {
+        "passed": {
+          "python": false,
+          "js": true
+        }
+      }
+    }
+  ],
+  "matches": false
+}

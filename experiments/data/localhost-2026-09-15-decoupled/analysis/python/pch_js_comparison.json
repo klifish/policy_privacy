@@ -1,0 +1,35 @@
+{
+  "experiment": "pch",
+  "pythonVerdict": "results_local_rehearsal/pch_supervised_verdict.json",
+  "jsReport": "experiments/results/crosscheck/pch/localhost/evaluation_report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 20,
+    "js": 20,
+    "shared": 20
+  },
+  "expectedTaskCount": 16,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [],
+  "matches": false
+}

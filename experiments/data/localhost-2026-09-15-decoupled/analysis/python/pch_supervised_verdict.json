@@ -1,0 +1,2377 @@
+{
+  "dataset": "localhost-2026-09-15-decoupled",
+  "criterion": {
+    "seeds": 30,
+    "aucMax": 0.55,
+    "permAlpha": 0.05,
+    "sigFractionMax": 0.5,
+    "minTestSamples": 20,
+    "permIters": 500,
+    "testRatio": 0.3
+  },
+  "overallPassed": true,
+  "tasks": [
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5113673323618563,
+          "aucStd": 0.026757625753110685,
+          "advantageMean": 0.022775255538599017,
+          "sigFraction": 0.1,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5099392602970164,
+          "aucStd": 0.015983253391926328,
+          "advantageMean": 0.01431220486915855,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7458808618504434,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 933.0,
+            "medianTestRows": 393.0,
+            "minTrainGroups": 526,
+            "minTestGroups": 216,
+            "medianTrainGroups": 555.0,
+            "medianTestGroups": 220.0
+          },
+          "1": {
+            "medianTrainRows": 314.0,
+            "medianTestRows": 133.0,
+            "minTrainGroups": 195,
+            "minTestGroups": 74,
+            "medianTrainGroups": 199.0,
+            "medianTestGroups": 103.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GR",
+      "target": "duoTermPresence",
+      "class0": "not_GR",
+      "class1": "GR"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5120772127639136,
+          "aucStd": 0.01609671064264327,
+          "advantageMean": 0.015821897324797978,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4833133287036289,
+          "aucStd": 0.014528000249193172,
+          "advantageMean": 0.018413163921882015,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.564828897338403,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 706.0,
+            "medianTestRows": 297.0,
+            "minTrainGroups": 444,
+            "minTestGroups": 178,
+            "medianTrainGroups": 447.0,
+            "medianTestGroups": 208.0
+          },
+          "1": {
+            "medianTrainRows": 541.0,
+            "medianTestRows": 229.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 112,
+            "medianTrainGroups": 307.0,
+            "medianTestGroups": 115.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO DS",
+      "target": "duoTermPresence",
+      "class0": "not_DS",
+      "class1": "DS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5124442640106535,
+          "aucStd": 0.02071278564225218,
+          "advantageMean": 0.020311579612808345,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.523099544976705,
+          "aucStd": 0.019277248498850475,
+          "advantageMean": 0.024272185660058804,
+          "sigFraction": 0.16666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.5707858048162231,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 713.0,
+            "medianTestRows": 300.0,
+            "minTrainGroups": 450,
+            "minTestGroups": 182,
+            "medianTrainGroups": 453.0,
+            "medianTestGroups": 212.0
+          },
+          "1": {
+            "medianTrainRows": 534.0,
+            "medianTestRows": 226.0,
+            "minTrainGroups": 271,
+            "minTestGroups": 108,
+            "medianTrainGroups": 301.0,
+            "medianTestGroups": 111.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO RS",
+      "target": "duoTermPresence",
+      "class0": "not_RS",
+      "class1": "RS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4960884954232052,
+          "aucStd": 0.020239189956720634,
+          "advantageMean": 0.014931135520272457,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.47970148702305154,
+          "aucStd": 0.02028954546005427,
+          "advantageMean": 0.02283666545389289,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.6477186311787073,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 808.0,
+            "medianTestRows": 341.0,
+            "minTrainGroups": 460,
+            "minTestGroups": 194,
+            "medianTrainGroups": 489.0,
+            "medianTestGroups": 196.0
+          },
+          "1": {
+            "medianTrainRows": 439.0,
+            "medianTestRows": 185.0,
+            "minTrainGroups": 263,
+            "minTestGroups": 98,
+            "medianTrainGroups": 265.0,
+            "medianTestGroups": 127.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO POA",
+      "target": "duoTermPresence",
+      "class0": "not_POA",
+      "class1": "POA"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5072638673537797,
+          "aucStd": 0.019528268019496614,
+          "advantageMean": 0.015693812522265024,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.500196572935198,
+          "aucStd": 0.021231852308771237,
+          "advantageMean": 0.017569538377620937,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.6859315589353611,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 856.0,
+            "medianTestRows": 361.0,
+            "minTrainGroups": 479,
+            "minTestGroups": 214,
+            "medianTrainGroups": 479.0,
+            "medianTestGroups": 216.0
+          },
+          "1": {
+            "medianTrainRows": 391.0,
+            "medianTestRows": 165.0,
+            "minTrainGroups": 273,
+            "minTestGroups": 107,
+            "medianTrainGroups": 275.0,
+            "medianTestGroups": 107.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GS",
+      "target": "duoTermPresence",
+      "class0": "not_GS",
+      "class1": "GS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5292456832248388,
+          "aucStd": 0.020797724701071836,
+          "advantageMean": 0.029965008837243585,
+          "sigFraction": 0.26666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5073538163834291,
+          "aucStd": 0.020879102200818334,
+          "advantageMean": 0.018752550580614685,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.5662230671736376,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 706.0,
+            "medianTestRows": 298.0,
+            "minTrainGroups": 473,
+            "minTestGroups": 210,
+            "medianTrainGroups": 474.0,
+            "medianTestGroups": 211.0
+          },
+          "1": {
+            "medianTrainRows": 541.0,
+            "medianTestRows": 228.0,
+            "minTrainGroups": 279,
+            "minTestGroups": 111,
+            "medianTrainGroups": 280.0,
+            "medianTestGroups": 112.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO CC",
+      "target": "duoTermPresence",
+      "class0": "not_CC",
+      "class1": "CC"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.46317042860608665,
+          "aucStd": 0.02377718646487792,
+          "advantageMean": 0.03781997528986758,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.47932083833075567,
+          "aucStd": 0.02459135616844191,
+          "advantageMean": 0.024634678179133052,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7845373891001266,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 980.0,
+            "medianTestRows": 413.0,
+            "minTrainGroups": 603,
+            "minTestGroups": 266,
+            "medianTrainGroups": 603.0,
+            "medianTestGroups": 268.0
+          },
+          "1": {
+            "medianTrainRows": 267.0,
+            "medianTestRows": 113.0,
+            "minTrainGroups": 149,
+            "minTestGroups": 55,
+            "medianTrainGroups": 151.0,
+            "medianTestGroups": 55.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO NCU",
+      "target": "duoTermPresence",
+      "class0": "not_NCU",
+      "class1": "NCU"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5022133986466056,
+          "aucStd": 0.02289899997038972,
+          "advantageMean": 0.018713799425159695,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4683323399768657,
+          "aucStd": 0.023945544323062284,
+          "advantageMean": 0.032459078773572694,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7468948035487962,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 933.0,
+            "medianTestRows": 393.0,
+            "minTrainGroups": 526,
+            "minTestGroups": 218,
+            "medianTrainGroups": 527.0,
+            "medianTestGroups": 219.0
+          },
+          "1": {
+            "medianTrainRows": 314.0,
+            "medianTestRows": 133.0,
+            "minTrainGroups": 226,
+            "minTestGroups": 103,
+            "medianTrainGroups": 227.0,
+            "medianTestGroups": 104.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO HMB",
+      "target": "duoTermPresence",
+      "class0": "not_HMB",
+      "class1": "HMB"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4940441996765868,
+          "aucStd": 0.02000039998899781,
+          "advantageMean": 0.016824421901526956,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5006162537850151,
+          "aucStd": 0.027469551098310063,
+          "advantageMean": 0.02369748937348554,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7336501901140686,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 918.0,
+            "medianTestRows": 386.0,
+            "minTrainGroups": 571,
+            "minTestGroups": 239,
+            "medianTrainGroups": 598.0,
+            "medianTestGroups": 242.0
+          },
+          "1": {
+            "medianTrainRows": 329.0,
+            "medianTestRows": 140.0,
+            "minTrainGroups": 153,
+            "minTestGroups": 54,
+            "medianTrainGroups": 156.0,
+            "medianTestGroups": 81.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO NMDS",
+      "target": "duoTermPresence",
+      "class0": "not_NMDS",
+      "class1": "NMDS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4667003417929501,
+          "aucStd": 0.025216816663551068,
+          "advantageMean": 0.03682791669967897,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4680477182384174,
+          "aucStd": 0.01868555077172054,
+          "advantageMean": 0.032761305814843815,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7998098859315588,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 1000.0,
+            "medianTestRows": 421.0,
+            "minTrainGroups": 594,
+            "minTestGroups": 245,
+            "medianTrainGroups": 594.0,
+            "medianTestGroups": 247.0
+          },
+          "1": {
+            "medianTrainRows": 247.0,
+            "medianTestRows": 105.0,
+            "minTrainGroups": 158,
+            "minTestGroups": 76,
+            "medianTrainGroups": 160.0,
+            "medianTestGroups": 76.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GSO",
+      "target": "duoTermPresence",
+      "class0": "not_GSO",
+      "class1": "GSO"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4962046204620462,
+          "aucStd": 0.04809280485909773,
+          "advantageMean": 0.0386017870079691,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4808339370522418,
+          "aucStd": 0.03806726661073129,
+          "advantageMean": 0.03315624245351365,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.8312757201646089,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 437.0,
+            "medianTestRows": 202.0,
+            "minTrainGroups": 263,
+            "minTestGroups": 115,
+            "medianTrainGroups": 263.0,
+            "medianTestGroups": 115.0
+          },
+          "1": {
+            "medianTrainRows": 90.0,
+            "medianTestRows": 41.0,
+            "minTrainGroups": 32,
+            "minTestGroups": 12,
+            "medianTrainGroups": 32.0,
+            "medianTestGroups": 12.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch0",
+      "target": "icd10Chapter",
+      "class0": "not_ch0",
+      "class1": "ch0:0"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.500014619883041,
+          "aucStd": 0.06907556021688557,
+          "advantageMean": 0.0596539961013645,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.44050682261208574,
+          "aucStd": 0.05112472181137997,
+          "advantageMean": 0.06440545808966862,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.9382716049382718,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 493.0,
+            "medianTestRows": 228.0,
+            "minTrainGroups": 261,
+            "minTestGroups": 112,
+            "medianTrainGroups": 261.0,
+            "medianTestGroups": 112.0
+          },
+          "1": {
+            "medianTrainRows": 34.0,
+            "medianTestRows": 15.0,
+            "minTrainGroups": 34,
+            "minTestGroups": 15,
+            "medianTrainGroups": 34.0,
+            "medianTestGroups": 15.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch1",
+      "target": "icd10Chapter",
+      "class0": "not_ch1",
+      "class1": "ch1:1"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5139933013231466,
+          "aucStd": 0.06797805004644764,
+          "advantageMean": 0.05867667543607899,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5716973076181101,
+          "aucStd": 0.049663899918691426,
+          "advantageMean": 0.07579098727166794,
+          "sigFraction": 0.2,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9257195236080663,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 509.0,
+            "medianTestRows": 199.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 108,
+            "medianTrainGroups": 278.5,
+            "medianTestGroups": 110.5
+          },
+          "1": {
+            "medianTrainRows": 45.5,
+            "medianTestRows": 16.5,
+            "minTrainGroups": 14,
+            "minTestGroups": 15,
+            "medianTrainGroups": 16.5,
+            "medianTestGroups": 16.5
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch2",
+      "target": "icd10Chapter",
+      "class0": "not_ch2",
+      "class1": "ch2:2"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5289606107929897,
+          "aucStd": 0.04430892079536487,
+          "advantageMean": 0.040065937879576595,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.454251258025334,
+          "aucStd": 0.040778204494937215,
+          "advantageMean": 0.0489241714384869,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.9300411522633745,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 489.0,
+            "medianTestRows": 226.0,
+            "minTrainGroups": 257,
+            "minTestGroups": 110,
+            "medianTrainGroups": 257.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 38.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 38,
+            "minTestGroups": 17,
+            "medianTrainGroups": 38.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch3",
+      "target": "icd10Chapter",
+      "class0": "not_ch3",
+      "class1": "ch3:3"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5240033458536909,
+          "aucStd": 0.04629243737618809,
+          "advantageMean": 0.040707755929099455,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5015190007085203,
+          "aucStd": 0.04215772658948444,
+          "advantageMean": 0.0332201109650063,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 228.5,
+      "majorityAcc": 0.9134090996500134,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 492.0,
+            "medianTestRows": 208.0,
+            "minTrainGroups": 272,
+            "minTestGroups": 104,
+            "medianTrainGroups": 273.0,
+            "medianTestGroups": 108.0
+          },
+          "1": {
+            "medianTrainRows": 51.0,
+            "medianTestRows": 19.0,
+            "minTrainGroups": 18,
+            "minTestGroups": 18,
+            "medianTrainGroups": 22.0,
+            "medianTestGroups": 19.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch4",
+      "target": "icd10Chapter",
+      "class0": "not_ch4",
+      "class1": "ch4:4"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.541375846784511,
+          "aucStd": 0.060117413115498064,
+          "advantageMean": 0.06291588875160722,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5175028975375018,
+          "aucStd": 0.04406168950685768,
+          "advantageMean": 0.04052168851955126,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9231808582552785,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 509.0,
+            "medianTestRows": 198.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 107,
+            "medianTrainGroups": 278.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 46.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 14,
+            "minTestGroups": 16,
+            "medianTrainGroups": 17.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch5",
+      "target": "icd10Chapter",
+      "class0": "not_ch5",
+      "class1": "ch5:5"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5091802890310352,
+          "aucStd": 0.03865617274058184,
+          "advantageMean": 0.03290689410092395,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5594487878069967,
+          "aucStd": 0.0516370259955941,
+          "advantageMean": 0.06784332306720367,
+          "sigFraction": 0.36666666666666664,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.8271604938271607,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 434.0,
+            "medianTestRows": 201.0,
+            "minTrainGroups": 260,
+            "minTestGroups": 114,
+            "medianTrainGroups": 260.0,
+            "medianTestGroups": 114.0
+          },
+          "1": {
+            "medianTrainRows": 93.0,
+            "medianTestRows": 42.0,
+            "minTrainGroups": 35,
+            "minTestGroups": 13,
+            "medianTrainGroups": 35.0,
+            "medianTestGroups": 13.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch6",
+      "target": "icd10Chapter",
+      "class0": "not_ch6",
+      "class1": "ch6:6"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5405899109071979,
+          "aucStd": 0.04607603559956812,
+          "advantageMean": 0.05231537508594063,
+          "sigFraction": 0.13333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5007248180248567,
+          "aucStd": 0.04014538118378838,
+          "advantageMean": 0.03475450140663381,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.904710716254503,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 473.0,
+            "medianTestRows": 220.0,
+            "minTrainGroups": 268,
+            "minTestGroups": 103,
+            "medianTrainGroups": 269.0,
+            "medianTestGroups": 105.0
+          },
+          "1": {
+            "medianTrainRows": 55.0,
+            "medianTestRows": 22.0,
+            "minTrainGroups": 24,
+            "minTestGroups": 21,
+            "medianTrainGroups": 26.0,
+            "medianTestGroups": 22.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch7",
+      "target": "icd10Chapter",
+      "class0": "not_ch7",
+      "class1": "ch7:7"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5739280063078269,
+          "aucStd": 0.06478573113302884,
+          "advantageMean": 0.083818406303673,
+          "sigFraction": 0.3,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5653648794729472,
+          "aucStd": 0.045716807751952866,
+          "advantageMean": 0.06975970804788208,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9250996756535004,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 510.0,
+            "medianTestRows": 198.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 109,
+            "medianTrainGroups": 279.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 45.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 15,
+            "minTestGroups": 15,
+            "medianTrainGroups": 16.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch8",
+      "target": "icd10Chapter",
+      "class0": "not_ch8",
+      "class1": "ch8:8"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5633483192175807,
+          "aucStd": 0.061758564816472,
+          "advantageMean": 0.07487513334365282,
+          "sigFraction": 0.23333333333333334,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5568794596147219,
+          "aucStd": 0.04468498788194003,
+          "advantageMean": 0.06309455473959137,
+          "sigFraction": 0.1,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9186127456636284,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 507.0,
+            "medianTestRows": 197.0,
+            "minTrainGroups": 275,
+            "minTestGroups": 108,
+            "medianTrainGroups": 276.0,
+            "medianTestGroups": 109.0
+          },
+          "1": {
+            "medianTrainRows": 48.0,
+            "medianTestRows": 18.0,
+            "minTrainGroups": 18,
+            "minTestGroups": 17,
+            "medianTrainGroups": 19.0,
+            "medianTestGroups": 18.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch9",
+      "target": "icd10Chapter",
+      "class0": "not_ch9",
+      "class1": "ch9:9"
+    }
+  ],
+  "contrasts": [
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5113673323618563,
+          "aucStd": 0.026757625753110685,
+          "advantageMean": 0.022775255538599017,
+          "sigFraction": 0.1,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5099392602970164,
+          "aucStd": 0.015983253391926328,
+          "advantageMean": 0.01431220486915855,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7458808618504434,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 933.0,
+            "medianTestRows": 393.0,
+            "minTrainGroups": 526,
+            "minTestGroups": 216,
+            "medianTrainGroups": 555.0,
+            "medianTestGroups": 220.0
+          },
+          "1": {
+            "medianTrainRows": 314.0,
+            "medianTestRows": 133.0,
+            "minTrainGroups": 195,
+            "minTestGroups": 74,
+            "medianTrainGroups": 199.0,
+            "medianTestGroups": 103.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GR",
+      "target": "duoTermPresence",
+      "class0": "not_GR",
+      "class1": "GR"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5120772127639136,
+          "aucStd": 0.01609671064264327,
+          "advantageMean": 0.015821897324797978,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4833133287036289,
+          "aucStd": 0.014528000249193172,
+          "advantageMean": 0.018413163921882015,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.564828897338403,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 706.0,
+            "medianTestRows": 297.0,
+            "minTrainGroups": 444,
+            "minTestGroups": 178,
+            "medianTrainGroups": 447.0,
+            "medianTestGroups": 208.0
+          },
+          "1": {
+            "medianTrainRows": 541.0,
+            "medianTestRows": 229.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 112,
+            "medianTrainGroups": 307.0,
+            "medianTestGroups": 115.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO DS",
+      "target": "duoTermPresence",
+      "class0": "not_DS",
+      "class1": "DS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5124442640106535,
+          "aucStd": 0.02071278564225218,
+          "advantageMean": 0.020311579612808345,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.523099544976705,
+          "aucStd": 0.019277248498850475,
+          "advantageMean": 0.024272185660058804,
+          "sigFraction": 0.16666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.5707858048162231,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 713.0,
+            "medianTestRows": 300.0,
+            "minTrainGroups": 450,
+            "minTestGroups": 182,
+            "medianTrainGroups": 453.0,
+            "medianTestGroups": 212.0
+          },
+          "1": {
+            "medianTrainRows": 534.0,
+            "medianTestRows": 226.0,
+            "minTrainGroups": 271,
+            "minTestGroups": 108,
+            "medianTrainGroups": 301.0,
+            "medianTestGroups": 111.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO RS",
+      "target": "duoTermPresence",
+      "class0": "not_RS",
+      "class1": "RS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4960884954232052,
+          "aucStd": 0.020239189956720634,
+          "advantageMean": 0.014931135520272457,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.47970148702305154,
+          "aucStd": 0.02028954546005427,
+          "advantageMean": 0.02283666545389289,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.6477186311787073,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 808.0,
+            "medianTestRows": 341.0,
+            "minTrainGroups": 460,
+            "minTestGroups": 194,
+            "medianTrainGroups": 489.0,
+            "medianTestGroups": 196.0
+          },
+          "1": {
+            "medianTrainRows": 439.0,
+            "medianTestRows": 185.0,
+            "minTrainGroups": 263,
+            "minTestGroups": 98,
+            "medianTrainGroups": 265.0,
+            "medianTestGroups": 127.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO POA",
+      "target": "duoTermPresence",
+      "class0": "not_POA",
+      "class1": "POA"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5072638673537797,
+          "aucStd": 0.019528268019496614,
+          "advantageMean": 0.015693812522265024,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.500196572935198,
+          "aucStd": 0.021231852308771237,
+          "advantageMean": 0.017569538377620937,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.6859315589353611,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 856.0,
+            "medianTestRows": 361.0,
+            "minTrainGroups": 479,
+            "minTestGroups": 214,
+            "medianTrainGroups": 479.0,
+            "medianTestGroups": 216.0
+          },
+          "1": {
+            "medianTrainRows": 391.0,
+            "medianTestRows": 165.0,
+            "minTrainGroups": 273,
+            "minTestGroups": 107,
+            "medianTrainGroups": 275.0,
+            "medianTestGroups": 107.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GS",
+      "target": "duoTermPresence",
+      "class0": "not_GS",
+      "class1": "GS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5292456832248388,
+          "aucStd": 0.020797724701071836,
+          "advantageMean": 0.029965008837243585,
+          "sigFraction": 0.26666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5073538163834291,
+          "aucStd": 0.020879102200818334,
+          "advantageMean": 0.018752550580614685,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.5662230671736376,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 706.0,
+            "medianTestRows": 298.0,
+            "minTrainGroups": 473,
+            "minTestGroups": 210,
+            "medianTrainGroups": 474.0,
+            "medianTestGroups": 211.0
+          },
+          "1": {
+            "medianTrainRows": 541.0,
+            "medianTestRows": 228.0,
+            "minTrainGroups": 279,
+            "minTestGroups": 111,
+            "medianTrainGroups": 280.0,
+            "medianTestGroups": 112.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO CC",
+      "target": "duoTermPresence",
+      "class0": "not_CC",
+      "class1": "CC"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.46317042860608665,
+          "aucStd": 0.02377718646487792,
+          "advantageMean": 0.03781997528986758,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.47932083833075567,
+          "aucStd": 0.02459135616844191,
+          "advantageMean": 0.024634678179133052,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7845373891001266,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 980.0,
+            "medianTestRows": 413.0,
+            "minTrainGroups": 603,
+            "minTestGroups": 266,
+            "medianTrainGroups": 603.0,
+            "medianTestGroups": 268.0
+          },
+          "1": {
+            "medianTrainRows": 267.0,
+            "medianTestRows": 113.0,
+            "minTrainGroups": 149,
+            "minTestGroups": 55,
+            "medianTrainGroups": 151.0,
+            "medianTestGroups": 55.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO NCU",
+      "target": "duoTermPresence",
+      "class0": "not_NCU",
+      "class1": "NCU"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5022133986466056,
+          "aucStd": 0.02289899997038972,
+          "advantageMean": 0.018713799425159695,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4683323399768657,
+          "aucStd": 0.023945544323062284,
+          "advantageMean": 0.032459078773572694,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7468948035487962,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 933.0,
+            "medianTestRows": 393.0,
+            "minTrainGroups": 526,
+            "minTestGroups": 218,
+            "medianTrainGroups": 527.0,
+            "medianTestGroups": 219.0
+          },
+          "1": {
+            "medianTrainRows": 314.0,
+            "medianTestRows": 133.0,
+            "minTrainGroups": 226,
+            "minTestGroups": 103,
+            "medianTrainGroups": 227.0,
+            "medianTestGroups": 104.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO HMB",
+      "target": "duoTermPresence",
+      "class0": "not_HMB",
+      "class1": "HMB"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4940441996765868,
+          "aucStd": 0.02000039998899781,
+          "advantageMean": 0.016824421901526956,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5006162537850151,
+          "aucStd": 0.027469551098310063,
+          "advantageMean": 0.02369748937348554,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7336501901140686,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 918.0,
+            "medianTestRows": 386.0,
+            "minTrainGroups": 571,
+            "minTestGroups": 239,
+            "medianTrainGroups": 598.0,
+            "medianTestGroups": 242.0
+          },
+          "1": {
+            "medianTrainRows": 329.0,
+            "medianTestRows": 140.0,
+            "minTrainGroups": 153,
+            "minTestGroups": 54,
+            "medianTrainGroups": 156.0,
+            "medianTestGroups": 81.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO NMDS",
+      "target": "duoTermPresence",
+      "class0": "not_NMDS",
+      "class1": "NMDS"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4667003417929501,
+          "aucStd": 0.025216816663551068,
+          "advantageMean": 0.03682791669967897,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4680477182384174,
+          "aucStd": 0.01868555077172054,
+          "advantageMean": 0.032761305814843815,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 526.0,
+      "majorityAcc": 0.7998098859315588,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 1000.0,
+            "medianTestRows": 421.0,
+            "minTrainGroups": 594,
+            "minTestGroups": 245,
+            "medianTrainGroups": 594.0,
+            "medianTestGroups": 247.0
+          },
+          "1": {
+            "medianTrainRows": 247.0,
+            "medianTestRows": 105.0,
+            "minTrainGroups": 158,
+            "minTestGroups": 76,
+            "medianTrainGroups": 160.0,
+            "medianTestGroups": 76.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "DUO GSO",
+      "target": "duoTermPresence",
+      "class0": "not_GSO",
+      "class1": "GSO"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4962046204620462,
+          "aucStd": 0.04809280485909773,
+          "advantageMean": 0.0386017870079691,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.4808339370522418,
+          "aucStd": 0.03806726661073129,
+          "advantageMean": 0.03315624245351365,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.8312757201646089,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 437.0,
+            "medianTestRows": 202.0,
+            "minTrainGroups": 263,
+            "minTestGroups": 115,
+            "medianTrainGroups": 263.0,
+            "medianTestGroups": 115.0
+          },
+          "1": {
+            "medianTrainRows": 90.0,
+            "medianTestRows": 41.0,
+            "minTrainGroups": 32,
+            "minTestGroups": 12,
+            "medianTrainGroups": 32.0,
+            "medianTestGroups": 12.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch0",
+      "target": "icd10Chapter",
+      "class0": "not_ch0",
+      "class1": "ch0:0"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.500014619883041,
+          "aucStd": 0.06907556021688557,
+          "advantageMean": 0.0596539961013645,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.44050682261208574,
+          "aucStd": 0.05112472181137997,
+          "advantageMean": 0.06440545808966862,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.9382716049382718,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 493.0,
+            "medianTestRows": 228.0,
+            "minTrainGroups": 261,
+            "minTestGroups": 112,
+            "medianTrainGroups": 261.0,
+            "medianTestGroups": 112.0
+          },
+          "1": {
+            "medianTrainRows": 34.0,
+            "medianTestRows": 15.0,
+            "minTrainGroups": 34,
+            "minTestGroups": 15,
+            "medianTrainGroups": 34.0,
+            "medianTestGroups": 15.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch1",
+      "target": "icd10Chapter",
+      "class0": "not_ch1",
+      "class1": "ch1:1"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5139933013231466,
+          "aucStd": 0.06797805004644764,
+          "advantageMean": 0.05867667543607899,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5716973076181101,
+          "aucStd": 0.049663899918691426,
+          "advantageMean": 0.07579098727166794,
+          "sigFraction": 0.2,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9257195236080663,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 509.0,
+            "medianTestRows": 199.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 108,
+            "medianTrainGroups": 278.5,
+            "medianTestGroups": 110.5
+          },
+          "1": {
+            "medianTrainRows": 45.5,
+            "medianTestRows": 16.5,
+            "minTrainGroups": 14,
+            "minTestGroups": 15,
+            "medianTrainGroups": 16.5,
+            "medianTestGroups": 16.5
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch2",
+      "target": "icd10Chapter",
+      "class0": "not_ch2",
+      "class1": "ch2:2"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5289606107929897,
+          "aucStd": 0.04430892079536487,
+          "advantageMean": 0.040065937879576595,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.454251258025334,
+          "aucStd": 0.040778204494937215,
+          "advantageMean": 0.0489241714384869,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.9300411522633745,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 489.0,
+            "medianTestRows": 226.0,
+            "minTrainGroups": 257,
+            "minTestGroups": 110,
+            "medianTrainGroups": 257.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 38.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 38,
+            "minTestGroups": 17,
+            "medianTrainGroups": 38.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch3",
+      "target": "icd10Chapter",
+      "class0": "not_ch3",
+      "class1": "ch3:3"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5240033458536909,
+          "aucStd": 0.04629243737618809,
+          "advantageMean": 0.040707755929099455,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5015190007085203,
+          "aucStd": 0.04215772658948444,
+          "advantageMean": 0.0332201109650063,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 228.5,
+      "majorityAcc": 0.9134090996500134,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 492.0,
+            "medianTestRows": 208.0,
+            "minTrainGroups": 272,
+            "minTestGroups": 104,
+            "medianTrainGroups": 273.0,
+            "medianTestGroups": 108.0
+          },
+          "1": {
+            "medianTrainRows": 51.0,
+            "medianTestRows": 19.0,
+            "minTrainGroups": 18,
+            "minTestGroups": 18,
+            "medianTrainGroups": 22.0,
+            "medianTestGroups": 19.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch4",
+      "target": "icd10Chapter",
+      "class0": "not_ch4",
+      "class1": "ch4:4"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.541375846784511,
+          "aucStd": 0.060117413115498064,
+          "advantageMean": 0.06291588875160722,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5175028975375018,
+          "aucStd": 0.04406168950685768,
+          "advantageMean": 0.04052168851955126,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9231808582552785,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 509.0,
+            "medianTestRows": 198.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 107,
+            "medianTrainGroups": 278.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 46.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 14,
+            "minTestGroups": 16,
+            "medianTrainGroups": 17.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch5",
+      "target": "icd10Chapter",
+      "class0": "not_ch5",
+      "class1": "ch5:5"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5091802890310352,
+          "aucStd": 0.03865617274058184,
+          "advantageMean": 0.03290689410092395,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5594487878069967,
+          "aucStd": 0.0516370259955941,
+          "advantageMean": 0.06784332306720367,
+          "sigFraction": 0.36666666666666664,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.8271604938271607,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 434.0,
+            "medianTestRows": 201.0,
+            "minTrainGroups": 260,
+            "minTestGroups": 114,
+            "medianTrainGroups": 260.0,
+            "medianTestGroups": 114.0
+          },
+          "1": {
+            "medianTrainRows": 93.0,
+            "medianTestRows": 42.0,
+            "minTrainGroups": 35,
+            "minTestGroups": 13,
+            "medianTrainGroups": 35.0,
+            "medianTestGroups": 13.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch6",
+      "target": "icd10Chapter",
+      "class0": "not_ch6",
+      "class1": "ch6:6"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5405899109071979,
+          "aucStd": 0.04607603559956812,
+          "advantageMean": 0.05231537508594063,
+          "sigFraction": 0.13333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5007248180248567,
+          "aucStd": 0.04014538118378838,
+          "advantageMean": 0.03475450140663381,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 243.0,
+      "majorityAcc": 0.904710716254503,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 473.0,
+            "medianTestRows": 220.0,
+            "minTrainGroups": 268,
+            "minTestGroups": 103,
+            "medianTrainGroups": 269.0,
+            "medianTestGroups": 105.0
+          },
+          "1": {
+            "medianTrainRows": 55.0,
+            "medianTestRows": 22.0,
+            "minTrainGroups": 24,
+            "minTestGroups": 21,
+            "medianTrainGroups": 26.0,
+            "medianTestGroups": 22.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch7",
+      "target": "icd10Chapter",
+      "class0": "not_ch7",
+      "class1": "ch7:7"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5739280063078269,
+          "aucStd": 0.06478573113302884,
+          "advantageMean": 0.083818406303673,
+          "sigFraction": 0.3,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5653648794729472,
+          "aucStd": 0.045716807751952866,
+          "advantageMean": 0.06975970804788208,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9250996756535004,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 510.0,
+            "medianTestRows": 198.0,
+            "minTrainGroups": 277,
+            "minTestGroups": 109,
+            "medianTrainGroups": 279.0,
+            "medianTestGroups": 110.0
+          },
+          "1": {
+            "medianTrainRows": 45.0,
+            "medianTestRows": 17.0,
+            "minTrainGroups": 15,
+            "minTestGroups": 15,
+            "medianTrainGroups": 16.0,
+            "medianTestGroups": 17.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch8",
+      "target": "icd10Chapter",
+      "class0": "not_ch8",
+      "class1": "ch8:8"
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5633483192175807,
+          "aucStd": 0.061758564816472,
+          "advantageMean": 0.07487513334365282,
+          "sigFraction": 0.23333333333333334,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5568794596147219,
+          "aucStd": 0.04468498788194003,
+          "advantageMean": 0.06309455473959137,
+          "sigFraction": 0.1,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 214.0,
+      "majorityAcc": 0.9186127456636284,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 507.0,
+            "medianTestRows": 197.0,
+            "minTrainGroups": 275,
+            "minTestGroups": 108,
+            "medianTrainGroups": 276.0,
+            "medianTestGroups": 109.0
+          },
+          "1": {
+            "medianTrainRows": 48.0,
+            "medianTestRows": 18.0,
+            "minTrainGroups": 18,
+            "minTestGroups": 17,
+            "medianTrainGroups": 19.0,
+            "medianTestGroups": 18.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "localhost-2026-09-15-decoupled",
+      "key": "ICD ch9",
+      "target": "icd10Chapter",
+      "class0": "not_ch9",
+      "class1": "ch9:9"
+    }
+  ]
+}

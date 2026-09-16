@@ -1,0 +1,18 @@
+{
+  "source": "/root/policy_privacy_rehearsal/experiments/data/localhost-2026-09-15-decoupled/spp_dataset.json",
+  "sourceSha256": "4661e9ece4a0ca03f1f7c6d9f6d4ad4635ecabf73d83eeaea7e9f07bd24a5013",
+  "featureKeys": [
+    "commitGasUsed",
+    "accessGasUsed"
+  ],
+  "targets": [
+    "logicStructure",
+    "nestingDepth",
+    "predicateCount",
+    "setSize"
+  ],
+  "kmeansSeeds": 20,
+  "permutations": 200,
+  "bootstraps": 500,
+  "randomSeed": 42
+}
