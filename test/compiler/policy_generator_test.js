@@ -35,6 +35,24 @@ function makeSampleConfig() {
   };
 }
 
+async function expectRejected(promise, pattern) {
+  try {
+    await promise;
+  } catch (error) {
+    expect(error).to.be.instanceOf(Error);
+    expect(error.message).to.match(pattern);
+    return;
+  }
+  throw new Error(`Expected rejection matching ${pattern}`);
+}
+
+function expectProgramShape(artifacts, depth) {
+  expect(artifacts.tokens.length).to.equal(artifacts.numOperations);
+  expect(artifacts.policy).to.have.lengthOf(depth);
+  expect(artifacts.policy.slice(0, artifacts.numOperations)).to.deep.equal(artifacts.tokens);
+  expect(artifacts.policy.slice(artifacts.numOperations).every((token) => token === 0)).to.equal(true);
+}
+
 describe('policy_generator', function () {
   this.timeout(20000);
 
@@ -72,6 +90,8 @@ describe('policy_generator', function () {
 
     expect(artifacts.operators).to.deep.equal({ AND: 24, OR: 25, NOT: 26, TRUE: 27 });
 
+    expectProgramShape(artifacts, 10);
+
     expect(artifacts.randomizer).to.equal(randomizerHex.toLowerCase());
     expect(artifacts.policyCommitment).to.match(/^0x[0-9a-f]+$/);
     expect(artifacts.policyHash).to.match(/^0x[0-9a-f]+$/);
@@ -87,65 +107,139 @@ describe('policy_generator', function () {
     expect(artifacts.policyCommitment).to.equal(expectedCommitmentHex);
   });
 
-  // it('auto-binds attributes to predicates when logic omits P[...]', async function () {
-  //   const config = {
-  //     ...makeSampleConfig(),
-  //     logic: 'DS | RS'
-  //   };
-  //   const artifacts = await generatePolicyArtifacts(config, {
-  //     depth: 10,
-  //     randomizer: '0x1',
-  //     attributeOrder: ['DS', 'RS', 'POA', 'GS', 'CC']
-  //   });
+  it('auto-binds ontology predicates when logic omits P[...]', async function () {
+    const artifacts = await generatePolicyArtifacts(
+      { ...makeSampleConfig(), logic: 'DS | RS' },
+      { depth: 10, randomizer: '0x1' }
+    );
 
-  //   expect(artifacts.tokens).to.deep.equal([0, 5, 7, 1, 6, 7, 8]);
-  //   expect(artifacts.logic.normalized).to.equal('((DS & P[ICD10]) | (RS & P[OBI]))');
-  // });
+    expect(artifacts.tokens).to.deep.equal([1, 13, 24, 2, 14, 24, 25]);
+    expect(artifacts.logic.normalized).to.equal('((DS & P[ICD10]) | (RS & P[OBI]))');
+    expect(artifacts.logic.rpn).to.deep.equal([
+      'DS', 'P[ICD10]', 'AND', 'RS', 'P[OBI]', 'AND', 'OR'
+    ]);
+    expectProgramShape(artifacts, 10);
+  });
 
-  // it('throws when a required predicate slot is missing', async function () {
-  //   const config = {
-  //     policy_id: 'no-predicate',
-  //     attributes: { DS: true },
-  //     predicates: [
-  //       {
-  //         slot: 0,
-  //         duo: 'RS',
-  //         namespace: 'OBI'
-  //       }
-  //     ],
-  //     logic: 'DS'
-  //   };
+  it('preserves AND-before-OR precedence and explicit parentheses', async function () {
+    const predicates = [
+      ...makeSampleConfig().predicates,
+      { slot: 2, duo: 'POA', namespace: 'HANCESTRO', root: '0x123' }
+    ];
 
-  //   try {
-  //     await generatePolicyArtifacts(config, { depth: 10, randomizer: '0x2' });
-  //     throw new Error('Expected generatePolicyArtifacts to throw');
-  //   } catch (err) {
-  //     expect(err).to.be.instanceOf(Error);
-  //     expect(err.message).to.match(/No predicate slot declared for namespace ICD10/);
-  //   }
-  // });
+    const defaultPrecedence = await generatePolicyArtifacts(
+      { predicates, logic: 'DS | RS & POA' },
+      { depth: 16, randomizer: 1 }
+    );
+    const parenthesized = await generatePolicyArtifacts(
+      { predicates, logic: '(DS | RS) & POA' },
+      { depth: 16, randomizer: 1 }
+    );
 
-  // it('supports custom attribute order with non-ontology attributes', async function () {
-  //   const config = {
-  //     policy_id: 'general-research',
-  //     attributes: { GR: true, DS: false, RS: false },
-  //     predicates: [
-  //       { slot: 0, duo: 'DS', namespace: 'ICD10' },
-  //       { slot: 1, duo: 'RS', namespace: 'OBI' }
-  //     ],
-  //     logic: 'GR'
-  //   };
+    expect(defaultPrecedence.tokens).to.deep.equal([
+      1, 13, 24, 2, 14, 24, 3, 15, 24, 24, 25
+    ]);
+    expect(parenthesized.tokens).to.deep.equal([
+      1, 13, 24, 2, 14, 24, 25, 3, 15, 24, 24
+    ]);
+    expect(defaultPrecedence.tokens).to.not.deep.equal(parenthesized.tokens);
+    expect(defaultPrecedence.policyCommitment).to.not.equal(parenthesized.policyCommitment);
+  });
 
-  //   const artifacts = await generatePolicyArtifacts(config, {
-  //     depth: 6,
-  //     randomizer: '0x10',
-  //     attributeOrder: ['GR', 'DS', 'RS']
-  //   });
+  it('keeps production token indexes stable under a custom presentation order', async function () {
+    const artifacts = await generatePolicyArtifacts({
+      attributes: { DS: true, RS: false },
+      predicates: [{ slot: 0, duo: 'DS', namespace: 'ICD10', root: '1' }],
+      logic: 'DS'
+    }, {
+      depth: 6,
+      randomizer: '0x10',
+      attributeOrder: ['RS', 'DS']
+    });
 
-  //   expect(artifacts.numAttributes).to.equal(3);
-  //   expect(artifacts.numPredicates).to.equal(2);
-  //   expect(artifacts.tokens.slice(0, 1)).to.deep.equal([0]);
-  //   expect(artifacts.attributes.requiresPredicateByCode.GR).to.equal(false);
-  //   expect(artifacts.logic.normalized).to.equal('GR');
-  // });
+    expect(artifacts.numAttributes).to.equal(13);
+    expect(artifacts.numPredicates).to.equal(11);
+    expect(artifacts.attributes.order).to.deep.equal(['RS', 'DS']);
+    expect(artifacts.attributes.bitmap).to.deep.equal([0, 1]);
+    expect(artifacts.tokens).to.deep.equal([1, 13, 24]);
+    expectProgramShape(artifacts, 6);
+  });
+
+  it('is deterministic for the same policy, depth and randomizer', async function () {
+    const config = { ...makeSampleConfig(), logic: 'DS | RS' };
+    const options = { depth: 10, randomizer: '0x12345' };
+
+    const first = await generatePolicyArtifacts(config, options);
+    const second = await generatePolicyArtifacts(config, options);
+
+    expect(second.tokens).to.deep.equal(first.tokens);
+    expect(second.policyHash).to.equal(first.policyHash);
+    expect(second.policyCommitment).to.equal(first.policyCommitment);
+    expect(second.randomizer).to.equal(first.randomizer);
+  });
+
+  it('changes the commitment when the randomizer changes', async function () {
+    const config = { ...makeSampleConfig(), logic: 'DS | RS' };
+    const first = await generatePolicyArtifacts(config, { depth: 10, randomizer: 1 });
+    const second = await generatePolicyArtifacts(config, { depth: 10, randomizer: 2 });
+
+    expect(second.policyHash).to.equal(first.policyHash);
+    expect(second.policyCommitment).to.not.equal(first.policyCommitment);
+  });
+
+  it('rejects a missing required ontology predicate', async function () {
+    await expectRejected(
+      generatePolicyArtifacts({ logic: 'DS', predicates: [] }, { depth: 10, randomizer: 2 }),
+      /No predicate slot declared for ICD10/
+    );
+  });
+
+  it('rejects a predicate namespace that does not match its DUO term', async function () {
+    await expectRejected(
+      generatePolicyArtifacts({
+        logic: 'RS',
+        predicates: [{ slot: 1, duo: 'RS', namespace: 'ICD10', root: '1' }]
+      }, { depth: 10, randomizer: 2 }),
+      /namespace mismatch/
+    );
+  });
+
+  it('rejects invalid and insufficient depths', async function () {
+    const config = { ...makeSampleConfig(), logic: 'DS | RS' };
+
+    for (const depth of [0, -1, 1.5]) {
+      await expectRejected(
+        generatePolicyArtifacts(config, { depth, randomizer: 1 }),
+        /depth must be a positive integer/
+      );
+    }
+    await expectRejected(
+      generatePolicyArtifacts(config, { depth: 6, randomizer: 1 }),
+      /Token sequence length 7 exceeds depth 6/
+    );
+  });
+
+  it('rejects malformed logic and duplicate terms', async function () {
+    await expectRejected(
+      generatePolicyArtifacts({ ...makeSampleConfig(), logic: '(DS | RS' }, { randomizer: 1 }),
+      /Mismatched parentheses/
+    );
+    await expectRejected(
+      generatePolicyArtifacts({ ...makeSampleConfig(), logic: 'DS & DS' }, { randomizer: 1 }),
+      /DUO term DS may appear at most once/
+    );
+  });
+
+  it('rejects invalid randomizer encodings', async function () {
+    const config = { ...makeSampleConfig(), logic: 'DS | RS' };
+
+    await expectRejected(
+      generatePolicyArtifacts(config, { randomizer: 'not-a-number' }),
+      /Invalid randomizer format/
+    );
+    await expectRejected(
+      generatePolicyArtifacts(config, { randomizer: -1 }),
+      /randomizer must be a non-negative finite number/
+    );
+  });
 });
