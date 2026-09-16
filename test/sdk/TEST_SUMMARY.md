@@ -90,7 +90,7 @@ npm run test:sdk
 ### Run Individual Modules
 ```bash
 npm run test:sdk:prover       # ✅ All passing
-npm run test:sdk:compiler     # ⚠️ Needs predicate fixes
+# test:sdk:compiler removed 2026-09-16 (legacy suite, see test/TEST_AUDIT_2026-09-16.md)
 npm run test:sdk:contracts    # ⚠️ Needs ABI assertion fixes
 npm run test:sdk:integration  # ⚠️ Needs predicate fixes
 ```

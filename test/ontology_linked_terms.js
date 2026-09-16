@@ -25,8 +25,16 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
   });
 
   // Helper function to build a simple Merkle tree and generate proof
-  function buildMerkleTree(leaves, targetLeaf) {
+  // OntologyLinkedTermsVerifier domain-separates ontology leaves from scoped
+  // affiliation leaves: the tree is built over Poseidon(2000, code), not the
+  // raw code. Inputs to this helper are raw codes.
+  const ONTOLOGY_LEAF_TAG = 2000n;
+  const ontologyLeaf = (code) => poseidonHash.F.toObject(poseidonHash([ONTOLOGY_LEAF_TAG, code]));
+
+  function buildMerkleTree(rawLeaves, rawTargetLeaf) {
     const LEVELS = 8;
+    const leaves = rawLeaves.map(ontologyLeaf);
+    const targetLeaf = ontologyLeaf(rawTargetLeaf);
     const pathElements = new Array(LEVELS).fill(0n);
     const pathIndices = new Array(LEVELS).fill(0);
 
@@ -144,7 +152,7 @@ describe('Ontology-Linked Terms Verifier Tests', function () {
       await circuit.checkConstraints(witness);
 
       // Debug: Manually verify the Merkle proof to match circuit logic exactly
-      let currentHash = icdCode;
+      let currentHash = ontologyLeaf(icdCode);
       console.log('  - Manual Merkle verification (matching circuit):');
       console.log('    Starting with leaf:', currentHash.toString());
 

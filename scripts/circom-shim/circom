@@ -1,0 +1,13 @@
+#!/bin/sh
+# circom_tester shells out to a native `circom`; this repo compiles with the
+# circom2 npm package (the same compiler built to WASM), so forward to it.
+# circom_tester parses the version from the first digit of `--version`
+# output, and circom2 prints its own package line first ("circom2 npm
+# package 0.2.22"), so only the compiler line is echoed for that flag.
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+CIRCOM2="$ROOT/node_modules/.bin/circom2"
+if [ "$1" = "--version" ]; then
+    "$CIRCOM2" --version | grep "circom compiler"
+    exit $?
+fi
+exec "$CIRCOM2" "$@"

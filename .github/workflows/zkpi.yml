@@ -21,6 +21,32 @@ jobs:
       - run: npm run build:rapidsnark
       - run: npm run test:ci
 
+  local-suites:
+    name: Gadget, contract, analysis and Python suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experiments/requirements.txt
+      - run: npm ci
+      - run: python -m venv .venv && .venv/bin/pip install -r experiments/requirements.txt
+      # CI-profile circuit + verifier for the on-chain suites (same build the
+      # core job validates); the gadget suites compile their own test circuits
+      # through scripts/circom-shim.
+      - run: npm run protocol:build:ci
+      - run: npm run test:gadgets
+      - run: npm run test:contracts:ci
+      - run: npm run test:analysis
+      - run: npm run test:python
+
   full-proof-matrix:
     name: Full DUO proof matrix
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/master')

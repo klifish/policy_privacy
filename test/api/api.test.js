@@ -8,7 +8,20 @@ describe('PolicyPrivacy API Integration Tests', function() {
 
   before(async function() {
     this.timeout(30000);
-    
+
+    // ethers' JsonRpcProvider retries network detection forever, so probe the
+    // node first and skip the suite outright when nothing listens on :8545.
+    const nodeUp = await fetch('http://localhost:8545', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}',
+      signal: AbortSignal.timeout(2000)
+    }).then((r) => r.ok, () => false);
+    if (!nodeUp) {
+      console.warn('No local node on :8545, API tests skipped');
+      this.skip();
+    }
+
     // Start API server for testing
     const api = new PolicyPrivacyAPI({
       port: 3001, // Use different port for testing

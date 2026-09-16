@@ -5,7 +5,7 @@ const assert = require('assert');
 
 describe('External Predicates Tests', function () {
     let merkleCircuit;
-    let credentialCircuit;
+
     let rangeCircuit;
     let poseidonHash;
     this.timeout(100000);
@@ -17,8 +17,9 @@ describe('External Predicates Tests', function () {
         try {
             // Try to load the external predicate test circuits if available
             merkleCircuit = await wasm("test/circuits/test_merkle_proof_verifier.circom");
-            credentialCircuit = await wasm("test/circuits/test_credential_signature.circom");
             rangeCircuit = await wasm("test/circuits/test_range_proof.circom");
+            // The credential gadget derives its signed message inside the
+            // circuit (DUO V3); it is covered by test/duo/duo_v3_tamper.test.js.
         } catch (error) {
             console.log('Circuits not available, testing functional predicate logic');
             console.log('To test with circuits, run "npm run build:circuit" first');
@@ -131,69 +132,6 @@ describe('External Predicates Tests', function () {
 
             assert(currentHash instanceof Uint8Array, 'Root should be computed correctly');
             assert.equal(currentHash.length, 32, 'Root should be 32 bytes');
-        });
-    });
-
-    describe('Credential Signature Circuit Integration', function () {
-        it('Should verify valid credential signature in circuit', async function () {
-            if (!credentialCircuit) {
-                console.log('⚠️  Circuit test skipped - testing functional signature logic instead');
-                this.skip();
-            }
-
-            const message = 42n;
-            const publicKey = 999n;
-
-            // Mock signature as Poseidon hash of message and public key
-            const signature = poseidonHash([message, publicKey]);
-
-            console.log('Testing credential signature circuit:');
-            console.log('- Message:', message.toString());
-            console.log('- Public key:', publicKey.toString());
-            console.log('- Signature:', signature.toString().slice(-8));
-
-            const input = {
-                message: message,
-                signature: poseidonHash.F.toObject(signature),
-                publicKey: publicKey
-            };
-
-            // Generate witness and check constraints
-            const witness = await credentialCircuit.calculateWitness(input, true);
-            await credentialCircuit.checkConstraints(witness);
-
-            console.log('✅ Credential signature circuit verified successfully');
-        });
-
-        it('Should handle signature validation', async function () {
-            if (!credentialCircuit) {
-                console.log('⚠️  Circuit test skipped - testing functional signature logic instead');
-                this.skip();
-            }
-
-            const testCases = [
-                { message: 100n, publicKey: 200n },
-                { message: 300n, publicKey: 400n },
-                { message: 500n, publicKey: 600n }
-            ];
-
-            console.log('Testing multiple signature validations:');
-
-            for (let i = 0; i < testCases.length; i++) {
-                const { message, publicKey } = testCases[i];
-                const signature = poseidonHash([message, publicKey]);
-
-                const input = {
-                    message: message,
-                    signature: poseidonHash.F.toObject(signature),
-                    publicKey: publicKey
-                };
-
-                const witness = await credentialCircuit.calculateWitness(input, true);
-                await credentialCircuit.checkConstraints(witness);
-
-                console.log(`✅ Signature case ${i + 1} verified successfully`);
-            }
         });
     });
 

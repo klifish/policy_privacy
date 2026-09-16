@@ -1,53 +1,25 @@
 const path = require('path');
-const fs = require('fs');
-const snarkjs = require('snarkjs');
+const wasm_tester = require('circom_tester').wasm;
 
+// MultiMux4 selects in[sel] for a 2-bit selector (sel[0] is the low bit).
 describe('Multimux Test', function () {
   this.timeout(100000);
 
-  let wasmPath, r1csPath;
+  let circuit;
 
-  before(async () => {
-    wasmPath = path.join(__dirname, '..', 'build', 'circuits', 'test_multimux_js', 'test_multimux.wasm');
-    r1csPath = path.join(__dirname, '..', 'build', 'circuits', 'test_multimux.r1cs');
-    
-    if (!fs.existsSync(wasmPath) || !fs.existsSync(r1csPath)) {
-      console.log("Circuit files not found. Run 'npm run build:circuit' first.");
-      console.log("Expected files:");
-      console.log("  -", wasmPath);
-      console.log("  -", r1csPath);
-      this.skip();
-    }
+  before(async function () {
+    circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_multimux.circom'));
   });
 
   it('selects the second input', async () => {
-    const input = {
-      in: [10, 20, 30, 40],
-      sel: [1, 0]
-    };
-
-    const witness = await snarkjs.wtns.calculate(input, wasmPath);
-    
-    // Output should be the second input (20)
-    const output = witness[1]; 
-    if (Number(output) !== 20) {
-      throw new Error(`Expected output 20, got ${output}`);
-    }
+    const witness = await circuit.calculateWitness({ in: [10, 20, 30, 40], sel: [1, 0] }, true);
+    await circuit.checkConstraints(witness);
+    await circuit.assertOut(witness, { out: 20 });
   });
 
   it('selects the fourth input', async () => {
-    const input = {
-      in: [10, 20, 30, 40],
-      sel: [1, 1]
-    };
-
-    const witness = await snarkjs.wtns.calculate(input, wasmPath);
-    
-    // Output should be the fourth input (40)
-    const output = witness[1];
-    if (Number(output) !== 40) {
-      throw new Error(`Expected output 40, got ${output}`);
-    }
+    const witness = await circuit.calculateWitness({ in: [10, 20, 30, 40], sel: [1, 1] }, true);
+    await circuit.checkConstraints(witness);
+    await circuit.assertOut(witness, { out: 40 });
   });
 });
-

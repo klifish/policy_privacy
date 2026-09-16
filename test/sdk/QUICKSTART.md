@@ -69,10 +69,9 @@ The compiler, contracts, and integration tests need minor updates to match the a
 npm run test:sdk
 
 # Run specific modules
-npm run test:sdk:prover       # ✅ 34/34 passing
-npm run test:sdk:compiler     # ⚠️ Needs predicate fixes
-npm run test:sdk:contracts    # ⚠️ Needs ABI fixes
-npm run test:sdk:integration  # ⚠️ Needs compiler fixes
+npm run test:sdk:prover       # prover module
+npm run test:sdk:contracts    # contract bindings
+# (the legacy compiler/integration suites were removed on 2026-09-16; see test/TEST_AUDIT_2026-09-16.md)
 
 # Run with detailed output
 npx mocha test/sdk/prover.test.js --reporter spec
