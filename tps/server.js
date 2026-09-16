@@ -59,6 +59,24 @@ function resolveAccessGasPadBase(app) {
     return BigInt(n);
 }
 
+// A failed access submission that can be explained by the ACM's strict hour
+// bucket: the revert reason where the RPC surfaces it (automine chains), or a
+// mined-but-reverted receipt (public chains, where the tx carries an explicit
+// gasLimit and is not simulated before sending).
+function isStaleEpochFailure(error) {
+    const text = [
+        error && error.message,
+        error && error.shortMessage,
+        error && error.reason,
+        error && error.error && error.error.message
+    ].filter(Boolean).join(' ');
+    if (/Stale request epoch/i.test(text)) {
+        return true;
+    }
+    const receipt = error && error.receipt;
+    return error && error.code === 'CALL_EXCEPTION' && !!receipt && Number(receipt.status) === 0;
+}
+
 function randomizedAccessGasTarget(base) {
     if (base <= 0n) return 0n;
     const b = Number(base);
@@ -347,18 +365,24 @@ router.post('/prove', async (req, res) => {
                 });
             }
 
-            // Avoid knowingly submitting a proof generated in the preceding
-            // hour.  A boundary crossed after this check causes the ACM to
-            // reject, and the caller can obtain a fresh proof without having
-            // consumed the nonce in TPS storage.
-            const latestBlock = await tpsContract.runner.provider.getBlock('latest');
-            const chainEpoch = Math.floor(Number(latestBlock.timestamp) / 3600);
-            if (chainEpoch !== requestEpoch) {
-                // The previous proof cannot succeed under the strict epoch
-                // check. Regenerate once against the chain's current hour;
-                // a later mining-boundary race still reverts safely and leaves
-                // the nonce unconsumed for a new request.
-                requestEpoch = chainEpoch;
+            // The ACM checks the proof's hour bucket against block.timestamp of
+            // the block that mines the tx. The hour that block will carry is
+            // best predicted by the later of the chain's latest block and the
+            // wall clock: on an automine chain the latest block can sit in the
+            // previous hour until the next tx, and on a public chain the wall
+            // clock runs a few seconds ahead of the latest block.
+            const provider = tpsContract.runner.provider;
+            const currentEpoch = async () => {
+                const latestBlock = await provider.getBlock('latest');
+                return Math.max(
+                    Math.floor(Number(latestBlock.timestamp) / 3600),
+                    Math.floor(Date.now() / 3_600_000)
+                );
+            };
+            // Re-prove against `epoch`; proofTimings then describe the proof
+            // that is actually submitted.
+            const reproveFor = async (epoch) => {
+                requestEpoch = epoch;
                 proofResult = await generateProof(material, evidence, {
                     policyCommitment,
                     idReq: evidence.requesterId,
@@ -368,6 +392,13 @@ router.post('/prove', async (req, res) => {
                 });
                 ({ pA, pB, pC, pubSignals, timings: proofTimings } = proofResult);
                 store.updateSession(sessionId, { requestEpoch, status: 'reproved' });
+            };
+
+            // Avoid knowingly submitting a proof generated in the preceding
+            // hour.
+            const chainEpoch = await currentEpoch();
+            if (chainEpoch !== requestEpoch) {
+                await reproveFor(chainEpoch);
             }
 
             // Optional fee cap (gwei): on Polygon Amoy the RPC-suggested tip is
@@ -401,46 +432,66 @@ router.post('/prove', async (req, res) => {
             const padOverrides = accessGasPadTarget > 0n
                 ? { ...overrides, gasLimit: padGasLimit }
                 : overrides;
+            const submitAccess = async () => {
+                try {
+                    const tx = await retryRpc(
+                        `TPS requestAccessBound send for policyId=${policyId}`,
+                        () => accessGasPadTarget > 0n
+                            ? tpsContract.requestAccessBoundWithGasPad(
+                                BigInt(policyId),
+                                BigInt(resourceId),
+                                BigInt(nonce),
+                                BigInt(evidence.requesterId),
+                                BigInt(requestEpoch),
+                                pA, pB, pC, pubSignals,
+                                accessGasPadTarget,
+                                padOverrides
+                            )
+                            : tpsContract.requestAccessBound(
+                                BigInt(policyId),
+                                BigInt(resourceId),
+                                BigInt(nonce),
+                                BigInt(evidence.requesterId),
+                                BigInt(requestEpoch),
+                                pA, pB, pC, pubSignals,
+                                overrides
+                            ),
+                        { initialDelayMs: 5000, maxAttempts: 8 }
+                    );
+                    const receipt = await waitForTx(tx, 1, { label: `TPS requestAccessBound tx ${tx.hash}` });
+                    return { txHash: tx.hash, receipt };
+                } catch (error) {
+                    const knownTxHash = getAlreadyKnownTransactionHash(error);
+                    if (!knownTxHash) {
+                        throw error;
+                    }
+
+                    console.warn(`[TPS] requestAccessBound tx already known by RPC; waiting for ${knownTxHash}`);
+                    const receipt = await waitForTransactionReceipt(provider, knownTxHash, {
+                        label: `TPS already-known requestAccessBound receipt ${knownTxHash}`
+                    });
+                    return { txHash: knownTxHash, receipt };
+                }
+            };
+
             let txHash;
             let receipt;
             try {
-                const tx = await retryRpc(
-                    `TPS requestAccessBound send for policyId=${policyId}`,
-                    () => accessGasPadTarget > 0n
-                        ? tpsContract.requestAccessBoundWithGasPad(
-                            BigInt(policyId),
-                            BigInt(resourceId),
-                            BigInt(nonce),
-                            BigInt(evidence.requesterId),
-                            BigInt(requestEpoch),
-                            pA, pB, pC, pubSignals,
-                            accessGasPadTarget,
-                            padOverrides
-                        )
-                        : tpsContract.requestAccessBound(
-                            BigInt(policyId),
-                            BigInt(resourceId),
-                            BigInt(nonce),
-                            BigInt(evidence.requesterId),
-                            BigInt(requestEpoch),
-                            pA, pB, pC, pubSignals,
-                            overrides
-                        ),
-                    { initialDelayMs: 5000, maxAttempts: 8 }
-                );
-                txHash = tx.hash;
-                receipt = await waitForTx(tx, 1, { label: `TPS requestAccessBound tx ${tx.hash}` });
+                ({ txHash, receipt } = await submitAccess());
             } catch (error) {
-                const knownTxHash = getAlreadyKnownTransactionHash(error);
-                if (!knownTxHash) {
+                // Hour boundary crossed between the pre-check and mining: the
+                // ACM rejects the stale bucket (a revert at send time on an
+                // automine chain, a status-0 receipt on a public one). The
+                // nonce is still unconsumed on-chain, so re-prove once for the
+                // hour the chain is now in and resubmit.
+                const epochNow = await currentEpoch();
+                if (epochNow === requestEpoch || !isStaleEpochFailure(error)) {
                     throw error;
                 }
-
-                txHash = knownTxHash;
-                console.warn(`[TPS] requestAccessBound tx already known by RPC; waiting for ${txHash}`);
-                receipt = await waitForTransactionReceipt(tpsContract.runner.provider, txHash, {
-                    label: `TPS already-known requestAccessBound receipt ${txHash}`
-                });
+                console.warn(`[TPS] requestAccessBound for policyId=${policyId} hit the hour boundary ` +
+                    `(epoch ${requestEpoch} -> ${epochNow}); re-proving and resubmitting`);
+                await reproveFor(epochNow);
+                ({ txHash, receipt } = await submitAccess());
             }
 
             // Parse requestId and authorization outcome from events

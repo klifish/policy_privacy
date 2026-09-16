@@ -111,6 +111,40 @@ describe('TPS HTTP endpoints', function () {
     expect(tx.from.toLowerCase()).to.equal(stack.tpsSigner.address.toLowerCase());
   });
 
+  it('re-proves when the hour boundary is crossed between the pre-check and mining', async () => {
+    // Advance the chain into the next hour only when the access tx is sent,
+    // i.e. after the server's epoch pre-check has already passed. The ACM then
+    // rejects the proof's stale bucket and the server must re-prove for the
+    // hour the chain is now in instead of failing the request.
+    const real = stack.contract.connect(stack.tpsSigner);
+    const sends = [];
+    const contract = new Proxy(real, {
+      get(target, prop, receiver) {
+        if (prop === 'requestAccessBound' || prop === 'requestAccessBoundWithGasPad') {
+          return async (...args) => {
+            sends.push(args[4]);   // requestEpoch argument
+            if (sends.length === 1) {
+              await ethers.provider.send('evm_increaseTime', [3600]);
+              await ethers.provider.send('evm_mine', []);
+            }
+            return target[prop](...args);
+          };
+        }
+        return Reflect.get(target, prop, receiver);
+      }
+    });
+    const before = BigInt(Math.floor(Date.now() / 3_600_000));
+    const res = await request(buildTestApp(contract))
+      .post('/tps/prove')
+      .send(proveBody(await validEvidence(), { submitOnChain: true }));
+    expect(res.status).to.equal(200);
+    expect(res.body.chainResult.isGranted).to.equal(true);
+    expect(sends).to.have.length(2);
+    expect(BigInt(sends[1])).to.equal(BigInt(sends[0]) + 1n);
+    expect(BigInt(res.body.requestEpoch)).to.be.at.least(before + 1n);
+    expect(BigInt(res.body.pubSignals[4])).to.equal(BigInt(res.body.requestEpoch));
+  });
+
   it('rejects a replay before generating another proof', async () => {
     const app = buildTestApp();
     const body = proveBody(await validEvidence());
