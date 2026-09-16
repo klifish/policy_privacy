@@ -66,6 +66,5 @@ make -j"$(getconf _NPROCESSORS_ONLN)"
 make install
 
 PROVER="$RS_DIR/package_$PLATFORM/bin/prover"
-[ "$PLATFORM" = host ] && PROVER="$RS_DIR/package/bin/prover"
 [ -x "$PROVER" ] || { echo "build finished but $PROVER is missing" >&2; exit 1; }
 echo "rapidsnark prover: $PROVER"
