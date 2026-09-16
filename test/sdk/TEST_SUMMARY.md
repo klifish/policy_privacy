@@ -244,7 +244,7 @@ npm run test:sdk -- --reporter spec
 npm run test:sdk:prover
 npm run test:sdk  # prover + contracts
 npm run test:sdk:contracts
-npm run test:sdk:integration
+npm run test:sdk
 ```
 
 ## Contact
