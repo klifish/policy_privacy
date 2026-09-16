@@ -19,7 +19,9 @@ DEFAULT_PY_VERDICTS = {
     "pi": SUPERVISED_RESULTS_DIR / "pi_supervised_verdict.json",
     "spp": SUPERVISED_RESULTS_DIR / "spp_supervised_verdict.json",
 }
-EXPECTED_TASK_COUNTS = {"pch": 16, "pi": 5, "spp": 28}
+# PCH: 10 DUO-term + 10 ICD-chapter tasks; PI: overall + 3 pair types
+# (structural_variant was retired); SPP: 6+3+6+6 within-axis contrasts.
+EXPECTED_TASK_COUNTS = {"pch": 20, "pi": 4, "spp": 21}
 
 
 def load_json(path: Path):
@@ -27,9 +29,24 @@ def load_json(path: Path):
         return json.load(handle)
 
 
+def canonical_key(task: Dict) -> str:
+    """Task key with an order-independent class pair.
+
+    Python and JS enumerate SPP contrasts in different class orders
+    (``paramType: none/large`` vs ``paramType: large/none``); the contrast is
+    the same, so match on the sorted pair.
+    """
+    key = str(task.get("key") or f"{task.get('target')}:{task.get('class0')}/{task.get('class1')}")
+    prefix, sep, rest = key.partition(": ")
+    if sep and rest.count("/") == 1:
+        a, b = rest.split("/")
+        return f"{prefix}: {'/'.join(sorted((a, b)))}"
+    return key
+
+
 def task_map(verdict: Dict) -> Dict[str, Dict]:
     tasks = verdict.get("tasks") or verdict.get("contrasts") or []
-    return {str(t.get("key") or f"{t.get('target')}:{t.get('class0')}/{t.get('class1')}"): t for t in tasks}
+    return {canonical_key(t): t for t in tasks}
 
 
 def normalize_criterion(c: Dict) -> Dict:
