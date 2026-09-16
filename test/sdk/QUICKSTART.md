@@ -237,7 +237,7 @@ it('should demonstrate commitment hiding property', async function() {
 
 **A:** Check these resources:
 1. [examples/diabetes_case/policy.input.json](../../examples/diabetes_case/policy.input.json)
-2. [test/compiler/duo_policy_compiler_test.js](../compiler/duo_policy_compiler_test.js)
+2. [test/compiler/policy_generator_test.js](../compiler/policy_generator_test.js)
 3. [README.md (SDK Usage section)](../../README.md#library-usage-sdk)
 
 ### Q: Should I wait for all tests to pass?

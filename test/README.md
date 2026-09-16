@@ -30,7 +30,7 @@ Contains all test circuits for individual components:
 - `pedersenhash.js` - Pedersen hash tests
 
 ### Compiler Tests (`/test/compiler/`)
-- `duo_policy_compiler_test.js` - DUO policy compiler tests
+- `policy_generator_test.js` - policy artifact generation and compiler rejections
 - `icd10_set_builder_test.js` - ICD-10 set builder tests
 
 ### Test Data (`/test/data/`)

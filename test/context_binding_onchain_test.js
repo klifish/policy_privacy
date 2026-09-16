@@ -2,8 +2,10 @@
  * On-chain enforcement of the authorization-context binding
  * =========================================================
  *
- * Companion to test/context_binding_test.js, which covers the in-circuit half
- * of the binding. This file covers the ACM's half: the contract recomputes
+ * The in-circuit half of the binding (the statement carries
+ * Poseidon(id_req || id_res || nonce) and a digest for another nonce is
+ * rejected) is exercised by test/duo/duo_v3_tamper.test.js (T14) and the DUO V3
+ * end-to-end suites. This file covers the ACM's half: the contract recomputes
  *
  *     ctx = Poseidon(id_req || id_res || nonce)
  *
