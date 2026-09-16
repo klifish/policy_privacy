@@ -315,6 +315,34 @@ def permutation_pvalue(
     return (count + 1) / (iters + 1)
 
 
+def one_execution_per_group(groups, seed: int, exec_ids=None) -> np.ndarray:
+    """Row indices keeping one execution per policy for this seed.
+
+    Executions of one policy share every feature except the padded gas draws, so
+    a policy with 30 executions would otherwise contribute 30 near-duplicate rows
+    and dominate a row-level AUC and its row-level permutation test (the two-layer
+    corpus puts 41% of executions in 2% of policies). Sampling one execution per
+    policy per seed makes rows independent units; the depth layer keeps its role
+    in the clustering check only.
+
+    ``exec_ids`` names the execution behind each row (rows sharing an id are
+    copies of the same execution, e.g. a PI policy in several pairs); all copies
+    of the chosen execution are kept. Without it every row is its own execution.
+    """
+    groups = np.asarray(groups, dtype=object)
+    exec_ids = np.arange(len(groups)) if exec_ids is None else np.asarray(exec_ids, dtype=object)
+    rng = np.random.default_rng(seed * 7919 + 101)
+    keep = []
+    by_group: Dict[str, Dict[str, list]] = {}
+    for i, (g, e) in enumerate(zip(groups, exec_ids)):
+        by_group.setdefault(str(g), {}).setdefault(str(e), []).append(i)
+    for g in sorted(by_group):
+        execs = sorted(by_group[g])
+        chosen = execs[int(rng.integers(len(execs)))]
+        keep.extend(by_group[g][chosen])
+    return np.array(sorted(keep), dtype=int)
+
+
 def evaluate_seed(
     X,
     y,
@@ -352,6 +380,7 @@ def evaluate_seed(
             "score": split["score"],
             "diagnostics": split["diagnostics"],
             "splitHash": split["splitHash"],
+            "subsampleHash": split.get("subsampleHash"),
         },
     }
 
@@ -385,9 +414,17 @@ def analyze_contrast(
     split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
     split_manifest_in: Optional[Dict] = None,
     split_manifest_out: Optional[Dict] = None,
+    exec_ids=None,
 ) -> Dict:
-    """Aggregate one binary contrast under the JS double criterion."""
+    """Aggregate one binary contrast under the JS double criterion.
+
+    Each seed evaluates one execution per policy (``one_execution_per_group``);
+    the split plan is drawn on that subsample.
+    """
     key = task_key or "unnamed-task"
+    X = np.asarray(X)
+    y = np.asarray(y)
+    groups = np.asarray(groups, dtype=object)
     data_hash = split_task_hash(y, groups)
     input_task = ((split_manifest_in or {}).get("tasks") or {}).get(key)
     if input_task is not None and input_task.get("taskDataHash") != data_hash:
@@ -395,12 +432,17 @@ def analyze_contrast(
     if input_task is not None and input_task.get("groupUniverseHash") not in (None, split_group_hash(groups)):
         raise ValueError(f"split manifest group hash mismatch for task {key}")
 
+    subsamples = []
     split_plans = []
     for seed in range(seeds):
         stored = ((input_task or {}).get("seeds") or {}).get(str(seed))
+        keep = one_execution_per_group(groups, seed, exec_ids)
+        subsample_hash = _json_hash(keep.tolist())
+        if stored is not None and stored.get("subsampleHash") not in (None, subsample_hash):
+            raise ValueError(f"invalid subsample manifest entry for task {key}, seed {seed}")
         plan = repeated_stratified_group_holdout(
-            y,
-            groups,
+            y[keep],
+            groups[keep],
             seed,
             test_ratio=test_ratio,
             candidates=split_candidates,
@@ -408,22 +450,25 @@ def analyze_contrast(
         )
         if stored is not None and (plan is None or plan["splitHash"] != stored.get("splitHash")):
             raise ValueError(f"invalid split manifest entry for task {key}, seed {seed}")
+        if plan is not None:
+            plan["subsampleHash"] = subsample_hash
+        subsamples.append(keep)
         split_plans.append(plan)
 
     rf_n_jobs = -1 if jobs == 1 else 1
     if jobs == 1:
         per_seed = [
             evaluate_seed(
-                X, y, groups, s, models, rf_n_jobs, test_ratio, perm_iters,
-                split_plan=split_plans[s], split_candidates=split_candidates,
+                X[subsamples[s]], y[subsamples[s]], groups[subsamples[s]], s, models, rf_n_jobs,
+                test_ratio, perm_iters, split_plan=split_plans[s], split_candidates=split_candidates,
             )
             for s in range(seeds)
         ]
     else:
         per_seed = Parallel(n_jobs=jobs)(
             delayed(evaluate_seed)(
-                X, y, groups, s, models, rf_n_jobs, test_ratio, perm_iters,
-                split_plan=split_plans[s], split_candidates=split_candidates,
+                X[subsamples[s]], y[subsamples[s]], groups[subsamples[s]], s, models, rf_n_jobs,
+                test_ratio, perm_iters, split_plan=split_plans[s], split_candidates=split_candidates,
             )
             for s in range(seeds)
         )
@@ -433,6 +478,7 @@ def analyze_contrast(
         task_entry = {
             "taskDataHash": data_hash,
             "groupUniverseHash": split_group_hash(groups),
+            "rowsPerPolicy": "one-execution-per-seed",
             "seeds": {},
         }
         for seed, result in enumerate(per_seed):

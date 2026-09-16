@@ -9,6 +9,8 @@
 const {
   runSingleSampleAttacks
 } = require('./attacks');
+const { createRng } = require('../../../core/random');
+const { oneExecutionPerPolicyInPairs } = require('../../../core/subsample');
 
 // Map an attack-module classifier name to the short per-classifier leg tag used
 // by the shared multiseed aggregator (matches PCH/SPP's 'lr'/'rf').
@@ -32,11 +34,18 @@ const CLASSIFIER_TAG = {
  */
 function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
   const { pairs, testRatio, permutationIterations } = ctx;
+  const isolated = Number.isInteger(baseSeed);
+  // One execution per policy per seed, kept in every pair the policy joins
+  // (see core/subsample.js).
+  const sampledPairs = oneExecutionPerPolicyInPairs(
+    pairs,
+    isolated ? createRng(baseSeed, 'pi', 'subsample') : Math.random
+  );
   const origLog = console.log;
   let results;
   try {
     console.log = () => {}; // silence per-run attack chatter
-    results = runSingleSampleAttacks(pairs, {
+    results = runSingleSampleAttacks(sampledPairs, {
       testRatio,
       permutationIterations,
       rngMode: Number.isInteger(baseSeed) ? 'isolated' : 'legacy',

@@ -20,6 +20,7 @@ const {
   calculateConfusionMatrix
 } = require('../../../core/evaluator');
 const { createRng } = require('../../../core/random');
+const { oneExecutionPerPolicy } = require('../../../core/subsample');
 
 // Task labels per DUO term id (keys must match the Python pipeline's
 // DUO_TERM_ORDER so compare_with_js_verdict can pair the tasks). Datasets emit
@@ -143,8 +144,11 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   const rng = (...parts) => isolated
     ? createRng(baseSeed, 'pch', ...parts)
     : Math.random;
+  // One execution per policy per seed (see core/subsample.js), then a
+  // policy-disjoint split of that subsample.
+  const sampled = oneExecutionPerPolicy(normalizedFeatures, rng('duo', 'subsample'));
   const { train, test } = splitTrainTest(
-    normalizedFeatures,
+    sampled,
     testRatio,
     rng('duo', 'split')
   );
@@ -177,7 +181,7 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   // ICD-10 chapter inference (one-vs-rest). Only rows carrying an ICD-10 chapter
   // participate; each chapter is judged one-vs-rest (AUC + permutation are binary).
   {
-    const icdAll = normalizedFeatures.filter(
+    const icdAll = sampled.filter(
       f => f.icd10Chapter !== undefined && f.icd10Chapter !== null
     );
     if (icdAll.length > 0) {

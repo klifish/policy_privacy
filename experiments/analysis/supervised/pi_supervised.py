@@ -124,13 +124,19 @@ def build_scope_arrays(pairs: Sequence[dict], scope: Optional[str] = None):
         if len(policies) != 2:
             continue
         for side, policy in enumerate(policies):
-            for run in _policy_feature_runs(policy):
+            group = str(policy.get("policyId") or f"{pair_id}:{side}")
+            for run_index, run in enumerate(_policy_feature_runs(policy)):
                 rows.append({
                     "x": feature_row(run),
                     "y": side,
                     # Match the JS Level-I split: group by policyId so executions
                     # from the same policy never span train and test.
-                    "group": str(policy.get("policyId") or f"{pair_id}:{side}"),
+                    "group": group,
+                    # Identify the execution behind the row: a policy in several
+                    # pairs repeats the same executions, and the per-seed
+                    # one-execution-per-policy subsample keeps every copy of the
+                    # chosen execution.
+                    "exec": f"{group}#{run.get('executionId', run_index)}",
                     "pairType": pair_type,
                 })
     if not rows:
@@ -138,9 +144,10 @@ def build_scope_arrays(pairs: Sequence[dict], scope: Optional[str] = None):
     X = np.array([row["x"] for row in rows], dtype=float)
     y = np.array([row["y"] for row in rows], dtype=int)
     groups = np.array([row["group"] for row in rows], dtype=object)
+    exec_ids = np.array([row["exec"] for row in rows], dtype=object)
     if len(np.unique(y)) < 2 or len(np.unique(groups)) < 2:
         return None
-    return X, y, groups
+    return X, y, groups, exec_ids
 
 
 def run_pairs(
@@ -179,13 +186,14 @@ def run_pairs(
                 "skipped": True,
             }
         else:
-            X, y, groups = arrays
+            X, y, groups, exec_ids = arrays
             res = analyze_contrast(
                 X, y, groups, seeds, models, jobs=jobs,
                 perm_iters=perm_iters, task_key=scope,
                 split_candidates=split_candidates,
                 split_manifest_in=split_manifest_in,
                 split_manifest_out=split_manifest_out,
+                exec_ids=exec_ids,
             )
             res.update({
                 "dataset": dataset_tag,

@@ -15,6 +15,7 @@ from experiments.analysis.paths import ABLATION_DIR, SUPERVISED_RESULTS_DIR
 from .common import (
     DEFAULT_SPLIT_CANDIDATES,
     evaluate_seed,
+    one_execution_per_group,
     new_split_manifest,
     repeated_stratified_group_holdout,
     split_group_hash,
@@ -99,7 +100,7 @@ def _pi_tasks(pairs: Sequence[dict]) -> List[dict]:
         arrays = build_scope_arrays(pairs, scope)
         if arrays is None:
             continue
-        X, y, groups = arrays
+        X, y, groups, exec_ids = arrays
         tasks.append({
             "key": scope,
             "target": "pairScope",
@@ -108,6 +109,7 @@ def _pi_tasks(pairs: Sequence[dict]) -> List[dict]:
             "X": X,
             "y": y,
             "groups": groups,
+            "execIds": exec_ids,
         })
     return tasks
 
@@ -138,24 +140,30 @@ def load_aligned_tasks(root: Path, work_dir: Path, pair_seed: str):
     return output, pair_paths
 
 
+def _subsample(task, seed):
+    """One execution per policy for this seed (same rule as analyze_contrast)."""
+    keep = one_execution_per_group(task["groups"], seed, task.get("execIds"))
+    return (np.asarray(task["X"])[keep], np.asarray(task["y"])[keep],
+            np.asarray(task["groups"], dtype=object)[keep])
+
+
 def _paired_seed(task1, task2, seed, model, candidates):
     if split_task_hash(task1["y"], task1["groups"]) != split_task_hash(task2["y"], task2["groups"]):
         raise ValueError(f"B1/B2 task data mismatch: {task1['key']}")
-    plan1 = repeated_stratified_group_holdout(
-        task1["y"], task1["groups"], seed, candidates=candidates
-    )
+    X1, y1, g1 = _subsample(task1, seed)
+    X2, y2, g2 = _subsample(task2, seed)
+    plan1 = repeated_stratified_group_holdout(y1, g1, seed, candidates=candidates)
     if plan1 is None:
         return None
     plan2 = repeated_stratified_group_holdout(
-        task2["y"], task2["groups"], seed, candidates=candidates,
-        test_groups=plan1["testGroups"],
+        y2, g2, seed, candidates=candidates, test_groups=plan1["testGroups"],
     )
     if plan2 is None:
         raise ValueError(f"shared B1/B2 split cannot be replayed: {task1['key']} seed {seed}")
     # One permutation is enough here because the ablation consumes AUC only.
-    r1 = evaluate_seed(task1["X"], task1["y"], task1["groups"], seed, [model], 1,
+    r1 = evaluate_seed(X1, y1, g1, seed, [model], 1,
                        perm_iters=1, split_plan=plan1, split_candidates=candidates)
-    r2 = evaluate_seed(task2["X"], task2["y"], task2["groups"], seed, [model], 1,
+    r2 = evaluate_seed(X2, y2, g2, seed, [model], 1,
                        perm_iters=1, split_plan=plan2, split_candidates=candidates)
     return {"seed": seed, "b1": r1[model]["auc"], "b2": r2[model]["auc"], "split": r1["split"]}
 

@@ -10,6 +10,8 @@
  */
 
 const { runSupervisedAttacks } = require('./attacks');
+const { createRng } = require('../../../core/random');
+const { oneExecutionPerPolicy } = require('../../../core/subsample');
 
 /**
  * Build per-classifier verdict records (one LR, one RF) from a single
@@ -60,13 +62,19 @@ function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
   const { executionResults, targetAttributes, testRatio, permutationIterations, balanceMethod } = ctx;
   const isolated = Number.isInteger(baseSeed);
   const skipLegacyPermutation = isolated && ctx.skipLegacyPermutation !== false;
+  // One execution per policy per seed (see core/subsample.js); the attacks
+  // then split that subsample policy-disjointly.
+  const sampled = oneExecutionPerPolicy(
+    executionResults,
+    isolated ? createRng(baseSeed, 'spp', 'subsample') : Math.random
+  );
   const records = [];
   const origLog = console.log;
   for (const attr of targetAttributes) {
     let out;
     try {
       console.log = () => {};
-      out = runSupervisedAttacks(executionResults, {
+      out = runSupervisedAttacks(sampled, {
         targetAttribute: attr,
         testRatio,
         permutationIterations,

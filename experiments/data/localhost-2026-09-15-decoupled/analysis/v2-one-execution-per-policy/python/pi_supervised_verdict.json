@@ -1,0 +1,504 @@
+{
+  "dataset": "py_v2",
+  "criterion": {
+    "seeds": 30,
+    "aucMax": 0.55,
+    "permAlpha": 0.05,
+    "sigFractionMax": 0.5,
+    "minTestSamples": 20,
+    "permIters": 500,
+    "testRatio": 0.3
+  },
+  "overallPassed": true,
+  "tasks": [
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5221460143270843,
+          "aucStd": 0.045280649880178554,
+          "advantageMean": 0.04160951074531321,
+          "sigFraction": 0.1,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5255506485106004,
+          "aucStd": 0.04653697386510777,
+          "advantageMean": 0.04463310545313958,
+          "sigFraction": 0.26666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 162.0,
+      "majorityAcc": 0.5003067484662577,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 190.0,
+            "medianTestRows": 81.0,
+            "minTrainGroups": 146,
+            "minTestGroups": 58,
+            "medianTrainGroups": 151.0,
+            "medianTestGroups": 65.0
+          },
+          "1": {
+            "medianTrainRows": 190.0,
+            "medianTestRows": 81.0,
+            "minTrainGroups": 153,
+            "minTestGroups": 62,
+            "medianTrainGroups": 157.0,
+            "medianTestGroups": 67.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "overall",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4654259259259259,
+          "aucStd": 0.05729457549667601,
+          "advantageMean": 0.04894444444444443,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5339074074074073,
+          "aucStd": 0.062252387419029956,
+          "advantageMean": 0.053907407407407425,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 60.0,
+      "majorityAcc": 0.5,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 55,
+            "minTestGroups": 21,
+            "medianTrainGroups": 58.5,
+            "medianTestGroups": 24.5
+          },
+          "1": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 56,
+            "minTestGroups": 23,
+            "medianTrainGroups": 58.0,
+            "medianTestGroups": 26.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "semantic_equivalent",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5511715797430082,
+          "aucStd": 0.08825190444516692,
+          "advantageMean": 0.07921390778533635,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5448223733938021,
+          "aucStd": 0.08224175074869633,
+          "advantageMean": 0.08034769463340892,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 42.0,
+      "majorityAcc": 0.5,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 50.0,
+            "medianTestRows": 21.0,
+            "minTrainGroups": 40,
+            "minTestGroups": 16,
+            "medianTrainGroups": 42.0,
+            "medianTestGroups": 19.0
+          },
+          "1": {
+            "medianTrainRows": 50.0,
+            "medianTestRows": 21.0,
+            "minTrainGroups": 41,
+            "minTestGroups": 16,
+            "medianTrainGroups": 43.0,
+            "medianTestGroups": 18.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "weak_equivalent",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.48618518518518516,
+          "aucStd": 0.06849825526199116,
+          "advantageMean": 0.05648148148148149,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5199444444444443,
+          "aucStd": 0.05728858970412925,
+          "advantageMean": 0.0519074074074074,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 60.0,
+      "majorityAcc": 0.5,
+      "nonGating": true,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 66,
+            "minTestGroups": 28,
+            "medianTrainGroups": 67.0,
+            "medianTestGroups": 29.0
+          },
+          "1": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 66,
+            "minTestGroups": 27,
+            "medianTrainGroups": 67.0,
+            "medianTestGroups": 29.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "controlled_difference",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false,
+      "diagnostic": true
+    }
+  ],
+  "contrasts": [
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5221460143270843,
+          "aucStd": 0.045280649880178554,
+          "advantageMean": 0.04160951074531321,
+          "sigFraction": 0.1,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5255506485106004,
+          "aucStd": 0.04653697386510777,
+          "advantageMean": 0.04463310545313958,
+          "sigFraction": 0.26666666666666666,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 162.0,
+      "majorityAcc": 0.5003067484662577,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 190.0,
+            "medianTestRows": 81.0,
+            "minTrainGroups": 146,
+            "minTestGroups": 58,
+            "medianTrainGroups": 151.0,
+            "medianTestGroups": 65.0
+          },
+          "1": {
+            "medianTrainRows": 190.0,
+            "medianTestRows": 81.0,
+            "minTrainGroups": 153,
+            "minTestGroups": 62,
+            "medianTrainGroups": 157.0,
+            "medianTestGroups": 67.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "overall",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.4654259259259259,
+          "aucStd": 0.05729457549667601,
+          "advantageMean": 0.04894444444444443,
+          "sigFraction": 0.0,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5339074074074073,
+          "aucStd": 0.062252387419029956,
+          "advantageMean": 0.053907407407407425,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 60.0,
+      "majorityAcc": 0.5,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 55,
+            "minTestGroups": 21,
+            "medianTrainGroups": 58.5,
+            "medianTestGroups": 24.5
+          },
+          "1": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 56,
+            "minTestGroups": 23,
+            "medianTrainGroups": 58.0,
+            "medianTestGroups": 26.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "semantic_equivalent",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.5511715797430082,
+          "aucStd": 0.08825190444516692,
+          "advantageMean": 0.07921390778533635,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": true,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5448223733938021,
+          "aucStd": 0.08224175074869633,
+          "advantageMean": 0.08034769463340892,
+          "sigFraction": 0.06666666666666667,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 42.0,
+      "majorityAcc": 0.5,
+      "nonGating": false,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 50.0,
+            "medianTestRows": 21.0,
+            "minTrainGroups": 40,
+            "minTestGroups": 16,
+            "medianTrainGroups": 42.0,
+            "medianTestGroups": 19.0
+          },
+          "1": {
+            "medianTrainRows": 50.0,
+            "medianTestRows": 21.0,
+            "minTrainGroups": 41,
+            "minTestGroups": 16,
+            "medianTrainGroups": 43.0,
+            "medianTestGroups": 18.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "weak_equivalent",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false
+    },
+    {
+      "nSeeds": 30,
+      "invalidSeeds": 0,
+      "models": {
+        "rf": {
+          "aucMean": 0.48618518518518516,
+          "aucStd": 0.06849825526199116,
+          "advantageMean": 0.05648148148148149,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        },
+        "lr": {
+          "aucMean": 0.5199444444444443,
+          "aucStd": 0.05728858970412925,
+          "advantageMean": 0.0519074074074074,
+          "sigFraction": 0.03333333333333333,
+          "aucHigh": false,
+          "sigHigh": false,
+          "legFails": false
+        }
+      },
+      "medianTestN": 60.0,
+      "majorityAcc": 0.5,
+      "nonGating": true,
+      "splitDiagnostics": {
+        "splitter": "repeated_stratified_group_holdout",
+        "candidates": 512,
+        "validSeeds": 30,
+        "invalidSeeds": 0,
+        "classes": {
+          "0": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 66,
+            "minTestGroups": 28,
+            "medianTrainGroups": 67.0,
+            "medianTestGroups": 29.0
+          },
+          "1": {
+            "medianTrainRows": 70.0,
+            "medianTestRows": 30.0,
+            "minTrainGroups": 66,
+            "minTestGroups": 27,
+            "medianTrainGroups": 67.0,
+            "medianTestGroups": 29.0
+          }
+        }
+      },
+      "powerWarning": false,
+      "powerWarningReasons": [],
+      "passed": true,
+      "dataset": "py_v2",
+      "key": "controlled_difference",
+      "target": "pairScope",
+      "class0": "policy0",
+      "class1": "policy1",
+      "skipped": false,
+      "diagnostic": true
+    }
+  ],
+  "pairSource": {
+    "path": "/private/tmp/claude-501/-Users-likun-src-phd-decentralized-healthcare-policy-privacy-policy-privacy/c3ea7f89-f494-4807-b855-3b09303557e1/scratchpad/py_v2/pi_pairs_generated.json",
+    "sha256": "8318871a9057c841321185b90841ec67161999db3bb31d221b38434674422256",
+    "seed": "pi-experiment"
+  }
+}
