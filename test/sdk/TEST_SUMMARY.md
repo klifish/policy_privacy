@@ -92,7 +92,7 @@ npm run test:sdk
 npm run test:sdk:prover       # ✅ All passing
 # test:sdk:compiler removed 2026-09-16 (legacy suite, see test/TEST_AUDIT_2026-09-16.md)
 npm run test:sdk:contracts    # ⚠️ Needs ABI assertion fixes
-npm run test:sdk:integration  # ⚠️ Needs predicate fixes
+# test:sdk:integration removed 2026-09-16 (legacy suite)
 ```
 
 ## Test Quality Assessment
@@ -242,7 +242,7 @@ npm run test:sdk -- --reporter spec
 
 # Run individual test suites
 npm run test:sdk:prover
-npm run test:sdk:compiler
+npm run test:sdk  # prover + contracts
 npm run test:sdk:contracts
 npm run test:sdk:integration
 ```
