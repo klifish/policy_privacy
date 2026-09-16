@@ -13,6 +13,15 @@ function downloadFile(url, filePath) {
         const file = fs.createWriteStream(filePath);
 
         https.get(url, (response) => {
+            // A blocked or redirected download otherwise lands as a few hundred
+            // bytes of HTML that snarkjs later rejects as a ptau.
+            if (response.statusCode !== 200) {
+                response.resume();
+                file.close();
+                fs.unlink(filePath, () => { });
+                reject(new Error(`HTTP ${response.statusCode} downloading ${url}`));
+                return;
+            }
             const totalSize = parseInt(response.headers['content-length'], 10);
             let downloadedSize = 0;
 
@@ -103,8 +112,16 @@ async function setupZkSnarkKeys(wasmPath, r1csPath, zkeyPath, vkeyPath) {
         const potFinalPath = path.join(setupDir, "pot10_final.ptau");
         const zkey0Path = zkeyPath.replace('_final.zkey', '_0000.zkey');
 
-        // Step 1: Download Powers of Tau if not exists
-        if (!fs.existsSync(potFinalPath)) {
+        // Step 1: Download Powers of Tau if not exists. PTAU_FILE points at an
+        // existing ptau (any power >= the circuit's) to skip the 300 MB download.
+        if (process.env.PTAU_FILE) {
+            if (!fs.existsSync(process.env.PTAU_FILE)) {
+                throw new Error(`PTAU_FILE not found: ${process.env.PTAU_FILE}`);
+            }
+            console.log(`📋 Step 1: Using PTAU_FILE=${process.env.PTAU_FILE}`);
+            fs.rmSync(potFinalPath, { force: true });
+            fs.symlinkSync(path.resolve(process.env.PTAU_FILE), potFinalPath);
+        } else if (!fs.existsSync(potFinalPath)) {
             console.log('📋 Step 1: Downloading Powers of Tau trusted setup...');
 
             const powersOfTauUrl = 'https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau';
