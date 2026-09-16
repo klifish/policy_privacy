@@ -419,12 +419,14 @@ router.post('/prove', async (req, res) => {
             // with an explicit gasLimit above the target — otherwise ethers'
             // auto-estimated gasLimit caps the loop below the target and padding
             // silently under-shoots. CRITICAL: the gasLimit must ALSO clear the
-            // real access work cost (~667k on Amoy), independent of the (possibly
-            // lower) random target — otherwise a low target makes gasLimit too
-            // small and the base requestAccessBound work runs out of gas and
-            // reverts. So floor the gasLimit at a real-work ceiling. Headroom
-            // (+80k) covers post-loop fixed costs.
-            const ACCESS_WORK_GAS_CEILING = 700000n;
+            // real access work cost (~881k on Amoy for the padded entry point,
+            // 2026-09-17 measurement; see experiments/capture/run.js),
+            // independent of the (possibly lower) random target — otherwise a
+            // low target makes gasLimit too small and the base
+            // requestAccessBound work runs out of gas and reverts. So floor the
+            // gasLimit at a real-work ceiling. Headroom (+80k) covers post-loop
+            // fixed costs.
+            const ACCESS_WORK_GAS_CEILING = 900000n;
             const padGasLimit =
                 (accessGasPadTarget > ACCESS_WORK_GAS_CEILING
                     ? accessGasPadTarget

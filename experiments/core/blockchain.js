@@ -21,12 +21,13 @@ const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
 });
 
 // Calibrated against measured usage (commit avg ~305k max ~329k;
-// registerResource ~80k; access avg ~602k max ~667k) with headroom.
+// registerResource ~80k; padded access on Amoy ~945k–1.155M after the
+// 2026-09-17 re-measurement, see experiments/capture/run.js) with headroom.
 const GAS_ESTIMATES = Object.freeze({
   deployment: 4_500_000n,
   commit: 350_000n,
   registration: 100_000n,
-  access: 650_000n,
+  access: 1_050_000n,
   bufferPercent: 25n
 });
 

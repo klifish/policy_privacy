@@ -349,12 +349,18 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   // interface). MUST exceed the bare access gas across ALL policies so the whole
   // randomized ±10% band stays above real usage — otherwise a low target both
   // defeats padding (_padGasToTarget early-returns) and risks out-of-gas reverts.
-  // Measured bare access on Amoy is ~650k–667k (constant: fixed-depth circuit,
-  // only proof zero-byte variance moves it). Base 750k → band 675k–825k, all
-  // above real usage. Default 750k; override or disable (0) via env.
+  // Measured on Amoy 2026-09-17 (eth_estimateGas replay of the rc1 verifier
+  // and access path): bare requestAccessBound ~748k, and the padded entry
+  // point does not fall below ~881k for any target — Amoy prices the bn256
+  // precompiles above Istanbul (the same verifyProof call costs 243k on
+  // hardhat and 372k on Amoy), so the local rehearsal under-measures. Above
+  // that floor the padded cost tracks target + ~31k. Base 1.05M → band
+  // 945k–1.155M, bottom 64k above the floor (proof zero-byte variance is
+  // ~17k). The earlier 750k base (band 675k–825k) sat entirely below the
+  // floor and OOG-reverted the first Amoy tx. Override or disable (0) via env.
   const accessGasPadTarget = options.protectionProfile === PROTECTION_PROFILES.B1_UNPADDED
     ? '0'
-    : (process.env.TPS_ACCESS_GAS_PAD_TARGET || '750000');
+    : (process.env.TPS_ACCESS_GAS_PAD_TARGET || '1050000');
   const tpsProcess = await startTpsServer({
     TPS_PRIVATE_KEY: tpsPrivateKey,
     CONTRACT_ADDRESS: await policyPrivacy.getAddress(),
