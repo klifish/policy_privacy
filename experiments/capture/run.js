@@ -303,16 +303,28 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   }
   const tpsAddress = new ethers.Wallet(tpsPrivateKey).address;
 
-  await ensureSufficientBalance({
-    provider,
-    signer,
-    executionCount: annotatedDataset.length,
-    tpsAddress
-  });
-
   const artifactDir = path.dirname(paths.executedDataset);
   const checkpointPath = path.join(artifactDir, 'execution_checkpoint.json');
   const contractCachePath = path.join(artifactDir, 'contract_cache.json');
+
+  // On a resume only the executions still to run cost gas; a preflight
+  // over the full dataset would refuse a wallet that is ample for the rest.
+  let completedExecutions = 0;
+  if (fs.existsSync(checkpointPath)) {
+    try {
+      const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+      completedExecutions = Number(checkpoint?.data?.lastIndex ?? -1) + 1;
+    } catch (_) { /* unreadable checkpoint: preflight the whole dataset */ }
+  }
+  if (completedExecutions > 0) {
+    console.log(`Balance preflight covers the ${annotatedDataset.length - completedExecutions} executions after checkpoint index ${completedExecutions - 1}.`);
+  }
+  await ensureSufficientBalance({
+    provider,
+    signer,
+    executionCount: Math.max(annotatedDataset.length - completedExecutions, 0),
+    tpsAddress
+  });
 
   // Reuse previously deployed contract if a checkpoint + contract cache both exist.
   let policyPrivacy;
