@@ -1,0 +1,194 @@
+
+> zero-knowledge-proof-template@1.0.0 data:generate:amoy
+> PROTOCOL_CIRCUITS_DIR=$PWD/build/protocol/v3.0.0-rc1/circuits UNIFIED_CONFIG_PATH=experiments/capture/configs/unified_dataset_config_decoupled.json npx hardhat run experiments/capture/run.js --network polygonAmoy
+
+======================================================================
+Unified Dataset Pipeline (TPS Workflow)
+======================================================================
+Config: experiments/capture/configs/unified_dataset_config_decoupled.json
+Artifacts: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    UNIFIED DATASET VALIDATOR                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 Configuration:
+  Policy count:              1077
+  Executions per policy:     5
+  Seed:                      unified-decoupled-2026
+
+================================================================================
+Step 1: Generating Policy Definitions (no blockchain execution)
+================================================================================
+Allowed codes: null
+Policy blueprint targets per layer: [
+  { layer: 'trivial_ontology', target: 110, min: 0, max: 110 },
+  { layer: 'trivial_profile', target: 20, min: 0, max: 20 },
+  { layer: 'and_chain', target: 260, min: 0, max: 260 },
+  { layer: 'or_chain', target: 260, min: 0, max: 260 },
+  { layer: 'mixed_chain', target: 300, min: 0, max: 300 },
+  { layer: 'profile_only', target: 127, min: 0, max: 127 }
+]
+
+✓ Generated 1773 policy instances in 62.1s
+
+================================================================================
+PCH (Policy Content Hiding) Validation
+================================================================================
+
+📊 DUO Term Distribution:
+  DUO_DS:  422 (39.2%)
+  DUO_RS:  412 (38.3%)
+  DUO_POA:  392 (36.4%)
+  DUO_GS:  382 (35.5%)
+  DUO_CC:  392 (36.4%)
+  DUO_GRU:  302 (28.0%)
+  DUO_HMB:  331 (30.7%)
+  DUO_NMDS:  237 (22.0%)
+  DUO_GSO:  236 (21.9%)
+  DUO_NCU:  206 (19.1%)
+
+📈 Balance Metrics:
+  Min:         206
+  Max:         422
+  Mean:        331.2
+  Min/Max:     0.488
+
+✅ PCH Requirements: PASSED
+
+================================================================================
+SPP (Structure & Parameter Privacy) Validation
+================================================================================
+
+📊 5-Dimension Distributions:
+
+  Logic Structure:
+    trivial             :  130 (12.1%)
+    and_only            :  294 (27.3%)
+    or_only             :  303 (28.1%)
+    and_or_mixed        :  350 (32.5%)
+    Balance: min/max=0.371, CV=0.309
+
+  Nesting Depth:
+    flat                :  130 (12.1%)
+    shallow             :  210 (19.5%)
+    medium              :  335 (31.1%)
+    deep                :  402 (37.3%)
+    Balance: min/max=0.323, CV=0.393
+
+  Predicate Count:
+    single              :  257 (23.9%)
+    few                 :  645 (59.9%)
+    many                :  175 (16.2%)
+    Balance: min/max=0.271, CV=0.571
+
+  Set Size:
+    none                :  147 (13.6%)
+    small               :  232 (21.5%)
+    medium              :  352 (32.7%)
+    large               :  346 (32.1%)
+    Balance: min/max=0.418, CV=0.317
+
+  Range Width:
+    none                : 1077 (100.0%)
+    narrow              :    0 (0.0%)
+    medium              :    0 (0.0%)
+    wide                :    0 (0.0%)
+    Balance: min/max=0.000, CV=1.732
+    (validation skipped for this dimension)
+
+✅ SPP Requirements: PASSED
+
+================================================================================
+PI (Policy Indistinguishability) Validation
+================================================================================
+
+📊 Semantic Diversity (sampled):
+  Average similarity:  0.421
+  Average diversity:   0.579
+  Sampled pairs:       3160
+
+📊 Estimated Pair Type Distribution:
+  semantic_equivalent      :   11 (0.3%)
+  weak_equivalent          :    0 (0.0%)
+  controlled_difference    : 3149 (99.7%)
+
+📈 Estimated Total Pairs (scaled):
+  semantic_equivalent      : ~2,017
+  weak_equivalent          : ~0
+  controlled_difference    : ~577,409
+
+✅ PI Requirements: PASSED
+
+════════════════════════════════════════════════════════════════════════════════
+VALIDATION SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+
+📊 Results:
+  PCH: ✅ PASSED
+  SPP: ✅ PASSED
+  PI:  ✅ PASSED
+
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+✅ ALL VALIDATIONS PASSED
+✅ Dataset is ready for blockchain execution!
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+
+💾 Results saved to: /root/policy-privacy/policy_privacy/experiments/results/capture/validation_results.json
+Policy definitions saved to: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy/policy_definitions.json
+Protection profile: b2_padded
+Balance Preflight Check
+------------------------------------------------------------
+  Network: polygonAmoy (chainId: 80002)
+  Gas price used for estimate: 30.0 gwei
+  Deployer (deployment + commitPolicy)
+    Address:         0xe1249c0ED30dE2EEf273ce84813C6fd54aBA58Fc
+    Current balance: 55.544721594195065702 MATIC
+    Estimated gas:   1002937500 units
+    Estimated cost:  30.088125 MATIC
+  TPS (requestAccessBound)
+    Address:         0xE45503c136753d05a79855eB1F14b2c2a4CC20e4
+    Current balance: 83.04049964544667207 MATIC
+    Estimated gas:   1440562500 units
+    Estimated cost:  43.216875 MATIC
+  ✓ Balance check passed
+
+Deploying PolicyPrivacy + verifier contracts...
+Verifier deployed at: 0x8e3C8Ebc2ed71ef3De347F63468C404aeE0363d1
+Poseidon3 deployed at: 0xC03Ec6cb2903581E63f90744e41A914b71746Bb8
+PolicyPrivacy deployed at: 0x461853d10fB9A286a75dE05c9B166e77645160D7
+
+Starting TPS server (port 3001)...
+[TPS] [TPS] Chain signer initialised: 0xE45503c136753d05a79855eB1F14b2c2a4CC20e4 → 0x461853d10fB9A286a75dE05c9B166e77645160D7
+[TPS] Trusted Proof Service listening on port 3001
+[TPS] POST /tps/provision  – provider provisions policy material
+[TPS] POST /tps/prove      – requester requests proof generation
+[TPS] GET  /tps/health     – health check
+[TPS] submitOnChain enabled (requestAccessBound)
+TPS server ready.
+
+Executing 1773 policy instances via TPS...
+(Checkpoint: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy/execution_checkpoint.json — safe to Ctrl+C and resume with: npm run unified or npm run unified:testnet)
+Executing 1773 policy instances sequentially (0 already done)...
+commit gasUsed: 293246
+[Provider] Registered resourceId=1 for policyId=1
+[Provider] Provisioned policyId=1 to TPS
+[TPS] [TPS] access gas pad target = 695423
+[TPS] [TPS prove] error: transaction execution reverted (action="sendTransaction", data=null, reason=null, invocation=null, revert=null, transaction={ "data": "", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, receipt={ "_type": "TransactionReceipt", "blobGasPrice": null, "blobGasUsed": null, "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "contractAddress": null, "cumulativeGasUsed": "780000", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "gasPrice": "30000000000", "gasUsed": "780000", "hash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "index": 0, "logs": [ { "_type": "log", "address": "0x0000000000000000000000000000000000001010", "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "data": "0x0000000000000000000000000000000000000000000000000053222d0cd0aee0000000000000000000000000000000000000000000000004806b1e75c9cccec6000000000000000000000000000000000000000000007aa0868540deddc7b05f0000000000000000000000000000000000000000000000048017fc48bcfc1fe6000000000000000000000000000000000000000000007aa086d8630bea985f3f", "index": 0, "removed": null, "topics": [ "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63", "0x0000000000000000000000000000000000000000000000000000000000001010", "0x000000000000000000000000e45503c136753d05a79855eb1f14b2c2a4cc20e4", "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0" ], "transactionHash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "transactionIndex": 0 } ], "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000010000000000000000000000000008000000000000000004000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000400000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000", "root": null, "status": 0, "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, code=CALL_EXCEPTION, version=6.13.4)
+
+Error executing policy 0: transaction execution reverted (action="sendTransaction", data=null, reason=null, invocation=null, revert=null, transaction={ "data": "", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, receipt={ "_type": "TransactionReceipt", "blobGasPrice": null, "blobGasUsed": null, "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "contractAddress": null, "cumulativeGasUsed": "780000", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "gasPrice": "30000000000", "gasUsed": "780000", "hash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "index": 0, "logs": [ { "_type": "log", "address": "0x0000000000000000000000000000000000001010", "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "data": "0x0000000000000000000000000000000000000000000000000053222d0cd0aee0000000000000000000000000000000000000000000000004806b1e75c9cccec6000000000000000000000000000000000000000000007aa0868540deddc7b05f0000000000000000000000000000000000000000000000048017fc48bcfc1fe6000000000000000000000000000000000000000000007aa086d8630bea985f3f", "index": 0, "removed": null, "topics": [ "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63", "0x0000000000000000000000000000000000000000000000000000000000001010", "0x000000000000000000000000e45503c136753d05a79855eb1f14b2c2a4cc20e4", "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0" ], "transactionHash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "transactionIndex": 0 } ], "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000010000000000000000000000000008000000000000000004000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000400000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000", "root": null, "status": 0, "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, code=CALL_EXCEPTION, version=6.13.4)
+
+TPS server stopped.
+
+❌ Unified dataset pipeline failed:
+Error: transaction execution reverted (action="sendTransaction", data=null, reason=null, invocation=null, revert=null, transaction={ "data": "", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, receipt={ "_type": "TransactionReceipt", "blobGasPrice": null, "blobGasUsed": null, "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "contractAddress": null, "cumulativeGasUsed": "780000", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "gasPrice": "30000000000", "gasUsed": "780000", "hash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "index": 0, "logs": [ { "_type": "log", "address": "0x0000000000000000000000000000000000001010", "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "data": "0x0000000000000000000000000000000000000000000000000053222d0cd0aee0000000000000000000000000000000000000000000000004806b1e75c9cccec6000000000000000000000000000000000000000000007aa0868540deddc7b05f0000000000000000000000000000000000000000000000048017fc48bcfc1fe6000000000000000000000000000000000000000000007aa086d8630bea985f3f", "index": 0, "removed": null, "topics": [ "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63", "0x0000000000000000000000000000000000000000000000000000000000001010", "0x000000000000000000000000e45503c136753d05a79855eb1f14b2c2a4cc20e4", "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0" ], "transactionHash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "transactionIndex": 0 } ], "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000010000000000000000000000000008000000000000000004000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000400000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000", "root": null, "status": 0, "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, code=CALL_EXCEPTION, version=6.13.4)
+    at IncomingMessage.<anonymous> (/root/policy-privacy/policy_privacy/lib/tps-client.js:41:46)
+    at IncomingMessage.emit (node:events:531:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  status: 500,
+  body: {
+    error: 'transaction execution reverted (action="sendTransaction", data=null, reason=null, invocation=null, revert=null, transaction={ "data": "", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, receipt={ "_type": "TransactionReceipt", "blobGasPrice": null, "blobGasUsed": null, "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "contractAddress": null, "cumulativeGasUsed": "780000", "from": "0xE45503c136753d05a79855eB1F14b2c2a4CC20e4", "gasPrice": "30000000000", "gasUsed": "780000", "hash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "index": 0, "logs": [ { "_type": "log", "address": "0x0000000000000000000000000000000000001010", "blockHash": "0xc4e62981559c28d25802d3d45e136357ad71425b5701d6b87a534a2eef7352ce", "blockNumber": 47763453, "data": "0x0000000000000000000000000000000000000000000000000053222d0cd0aee0000000000000000000000000000000000000000000000004806b1e75c9cccec6000000000000000000000000000000000000000000007aa0868540deddc7b05f0000000000000000000000000000000000000000000000048017fc48bcfc1fe6000000000000000000000000000000000000000000007aa086d8630bea985f3f", "index": 0, "removed": null, "topics": [ "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63", "0x0000000000000000000000000000000000000000000000000000000000001010", "0x000000000000000000000000e45503c136753d05a79855eb1f14b2c2a4cc20e4", "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0" ], "transactionHash": "0x079020ba026cd959b45ec91ffc76056ac74baf172561a51e018129a0d162e386", "transactionIndex": 0 } ], "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000010000000000000000000000000008000000000000000004000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000400000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000400000000000100000000000000000000000000000000000000000000000000000000000000000000000100000", "root": null, "status": 0, "to": "0x461853d10fB9A286a75dE05c9B166e77645160D7" }, code=CALL_EXCEPTION, version=6.13.4)'
+  }
+}
+EXIT_CODE=1

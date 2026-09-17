@@ -1,55 +1,69 @@
 {
-  "generatedAt": "2026-06-14T14:28:31.966Z",
+  "generatedAt": "2026-09-17T05:49:43.014Z",
   "policyCount": 1077,
-  "executionsPerPolicy": 3,
+  "executionsPerPolicy": 5,
   "satisfyRatio": 1,
-  "seed": "unified-optimized-2025",
-  "datasetEntries": 2005,
+  "seed": "unified-decoupled-2026",
+  "datasetEntries": 1773,
+  "provenance": {
+    "protocolVersion": "duo-v3",
+    "circuitDepth": 64,
+    "numAttributes": 13,
+    "numPredicates": 11,
+    "circuitsDir": "build/protocol/v3.0.0-rc1/circuits",
+    "wasmBytes": 8650796,
+    "zkeyBytes": 52172897,
+    "zkeySha256": "92e616d01026a2744a904be9ad86e7fbfe618a53af2db1a4b4d5b91f5a9c3199",
+    "vkeyBytes": 3663,
+    "snarkjsVersion": "0.7.5",
+    "nodeVersion": "v22.22.2",
+    "network": "polygonAmoy",
+    "protectionProfile": "b2_padded",
+    "commitHash": "faf3bb0f1f9e58552a134b75224668adf0c54784"
+  },
   "summary": {
     "logicStructures": {
-      "and_only": 246,
-      "or_only": 347,
-      "negation_heavy": 292,
-      "and_or_mixed": 192
+      "trivial": 130,
+      "and_only": 294,
+      "or_only": 303,
+      "and_or_mixed": 350
     },
     "nestingDepths": {
-      "flat": 147,
-      "shallow": 572,
-      "medium": 188,
-      "deep": 170
+      "flat": 130,
+      "shallow": 210,
+      "medium": 335,
+      "deep": 402
     },
     "predicateCounts": {
-      "none": 7,
-      "single": 228,
-      "few": 672,
-      "many": 170
+      "single": 257,
+      "few": 645,
+      "many": 175
     },
     "setSizes": {
-      "none": 7,
-      "small": 200,
-      "medium": 638,
-      "large": 232
+      "medium": 352,
+      "large": 346,
+      "small": 232,
+      "none": 147
     },
     "rangeWidths": {
       "none": 1077
     },
     "structureTypes": {
-      "and_only": 246,
-      "or_only": 347,
-      "negation_heavy": 292,
-      "and_or_mixed": 192
+      "trivial": 130,
+      "and_only": 294,
+      "or_only": 303,
+      "and_or_mixed": 350
     },
     "predicateCombos": {
-      "none": 7,
-      "single": 228,
-      "few": 672,
-      "many": 170
+      "single": 257,
+      "few": 645,
+      "many": 175
     },
     "parameterTypes": {
-      "none": 7,
-      "small": 200,
-      "medium": 638,
-      "large": 232
+      "medium": 352,
+      "large": 346,
+      "small": 232,
+      "none": 147
     }
   }
 }
