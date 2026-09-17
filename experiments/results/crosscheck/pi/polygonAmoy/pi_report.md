@@ -1,6 +1,6 @@
 # Policy Indistinguishability Evaluation Report
 
-**Date:** 6/27/2026, 3:49:54 PM
+**Date:** 9/17/2026, 10:21:53 AM
 
 ## Objective
 
@@ -16,8 +16,7 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 ## Pair Composition
 
 - **semantic_equivalent:** 100
-- **structural_variant:** 100
-- **weak_equivalent:** 100
+- **weak_equivalent:** 50
 - **controlled_difference:** 100
 
 ## Attack Outcomes
@@ -25,29 +24,24 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 ### Level I
 
 - **overall / LogisticRegression:** ✓ PASS
-  - AUC: 0.5060 (threshold 0.55)
-  - Permutation p-value: 0.4032 (threshold 0.05)
-  - Top features: accessGasUsed (0.167), commitGasUsed (-0.083), commitCalldataLength (0.000)
+  - AUC: 0.4444 (threshold 0.55)
+  - Permutation p-value: 0.9002 (threshold 0.05)
+  - Top features: accessGasUsed (0.245), commitGasUsed (-0.030), commitCalldataLength (0.000)
 - **overall / RandomForest:** ✓ PASS
 - **semantic_equivalent / LogisticRegression:** ✓ PASS
-  - AUC: 0.5221 (threshold 0.55)
-  - Permutation p-value: 0.4251 (threshold 0.05)
-  - Top features: commitGasUsed (-0.310), accessGasUsed (0.087), commitCalldataLength (0.000)
+  - AUC: 0.4224 (threshold 0.55)
+  - Permutation p-value: 0.8204 (threshold 0.05)
+  - Top features: accessGasUsed (-0.466), commitGasUsed (0.445), commitCalldataLength (0.000)
 - **semantic_equivalent / RandomForest:** ✓ PASS
-- **structural_variant / LogisticRegression:** ✓ PASS
-  - AUC: 0.5402 (threshold 0.55)
-  - Permutation p-value: 0.3333 (threshold 0.05)
-  - Top features: accessGasUsed (0.114), commitGasUsed (0.060), commitCalldataLength (0.000)
-- **structural_variant / RandomForest:** ✓ PASS
-- **weak_equivalent / LogisticRegression:** ✓ PASS
-  - AUC: 0.5450 (threshold 0.55)
-  - Permutation p-value: 0.3253 (threshold 0.05)
-  - Top features: accessGasUsed (-0.124), commitGasUsed (-0.054), commitCalldataLength (0.000)
+- **weak_equivalent / LogisticRegression:** ✗ FAIL
+  - AUC: 0.6231 (threshold 0.55)
+  - Permutation p-value: 0.1477 (threshold 0.05)
+  - Top features: commitGasUsed (-0.298), accessGasUsed (0.111), commitCalldataLength (0.000)
 - **weak_equivalent / RandomForest:** ✓ PASS
-- **controlled_difference / LogisticRegression:** ✗ FAIL
-  - AUC: 0.5696 (threshold 0.55)
-  - Permutation p-value: 0.2555 (threshold 0.05)
-  - Top features: accessGasUsed (0.258), commitGasUsed (0.075), commitCalldataLength (0.000)
+- **controlled_difference / LogisticRegression:** ✓ PASS
+  - AUC: 0.3900 (threshold 0.55)
+  - Permutation p-value: 0.8683 (threshold 0.05)
+  - Top features: accessGasUsed (0.268), commitGasUsed (-0.059), commitCalldataLength (0.000)
 - **controlled_difference / RandomForest:** ✓ PASS
 
 ### Level II
@@ -55,34 +49,34 @@ Assess whether semantically similar policies remain indistinguishable to on-chai
 - **overall / LogisticRegression:** ✓ PASS
   - AUC: 0.5000 (threshold 0.55)
   - Permutation p-value: 1.0000 (threshold 0.05)
-  - Top features: accessGasUsed (1.002), commitGasUsed (0.970), commitCalldataLength (0.000)
+  - Top features: accessGasUsed (1.070), commitGasUsed (1.044), commitCalldataLength (0.000)
 - **overall / RandomForest:** ✓ PASS
 
 ### Level III
 
-- **structural_variant / Two-sample statistics:** ✓ PASS
-  - MMD: -0.0241 (threshold 0.05)
-  - KS p-value mean: 0.9525 (threshold 0.05)
+- **semantic_equivalent / Two-sample statistics:** ✓ PASS
+  - MMD: -0.0232 (threshold 0.05)
+  - KS p-value mean: 0.5860 (threshold 0.05)
 - **controlled_difference / Two-sample statistics:** ✓ PASS
-  - MMD: 0.0039 (threshold 0.05)
-  - KS p-value mean: 0.5831 (threshold 0.05)
+  - MMD: -0.0019 (threshold 0.05)
+  - KS p-value mean: 0.5161 (threshold 0.05)
 
 ## Two-sample Diagnostics
 
-- **structural_variant:** MMD -0.0241
-  - commitGasUsed: KS mean 0.0667, p-value mean 1.0000
+- **semantic_equivalent:** MMD -0.0232
+  - commitGasUsed: KS mean 0.2000, p-value mean 0.5860
   - commitCalldataLength: KS mean 0.0000, p-value mean 1.0000
-  - accessGasUsed: KS mean 0.1333, p-value mean 0.9525
+  - accessGasUsed: KS mean 0.2000, p-value mean 0.5860
   - accessCalldataLength: KS mean 0.0000, p-value mean 1.0000
   - proofSize: KS mean 0.0000, p-value mean 1.0000
   - commitLogsCount: KS mean 0.0000, p-value mean 1.0000
   - commitLogsSize: KS mean 0.0000, p-value mean 1.0000
   - accessLogsCount: KS mean 0.0000, p-value mean 1.0000
   - accessLogsSize: KS mean 0.0000, p-value mean 1.0000
-- **controlled_difference:** MMD 0.0039
-  - commitGasUsed: KS mean 0.1950, p-value mean 0.6232
+- **controlled_difference:** MMD -0.0019
+  - commitGasUsed: KS mean 0.2193, p-value mean 0.5161
   - commitCalldataLength: KS mean 0.0000, p-value mean 1.0000
-  - accessGasUsed: KS mean 0.2093, p-value mean 0.5831
+  - accessGasUsed: KS mean 0.2063, p-value mean 0.5924
   - accessCalldataLength: KS mean 0.0000, p-value mean 1.0000
   - proofSize: KS mean 0.0000, p-value mean 1.0000
   - commitLogsCount: KS mean 0.0000, p-value mean 1.0000
@@ -96,11 +90,10 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 
 | Scope | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |
 |---|---|---|---|---|---|---|
-| overall | 0.507 ± 0.031 | 3% | 0.516 ± 0.030 | 10% | 270 | ✓ PASS |
-| semantic_equivalent | 0.498 ± 0.087 | 10% | 0.511 ± 0.082 | 13% | 71 | ✓ PASS |
-| structural_variant | 0.488 ± 0.051 | 0% | 0.524 ± 0.071 | 0% | 40 | ✓ PASS |
-| weak_equivalent | 0.486 ± 0.077 | 0% | 0.494 ± 0.085 | 7% | 54.5 | ✓ PASS |
-| controlled_difference | 0.510 ± 0.076 | 3% | 0.508 ± 0.071 | 7% | 68 | — (diagnostic, non-gating) |
+| overall | 0.445 ± 0.033 | 0% | 0.512 ± 0.051 | 10% | 99.5 | ✓ PASS |
+| semantic_equivalent | 0.536 ± 0.061 | 3% | 0.517 ± 0.079 | 7% | 40 | ✓ PASS |
+| weak_equivalent | 0.596 ± 0.112 | 13% | 0.505 ± 0.117 | 7% | 21 | ✓ PASS |
+| controlled_difference | 0.420 ± 0.077 | 0% | 0.525 ± 0.086 | 10% | 39 | — (diagnostic, non-gating) |
 
 ## Conclusion
 

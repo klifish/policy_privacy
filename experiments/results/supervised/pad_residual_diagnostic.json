@@ -1,0 +1,900 @@
+{
+  "dataset": "polygonAmoy",
+  "targetsParsed": 1774,
+  "seeds": 30,
+  "experiments": {
+    "pch": {
+      "datasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/data/polygonAmoy/pch_dataset.json",
+      "failedKeys": [
+        "ICD ch5"
+      ],
+      "tasks": [
+        {
+          "key": "DUO GR",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 302,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.46102726067195077,
+            "target": 0.4609943616062842,
+            "residual": 0.5025652835562034
+          },
+          "policyD": {
+            "gas": -0.17463160454732166,
+            "target": -0.17464306238297947,
+            "residual": 0.034371187213197874
+          }
+        },
+        {
+          "key": "DUO DS",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 422,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.49526291256101823,
+            "target": 0.4952596755188979,
+            "residual": 0.5214072069505769
+          },
+          "policyD": {
+            "gas": -0.07017338548332136,
+            "target": -0.07019005202943288,
+            "residual": 0.04089412700932874
+          }
+        },
+        {
+          "key": "DUO RS",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 412,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4960740634904141,
+            "target": 0.4960630228087494,
+            "residual": 0.5201408011638178
+          },
+          "policyD": {
+            "gas": -0.031664484023095026,
+            "target": -0.03169084347267205,
+            "residual": 0.06199390122572331
+          }
+        },
+        {
+          "key": "DUO POA",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 392,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5166679219388096,
+            "target": 0.5166790799134141,
+            "residual": 0.5082290062707817
+          },
+          "policyD": {
+            "gas": 0.030787950478349407,
+            "target": 0.030785709565868534,
+            "residual": 0.004230506174744391
+          }
+        },
+        {
+          "key": "DUO GS",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 382,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4877063837836879,
+            "target": 0.4876805211541531,
+            "residual": 0.5166836128467809
+          },
+          "policyD": {
+            "gas": 0.009243019977575298,
+            "target": 0.009250197111176521,
+            "residual": -0.01686255243781466
+          }
+        },
+        {
+          "key": "DUO CC",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 392,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5044082447841922,
+            "target": 0.5044393298069102,
+            "residual": 0.5098779135732752
+          },
+          "policyD": {
+            "gas": -0.0011634910707759467,
+            "target": -0.0011616033411807301,
+            "residual": -0.004288417923558254
+          }
+        },
+        {
+          "key": "DUO NCU",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 206,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5301356406090604,
+            "target": 0.5301441417614388,
+            "residual": 0.4794357123965693
+          },
+          "policyD": {
+            "gas": 0.09415201400264302,
+            "target": 0.0942073818597333,
+            "residual": -0.13618377899476433
+          }
+        },
+        {
+          "key": "DUO HMB",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 331,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4909460084154123,
+            "target": 0.4909181707444637,
+            "residual": 0.47757717783379056
+          },
+          "policyD": {
+            "gas": -0.07132219234011994,
+            "target": -0.07128208749704525,
+            "residual": -0.08874228479234093
+          }
+        },
+        {
+          "key": "DUO NMDS",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 237,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.514272142791738,
+            "target": 0.514252521354664,
+            "residual": 0.4980116943764961
+          },
+          "policyD": {
+            "gas": -0.0043784110420287585,
+            "target": -0.0043518764686113634,
+            "residual": -0.06100092566700414
+          }
+        },
+        {
+          "key": "DUO GSO",
+          "nRows": 1773,
+          "nPolicies": 1077,
+          "nPositivePolicies": 236,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.47916200179131213,
+            "target": 0.4791819941142601,
+            "residual": 0.47148794862772697
+          },
+          "policyD": {
+            "gas": -0.03029524587628528,
+            "target": -0.030249288160455606,
+            "residual": -0.10652114829037115
+          }
+        },
+        {
+          "key": "ICD ch0",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 44,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5075439916854818,
+            "target": 0.5075081532451707,
+            "residual": 0.5188271273100862
+          },
+          "policyD": {
+            "gas": 0.012437338356934668,
+            "target": 0.012397193042883392,
+            "residual": 0.08641554471160441
+          }
+        },
+        {
+          "key": "ICD ch1",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 49,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4231509524753036,
+            "target": 0.42325002122901867,
+            "residual": 0.4794361572645702
+          },
+          "policyD": {
+            "gas": -0.2010949540654144,
+            "target": -0.2010585417832601,
+            "residual": -0.0573654510203135
+          }
+        },
+        {
+          "key": "ICD ch2",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 33,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5168238563878258,
+            "target": 0.5168124658283215,
+            "residual": 0.48295972298159284
+          },
+          "policyD": {
+            "gas": -0.028476955209056434,
+            "target": -0.02851976312964425,
+            "residual": 0.0928253870075879
+          }
+        },
+        {
+          "key": "ICD ch3",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 55,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.43271455816910365,
+            "target": 0.4326509853782581,
+            "residual": 0.5023903369357915
+          },
+          "policyD": {
+            "gas": -0.1900815630010663,
+            "target": -0.19008504683912764,
+            "residual": 0.022420470930258007
+          }
+        },
+        {
+          "key": "ICD ch4",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 41,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4852959183673469,
+            "target": 0.4852448979591837,
+            "residual": 0.4969387755102041
+          },
+          "policyD": {
+            "gas": 0.11791918165288022,
+            "target": 0.1179530592243907,
+            "residual": -0.0753734295886621
+          }
+        },
+        {
+          "key": "ICD ch5",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 34,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.6005702611077435,
+            "target": 0.6005702611077435,
+            "residual": 0.4721492557419007
+          },
+          "policyD": {
+            "gas": 0.6041695607258251,
+            "target": 0.6042528639694524,
+            "residual": -0.2256561165681089
+          }
+        },
+        {
+          "key": "ICD ch6",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 48,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.48874890638670165,
+            "target": 0.48873724117818607,
+            "residual": 0.5066841644794401
+          },
+          "policyD": {
+            "gas": 0.1222978440664435,
+            "target": 0.1222466368283571,
+            "residual": 0.1035926488342911
+          }
+        },
+        {
+          "key": "ICD ch7",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 48,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.49434043589887744,
+            "target": 0.4944435074305204,
+            "residual": 0.49310357751916195
+          },
+          "policyD": {
+            "gas": -0.12525369441587517,
+            "target": -0.12524042245079134,
+            "residual": -0.019293526639154894
+          }
+        },
+        {
+          "key": "ICD ch8",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 33,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.509180790960452,
+            "target": 0.5091580098414434,
+            "residual": 0.5140673409877893
+          },
+          "policyD": {
+            "gas": 0.11820967265576983,
+            "target": 0.11824883829694313,
+            "residual": -0.08724907060394495
+          }
+        },
+        {
+          "key": "ICD ch9",
+          "nRows": 770,
+          "nPolicies": 422,
+          "nPositivePolicies": 37,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5235773932506887,
+            "target": 0.5236096763085399,
+            "residual": 0.5080169593663911
+          },
+          "policyD": {
+            "gas": -0.19554632223619578,
+            "target": -0.19560528087348153,
+            "residual": 0.1315320102181585
+          }
+        }
+      ],
+      "protocolReruns": {
+        "ICD ch5": {
+          "ofRecord": {
+            "passed": false,
+            "models": {
+              "lr": {
+                "aucMean": 0.6673219373219376,
+                "aucStd": 0.06907924867764939,
+                "sigFraction": 0.5333333333333333
+              },
+              "rf": {
+                "aucMean": 0.6278062678062678,
+                "aucStd": 0.0851369528719001,
+                "sigFraction": 0.36666666666666664
+              }
+            }
+          },
+          "targetOnly": {
+            "passed": false,
+            "models": {
+              "lr": {
+                "aucMean": 0.6863817663817664,
+                "aucStd": 0.0793295417341591,
+                "sigFraction": 0.6333333333333333
+              },
+              "rf": {
+                "aucMean": 0.6061823361823361,
+                "aucStd": 0.07122148708930805,
+                "sigFraction": 0.3
+              }
+            }
+          },
+          "residualSubstituted": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.555954415954416,
+                "aucStd": 0.07448551087579057,
+                "sigFraction": 0.1
+              },
+              "rf": {
+                "aucMean": 0.5605270655270654,
+                "aucStd": 0.0936449175417845,
+                "sigFraction": 0.16666666666666666
+              }
+            }
+          }
+        }
+      }
+    },
+    "spp": {
+      "datasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/data/polygonAmoy/spp_dataset.json",
+      "failedKeys": [
+        "nestingDepth: medium/deep"
+      ],
+      "tasks": [
+        {
+          "key": "structureType: trivial/or_only",
+          "nRows": 449,
+          "nPolicies": 433,
+          "nPositivePolicies": 303,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5463588136001929,
+            "target": 0.5463588136001929,
+            "residual": 0.46579455027730887
+          },
+          "policyD": {
+            "gas": 0.16636049261297525,
+            "target": 0.16641664065741277,
+            "residual": -0.1320337997834433
+          }
+        },
+        {
+          "key": "structureType: trivial/and_only",
+          "nRows": 440,
+          "nPolicies": 424,
+          "nPositivePolicies": 294,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5316625310173697,
+            "target": 0.5316377171215881,
+            "residual": 0.4707692307692308
+          },
+          "policyD": {
+            "gas": 0.10863570658912435,
+            "target": 0.10867066200529384,
+            "residual": -0.08814452495547892
+          }
+        },
+        {
+          "key": "structureType: trivial/and_or_mixed",
+          "nRows": 496,
+          "nPolicies": 480,
+          "nPositivePolicies": 350,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5259773013871375,
+            "target": 0.5258722152164775,
+            "residual": 0.5145544346364018
+          },
+          "policyD": {
+            "gas": 0.09216321839545491,
+            "target": 0.0921374558579852,
+            "residual": 0.056831299793420234
+          }
+        },
+        {
+          "key": "structureType: or_only/and_only",
+          "nRows": 629,
+          "nPolicies": 597,
+          "nPositivePolicies": 294,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4832996258469006,
+            "target": 0.48326928910911116,
+            "residual": 0.5056780260895944
+          },
+          "policyD": {
+            "gas": -0.05705540533716661,
+            "target": -0.05707249268100644,
+            "residual": 0.0436312094456673
+          }
+        },
+        {
+          "key": "structureType: or_only/and_or_mixed",
+          "nRows": 685,
+          "nPolicies": 653,
+          "nPositivePolicies": 350,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.47765815303972453,
+            "target": 0.47760676293745824,
+            "residual": 0.5462510920396731
+          },
+          "policyD": {
+            "gas": -0.07498033187658545,
+            "target": -0.07506149458219197,
+            "residual": 0.18672667023844225
+          }
+        },
+        {
+          "key": "structureType: and_only/and_or_mixed",
+          "nRows": 676,
+          "nPolicies": 644,
+          "nPositivePolicies": 350,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4941256830601093,
+            "target": 0.49411246254186497,
+            "residual": 0.542124977965803
+          },
+          "policyD": {
+            "gas": -0.017378879989224966,
+            "target": -0.01744120004334071,
+            "residual": 0.1434315895099208
+          }
+        },
+        {
+          "key": "predicateCombo: single/few",
+          "nRows": 938,
+          "nPolicies": 902,
+          "nPositivePolicies": 645,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5021151950429517,
+            "target": 0.5020898465004929,
+            "residual": 0.49118152372905227
+          },
+          "policyD": {
+            "gas": 0.0016928143265665348,
+            "target": 0.0017026984913035125,
+            "residual": -0.022923855223191167
+          }
+        },
+        {
+          "key": "predicateCombo: single/many",
+          "nRows": 450,
+          "nPolicies": 432,
+          "nPositivePolicies": 175,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4668571196193652,
+            "target": 0.4668876192025376,
+            "residual": 0.5015554787417905
+          },
+          "policyD": {
+            "gas": -0.1328964694728882,
+            "target": -0.13289036569397703,
+            "residual": 0.0008774389523009874
+          }
+        },
+        {
+          "key": "predicateCombo: few/many",
+          "nRows": 862,
+          "nPolicies": 820,
+          "nPositivePolicies": 175,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4643969102792632,
+            "target": 0.464400871459695,
+            "residual": 0.5109130520895226
+          },
+          "policyD": {
+            "gas": -0.13143422230696386,
+            "target": -0.13144005561404812,
+            "residual": 0.0233336398321845
+          }
+        },
+        {
+          "key": "paramType: none/small",
+          "nRows": 397,
+          "nPolicies": 379,
+          "nPositivePolicies": 232,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.433435122682953,
+            "target": 0.4334485160184292,
+            "residual": 0.49754901960784315
+          },
+          "policyD": {
+            "gas": -0.227215026288868,
+            "target": -0.22721503905619223,
+            "residual": 0.012781662679863658
+          }
+        },
+        {
+          "key": "paramType: none/medium",
+          "nRows": 521,
+          "nPolicies": 499,
+          "nPositivePolicies": 352,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4697268400113669,
+            "target": 0.46977124183006536,
+            "residual": 0.47276392441034387
+          },
+          "policyD": {
+            "gas": -0.13053641762904897,
+            "target": -0.1304932361820897,
+            "residual": -0.09533838080906948
+          }
+        },
+        {
+          "key": "paramType: none/large",
+          "nRows": 513,
+          "nPolicies": 493,
+          "nPositivePolicies": 346,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.442084241103849,
+            "target": 0.442084241103849,
+            "residual": 0.542420116194626
+          },
+          "policyD": {
+            "gas": -0.21869660699070992,
+            "target": -0.2187580773967545,
+            "residual": 0.1552409098609247
+          }
+        },
+        {
+          "key": "paramType: small/medium",
+          "nRows": 612,
+          "nPolicies": 584,
+          "nPositivePolicies": 352,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5354096133285816,
+            "target": 0.5354263186029936,
+            "residual": 0.47391192979330005
+          },
+          "policyD": {
+            "gas": 0.09830015135620226,
+            "target": 0.09834472778025018,
+            "residual": -0.10522595437177752
+          }
+        },
+        {
+          "key": "paramType: small/large",
+          "nRows": 604,
+          "nPolicies": 578,
+          "nPositivePolicies": 346,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5084699453551913,
+            "target": 0.5085097905282332,
+            "residual": 0.5396231785063752
+          },
+          "policyD": {
+            "gas": 0.01176624816853444,
+            "target": 0.011706049003100998,
+            "residual": 0.13881986479405964
+          }
+        },
+        {
+          "key": "paramType: medium/large",
+          "nRows": 728,
+          "nPolicies": 698,
+          "nPositivePolicies": 346,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.4731091485507246,
+            "target": 0.4730865036231884,
+            "residual": 0.5640662741545893
+          },
+          "policyD": {
+            "gas": -0.08783597317283393,
+            "target": -0.08794230018287627,
+            "residual": 0.2425292768859897
+          }
+        },
+        {
+          "key": "nestingDepth: flat/shallow",
+          "nRows": 354,
+          "nPolicies": 340,
+          "nPositivePolicies": 210,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5449175824175824,
+            "target": 0.5448317307692307,
+            "residual": 0.47415865384615385
+          },
+          "policyD": {
+            "gas": 0.1606267605759863,
+            "target": 0.16065564957460418,
+            "residual": -0.06724001596348235
+          }
+        },
+        {
+          "key": "nestingDepth: flat/medium",
+          "nRows": 477,
+          "nPolicies": 465,
+          "nPositivePolicies": 335,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5649966747949456,
+            "target": 0.5649301706938594,
+            "residual": 0.5068499224118821
+          },
+          "policyD": {
+            "gas": 0.23615072528875228,
+            "target": 0.23613586181261975,
+            "residual": 0.03199857120243322
+          }
+        },
+        {
+          "key": "nestingDepth: flat/deep",
+          "nRows": 554,
+          "nPolicies": 532,
+          "nPositivePolicies": 402,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5035286647314949,
+            "target": 0.5035195936139333,
+            "residual": 0.4735032656023222
+          },
+          "policyD": {
+            "gas": 0.0032184518342944883,
+            "target": 0.0032655496917109706,
+            "residual": -0.10533999000104684
+          }
+        },
+        {
+          "key": "nestingDepth: shallow/medium",
+          "nRows": 571,
+          "nPolicies": 545,
+          "nPositivePolicies": 335,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.5230676204199259,
+            "target": 0.5229968608480856,
+            "residual": 0.5314944421572664
+          },
+          "policyD": {
+            "gas": 0.07520392140198806,
+            "target": 0.075161740121815,
+            "residual": 0.09829917102984541
+          }
+        },
+        {
+          "key": "nestingDepth: shallow/deep",
+          "nRows": 648,
+          "nPolicies": 612,
+          "nPositivePolicies": 402,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.45886855626684636,
+            "target": 0.4588527628032345,
+            "residual": 0.49801002358490565
+          },
+          "policyD": {
+            "gas": -0.15537255000167619,
+            "target": -0.15535200058496407,
+            "residual": -0.03711412831870413
+          }
+        },
+        {
+          "key": "nestingDepth: medium/deep",
+          "nRows": 771,
+          "nPolicies": 737,
+          "nPositivePolicies": 402,
+          "constantFeatures": 7,
+          "residualMin": 4661.0,
+          "residualMax": 4750.0,
+          "rowAuc": {
+            "gas": 0.43990946658691754,
+            "target": 0.4399400521994454,
+            "residual": 0.46726659779239843
+          },
+          "policyD": {
+            "gas": -0.22999101457384355,
+            "target": -0.22992631673855526,
+            "residual": -0.13633443910514753
+          }
+        }
+      ],
+      "protocolReruns": {
+        "nestingDepth: medium/deep": {
+          "ofRecord": {
+            "passed": false,
+            "models": {
+              "lr": {
+                "aucMean": 0.5631763085399449,
+                "aucStd": 0.0278832383832104,
+                "sigFraction": 0.5333333333333333
+              },
+              "rf": {
+                "aucMean": 0.5577878787878788,
+                "aucStd": 0.022992318115353582,
+                "sigFraction": 0.4
+              }
+            }
+          },
+          "targetOnly": {
+            "passed": false,
+            "models": {
+              "lr": {
+                "aucMean": 0.5678911845730027,
+                "aucStd": 0.027883084775681685,
+                "sigFraction": 0.5666666666666667
+              },
+              "rf": {
+                "aucMean": 0.5029366391184573,
+                "aucStd": 0.03319352313430557,
+                "sigFraction": 0.03333333333333333
+              }
+            }
+          },
+          "residualSubstituted": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5303760330578512,
+                "aucStd": 0.03146252942294363,
+                "sigFraction": 0.13333333333333333
+              },
+              "rf": {
+                "aucMean": 0.5435523415977961,
+                "aucStd": 0.0330440733742363,
+                "sigFraction": 0.3333333333333333
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

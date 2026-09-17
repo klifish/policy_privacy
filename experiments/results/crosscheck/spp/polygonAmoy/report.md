@@ -1,6 +1,6 @@
 # Structure & Parameter Privacy Evaluation Report
 
-**Date:** 7/6/2026, 2:12:26 PM
+**Date:** 9/17/2026, 10:22:57 AM
 
 ## Objective
 
@@ -32,7 +32,8 @@ after applying postfix interpreter + padding protections.
 **Status:** ✗ FAIL
 
 **Failures:**
-- none vs small / Permutation Test: p-value=0.0419 (threshold: 0.05)
+- large vs none / Permutation Test: p-value=0.0479 (threshold: 0.05)
+- small vs none / Permutation Test: p-value=0.0419 (threshold: 0.05)
 
 ### Statistical Hypothesis Tests
 
@@ -55,33 +56,33 @@ after applying postfix interpreter + padding protections.
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5244 (threshold: 0.3)
-- k=3 / silhouette: 0.4124 (threshold: 0.3)
-- k=4 / silhouette: 0.3970 (threshold: 0.3)
-- k=5 / silhouette: 0.3787 (threshold: 0.3)
+- k=2 / silhouette: 0.5609 (threshold: 0.3)
+- k=3 / silhouette: 0.4696 (threshold: 0.3)
+- k=4 / silhouette: 0.4077 (threshold: 0.3)
+- k=5 / silhouette: 0.3557 (threshold: 0.3)
 
 #### Target: predicateCombo
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5244 (threshold: 0.3)
-- k=3 / silhouette: 0.4124 (threshold: 0.3)
-- k=4 / silhouette: 0.4063 (threshold: 0.3)
-- k=5 / silhouette: 0.3471 (threshold: 0.3)
+- k=2 / silhouette: 0.5605 (threshold: 0.3)
+- k=3 / silhouette: 0.4696 (threshold: 0.3)
+- k=4 / silhouette: 0.4077 (threshold: 0.3)
+- k=5 / silhouette: 0.4057 (threshold: 0.3)
 
 #### Target: paramType
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5245 (threshold: 0.3)
-- k=3 / silhouette: 0.4124 (threshold: 0.3)
-- k=4 / silhouette: 0.3691 (threshold: 0.3)
-- k=5 / silhouette: 0.3727 (threshold: 0.3)
+- k=2 / silhouette: 0.5605 (threshold: 0.3)
+- k=3 / silhouette: 0.4692 (threshold: 0.3)
+- k=4 / silhouette: 0.4077 (threshold: 0.3)
+- k=5 / silhouette: 0.3726 (threshold: 0.3)
 
 ## Conclusion
 
-**Overall Status:** ✓ PASS _(multi-seed, policy-disjoint; single-split table below is diagnostic)_
+**Overall Status:** ✗ FAIL _(multi-seed, policy-disjoint; single-split table below is diagnostic)_
 
-Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).
+Potential leakage detected in structure or parameters. Further hardening recommended.
