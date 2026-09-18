@@ -16,7 +16,7 @@ include "../../node_modules/circomlib/circuits/comparators.circom";
     The policy P is represented as a fixed-length RPN token sequence, of which
     only the first l tokens are meaningful. Binding l into the preimage is what
     prevents a prover from re-interpreting the same committed token array at a
-    shorter, stack-consistent prefix (e.g. reading "A AND B" as just "A").
+    shorter, stack-consistent prefix (e.g. reading "NOT A" as just "A").
 */
 
 template PolicyCommitmentVerifier(DEPTH) {
@@ -78,7 +78,7 @@ template PolicyCommitmentVerifier(DEPTH) {
     }
 
     // Then create commitment: h = Poseidon(policyHash || programLength || randomizer)
-    // This matches the paper's specification Com(P, l; r) = Poseidon(P || l || r).
+    // This matches Com(P, l; r) = Poseidon(H_pol(P) || l || r).
     // programLength is part of the preimage so that the committed token array
     // cannot be re-interpreted at a shorter prefix under the same h.
     commitmentHasher = Poseidon(3);
@@ -95,8 +95,8 @@ template PolicyCommitmentVerifier(DEPTH) {
 }
 
 /*
-    Alternative commitment verifier that directly hashes all tokens with randomizer
-    This provides a more direct implementation of Com(P;r) = Poseidon(P || r)
+    Alternative commitment verifier that directly hashes all tokens, the
+    program length and the randomizer. This implements Com(P,l;r).
 
     Note: For DEPTH > 15, this uses tree hashing since Poseidon supports max 16 inputs
 */

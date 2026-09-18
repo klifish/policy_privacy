@@ -78,13 +78,16 @@ The fixed-length interpreter thus realizes the policy-independent interface moti
 
 To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field and computes
 \begin{equation}
-	h = \mathsf{Com}(P_{\mathrm{enc}}; r) = \mathsf{Poseidon}(P_{\mathrm{enc}}\parallel r),
+\begin{split}
+	q &= \mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}),\\
+	h &= \mathsf{Com}(P_{\mathrm{enc}},\ell; r)
+	   = \mathsf{Poseidon}(q\parallel \ell\parallel r),
+\end{split}
 \end{equation}
-where $h$ is stored on-chain as the public handle of the hidden policy.
-Under the collision resistance of Poseidon, the commitment binds future proofs to the committed
-token array $P_{\mathrm{enc}}$.
-The program length $\ell$ is not part of the commitment preimage: supplying the length recorded at encoding time is part of the prescribed TPS workflow (Section~\ref{subsec:trust-model}), and a TPS that deviates from the workflow could evaluate a stack-consistent prefix of the committed array.
-Binding $\ell$ into the commitment is a straightforward hardening that we leave to future work.
+where $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
+The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
+Accordingly, the circuit supplies the same private value $\ell$ to both the commitment verifier and the policy interpreter.
+Under the collision resistance of Poseidon, an accepting proof bound to $h$ cannot substitute a different program length and therefore cannot evaluate an alternative stack-consistent prefix of $P_{\mathrm{enc}}$.
 Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on
 high-entropy $r$ and the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
 
@@ -104,7 +107,7 @@ The TPS generates a proof
 \begin{equation}
 	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1, h, \mathit{pp})\bigr).
 \end{equation}
-The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, the hidden policy encoding is consistent with the on-chain commitment $h$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
 In the current implementation, the issuer-signature check among these gadgets is a hash-based placeholder (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not an in-circuit guarantee; its scope and implications are treated in Sections~\ref{sec:problem} and~\ref{sec:discussion}.
 The proof statement is not bound to the requester, resource, or session context: the ACM validates these as transaction-level parameters, and nonce single-use prevents reuse of the same session parameters only, so replay of a captured proof with fresh parameters by an active
 submitter is not prevented and lies outside the passive threat model of Section~\ref{sec:problem}.

@@ -103,7 +103,7 @@ router.post('/register-resource', async (req, res, next) => {
         };
         const paramsCommitment = await calculateParamsCommitment(v2Params);
 
-        // Policy commitment: h = Com(penc; r)  — hex string from compiler
+        // Policy commitment: h = Com(penc, numOperations; r) — hex string from compiler
         const commitment = artifacts.policyCommitment;
 
         // ── Stage 1b: commit policy on-chain ────────────────────────────────

@@ -1,0 +1,78 @@
+% Shared style for the three reviewer-specific response PDFs.
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{RevisionRed}{RGB}{178,34,34}
+\definecolor{RuleGray}{RGB}{205,210,216}
+\definecolor{NoteBackground}{RGB}{247,248,250}
+\definecolor{NoteBorder}{RGB}{185,190,198}
+
+\providecommand{\ReviewerNumber}{0}
+\newcommand{\ManuscriptTitle}{Enhancing Consent Policy Privacy in Blockchain-Based Healthcare Data Sharing}
+\hypersetup{
+  pdftitle={Response to Reviewer \ReviewerNumber},
+  pdfauthor={},
+  pdfsubject={Revision Round 1}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.62em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em}
+\setlist[enumerate]{leftmargin=1.9em,itemsep=0.25em,topsep=0.3em}
+\raggedbottom
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Response to Reviewer \ReviewerNumber}
+\fancyhead[R]{\small Revision Round 1}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\ResponseTitle}{%
+  \begin{center}
+    {\Large\bfseries Response to Reviewer \ReviewerNumber\par}
+    \vspace{0.7em}
+    {\large\itshape \ManuscriptTitle\par}
+  \end{center}
+  \vspace{0.6em}
+  \noindent\color{RuleGray}\rule{\textwidth}{0.7pt}\color{black}
+  \vspace{0.6em}
+}
+
+\newcommand{\WorkingDraftNotice}[1]{%
+  \begin{center}
+    \fcolorbox{NoteBorder}{NoteBackground}{%
+      \parbox{0.91\textwidth}{\small\textbf{Working draft.} #1}%
+    }
+  \end{center}
+  \vspace{0.4em}
+}
+
+\newenvironment{reviewcomment}[1]
+  {\par\vspace{0.7em}\noindent\textbf{Comments #1: }\itshape}
+  {\par\normalfont}
+
+\newenvironment{reviewresponse}[1]
+  {\par\vspace{0.5em}\noindent\textbf{Response #1: }}
+  {\par}
+
+\newenvironment{revisiontext}
+  {\begin{quote}\color{RevisionRed}}
+  {\end{quote}}
+
+\newcommand{\RevisionLocation}[1]{%
+  \par\noindent\textbf{Location in the revised manuscript:} #1\par
+}
+
+\newcommand{\NoProcessedResponses}{%
+  \WorkingDraftNotice{No response entries have been finalized for this reviewer yet. This PDF is intentionally limited to the shared journal-response layout and will be populated as the review comments are processed.}
+}

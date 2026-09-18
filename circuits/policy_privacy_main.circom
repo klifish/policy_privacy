@@ -14,7 +14,7 @@ include "../node_modules/circomlib/circuits/poseidon.circom";
     for privacy-preserving consent management. It proves simultaneously that:
     
     1. C(P,(a,p)) = 1  - Policy P is satisfied by attributes a and predicates p
-    2. Com(P;r) = h    - Policy commitment is consistent  
+    2. Com(P,l;r) = h  - Policy program and length are commitment-consistent
     3. Each p_j ∈ p is correctly derived from external predicate verification
     
     This circuit embodies the complete witness structure: w = (P, a, p, r)
@@ -109,7 +109,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     // PUBLIC INPUTS
     // ═══════════════════════════════════════════════════════════════════════
     
-    // Policy commitment h = Com(P;r)
+    // Policy commitment h = Com(P, l; r)
     signal input policyCommitment;
     signal input paramsCommitment;
 
@@ -196,7 +196,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component profileClaimBits;
     
     // ───────────────────────────────────────────────────────────────────────
-    // 1. VERIFY POLICY COMMITMENT: Com(P;r) = h
+    // 1. VERIFY POLICY COMMITMENT: Com(P, l; r) = h
     // ───────────────────────────────────────────────────────────────────────
     
     commitmentVerifier = PolicyCommitmentVerifier(DEPTH);
