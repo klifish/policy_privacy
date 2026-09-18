@@ -1,0 +1,114 @@
+\begin{reviewcomment}{2}
+	The proof must be cryptographically linked to the authorization context.
+	The current proof statement is not linked to the requester identity, protected resource, or session context.
+	As mentioned in the manuscript, single-use of the nonce does not allow reuse of the same session parameters, but it does not prevent replay of a valid proof captured by an active party using fresh parameters.
+	This is a significant limitation of the authorization guarantees of the current prototype.
+	The authors would ideally add the relevant requester/resource/session values to the proved statement and experimentally evaluate the resulting circuit/public-input and gas cost changes.
+	If this cannot be implemented in the current version, the security claims and deployment implications should be made even more explicit throughout the manuscript, including the abstract and conclusion.
+\end{reviewcomment}
+
+\begin{reviewresponse}{2}
+	We thank the reviewer for identifying this authorization-context gap.
+	We agree and have implemented the proposed binding in both the circuit and the on-chain access-control path.
+
+	In the submitted system, the public statement contained the authorization output, policy commitment, and parameter commitment, but no value derived from the requester, resource, or session.
+	The contract checked nonce reuse only from the transaction parameters.
+	Consequently, a captured proof could be paired with a fresh nonce or another resource while the proof itself remained unchanged.
+
+	For the revised construction, let
+	\begin{equation*}
+		\chi=(\mathit{id}_{\mathrm{req}},\mathit{id}_{\mathrm{res}},\nu),
+		\qquad
+		d_{\chi}=\mathsf{Poseidon}(\mathit{id}_{\mathrm{req}}\parallel
+		\mathit{id}_{\mathrm{res}}\parallel\nu),
+	\end{equation*}
+	where $\nu$ is the session nonce.
+	The circuit takes the three components of $\chi$ as private circuit inputs and enforces the hard equality $d_{\chi}=\mathsf{Poseidon}(\chi)$, with $d_{\chi}$ exposed as a public input.
+	The ACM receives the same three values as transaction parameters, recomputes the digest on-chain, and requires it to equal the proof's public signal before verification.
+	It also checks the resource--policy association, the public request epoch, and nonce single-use for the tuple $(\mathit{policy},\mathit{resource},\nu,\mathit{id}_{\mathrm{req}})$.
+	Thus, within one ACM deployment, changing the requester identifier, resource, or nonce causes rejection.
+
+	The three context values are private with respect to the Groth16 relation but are not hidden from the blockchain: they are present in transaction calldata so that the ACM can recompute the digest.
+	We therefore describe $\mathit{id}_{\mathrm{req}}$ as a requester identifier or pseudonym, not as a hidden or universally authenticated real-world identity.
+	The current statement contains five signals:
+	\begin{equation*}
+		(\mathit{1},h,\mathit{pp},d_{\chi},\tau),
+	\end{equation*}
+	namely one output and four public inputs; $\tau$ is a separate request-epoch input added for temporal policy checks.
+
+	We measured the context-binding change in isolation against the length-bound circuit immediately preceding it.
+	It adds $605$ R1CS constraints, increasing the total from $75{,}185$ to $75{,}790$ ($0.8\%$), and adds one public input.
+
+	The revised implementation is covered at both layers.
+	At the circuit layer, the test rejects a context digest computed for another nonce.
+	At the contract layer, the tests confirm agreement between the circuit-side and EVM Poseidon implementations and reject substitutions of the requester, resource, and nonce.
+	The end-to-end suite reuses one valid proof as a negative control and confirms that a fresh nonce or another resource governed by the same policy fails with a context-binding mismatch.
+	All targeted tests pass.
+
+	We have kept the claim precise: the change closes the reviewer's fresh-parameter replay within one ACM deployment.
+	The digest does not currently include the transaction submitter or a chain/contract domain, so the revised Discussion identifies exact-context front-running and cross-deployment reuse as separate hardening considerations.
+
+	\textbf{Changes in the manuscript.}
+	The Design section now defines the context digest and the five-signal statement, explains the circuit and ACM checks, and removes the former future-work language.
+	The Problem and Threat Model section now states explicitly that the SNARK does not authenticate attribute provenance or real-world attributes, distinguishes the pseudonymous requester identifier from real-world identity, and identifies adaptive requester probing and off-chain side channels as outside the present evaluation.
+	The Discussion reports the measured marginal cost and states the scope of the resulting guarantee.
+	The cost profile now reports the final RC1 circuit and public interface together with the revised Polygon Amoy gas, calldata, and prover measurements.
+
+	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
+	\begin{revisiontext}
+		The current model does not provide cryptographic protection against a compromised TPS.
+		The SNARK establishes that the supplied witness satisfies the implemented policy relation, but it does not prove that each private attribute originates from an authenticated external source or corresponds to the requester's real-world attributes.
+		Some policy types bind the pseudonymous requester identifier to a holder secret, but this is distinct from issuer-authenticated attribute provenance.
+		Attribute-origin authenticity therefore remains outside the proved relation in the current implementation.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``Public-Chain Adversary.''}
+	\begin{revisiontext}
+		Adaptive requester probing and off-chain side channels are outside the scope of the present evaluation.
+		The proved authorization outcome is bound to a pseudonymous requester identifier, a protected resource, and a session nonce through the context digest defined in the Design section.
+		This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Commitment Binding and Proof Generation.''}
+	\begin{revisiontext}
+		For an access request, let
+		\begin{equation*}
+			\chi=(\mathit{id}_{\mathrm{req}},\mathit{id}_{\mathrm{res}},\nu),
+			\qquad
+			d_{\chi}=\mathsf{Poseidon}(\mathit{id}_{\mathrm{req}}\parallel
+			\mathit{id}_{\mathrm{res}}\parallel\nu),
+		\end{equation*}
+		where $\nu$ is a fresh session nonce.
+		The TPS constructs the private circuit witness
+		\begin{equation*}
+			w=(P_{\mathrm{enc}},\ell,a,b,r,\omega,\chi).
+		\end{equation*}
+		The context tuple $\chi$ consists of private circuit inputs, while its digest $d_{\chi}$ is public.
+		The current public-signal vector is
+		\begin{equation*}
+			(1,h,\mathit{pp},d_{\chi},\tau),
+		\end{equation*}
+		where $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters and $\tau$ is the request epoch used by the temporal checks.
+		Although the three components of $\chi$ are not separate Groth16 public inputs, the ACM receives them as transaction parameters in order to recompute $d_{\chi}$; they are therefore visible in transaction calldata.
+		The TPS generates a proof
+		\begin{equation*}
+			\pi\leftarrow\mathsf{Prove}\bigl(\mathit{pk},w;(1,h,\mathit{pp},d_{\chi},\tau)\bigr).
+		\end{equation*}
+		The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+		Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
+		Thus, within one ACM deployment, a proof generated for one requester identifier, resource, and nonce cannot be accepted under a different tuple.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Discussion.''}
+	\begin{revisiontext}
+		The circuit constrains the public digest $d_{\chi}$ to the requester identifier, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
+		Consequently, changing any of these values invalidates the request.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Evaluation,'' cost profile table.}
+	\begin{revisiontext}
+		Circuit size: $81{,}740$ R1CS constraints and $80{,}884$ wires at $\mathsf{DEPTH}=64$.
+		Public interface: four public inputs plus one output.
+		Across the $1{,}773$ revised Polygon Amoy executions, mean padded gas is $304{,}167$ for commit and $1{,}057{,}283$ for access; the fixed calldata lengths are $196$ and $612$ bytes, respectively.
+	\end{revisiontext}
+\end{reviewresponse}

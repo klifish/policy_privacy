@@ -59,7 +59,7 @@ To support reusable verification, each program is padded to a fixed token length
 together with an explicit program length $\ell \le L$ carried as a private witness.
 The interpreter evaluates only the first $\ell$ tokens; padding positions beyond $\ell$ are inactive and leave the output unchanged.
 The example policy above compiles to the token sequence $[x_1,\, y_1,\, \land,\, x_2,\, y_2,\, \land,\, \lor]$ with $\ell = 7$; the remaining $L-7$ positions are padding.
-The implemented circuit uses $N=6$, $M=5$, and $L=\DEPTH=20$.
+The implemented RC1 circuit uses $N=13$, $M=11$, and $L=\DEPTH=64$.
 We denote the set of length-$L$ programs by $\mathsf{Prog}_{L}$.
 
 The reusable policy interpreter is a zero-knowledge circuit
@@ -91,13 +91,26 @@ Under the collision resistance of Poseidon, an accepting proof bound to $h$ cann
 Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on
 high-entropy $r$ and the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
 
-For an access request, the TPS constructs the private witness
+For an access request, let
 \begin{equation}
-	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega),
+	\chi=(\mathit{id}_{\mathrm{req}},\mathit{id}_{\mathrm{res}},\nu),
+	\qquad
+	d_{\chi}=\mathsf{Poseidon}(\mathit{id}_{\mathrm{req}}\parallel
+	\mathit{id}_{\mathrm{res}}\parallel\nu),
+\end{equation}
+where $\nu$ is a fresh session nonce.
+The TPS constructs the private circuit witness
+\begin{equation}
+	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega, \chi),
 \end{equation}
 where $P_{\mathrm{enc}}$ is the encoded policy, $\ell$ is its program length, $a$ denotes requester attributes, $b$ denotes external predicate outcomes, $r$ is the commitment randomness, and $\omega$ denotes auxiliary witnesses for credential- or predicate-dependent checks.
-The public statement contains the asserted authorization output, the policy commitment $h$, and a fixed-format parameter commitment $\mathit{pp}$, which binds per-predicate parameters without exposing them in calldata.
-The requester and resource identifiers and a session nonce are carried as transaction-level parameters that the ACM validates.
+The context tuple $\chi$ consists of private circuit inputs, while its digest $d_{\chi}$ is public.
+The current public-signal vector is
+\begin{equation}
+	(1,h,\mathit{pp},d_{\chi},\tau),
+\end{equation}
+where $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters and $\tau$ is the request epoch used by the temporal checks.
+Although the three components of $\chi$ are not separate Groth16 public inputs, the ACM receives them as transaction parameters in order to recompute $d_{\chi}$; they are therefore visible in transaction calldata.
 
 For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the common reference string as a proving key and a verification key, once for the shared circuit:
 \begin{equation}
@@ -105,15 +118,13 @@ For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the co
 \end{equation}
 The TPS generates a proof
 \begin{equation}
-	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1, h, \mathit{pp})\bigr).
+	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1,h,\mathit{pp},d_{\chi},\tau)\bigr).
 \end{equation}
-The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
 In the current implementation, the issuer-signature check among these gadgets is a hash-based placeholder (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not an in-circuit guarantee; its scope and implications are treated in Sections~\ref{sec:problem} and~\ref{sec:discussion}.
-The proof statement is not bound to the requester, resource, or session context: the ACM validates these as transaction-level parameters, and nonce single-use prevents reuse of the same session parameters only, so replay of a captured proof with fresh parameters by an active
-submitter is not prevented and lies outside the passive threat model of Section~\ref{sec:problem}.
-Binding the session context into the public statement is a standard hardening that we leave to future work.
-
-The ACM verifies $\pi$ on-chain against $\mathit{vk}$ and the public statement, and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
+Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
+Thus, within one ACM deployment, a proof generated for one requester identifier, resource, and nonce cannot be accepted under a different tuple.
+The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
 The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
 
 \subsection{Transcript Normalization}

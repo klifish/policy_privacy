@@ -87,11 +87,13 @@ describe('DUO V3 single terms (witness + proof + chain)', function () {
 
     'S-US': ({ ctx, env }) => {
       describe('on-chain negatives (one accepted proof, no re-proving)', function () {
-        let c; let stack; let accepted; let nonce; let aliceId; let other;
+        let c; let stack; let accepted; let nonce; let aliceId; let other; let samePolicyResource;
         before(async function () {
           if (!H.proofTier({ tier: 'core' })) this.skip();
           c = ctx(); stack = env.stack;
           if (c.policyId === undefined) await H.commitAndRegister(stack, c);
+          samePolicyResource = await stack.contract.connect(stack.provider).registerResource.staticCall(c.policyId);
+          await stack.contract.connect(stack.provider).registerResource(c.policyId);
           other = await H.compilePolicy('PS', env.fixtures);
           await H.commitAndRegister(stack, other, { uri: 'ipfs://other' });
 
@@ -109,7 +111,7 @@ describe('DUO V3 single terms (witness + proof + chain)', function () {
           proof: [accepted.pA, accepted.pB, accepted.pC], pubSignals: accepted.pubSignals, ...over
         });
         it('rejects a proof submitted under another resource', async function () {
-          await expect(submit({ resourceId: other.resourceId })).to.be.revertedWith('Resource/policy mismatch');
+          await expect(submit({ resourceId: samePolicyResource })).to.be.revertedWith('Context binding mismatch');
         });
         it('rejects a proof submitted under another policy (context digest is checked before the commitment)', async function () {
           await expect(submit({ policyId: other.policyId, resourceId: other.resourceId })).to.be.revertedWith('Context binding mismatch');
@@ -119,6 +121,9 @@ describe('DUO V3 single terms (witness + proof + chain)', function () {
         });
         it('rejects a proof presented for another requester', async function () {
           await expect(submit({ idReq: BigInt(env.fixtures.requesterIds.bob) })).to.be.revertedWith('Context binding mismatch');
+        });
+        it('rejects a captured proof replayed with a fresh nonce', async function () {
+          await expect(submit({ nonce: nonce + 1n })).to.be.revertedWith('Context binding mismatch');
         });
         it('accepts the proof once and rejects its replay', async function () {
           const receipt = await (await submit()).wait();

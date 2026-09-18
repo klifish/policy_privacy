@@ -58,8 +58,7 @@ The logistic-regression panel (shown for robustness only, since it over-separate
 
 \noindent\textbf{Cost.} Padding is not free: it raises mean commit gas from $216{,}562$ (B1) to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to $753{,}310$, a $37.7\%$ increase. 
 This overhead is the principal efficiency tradeoff of the design. 
-Table~\ref{tab:cost-profile} adds a single-point $\DEPTH=20$ cost characterization: the circuit compiles to $75{,}097$ R1CS constraints, and mean local proof generation takes $3{,}881.5$ ms, preceded by $190.8$ ms of witness generation (about $4.1$ s end to end). 
-Gas, logs, and transaction objects are taken from the Polygon Amoy executed datasets; transaction hashes are stored in the B1/B2 executed datasets. 
-Calldata lengths are the on-chain transaction input sizes fetched by hash from Polygon Amoy, and are constant across policies (B1 commit/access $164$/$452$ bytes, B2 $196$/$484$).
-Proving time is local prover timing from the B1 run, not an on-chain measurement. 
-Cost-vs-$\DEPTH$ scaling is left to future work because only $\DEPTH=20$ is compiled and evaluated here.
+Table~\ref{tab:cost-profile} adds a single-point cost characterization of the final RC1 configuration at $\DEPTH=64$.
+The circuit compiles to $81{,}740$ R1CS constraints; across the $1{,}773$ revised Polygon Amoy executions, mean local witness and proving times are $763.6$ ms and $2{,}884.2$ ms, respectively.
+Gas, logs, calldata lengths, and transaction objects are taken from the same revised executed dataset, whose transactions use the context-bound five-signal statement.
+Cost-vs-$\DEPTH$ scaling is left to future work because only the production value $\DEPTH=64$ is compiled and evaluated in this revision.

@@ -36,6 +36,11 @@ Policy confidentiality, in contrast, is not cryptographically enforced against t
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
 
+The current model does not provide cryptographic protection against a compromised TPS.
+The SNARK establishes that the supplied witness satisfies the implemented policy relation, but it does not prove that each private attribute originates from an authenticated external source or corresponds to the requester's real-world attributes.
+Some policy types bind the pseudonymous requester identifier to a holder secret, but this is distinct from issuer-authenticated attribute provenance.
+Attribute-origin authenticity therefore remains outside the proved relation in the current implementation.
+
 \subsection{Public-Chain Adversary}
 
 The primary adversary is a passive public-chain observer.
@@ -57,9 +62,9 @@ The requester initiates access requests, observes its own submitted evidence and
 However, the requester does not receive the encoded policy, commitment-opening randomness, or policy-bound proving material, which remain within the provider-to-TPS proof-generation boundary.
 This restriction matters because a requester that learned the policy could infer sensitive facts about the data subject from the consent terms themselves and, in addition, would learn the policy's full acceptance region---which attribute combinations are granted---enabling targeted evidence construction or probing beyond its own legitimate sessions.
 
-Compromised TPS behavior, adaptive requester probing, and off-chain side channels are non-goals for the current model.
-The SNARK checks internal consistency of the witness it is given; it does not prove that the private attribute vector is the requester's real-world attribute set.
-Binding an authorization to $\mathit{id}_{\mathrm{req}}$---in the current implementation, at the transaction level rather than inside the proof statement---ties the recorded outcome to an identifier and session context, but without an issuer-verification layer it does not by itself bind every private attribute value to an external source of truth.
+Adaptive requester probing and off-chain side channels are outside the scope of the present evaluation.
+The proved authorization outcome is bound to a pseudonymous requester identifier, a protected resource, and a session nonce through the context digest defined in Section~\ref{sec:design}.
+This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
 
 \subsection{Privacy Objectives}
 \label{subsec:privacy-objectives}

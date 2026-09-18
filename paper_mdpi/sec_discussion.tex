@@ -28,10 +28,16 @@ As described in Section~\ref{sec:design}, the policy commitment covers both the 
 Because $\ell$ also determines how many tokens the interpreter evaluates, an authorizing proof for $h$ cannot be based on a shorter valid prefix.
 This integrity guarantee is separate from our privacy evaluation, which measures whether public-chain artifacts reveal information about the hidden policy.
 
-A separate soundness gap concerns the fact that the proof statement is not bound to the requester, resource, or session context (Section~\ref{sec:design}); the ACM validates these as transaction-level parameters and enforces nonce single-use, so an active adversary that captures a proof cannot reuse the same session parameters, but could replay it with fresh ones.
-This limitation does not affect the metadata-only adversary evaluated here, but it must be closed before deployment.
+The authorization context is likewise part of the proved relation.
+The circuit constrains the public digest $d_{\chi}$ to the requester identifier, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
+Consequently, changing any of these values invalidates the request.
+
+
+The guarantee is scoped to the bound tuple within one ACM deployment.
+The digest does not include the transaction submitter or a chain/contract domain, so exact-context front-running and cross-deployment reuse require separate deployment-level controls.
+Moreover, $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier and is not, by itself, proof of a real-world identity or of the origin of every private attribute.
 
 Three directions follow.
-First, the remaining session-context gap should be closed by lifting the context into the proof statement; this changes the public-input layout and therefore the verifier gas, so the cost profile of Table~\ref{tab:cost-profile} would need to be re-measured.
+First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
 Second, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make proof refusals attributable.
 Third, the reduced-trust TPS instantiations of Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
