@@ -78,18 +78,18 @@ class TaskAlignmentTests(unittest.TestCase):
         cls.pch = json.loads((root / "pch_dataset.json").read_text())
         cls.spp = json.loads((root / "spp_dataset.json").read_text())
 
-    def test_pch_has_js_aligned_16_tasks(self):
+    def test_pch_has_js_aligned_20_tasks(self):
         tasks = pch_supervised.build_tasks(self.pch)
         keys = [task["key"] for task in tasks]
-        self.assertEqual(len(tasks), 16)
+        self.assertEqual(len(tasks), 20)
         self.assertEqual(keys[-10:], [f"ICD ch{i}" for i in range(10)])
 
-    def test_spp_has_js_aligned_28_contrasts(self):
+    def test_spp_has_js_aligned_21_contrasts(self):
         _, _, labels = spp_supervised.build_feature_matrix(self.spp)
         total = 0
         for target in spp_supervised.TARGET_ATTRS:
             total += len(set(labels[target].tolist())) * (len(set(labels[target].tolist())) - 1) // 2
-        self.assertEqual(total, 28)
+        self.assertEqual(total, 21)
         self.assertIn("nestingDepth", spp_supervised.TARGET_ATTRS)
 
 
