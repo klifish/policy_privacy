@@ -29,17 +29,20 @@ MPC/collaborative SNARK proof generation in which no single party sees both poli
 material and requester evidence.
 
 For implementation and evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
-This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could construct witnesses from substituted attribute values or withhold proof generation from legitimate requesters.
+This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
 Two guarantees must be distinguished here.
 Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
 
-The current model does not provide cryptographic protection against a compromised TPS.
-The SNARK establishes that the supplied witness satisfies the implemented policy relation, but it does not prove that each private attribute originates from an authenticated external source or corresponds to the requester's real-world attributes.
-Some policy types bind the pseudonymous requester identifier to a holder secret, but this is distinct from issuer-authenticated attribute provenance.
-Attribute-origin authenticity therefore remains outside the proved relation in the current implementation.
+Attribute-origin guarantees depend on the evidence type.
+For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
+Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
+This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
+Ontology and requester-allowlist predicates likewise establish membership only relative to provider-committed sets.
+Issuer-key governance, credential revocation, real-world identity verification, and protection against a compromised TPS remain external trust and lifecycle functions.
 
 \subsection{Public-Chain Adversary}
 

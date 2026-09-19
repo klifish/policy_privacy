@@ -24,7 +24,7 @@ In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requeste
 
 TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length, circuit-friendly format.
 This policy class is chosen for two reasons.
-First, the targeted biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and institutional or ethics requirements---are categorical conditions combined with AND/OR/NOT, and conditions that are not natively Boolean, such as temporal validity or credential status, enter as externally attested predicate outcomes.
+First, the targeted biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and institutional or ethics requirements---are categorical conditions combined with AND/OR/NOT, and conditions that are not natively Boolean enter through fixed external-predicate slots.
 Second, a Boolean policy class admits a fixed-length encoding evaluated by a single reusable interpreter circuit, which keeps the verification interface policy-independent---a prerequisite for the privacy objectives evaluated later.
 Let
 \begin{equation}
@@ -35,8 +35,10 @@ The full assignment space is
 \begin{equation}
 	O = X \times B,
 \end{equation}
-where $a \in X$ encodes requester attributes and $b \in B$ encodes externally attested predicate outcomes, such as credential validity, ontology-linked checks, or obligation-related conditions.
-Credential issuance, revocation, and attestation themselves remain external functions (Section~\ref{subsec:trust-model}): TPS-ZKPI consumes their outcomes as predicate bits and, where applicable, checks the associated auxiliary witnesses inside the proof relation.
+where $a \in X$ encodes requester attributes and $b \in B$ encodes predicate outcomes, including credential, ontology-membership, requester-allowlist, and obligation-related checks.
+The implemented relation derives these bits from their associated witnesses rather than accepting unconstrained predicate assertions.
+The strength of the resulting provenance guarantee nevertheless depends on the mechanism: the profile-credential slot verifies an issuer signature in-circuit, whereas ontology and requester-allowlist slots establish membership relative to provider-committed sets.
+Issuer authorization, issuance practice, and credential revocation remain external lifecycle functions (Section~\ref{subsec:trust-model}).
 
 Ontology-linked conditions are represented extensionally rather than through in-circuit ontology reasoning.
 At encoding time, the provider expands an ontology concept into a whitelist of codes and commits the whitelist as a Merkle root among the policy's per-predicate parameters; in-circuit, the predicate check is a set-membership proof of the requested term against this root.
@@ -78,11 +80,11 @@ The fixed-length interpreter thus realizes the policy-independent interface moti
 
 To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field and computes
 \begin{equation}
-\begin{split}
-	q &= \mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}),\\
-	h &= \mathsf{Com}(P_{\mathrm{enc}},\ell; r)
-	   = \mathsf{Poseidon}(q\parallel \ell\parallel r),
-\end{split}
+	\begin{split}
+		q & = \mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}), \\
+		h & = \mathsf{Com}(P_{\mathrm{enc}},\ell; r)
+		= \mathsf{Poseidon}(q\parallel \ell\parallel r),
+	\end{split}
 \end{equation}
 where $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
 The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
@@ -99,6 +101,8 @@ For an access request, let
 	\mathit{id}_{\mathrm{res}}\parallel\nu),
 \end{equation}
 where $\nu$ is a fresh session nonce.
+Here $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier.
+For policies that activate a holder-bound credential or requester-allowlist predicate, the circuit derives it as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ from a private holder secret $s_{\mathrm{holder}}$; otherwise, it may be a requester-supplied pseudonym.
 The TPS constructs the private circuit witness
 \begin{equation}
 	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega, \chi),
@@ -120,12 +124,41 @@ The TPS generates a proof
 \begin{equation}
 	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1,h,\mathit{pp},d_{\chi},\tau)\bigr).
 \end{equation}
-The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
-In the current implementation, the issuer-signature check among these gadgets is a hash-based placeholder (a Poseidon consistency check that provides no unforgeability), so attribute-origin binding is not an in-circuit guarantee; its scope and implications are treated in Sections~\ref{sec:problem} and~\ref{sec:discussion}.
+The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and the selected external-predicate witnesses satisfy their policy-bound verification relations.
 Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
 Thus, within one ACM deployment, a proof generated for one requester identifier, resource, and nonce cannot be accepted under a different tuple.
 The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
 The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
+
+\subsection{Credential-Origin Binding}
+
+The circuit reserves one fixed predicate slot for a credential carrying a fixed set of DUO-relevant claims.
+Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use.
+Let $t_{\mathrm{from}}$ and $t_{\mathrm{until}}$ define its validity interval, and let $\gamma$ be its credential identifier.
+Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag for this credential type.
+From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$.
+For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
+\begin{equation}
+	m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel
+	\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel
+	c_0\parallel\cdots\parallel c_6\parallel
+	t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma)
+\end{equation}
+Before proof generation, an issuer holding the corresponding private signing key $s_{\mathrm{iss}}$ issues the credential by computing
+\begin{equation}
+	\sigma\leftarrow\mathsf{Sign}_{\mathrm{EdDSA\text{-}Poseidon}}(s_{\mathrm{iss}},m_{\mathrm{cred}}).
+\end{equation}
+The resulting credential is supplied to the TPS as private off-chain evidence for proof generation.
+At proof generation, the TPS supplies $A$, $\sigma$, and the credential fields as private witness values.
+The circuit then enforces
+\begin{equation}
+	\mathsf{Verify}_{\mathrm{EdDSA\text{-}Poseidon}}(A,\sigma,m_{\mathrm{cred}})=1,
+	\qquad
+	\mathsf{Poseidon}(A_x\parallel A_y)=k_{\mathrm{iss}},
+\end{equation}
+where $k_{\mathrm{iss}}$ is the issuer-key commitment contained in the policy-bound parameter commitment $\mathit{pp}$.
+The circuit additionally requires $t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{until}}$ and $\gamma\neq0$.
+Because this credential is holder-bound, a policy that activates this slot also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the pseudonymous requester identifier in the authorization context. The corresponding DUO attributes are constrained to these claim-derived values.
 
 \subsection{Transcript Normalization}
 

@@ -19,10 +19,25 @@ The TPS trust assumption is the main architectural tradeoff.
 Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~\ref{sec:problem}).
 This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS or provider can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
 
-The same trust concentration underlies the attribute-origin limitation noted in Section~\ref{sec:problem}.
-Because the TPS constructs the witness, a compromised TPS, or a TPS colluding with the provider, can substitute attribute values and still produce a verifying proof.
-Enforcing attribute-origin binding in-circuit would require the requester to reveal attributes in clear to the TPS for issuer-signature verification, which reintroduces the same confidentiality concession.
-Reconciling attribute-origin binding with attribute confidentiality under a single TPS is therefore a structural limitation of the current design.
+Attribute origin is only partially delegated to the TPS.
+For the profile-backed DUO terms, the circuit verifies the EdDSA-Poseidon signature described in Section~\ref{sec:design} and derives eight policy attributes from the seven signed claims.
+A compromised TPS cannot modify the signed claims, policy commitment, requester pseudonym, resource, validity interval, or credential identifier without invalidating the signature.
+The implemented relation rejects a non-committed issuer, an invalid signature under the committed key, an expired or premature credential, and substitutions of any signed field.
+Other evidence has a narrower meaning: ontology proofs establish that a supplied code belongs to a provider-committed set, and requester allowlists establish that a holder pseudonym belongs to a provider-committed list; they do not authenticate every underlying real-world fact.
+Moreover, because the TPS receives the holder secret and credential witness in the current workflow, holder binding does not protect against a malicious TPS reusing otherwise valid evidence within its signed scope.
+
+The remaining trust anchor is therefore issuer governance.
+The prototype binds the proof to a policy-selected issuer-key commitment, but it has no independent registry establishing that this key belongs to an accredited healthcare authority, and it does not check credential revocation.
+The evaluation uses a deterministic test-only issuer key to exercise the complete signature path; it is not evidence of institutional issuance or production key management.
+
+A concrete deployment can close this gap without changing the Boolean interpreter.
+First, a governed issuer registry would publish schema-qualified issuer keys and their validity epochs; registration would validate a canonical, subgroup-safe public key and require proof of possession.
+Second, an issuer would sign a domain-separated credential containing a holder-key commitment, claim vector, authorization scope, validity interval, and unique credential identifier.
+Third, the circuit would verify both the credential signature and a Merkle proof that the issuer key is active in the registry, while continuing to derive policy attributes from the signed claims.
+The holder would retain its secret key and authorize each request by signing the context digest and request epoch; verifying this second signature inside the circuit would prevent a TPS that observes one credential presentation from generating proofs for fresh sessions.
+Finally, an epoch-specific sparse-Merkle or accumulator root would support a private non-revocation witness for the credential identifier.
+The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the policy-independent verification interface.
+If an existing healthcare credential uses a non-circuit-friendly signature such as Ed25519 or ECDSA, integration requires either verifying that signature in-circuit at higher constraint cost or having the issuer additionally issue a SNARK-friendly credential; re-signing by the TPS would not preserve issuer-origin assurance.
 
 As described in Section~\ref{sec:design}, the policy commitment covers both the padded encoding $P_{\mathrm{enc}}$ and its active length $\ell$.
 Because $\ell$ also determines how many tokens the interpreter evaluates, an authorizing proof for $h$ cannot be based on a shorter valid prefix.

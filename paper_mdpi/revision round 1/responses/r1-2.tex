@@ -50,16 +50,17 @@
 
 	\textbf{Changes in the manuscript.}
 	The Design section now defines the context digest and the five-signal statement, explains the circuit and ACM checks, and removes the former future-work language.
-	The Problem and Threat Model section now states explicitly that the SNARK does not authenticate attribute provenance or real-world attributes, distinguishes the pseudonymous requester identifier from real-world identity, and identifies adaptive requester probing and off-chain side channels as outside the present evaluation.
+	The Problem and Threat Model section now distinguishes the issuer-authenticated profile claims from other evidence, separates the pseudonymous requester identifier from real-world identity and issuer governance, and identifies adaptive requester probing and off-chain side channels as outside the present evaluation.
 	The Discussion reports the measured marginal cost and states the scope of the resulting guarantee.
 	The cost profile now reports the final RC1 circuit and public interface together with the revised Polygon Amoy gas, calldata, and prover measurements.
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
 	\begin{revisiontext}
-		The current model does not provide cryptographic protection against a compromised TPS.
-		The SNARK establishes that the supplied witness satisfies the implemented policy relation, but it does not prove that each private attribute originates from an authenticated external source or corresponds to the requester's real-world attributes.
-		Some policy types bind the pseudonymous requester identifier to a holder secret, but this is distinct from issuer-authenticated attribute provenance.
-		Attribute-origin authenticity therefore remains outside the proved relation in the current implementation.
+		Attribute-origin guarantees depend on the evidence type.
+		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under the issuer-key commitment selected in the policy parameters.
+		The signed claims are bound to the policy commitment, requester pseudonym, protected resource, validity interval, and credential identifier, and the corresponding policy attributes are derived from those claims inside the circuit.
+		This guarantee is not universal: ontology checks prove membership in a provider-committed code set, and requester allowlists prove inclusion of a holder pseudonym in a provider-committed list, but neither mechanism independently establishes a requester's real-world identity or the external origin of every submitted value.
+		The authority and correct provisioning of an issuer key, the truthfulness of issuance, credential revocation, and real-world identity verification therefore remain external trust and lifecycle functions.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``Public-Chain Adversary.''}

@@ -1,0 +1,109 @@
+\begin{reviewcomment}{3}
+	The problem of attribute-origin requires further investigation.
+	The issuer-signature mechanism is a placeholder for consistency, based on Poseidon, and thus does not provide cryptographic unforgeability as it stands.
+	Thus, the proof proves the consistency of the given witness but does not prove that the private attributes are derived from an authorized issuer.
+	This difference is particularly important in a healthcare authorization system.
+	The authors should clarify which authorization properties are guaranteed by the prototype they implemented, and which are dependent on external trust.
+	Even an analytical assessment of a concrete design for the integration of real credential verification would greatly improve the work.
+\end{reviewcomment}
+
+\begin{reviewresponse}{3}
+	We thank the reviewer for emphasizing this distinction.
+	We agree that witness consistency alone is insufficient to establish attribute origin, and that a healthcare authorization prototype must separate cryptographic credential verification from trust in the real-world issuer.
+
+	During the revision, we clarified and documented the implemented in-circuit EdDSA-Poseidon verification path for a credential carrying fixed DUO-relevant claims.
+	For the private, issuer-signed claim bits $c_0,\ldots,c_6$ for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use, let $d_{\mathrm{DUO}}$ denote the fixed credential schema/domain tag. The circuit reconstructs
+	\begin{equation*}
+		m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel
+		\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel
+		c_0\parallel\cdots\parallel c_6\parallel
+		t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma)
+	\end{equation*}
+	Before proof generation, an issuer computes $\sigma\leftarrow\mathsf{Sign}_{\mathrm{EdDSA\text{-}Poseidon}}(s_{\mathrm{iss}},m_{\mathrm{cred}})$ with its private signing key $s_{\mathrm{iss}}$.
+	The resulting credential is supplied to the TPS as private off-chain evidence for proof generation.
+	At proof generation, the TPS supplies the credential as private witness and the circuit verifies the issuer's EdDSA-Poseidon signature on this message.
+	It also constrains the supplied issuer point to the issuer-key commitment contained in the policy-bound parameters, enforces the credential validity interval and a non-zero credential identifier, and, for a policy that activates this holder-bound credential slot, binds the requester pseudonym to a holder secret.
+	The circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$ from these signed claims.
+	Under the unforgeability of EdDSA for correctly generated Baby Jubjub keys and the collision resistance of Poseidon, a TPS cannot modify the signed policy, requester, resource, claims, validity interval, or credential identifier and still produce an accepting proof.
+
+	We have also narrowed the claim carefully.
+	The prototype proves signature validity under a policy-selected issuer key; it does not prove that this key belongs to an accredited hospital, ethics board, or other healthcare authority.
+	The provider currently selects the issuer-key commitment, and there is no independently governed issuer registry or credential-revocation check.
+	Ontology predicates prove that a supplied code belongs to a provider-committed set, while requester allowlists prove that a holder pseudonym belongs to a provider-committed list; neither mechanism independently authenticates every associated real-world fact.
+	Furthermore, the current TPS receives the holder secret and credential witness, so holder binding does not protect against a malicious TPS reusing otherwise valid evidence within its signed scope.
+	The Polygon Amoy evaluation uses a deterministic test-only issuer key to exercise the cryptographic path and measure the complete system; it is not evidence of institutional issuance or production key management.
+
+	We added an analytical production-integration design to the Discussion.
+	A governed issuer registry would publish schema-qualified, time-bounded issuer keys and require canonical encoding, subgroup validation, and proof of possession at registration.
+	The issuer would sign a domain-separated credential containing a holder-key commitment, claims, authorization scope, validity interval, and credential identifier.
+	The circuit would verify the credential signature and private membership of the issuer key in the active registry.
+	The holder would retain its secret and sign the authorization context for each session, preventing the TPS from creating fresh-session proofs from a captured credential presentation.
+	An epoch-specific sparse-Merkle or accumulator root would additionally support private non-revocation proofs.
+	These roots can be folded into a fixed-format state commitment, preserving the policy-independent public interface.
+	For credentials using Ed25519, ECDSA, or another non-circuit-friendly signature, the alternatives are to pay the higher in-circuit verification cost or have the issuer additionally issue a SNARK-friendly credential; TPS re-signing would not preserve issuer-origin assurance.
+
+	The implemented credential path is covered by the DUO profile and tamper suites.
+	The targeted tests accept a correctly signed credential and reject a non-committed issuer, a forged signature under the committed key, credentials outside their validity interval, substitutions of the policy, requester, resource, or signed claims, inconsistent derived attributes, and an invalid holder binding.
+	All 25 targeted tests pass, including full Groth16 proof and on-chain grant/deny cases, and the frozen manifest, verifier ABI, and cryptographic artifacts validate successfully.
+
+	\textbf{Changes in the manuscript.}
+	The Problem and Threat Model now separates issuer-signed profile claims from ontology and allowlist evidence and states the remaining issuer-governance, revocation, identity, and TPS trust assumptions.
+	The Design section replaces the obsolete placeholder description with the implemented credential relation and its exact scope.
+	The Discussion distinguishes cryptographic signature validity from real-world issuer authorization and presents a concrete registry, holder-proof, and revocation integration design.
+
+	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
+	\begin{revisiontext}
+		Attribute-origin guarantees depend on the evidence type.
+		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+		The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
+		Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
+		This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
+		Ontology and requester-allowlist predicates likewise establish membership only relative to provider-committed sets.
+		Issuer-key governance, credential revocation, real-world identity verification, and protection against a compromised TPS remain external trust and lifecycle functions.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Credential-Origin Binding.''}
+	\begin{revisiontext}
+		Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use, respectively.
+		Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag.
+		The circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$ from these claims.
+		For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
+		\begin{equation*}
+			m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel
+			\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel
+			c_0\parallel\cdots\parallel c_6\parallel
+			t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma)
+		\end{equation*}
+		Before proof generation, an issuer holding the corresponding private signing key $s_{\mathrm{iss}}$ issues the credential by computing $\sigma\leftarrow\mathsf{Sign}_{\mathrm{EdDSA\text{-}Poseidon}}(s_{\mathrm{iss}},m_{\mathrm{cred}})$.
+		The resulting credential is supplied to the TPS as private off-chain evidence for proof generation.
+		At proof generation, the TPS supplies $A$, $\sigma$, and the credential fields as private witness values.
+		The circuit then enforces
+		\begin{equation*}
+			\mathsf{Verify}_{\mathrm{EdDSA\text{-}Poseidon}}(A,\sigma,m_{\mathrm{cred}})=1,
+			\qquad
+			\mathsf{Poseidon}(A_x\parallel A_y)=k_{\mathrm{iss}}.
+		\end{equation*}
+		The circuit additionally requires
+		\begin{equation*}
+			t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{until}},
+			\qquad \gamma\neq0,
+		\end{equation*}
+		For a policy that activates this holder-bound credential slot, it also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the pseudonymous requester identifier in the authorization context.
+		The corresponding DUO attributes are constrained to these claim-derived values rather than accepted independently from the prover.
+		This is a cryptographic signature check, not a hash-consistency placeholder.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Dataset and corpus generation.''}
+	\begin{revisiontext}
+		For reproducibility, the evaluation generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate; this testing key does not model issuer governance or production key management.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Discussion.''}
+	\begin{revisiontext}
+		The remaining trust anchor is therefore issuer governance.
+		The prototype binds the proof to a policy-selected issuer-key commitment, but it has no independent registry establishing that this key belongs to an accredited healthcare authority, and it does not check credential revocation.
+		A concrete deployment can close this gap without changing the Boolean interpreter.
+		A governed issuer registry would publish schema-qualified issuer keys and their validity epochs; the circuit would verify both the credential signature and a Merkle proof that the issuer key is active in the registry.
+		The holder would retain its secret key and authorize each request by signing the context digest and request epoch, while an epoch-specific sparse-Merkle or accumulator root would support a private non-revocation witness for the credential identifier.
+	\end{revisiontext}
+\end{reviewresponse}
