@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-06-26T08:54:58.854Z",
-  "sourceB2Dir": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/unified/artifacts_data/polygonAmoy",
-  "sourceDefinitionCount": 2005,
+  "createdAt": "2026-09-19T13:54:02.163Z",
+  "sourceB2Dir": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/data/polygonAmoy",
+  "sourceDefinitionCount": 1773,
   "replayDefinitionSource": "existing B2 executed_dataset.json (actual randomizer/commitment provenance)",
-  "selectedExecutionCount": 1206,
-  "selectedPolicyCount": 278,
-  "highExecutionPoliciesRetained": 32,
+  "selectedExecutionCount": 1119,
+  "selectedPolicyCount": 423,
+  "highExecutionPoliciesRetained": 24,
   "selectionRules": {
     "retainPoliciesWithAtLeastExecutions": 30,
     "minRowsPerClass": 70,
@@ -15,159 +15,149 @@
       "DUO",
       "ICD10",
       "logicStructure",
+      "structureType",
+      "nestingDepth",
       "predicateCombo",
       "paramType"
     ]
   },
-  "selectedSourceIndicesSha256": "ed618ee2975571bd93dce69c25385389b822f2f19309966ce803cbc1b26e5c6d",
-  "policyDefinitionsSha256": "f61df365a2ebc6c06c6c9de49a3b6df365d8f6a35f4db3f0b28aa014da98f2d9",
-  "b2ExecutionsSha256": "379f2ca5b678c4490c5edfd38cb01f92cb517c6c1d7af5479cce43c9ce077a8e",
+  "selectedSourceIndicesSha256": "112c27dee7eeb31436d38b5d83585b7deb021cdfcd5d6ae70a76fcd2198844ea",
+  "policyDefinitionsSha256": "da593471d5fc6ce53d7fa03b115dc91be6a2458165a6e4a66dde85281f3ae2bb",
+  "b2ExecutionsSha256": "dd727fe381c1d52d3c0ad6c2886d5abd3137c3bdfa955efc8678262b15383848",
   "coverage": {
     "duo:CC": {
-      "rows": 638,
-      "policies": 87,
+      "rows": 548,
+      "policies": 171,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 1035,
-        "policies": 484
+        "rows": 769,
+        "policies": 392
       }
     },
     "duo:DS": {
-      "rows": 657,
-      "policies": 251,
+      "rows": 688,
+      "policies": 340,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 920,
-        "policies": 514
+        "rows": 770,
+        "policies": 422
       }
     },
-    "duo:GR": {
-      "rows": 199,
-      "policies": 54,
+    "duo:GRU": {
+      "rows": 240,
+      "policies": 95,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 343,
-        "policies": 198
+        "rows": 447,
+        "policies": 302
       }
     },
     "duo:GS": {
-      "rows": 570,
-      "policies": 77,
+      "rows": 318,
+      "policies": 144,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 910,
-        "policies": 417
+        "rows": 556,
+        "policies": 382
+      }
+    },
+    "duo:GSO": {
+      "rows": 142,
+      "policies": 26,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 352,
+        "policies": 236
+      }
+    },
+    "duo:HMB": {
+      "rows": 204,
+      "policies": 88,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 447,
+        "policies": 331
+      }
+    },
+    "duo:NCU": {
+      "rows": 215,
+      "policies": 41,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 380,
+        "policies": 206
+      }
+    },
+    "duo:NMDS": {
+      "rows": 282,
+      "policies": 50,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 469,
+        "policies": 237
       }
     },
     "duo:POA": {
-      "rows": 425,
-      "policies": 106,
+      "rows": 382,
+      "policies": 150,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 757,
-        "policies": 438
+        "rows": 624,
+        "policies": 392
       }
     },
     "duo:RS": {
-      "rows": 715,
-      "policies": 106,
+      "rows": 523,
+      "policies": 175,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 1121,
-        "policies": 512
+        "rows": 760,
+        "policies": 412
       }
     },
     "icd10:0": {
-      "rows": 50,
-      "policies": 50,
+      "rows": 95,
+      "policies": 8,
       "target": {
-        "rows": 50,
+        "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 50,
-        "policies": 50
+        "rows": 131,
+        "policies": 44
       }
     },
     "icd10:1": {
-      "rows": 70,
-      "policies": 12,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 127,
-        "policies": 69
-      }
-    },
-    "icd10:2": {
-      "rows": 70,
-      "policies": 12,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 117,
-        "policies": 59
-      }
-    },
-    "icd10:3": {
-      "rows": 70,
-      "policies": 12,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 112,
-        "policies": 54
-      }
-    },
-    "icd10:4": {
-      "rows": 70,
-      "policies": 12,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 105,
-        "policies": 47
-      }
-    },
-    "icd10:5": {
-      "rows": 70,
-      "policies": 12,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 92,
-        "policies": 34
-      }
-    },
-    "icd10:6": {
       "rows": 49,
       "policies": 49,
       "target": {
@@ -179,6 +169,66 @@
         "policies": 49
       }
     },
+    "icd10:2": {
+      "rows": 62,
+      "policies": 33,
+      "target": {
+        "rows": 62,
+        "policies": 8
+      },
+      "available": {
+        "rows": 62,
+        "policies": 33
+      }
+    },
+    "icd10:3": {
+      "rows": 55,
+      "policies": 55,
+      "target": {
+        "rows": 55,
+        "policies": 8
+      },
+      "available": {
+        "rows": 55,
+        "policies": 55
+      }
+    },
+    "icd10:4": {
+      "rows": 70,
+      "policies": 41,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 70,
+        "policies": 41
+      }
+    },
+    "icd10:5": {
+      "rows": 63,
+      "policies": 34,
+      "target": {
+        "rows": 63,
+        "policies": 8
+      },
+      "available": {
+        "rows": 63,
+        "policies": 34
+      }
+    },
+    "icd10:6": {
+      "rows": 96,
+      "policies": 9,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 135,
+        "policies": 48
+      }
+    },
     "icd10:7": {
       "rows": 70,
       "policies": 41,
@@ -187,176 +237,260 @@
         "policies": 8
       },
       "available": {
-        "rows": 87,
-        "policies": 58
+        "rows": 77,
+        "policies": 48
       }
     },
     "icd10:8": {
-      "rows": 70,
-      "policies": 12,
+      "rows": 62,
+      "policies": 33,
       "target": {
-        "rows": 70,
+        "rows": 62,
         "policies": 8
       },
       "available": {
-        "rows": 113,
-        "policies": 55
+        "rows": 62,
+        "policies": 33
       }
     },
     "icd10:9": {
-      "rows": 68,
-      "policies": 39,
+      "rows": 66,
+      "policies": 37,
       "target": {
-        "rows": 68,
+        "rows": 66,
         "policies": 8
       },
       "available": {
-        "rows": 68,
-        "policies": 39
+        "rows": 66,
+        "policies": 37
       }
     },
     "logicStructure:and_only": {
-      "rows": 307,
-      "policies": 75,
+      "rows": 352,
+      "policies": 120,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 478,
-        "policies": 246
+        "rows": 526,
+        "policies": 294
       }
     },
     "logicStructure:and_or_mixed": {
-      "rows": 281,
-      "policies": 49,
+      "rows": 347,
+      "policies": 115,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 424,
-        "policies": 192
-      }
-    },
-    "logicStructure:negation_heavy": {
-      "rows": 318,
-      "policies": 86,
-      "target": {
-        "rows": 70,
-        "policies": 8
-      },
-      "available": {
-        "rows": 524,
-        "policies": 292
+        "rows": 582,
+        "policies": 350
       }
     },
     "logicStructure:or_only": {
-      "rows": 300,
-      "policies": 68,
+      "rows": 328,
+      "policies": 96,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 579,
-        "policies": 347
+        "rows": 535,
+        "policies": 303
+      }
+    },
+    "logicStructure:trivial": {
+      "rows": 92,
+      "policies": 92,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 130,
+        "policies": 130
+      }
+    },
+    "nestingDepth:deep": {
+      "rows": 488,
+      "policies": 169,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 721,
+        "policies": 402
+      }
+    },
+    "nestingDepth:flat": {
+      "rows": 92,
+      "policies": 92,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 130,
+        "policies": 130
+      }
+    },
+    "nestingDepth:medium": {
+      "rows": 291,
+      "policies": 117,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 509,
+        "policies": 335
+      }
+    },
+    "nestingDepth:shallow": {
+      "rows": 248,
+      "policies": 45,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 413,
+        "policies": 210
       }
     },
     "paramType:large": {
-      "rows": 351,
-      "policies": 61,
+      "rows": 342,
+      "policies": 139,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 522,
-        "policies": 232
+        "rows": 549,
+        "policies": 346
       }
     },
     "paramType:medium": {
-      "rows": 625,
-      "policies": 161,
+      "rows": 403,
+      "policies": 171,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 1102,
-        "policies": 638
+        "rows": 584,
+        "policies": 352
       }
     },
     "paramType:none": {
-      "rows": 36,
-      "policies": 7,
+      "rows": 104,
+      "policies": 17,
       "target": {
-        "rows": 36,
-        "policies": 7
+        "rows": 70,
+        "policies": 8
       },
       "available": {
-        "rows": 36,
-        "policies": 7
+        "rows": 234,
+        "policies": 147
       }
     },
     "paramType:small": {
-      "rows": 194,
-      "policies": 49,
+      "rows": 270,
+      "policies": 96,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 345,
-        "policies": 200
+        "rows": 406,
+        "policies": 232
       }
     },
     "predicateCombo:few": {
-      "rows": 687,
-      "policies": 165,
+      "rows": 653,
+      "policies": 218,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 1194,
-        "policies": 672
+        "rows": 1080,
+        "policies": 645
       }
     },
     "predicateCombo:many": {
-      "rows": 312,
-      "policies": 51,
+      "rows": 284,
+      "policies": 110,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
-        "rows": 431,
-        "policies": 170
-      }
-    },
-    "predicateCombo:none": {
-      "rows": 36,
-      "policies": 7,
-      "target": {
-        "rows": 36,
-        "policies": 7
-      },
-      "available": {
-        "rows": 36,
-        "policies": 7
+        "rows": 349,
+        "policies": 175
       }
     },
     "predicateCombo:single": {
-      "rows": 171,
-      "policies": 55,
+      "rows": 182,
+      "policies": 95,
       "target": {
         "rows": 70,
         "policies": 8
       },
       "available": {
         "rows": 344,
-        "policies": 228
+        "policies": 257
+      }
+    },
+    "structureType:and_only": {
+      "rows": 352,
+      "policies": 120,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 526,
+        "policies": 294
+      }
+    },
+    "structureType:and_or_mixed": {
+      "rows": 347,
+      "policies": 115,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 582,
+        "policies": 350
+      }
+    },
+    "structureType:or_only": {
+      "rows": 328,
+      "policies": 96,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 535,
+        "policies": 303
+      }
+    },
+    "structureType:trivial": {
+      "rows": 92,
+      "policies": 92,
+      "target": {
+        "rows": 70,
+        "policies": 8
+      },
+      "available": {
+        "rows": 130,
+        "policies": 130
       }
     }
   },
@@ -365,10 +499,10 @@
     "b2": "b2_padded"
   },
   "amoyPreflightEstimate": {
-    "transactionCount": 3620,
+    "transactionCount": 3359,
     "gasPriceGwei": 30,
-    "gasUnitsWith25PercentBuffer": 1663875000,
-    "estimatedNativeToken": 49.91625
+    "gasUnitsWith25PercentBuffer": 1544250000,
+    "estimatedNativeToken": 46.3275
   },
   "limitation": "B2 is reused from the existing Polygon Amoy run; B1 and B2 were not executed contemporaneously. blockDifference remains excluded from modeling."
 }

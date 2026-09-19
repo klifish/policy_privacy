@@ -88,6 +88,8 @@ function stableEntryIdentity(entry) {
     ontologyNamespace: entry.ontologyNamespace,
     ontologyValue: entry.ontologyValue,
     logicStructure: entry.logicStructure,
+    structureType: entry.structureType,
+    nestingDepth: entry.nestingDepth,
     predicateCombo: entry.predicateCombo,
     paramType: entry.paramType,
     randomizer: entry.randomizer,
@@ -147,6 +149,8 @@ function labelsFor(entry) {
   }
   for (const [dimension, value] of [
     ['logicStructure', entry.logicStructure],
+    ['structureType', entry.structureType],
+    ['nestingDepth', entry.nestingDepth],
     ['predicateCombo', entry.predicateCombo],
     ['paramType', entry.paramType]
   ]) {
@@ -285,7 +289,7 @@ function writeB2Subset(outputDir, definitions, executions, selection, options, s
       retainPoliciesWithAtLeastExecutions: 30,
       minRowsPerClass: options.minRowsPerClass,
       minPoliciesPerClass: options.minPoliciesPerClass,
-      dimensions: ['DUO', 'ICD10', 'logicStructure', 'predicateCombo', 'paramType']
+      dimensions: ['DUO', 'ICD10', 'logicStructure', 'structureType', 'nestingDepth', 'predicateCombo', 'paramType']
     },
     selectedSourceIndicesSha256: sha256(selection.indices),
     policyDefinitionsSha256: sha256(selectedDefinitions),
