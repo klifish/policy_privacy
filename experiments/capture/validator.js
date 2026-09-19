@@ -493,7 +493,11 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
     saveDatasetPath = null,
     writeArtifacts = false,
     artifactDir = null,
-    sourceConfigPath = null
+    sourceConfigPath = null,
+    // Where the validation summary is written. The default is the of-record
+    // path that `npm run unified:validate` maintains; capture runs pass their
+    // own artifact directory so a smoke run cannot clobber it.
+    resultPath = path.resolve(__dirname, '../results/capture/validation_results.json')
   } = options;
 
   const { config: normalizedConfig, scaleInfo } = normalizePolicyCountConfig(config);
@@ -585,7 +589,6 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   }
 
   // Save results to file
-  const resultPath = path.resolve(__dirname, '../results/capture/validation_results.json');
   fs.mkdirSync(path.dirname(resultPath), { recursive: true });
   fs.writeFileSync(resultPath, JSON.stringify({
     config: normalizedConfig,

@@ -257,7 +257,8 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   } else {
     const validationResult = await validateUnifiedDataset(config, {
       writeArtifacts: false,
-      sourceConfigPath: options.configPath
+      sourceConfigPath: options.configPath,
+      resultPath: path.join(options.artifactDir, 'validation_results.json')
     });
     effectiveConfig = validationResult.config ?? config;
     if (!validationResult.allPassed) {
