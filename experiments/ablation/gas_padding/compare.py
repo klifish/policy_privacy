@@ -117,12 +117,17 @@ def compare_supervised(root, rng, iterations):
         b2_report = load_json(base / "b2_padded" / experiment / report_name)
         b1 = flatten_seed_records(b1_report)
         b2 = flatten_seed_records(b2_report)
-        if set(b1) != set(b2):
-            missing_b1 = sorted(set(b2) - set(b1))
-            missing_b2 = sorted(set(b1) - set(b2))
-            raise ValueError(
-                f"{experiment} seed/task mismatch; missing B1={missing_b1[:5]}, missing B2={missing_b2[:5]}"
-            )
+        # A seed whose test split holds no positive policy yields no AUC in one
+        # profile (small classes such as ICD ch0 with 8 policies). Pair only
+        # the seeds valid in both profiles and report how many were dropped,
+        # so the paired estimate never mixes a seed from one profile with a
+        # different seed from the other.
+        dropped = defaultdict(int)
+        for seed_index, key, classifier in set(b1) ^ set(b2):
+            dropped[(key, classifier)] += 1
+        if dropped:
+            print(f"[{experiment}] seeds without a paired AUC (dropped): "
+                  + ", ".join(f"{k} {c}: {n}" for (k, c), n in sorted(dropped.items())))
 
         grouped = defaultdict(list)
         for (seed_index, key, classifier), b1_record in b1.items():
@@ -150,6 +155,8 @@ def compare_supervised(root, rng, iterations):
                 "b2SignificantSeedFraction": float(np.mean([row["b2_significant"] for row in rows])),
                 "deltaLeakage": effect,
                 "interpretation": interpret_ci(effect["ci95"]),
+                "pairedSeeds": len(rows),
+                "droppedSeeds": dropped.get((key, classifier), 0),
             })
         output[experiment] = {
             "tasks": tasks,
@@ -266,7 +273,7 @@ def bootstrap_cluster_targets(root, rng, iterations):
 
 def compare_pi_clustering(root, rng, iterations):
     base = root / "comparison" / "clustering"
-    relative = Path("results/pi_clustering_analysis/pi_balanced_debiased.csv")
+    relative = Path("results/pi/pi_balanced_debiased.csv")
     b1 = pd.read_csv(base / "b1_unpadded" / relative).set_index("pair_id")
     b2 = pd.read_csv(base / "b2_padded" / relative).set_index("pair_id")
     if set(b1.index) != set(b2.index):
