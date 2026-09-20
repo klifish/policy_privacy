@@ -1,0 +1,31 @@
+% Consent-policy features and their status in the RC1 prototype (reviewer 3, comment 3).
+% Sources: circuits/policy_privacy_main.circom (predicate types 3/6/7/8/9, policy
+% validity window), lib/duo_v3.js (13 attributes, fixed slots 0-10), docs/DUO_TERMS.md
+% (compiler rules: NOT rejected, MOR/TS conjunction-only, PUB/COL/RTN out of circuit),
+% contracts/PolicyPrivacy.sol (time-limit windows, supersedes link, revokePolicy,
+% rebindResourcePolicy).
+\begin{table}[htbp]
+  \centering\footnotesize
+  \caption{Consent-policy features and how far the RC1 prototype establishes them.
+    ``In-circuit'' means the condition is part of the proved relation; ``on-chain''
+    means the ACM enforces it from public state; ``committed'' means the value is
+    bound into the policy but compliance is not decided at request time.}
+  \label{tab:policy-support}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{0.30\linewidth}p{0.18\linewidth}p{0.44\linewidth}}
+    \toprule
+    Consent feature & Status & What is established at authorization time \\
+    \midrule
+    Categorical data-use terms combined with AND/OR (13 non-procedural DUO attributes, programs up to $64$ tokens) & In-circuit & The committed program and its length are evaluated by the interpreter; the outcome is the proof's output. \\
+    Disease, study-design, ancestry, geography, and clinical-term scopes (DS, RS, POA, GS, CC) & In-circuit & Merkle membership of the requested code in a provider-committed whitelist whose root is bound in the parameter commitment. \\
+    User-, project-, and institution-specific restrictions (US, PS, IS) & In-circuit & Membership of the holder pseudonym in a provider-committed allowlist for the scope. \\
+    Profile-backed terms (GRU, HMB, NMDS, GSO, NPUNCU, NPOA, NPU, NCU) & In-circuit & EdDSA-Poseidon credential over policy commitment, pseudonym, resource, claims, validity interval, and identifier; the attributes are derived from the signed claims. \\
+    Policy validity window & In-circuit + on-chain & The committed window is checked against the public request epoch, which the ACM requires to equal the current hour. \\
+    Time-limited use (TS) & On-chain & The committed duration starts a per-requester window on the first grant; later requests outside it are denied. \\
+    Publication moratorium (MOR) & Committed & The deadline is bound into the policy as an accepted obligation; publication conduct is not observable at request time. \\
+    Negation & Not exposed & The interpreter evaluates NOT, but the DUO~V3 compiler rejects it: membership witnesses prove inclusion only. \\
+    Consent withdrawal and policy evolution & On-chain & A successor policy supersedes its predecessor, a policy can be revoked, and a resource can be rebound; earlier grants remain auditable but are no longer current. \\
+    Purpose limitation, post-access duties (PUB, COL, RTN), delegation, credential revocation & Not provided & Carried by the data access agreement and issuer lifecycle, outside the proved statement. \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -1,10 +1,21 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper studied policy-private consent enforcement in blockchain-based
-healthcare data sharing under public-chain observability and an explicit TPS trust assumption.
+This paper studied policy-private consent enforcement in blockchain-based healthcare data sharing under public-chain observability and an explicit TPS trust assumption.
 We proposed TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach that binds hidden provider-defined policies to on-chain commitments, evaluates Boolean-based consent policies through a reusable policy interpreter, and normalizes public verification artifacts to reduce metadata-level leakage.
-Across supervised and unsupervised attacks on PCH, PI, and SPP, no modeled adversary recovered hidden policy information reproducibly above chance under our multi-seed leakage criterion, and a paired gas-padding ablation attributed the gas-channel protection specifically to randomized gas padding---at a gas overhead of about $38\%$ on access and $40\%$ on commit.
+The revised construction closes two soundness gaps of the original prototype: the program length is part of the committed and proved relation, so an authorizing proof cannot rest on a shorter valid prefix, and the proof is bound to the requester pseudonym, resource, and session nonce, so a captured proof cannot be replayed under fresh parameters within a deployment.
+Profile-backed data-use terms are derived in-circuit from an issuer-signed credential, which separates what the proof establishes cryptographically from what remains a matter of issuer governance.
 
-These results hold for a metadata-only public-chain adversary, and the privacy
-claim is empirical. The remaining limitations and future directions discussed in Section~\ref{sec:discussion} include stronger adaptive adversaries, off-chain leakage, richer policy languages, reduced-trust proof generation, and privacy-preserving resource discovery.
+The evaluation shows what such a design can and cannot promise.
+On a live testnet corpus, a supervised attacker with policy-disjoint training data and an unsupervised clustering attacker recover neither policy content, nor policy identity, nor structure and parameters from the normalized transcript beyond what the padding's own random draws produce, and the paired ablation shows that the padding is what removes the last policy-correlated gas signal.
+The ablation also delivers a cautionary result: the un-padded channel it exposes is not the policy logic, which the fixed circuit already hides, but the byte-level pricing of one public transaction argument---a reminder that on a public chain any deterministic encoding difference that correlates with the policy is a channel, and that the defense must cover the class rather than the instances one anticipated.
+
+The results hold for a metadata-only public-chain adversary and are empirical.
+Policy confidentiality against the TPS itself is not cryptographic but rests on the service following its workflow, and the evaluation's provider-operated TPS concentrates that trust at the provider.
+The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
+Timing, ordering, mempool, and off-chain channels, adaptive probing, and correlations between outcomes and policy classes are not modeled, and the leakage criterion has a measurable false-positive rate on corpora that execute each policy once.
+
+Three directions follow.
+Reduced-trust proof generation---collaborative SNARKs or attested execution---would relax the trust concentration that the TPS introduces and, with a holder-signed authorization context, remove the service's ability to reuse valid evidence.
+A governed issuer registry with in-circuit membership and revocation witnesses would turn the credential path into an institutional guarantee.
+And extending the evaluation to active adversaries and to the timing and ordering channels excluded here would test whether transcript normalization remains sufficient once the observer is no longer passive.

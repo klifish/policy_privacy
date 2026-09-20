@@ -76,6 +76,12 @@ An output of $0$ therefore indicates unsatisfied evidence for a well-formed prog
 
 The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
 
+\noindent\textbf{Scope of the supported policies.} The policy class is deliberately restricted, and Table~\ref{tab:policy-support} states what the RC1 prototype establishes end-to-end.
+Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state.
+A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, negation is rejected by the DUO compiler because membership witnesses prove inclusion only, and purpose limitation, post-access duties, delegation, and credential revocation are left to the data access agreement and the issuer lifecycle.
+The prototype is therefore an access-time consent checker for bounded Boolean policies over standardized terms, not a general consent-language engine.
+\input{tables/tab_policy_support.tex}
+
 \subsection{Commitment Binding and Proof Generation}
 
 To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field and computes

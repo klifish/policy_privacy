@@ -1,0 +1,26 @@
+% Threat/guarantee matrix for the trust model of Section 3.1 (reviewer request).
+% Rows: parties or failure modes. Columns: the four guarantees the workflow provides.
+% Cell values: C = enforced cryptographically (commitment binding, Groth16 soundness/ZK,
+%   EdDSA-Poseidon unforgeability, on-chain checks); T = holds only if the TPS follows
+%   the prescribed workflow; E = external/lifecycle function; -- = not provided.
+\begin{table}[htbp]
+  \centering\footnotesize
+  \caption{What each guarantee of TPS-ZKPI rests on, per threat. C: cryptographic
+    (commitment binding, proof soundness and zero knowledge, credential signature,
+    on-chain checks); T: trust in the TPS following the prescribed workflow; E: external
+    or lifecycle function; --: not provided by the prototype.}
+  \label{tab:threat-guarantee}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{0.34\linewidth}cccc}
+    \toprule
+    Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+    \midrule
+    Passive public-chain observer & C (proof, commitments) + empirical (gas padding) & C & n/a & C (recorded outcome) \\
+    Requester (untrusted) & C: sees only the public view & C: cannot forge a proof or reuse one in another context & n/a & C \\
+    Honest-but-curious TPS & T: TPS holds plaintext policy and evidence & C & T & -- \\
+    Compromised or colluding TPS & --: policy and evidence exposed & C for committed relation; T for origin of unsigned evidence & --: may refuse to prove & --: refusal indistinguishable from denial \\
+    Provider-operated TPS (this evaluation) & T, concentrated at the provider & C & T & -- \\
+    Forged or unauthorized issuer & n/a & C against forgery under the committed key; E for issuer legitimacy and revocation & n/a & E \\
+    \bottomrule
+  \end{tabular}
+\end{table}

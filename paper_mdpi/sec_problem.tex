@@ -35,6 +35,8 @@ Authorization correctness is primarily enforced by the commitment and on-chain p
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
+Table~\ref{tab:threat-guarantee} summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+\input{tables/tab_threat_guarantee.tex}
 
 Attribute-origin guarantees depend on the evidence type.
 For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
