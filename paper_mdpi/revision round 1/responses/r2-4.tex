@@ -1,0 +1,12 @@
+\begin{reviewcomment}{4}
+	There is so much empty space on page 6, page 20, and page 25 because of the wrong position of Table 2, Table 9, and Table 12.
+\end{reviewcomment}
+
+\begin{reviewresponse}{4}
+	The gaps were caused by forcing every float to its source position (\texttt{[H]}), which pushes a large table to the next page and leaves the preceding page unfilled.
+	All tables and figures now use the standard \texttt{[htbp]} placement, so LaTeX fills each page and floats a large table only when it does not fit.
+	We checked the recompiled manuscript page by page: no page other than the last ends with unused space.
+	Two of the three tables mentioned were also restructured in the revision (the corpus table now lists the revised corpus; the cost table gained a companion scaling table), which further reduced their height.
+
+	\RevisionLocation{All table and figure environments.}
+\end{reviewresponse}

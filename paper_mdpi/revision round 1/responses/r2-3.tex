@@ -1,0 +1,15 @@
+\begin{reviewcomment}{3}
+	The introduction correctly outlines the issues. However, rows 123--131 point to old sources and methods of encryption. It raises the question ``why?'' -- do the authors not know the newest or do they not want to use the newest; why do the authors not comment on the newest solutions?
+\end{reviewcomment}
+
+\begin{reviewresponse}{3}
+	The passage (the first paragraph of the Background section in the submitted version) introduced CP-ABE and PRE through their original constructions.
+	We kept those two citations, because the later systems inherit their trust and disclosure properties and that is what the paragraph needs, but we now also cite the current blockchain healthcare designs built on them---PRE-based sharing of medical records and IoMT data (Pei et al., 2024; Zhou et al., 2024) and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies (Yang and Liu, 2024; Ding et al., 2026; Wu et al., 2023)---and we state explicitly why the original constructions remain the reference point.
+	The Related Work section discusses the hidden-policy variants and the recent self-sovereign-identity and zero-knowledge authentication work in the same spirit (see also the responses to Reviewer~3, Comment~5, and to Comment~10 below).
+
+	\RevisionLocation{Section ``Background,'' subsection ``Cryptographic Access Control in Blockchain Healthcare,'' first paragraph.}
+	\begin{revisiontext}
+		Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself.
+		We cite the original constructions because the later systems inherit their trust and disclosure properties, which is what matters for this paper: these primitives establish who may obtain the data, and how they relate to \emph{policy} confidentiality on a public chain is discussed in the Related Work section.
+	\end{revisiontext}
+\end{reviewresponse}

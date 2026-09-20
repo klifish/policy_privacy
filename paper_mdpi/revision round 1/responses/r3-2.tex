@@ -1,0 +1,20 @@
+\begin{reviewcomment}{2}
+	The current proof statement leaves important soundness gaps.
+	The paper acknowledges that the program length is not bound into the policy commitment and that the proof is not bound to the requester, resource, or session context.
+	These are not minor implementation details: they directly affect the correctness and replay-resistance of the authorization workflow.
+	These issues should be fixed in the design and experimentally re-evaluated, rather than mainly left to future work.
+\end{reviewcomment}
+
+\begin{reviewresponse}{2}
+	Both gaps are closed in the revised design and implementation, and the evaluation was repeated on the revised system.
+
+	The policy commitment now covers the program length, $h = \mathsf{Poseidon}(\mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}) \parallel \ell \parallel r)$, and the same private $\ell$ drives both the commitment check and the interpreter, so an authorizing proof cannot rest on a shorter stack-consistent prefix.
+	The proof statement now carries a public context digest $d_{\chi} = \mathsf{Poseidon}(\mathit{id}_{\mathrm{req}} \parallel \mathit{id}_{\mathrm{res}} \parallel \nu)$ that the circuit constrains and the access-control contract recomputes from the transaction parameters, so a captured proof cannot be paired with a fresh nonce, another resource, or another requester within a deployment.
+	The measured marginal costs (88 constraints for the length binding; 605 constraints, one public input, and about $56{,}000$ gas for the context binding including the on-chain Poseidon recomputation) are given in the responses to Reviewer~1, Comments~1 and~2, which also describe the regression and end-to-end tests.
+
+	The re-evaluation is complete rather than partial.
+	All of-record numbers in the revised manuscript come from a new capture of $1{,}077$ policies and $1{,}773$ Polygon Amoy executions under the frozen revised release (five-signal statement, length- and context-bound relation, credential-derived profile attributes), followed by a new un-padded ablation run of $1{,}119$ executions on the same policy subset.
+	The cost profile reflects the revised circuit ($81{,}740$ constraints) and the revised on-chain path, and the results sections report the outcome of the privacy attacks on the revised transcript, including two criterion failures that we report and trace to the padding's random draws rather than to the policy (Reviewer~1, Comments~5 and~6).
+
+	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Commitment Binding and Proof Generation''; Section ``Privacy Evaluation'' (all result tables and the cost profile).}
+\end{reviewresponse}

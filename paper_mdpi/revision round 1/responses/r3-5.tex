@@ -1,0 +1,22 @@
+\begin{reviewcomment}{5}
+	The comparison with related work should be strengthened by considering recent blockchain-based access-control architectures that combine smart contracts, SSI-oriented trust models, and cryptographic mechanisms for controlling access to sensitive claims.
+	In particular, the paper should better position TPS-ZKPI with respect to the issues discussed in DOI: 10.1016/j.bcra.2024.100196, especially regarding verifier authorization, smart-contract accountability, off-chain trust assumptions, and practical access-control workflows.
+\end{reviewcomment}
+
+\begin{reviewresponse}{5}
+	We thank the reviewer for the pointer.
+	The Related Work section now contains a paragraph on self-sovereign-identity architectures that positions TPS-ZKPI against Buccafurri, De Angelis, and Nardone (Blockchain: Research and Applications, 2024) along the four dimensions named, together with recent zero-knowledge authentication work (Madine et al., 2025) and surveys of zero-knowledge proofs for blockchain privacy.
+
+	\begin{itemize}
+		\item \emph{Verifier authorization.} In the CP-ABPRE design the holder's claims are readable only by verifiers that satisfy a holder-defined policy. In TPS-ZKPI the protected object is the provider's consent policy, not the requester's claim set: the claims are consumed as private witnesses of a proof whose statement is fixed and whose verifier is a public contract, so any observer may verify and verifier authorization is not a design question.
+		\item \emph{Smart-contract accountability.} There the contract meters the release of claims and keeps verifiers accountable; here the contract records the context-bound authorization outcome, and accountability attaches to that record rather than to claim release.
+		\item \emph{Off-chain trust.} An SSI verifier that decrypts a claim learns it; the TPS learns both policy and claims. This is why the Problem section treats the TPS as an explicit trust boundary and the new threat/guarantee table states what survives its compromise (Comment~1).
+		\item \emph{Access-control workflow.} The two designs sit on opposite sides of the same authorization relation, and we note that combining them---holder-controlled release of exactly the claims that TPS-ZKPI consumes as witnesses---would remove the TPS's view of the requester evidence; the Discussion lists this among the reduced-trust directions.
+	\end{itemize}
+
+	\RevisionLocation{Section ``Related Work,'' new paragraph on self-sovereign-identity architectures; reference list.}
+	\begin{revisiontext}
+		TPS-ZKPI sits on the other side of the same authorization relation.
+		In SSI designs the protected object is the requester's claim set and the policy that governs it is the holder's, whereas here the protected object is the provider's consent policy: the requester's claims are consumed as private witnesses of a proof whose statement is fixed and whose verifier is a public contract, so verifier authorization is not a design question (any observer may verify) and accountability is carried by the recorded, context-bound outcome rather than by a contract that meters the release of claims.
+	\end{revisiontext}
+\end{reviewresponse}

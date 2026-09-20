@@ -1,0 +1,29 @@
+\begin{reviewcomment}{6}
+	The cost and scalability analysis needs more depth.
+	The reported gas-padding overhead is substantial, around 38\% for access and 40\% for commit operations, and the evaluation is performed at a single circuit depth.
+	The paper should evaluate how costs change with larger policy programs, richer predicates, more complex DUO/ICD conditions, and more realistic access workloads.
+	Otherwise, it is difficult to judge whether the design is practical for real healthcare data-sharing platforms.
+\end{reviewcomment}
+
+\begin{reviewresponse}{6}
+	We added a cost-scaling analysis and restructured the cost discussion around the distinction that decides practicality: which costs are paid on-chain, and which off-chain.
+
+	\textbf{Larger policy programs.}
+	A new table reports the prover-side cost of the revised circuit at program lengths $32$, $64$ (the deployed value), and $128$ with the attribute and predicate counts fixed: R1CS constraints grow from $64{,}945$ to $81{,}740$ to $134{,}009$, the proving key from $39$ to $52$ to $88$~MB, and proving time from $0.38$ to $0.49$ to $0.73$~s per proof on a laptop-class prover (witness generation $0.28$--$0.54$~s).
+	The verification side does not change: the statement keeps its five public signals at every length, so the verifier contract, its gas, and the padding band are the same.
+
+	\textbf{Richer predicates and more complex DUO/ICD conditions.}
+	These enter through the predicate slots and their gadgets (Merkle membership for ontology scopes and allowlists, the credential verifier for profile-backed terms) rather than through the program length.
+	Each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, because predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs; a larger ICD or OBI whitelist changes only the Merkle root the provider commits, not the circuit or the gas.
+	The revised corpus exercises this: whitelists range from $2$ to $32$ codes across five vocabularies, and the access gas of the un-padded ablation run varies by $276$ gas across $1{,}119$ executions.
+
+	\textbf{Access workloads.}
+	The padding overhead is a fixed premium per transaction (about $330{,}000$ gas on access and $85{,}000$ on commit; $0.032$ versus $0.022$~POL per access at the evaluation's gas price), so it scales linearly with the number of authorizations and does not compound; the Discussion now states this together with how the band is calibrated per network (Reviewer~1, Comment~7).
+	We did not run a throughput benchmark: the on-chain path is one Groth16 verification plus bookkeeping per authorization and is bounded by the chain, not by the design, while the off-chain path is embarrassingly parallel across TPS instances.
+
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' paragraph ``Cost'' and the new cost-scaling table; Section ``Discussion,'' paragraph ``The cost of padding.''}
+	\begin{revisiontext}
+		The cost-scaling table shows how the prover-side cost scales when the program length grows from $32$ to $128$ with $N$ and $M$ fixed: constraints, proving-key size, and proving time grow roughly linearly with the program length (from $65{,}000$ to $134{,}000$ constraints and from $0.38$ to $0.73$~s per proof on a laptop-class prover), while the statement keeps its five public signals, so the verifier contract, its gas, and the padding band are unchanged.
+		Richer predicates would enter through $M$ and the per-slot gadgets rather than through the program length; each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, since predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs.
+	\end{revisiontext}
+\end{reviewresponse}

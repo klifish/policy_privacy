@@ -1,0 +1,34 @@
+\begin{reviewcomment}{7}
+	Can you expand on the real cost of randomizing gas padding?
+	The gas padding ablation is important, as it shows that policy-dependent gas signals are more recoverable when the padding is removed.
+	But it costs about 38\% in access-gas and 40\% in commit-gas overhead to provide this protection.
+	The manuscript would benefit from a more explicit discussion of this privacy-cost trade-off, e.g.\ whether the overhead remains practical for realistic transaction volumes and whether the padding strategy remains effective when policies or circuits become more complex.
+\end{reviewcomment}
+
+\begin{reviewresponse}{7}
+	We expanded the cost discussion in three ways.
+
+	\textbf{Re-measured overhead.}
+	The ablation was re-run on the revised system and the new corpus (a $1{,}119$-execution subset, executed without padding three days after the padded of-record run, on a fresh deployment).
+	The overhead is now $46.1\%$ on access gas ($723{,}462 \to 1{,}056{,}674$) and $38.4\%$ on commit gas ($219{,}737 \to 304{,}098$).
+	The increase on access relative to the submitted version has two causes that the manuscript now explains: the revised relation adds an on-chain Poseidon recomputation of the context digest, and Polygon Amoy prices the pairing precompiles higher than the local EVM (the same verifier costs $243{,}000$ gas locally and $372{,}000$ on Amoy), so the padding band had to be positioned higher.
+
+	\textbf{Practicality at volume.}
+	The overhead is a fixed premium per transaction---roughly $330{,}000$ gas on access and $85{,}000$ on commit at the band used here---so it scales linearly with transaction volume and does not compound.
+	At the $30$~gwei tip of the evaluation a padded access transaction costs about $0.032$~POL against $0.022$~POL unpadded.
+	The Discussion now states this together with the deployment rule the band follows: its base must lie above the bare access cost measured on the target network, which is calibrated once per network, and its width ($\pm 10\%$ here) determines how large a deterministic difference it can submerge.
+
+	\textbf{Effectiveness under more complex policies or circuits.}
+	Neither the bare cost nor the band depends on the policy: the fixed circuit gives every proof the same verification work and the same five public signals, so a more complex policy changes nothing on-chain.
+	To show how the prover-side cost scales, we added an offline sweep of the program length ($L = 32$, $64$, $128$ with $N$ and $M$ fixed; new cost-scaling table): constraints grow from $65{,}000$ to $134{,}000$ and proving time from $0.38$ to $0.73$~s per proof on a laptop-class prover, while the verifier contract, its gas, and the padding band are unchanged.
+	Richer predicates would enter through the predicate slots and their gadgets, again adding prover work and nothing on-chain, because predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs.
+	The revised ablation section also identifies what the padding must absorb: the un-padded channel is a sub-kilogas calldata-pricing difference in a public argument, which a $\pm 105{,}000$-gas band submerges regardless of its origin; padding cannot hide a difference larger than its band, and we say so.
+
+	\RevisionLocation{Section ``Discussion,'' new paragraph ``The cost of padding''; Section ``Privacy Evaluation,'' subsection ``Ablation,'' paragraph ``Cost,'' and the new cost-scaling table.}
+	\begin{revisiontext}
+		Three observations bound its practical weight.
+		First, the overhead is a fixed premium per transaction---roughly $330{,}000$ gas on access and $85{,}000$ on commit at the band used here---so it scales linearly with transaction volume and does not compound: at the $30$~gwei tip of the evaluation, a padded access transaction costs about $0.032$~POL against $0.022$~POL unpadded.
+		Second, neither the bare cost nor the band depends on the policy: the fixed circuit gives every proof the same verification work and the same five public signals, and the prover-side cost of longer or richer policies is paid off-chain.
+		Third, the band must be positioned above the bare cost on the target network, which differs between networks [\ldots]; a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
+	\end{revisiontext}
+\end{reviewresponse}

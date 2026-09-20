@@ -1,0 +1,15 @@
+\begin{reviewcomment}{7}
+	The opinion of the authors about the results is very short. The conclusions in Part 6 are almost missing.
+\end{reviewcomment}
+
+\begin{reviewresponse}{7}
+	The Conclusion has been rewritten as four paragraphs: what the revised construction contributes and which soundness gaps it closes; what the evaluation shows and what the ablation teaches about the un-padded channel; the limitations (trust in the TPS, the supported policy class, the unmodeled channels, the criterion's false-positive rate); and three directions that follow from those limitations.
+	The Discussion likewise opens with the authors' reading of the results, including the two criterion failures and why we report rather than absorb them, before turning to the trust model.
+
+	\RevisionLocation{Section ``Conclusion'' (entire section); Section ``Discussion,'' first paragraph.}
+	\begin{revisiontext}
+		The evaluation shows what such a design can and cannot promise.
+		On a live testnet corpus, a supervised attacker with policy-disjoint training data and an unsupervised clustering attacker recover neither policy content, nor policy identity, nor structure and parameters from the normalized transcript beyond what the padding's own random draws produce, and the paired ablation shows that the padding is what removes the last policy-correlated gas signal.
+		The ablation also delivers a cautionary result: the un-padded channel it exposes is not the policy logic, which the fixed circuit already hides, but the byte-level pricing of one public transaction argument---a reminder that on a public chain any deterministic encoding difference that correlates with the policy is a channel, and that the defense must cover the class rather than the instances one anticipated.
+	\end{revisiontext}
+\end{reviewresponse}

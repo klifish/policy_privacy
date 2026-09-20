@@ -1,0 +1,31 @@
+\begin{reviewcomment}{5}
+	Empirically-grounded claims of privacy must be carefully scoped.
+	The evaluation assumes a passive, metadata-only public-chain adversary, and the effective policy-dependent attack features ultimately reduce primarily to commit and access gas measurements, as several other transcript characteristics are constant by construction.
+	The authors rightly point out that their threat model does not cover timing of transactions, ordering of transactions, mempool/broadcast behavior of TPSs, off-chain communication of the TPS, adaptive probing of requesters, and compromised behavior of TPSs.
+	These exclusions are important.
+	The wording should not be interpreted as establishing general policy confidentiality, and the result should be qualified as empirical resistance against the modeled public-chain metadata attacks.
+\end{reviewcomment}
+
+\begin{reviewresponse}{5}
+	We agree and have adopted the reviewer's formulation throughout.
+	The abstract, the opening of the Discussion, and the Conclusion now describe the result as empirical resistance against the modeled public-chain metadata attacks, and the Discussion states the exclusions in one place rather than leaving them implicit in the threat model.
+
+	The revision also gave us an occasion to apply this scoping to our own results.
+	The evaluation was re-run on the revised (RC1) system, whose proof relation binds the program length, the authorization context, and the issuer-signed profile claims (Comments~1--3), on a new corpus of $1{,}077$ policies and $1{,}773$ Polygon Amoy executions.
+	Under the multi-seed criterion, two of the $45$ supervised tasks now meet the failure condition: the ICD-10 chapter task for chapter ch5 and the nesting-depth contrast medium/deep.
+	We report both as failures.
+	Because the gas features are, as the reviewer notes, the only non-constant observables, we could examine what the classifier separates: the access gas is the randomized pad target plus a near-constant $4{,}661$--$4{,}750$ gas, the capture log records every target, and subtracting it removes the separability entirely (for ch5, the gas and target AUCs are both $0.601$ and the residual AUC is $0.472$; rerunning the unchanged protocol on the residual returns both tasks to PASS).
+	The two failures are therefore coincidences of the padding's own random draws with a label---a false-positive mode of the criterion that we quantify in the response to Comment~6---and not information about the policy.
+	We chose to keep the criterion and the failures as reported and to add the diagnostic, rather than to adjust thresholds after the fact.
+
+	The gas-padding ablation, re-run on the same corpus, sharpened the scoping in one more respect: the channel that the un-padded transcript exposes is not the policy logic, which the fixed circuit already hides (the un-padded access gas of $1{,}119$ executions spans $276$ gas), but the calldata byte pricing of the requester pseudonym, whose encoding width in our harness correlates with whether a policy activates the profile predicate.
+	We state this in the revised ablation section because it illustrates the reviewer's point: on a public chain, any deterministic encoding difference that correlates with the policy is a channel, and the empirical claim covers the channels we modeled.
+
+	\RevisionLocation{Abstract; Section ``Discussion,'' first and second paragraphs; Section ``Conclusion,'' third paragraph.}
+	\begin{revisiontext}
+		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance rather than proven policy confidentiality.
+		[\ldots]
+		The scope of this claim is the adversary of the evaluation's threat model: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies.
+		Timing and ordering of transactions, mempool and broadcast behaviour, off-chain communication with the TPS, adaptive requester probing, repeated access attempts, correlations between authorization outcomes and policy classes (every request in the corpus is granted), and compromised TPS behaviour are not modeled, and the results should not be read as establishing general policy confidentiality against them.
+	\end{revisiontext}
+\end{reviewresponse}

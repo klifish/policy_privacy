@@ -1,0 +1,36 @@
+\begin{reviewcomment}{6}
+	Provide additional justification for the PASS/FAIL leakage criteria.
+	In the manuscript, a failure is defined only if the mean AUC is greater than 0.55 and at least 50\% of the 30 seeded permutation tests are significant.
+	This leads to a criterion based on reproducibility, although the exact thresholds seem to be application-defined.
+	The authors need to better justify the choice of 0.55 and 50\% and ideally perform a sensitivity analysis to show that the overall conclusions are robust to reasonable alternative thresholds.
+\end{reviewcomment}
+
+\begin{reviewresponse}{6}
+	We thank the reviewer for this request; the thresholds are indeed application-set, and the revised methodology now justifies each leg and reports a sensitivity analysis.
+
+	\textbf{Justification.}
+	The AUC threshold of $0.55$ asks for an effect at least twice the seed-to-seed standard deviation of the AUC on our task sizes ($0.02$--$0.03$ for the DUO tasks, $0.06$--$0.08$ for the smaller ICD-10 tasks), so that a task cannot fail on the sampling noise of a single split.
+	The $50\%$ threshold asks that the permutation test reject in a majority of the $30$ policy-disjoint splits, so that a task cannot fail on one lucky partition.
+	Neither leg suffices alone: with the AUC leg only, $4$ PCH tasks and $4$ SPP contrasts would fail at $0.55$ ($8$ and $12$ at $0.52$); with the significance leg only, three SPP contrasts would fail at $30\%$.
+
+	\textbf{Sensitivity analysis.}
+	The analysis pipeline now records every task's per-seed AUCs and permutation $p$-values, and a new script re-applies the criterion over AUC thresholds $\{0.52, 0.55, 0.58, 0.60\}$ and significance fractions $\{0.3, 0.4, 0.5, 0.6, 0.7\}$ without retraining.
+	Whenever the significance fraction is at least $0.5$, at most the two tasks that fail at the of-record thresholds (ICD ch5 and nesting-depth medium/deep) fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts; raising it to $0.6$ fails nothing.
+	The PI verdict is unchanged in every cell.
+	The conclusions therefore do not depend on the exact values.
+
+	\textbf{False-positive rate.}
+	The same analysis exposed a property of the criterion that we now state openly.
+	The padded access gas contains a per-policy random draw (the pad target), and the coverage-layer policies are executed once, so the $30$ seeds resample the same draws; a coincidence between the draws and a label reproduces across seeds.
+	Replacing the two gas features by policy-independent draws from the padding bands and rerunning the entire pipeline ten times produced at least one spurious PCH failure in four of the ten replicates (a per-task rate of about $3\%$; none on SPP).
+	The two failures in the of-record run are of exactly this kind: subtracting the logged target from the access gas returns both to PASS (Comment~5).
+	We kept the criterion as stated, report the failures, and treat a failure as a prompt to examine what the classifier separates; the manuscript now says so.
+
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Attack methodology,'' new paragraph ``Choice of thresholds.''}
+	\begin{revisiontext}
+		The two thresholds are application-set rather than derived, and we justify them by what each leg guards against.
+		The AUC threshold of $0.55$ asks for an effect at least twice the seed-to-seed standard deviation of the AUC on our task sizes ($0.02$--$0.03$ for the DUO tasks, $0.06$--$0.08$ for the smaller ICD-10 tasks), so that a task cannot fail on the sampling noise of a single split; the $50\%$ threshold asks that the permutation test reject in a majority of the $30$ policy-disjoint splits, so that a task cannot fail on one lucky partition either.
+		[\ldots]
+		The conclusions are insensitive to the exact values: re-evaluating every task from its recorded per-seed AUCs and $p$-values over AUC thresholds $0.52$--$0.60$ and significance fractions $0.3$--$0.7$ fails at most the two tasks discussed in the PCH and SPP sections whenever the significance fraction is at least $0.5$, adds at most two further SPP contrasts when it is lowered to $0.3$--$0.4$, and fails nothing once it reaches $0.6$.
+	\end{revisiontext}
+\end{reviewresponse}

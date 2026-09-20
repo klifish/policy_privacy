@@ -1,0 +1,28 @@
+\begin{reviewcomment}{4}
+	The privacy evaluation is too narrow.
+	The adversary is mainly a passive metadata-only public-chain observer, and the effective leakage channel is reduced mostly to gas usage.
+	This is useful, but it does not cover adaptive requester probing, repeated access attempts, timing/order leakage, off-chain TPS communication patterns, compromised TPS behaviour, or correlations between authorization outcomes and policy classes.
+	The paper should either broaden the evaluation or tone down the privacy claims.
+\end{reviewcomment}
+
+\begin{reviewresponse}{4}
+	We chose to tone down the claims and to say precisely what the evaluation covers, while making the evaluation of the modeled channel more rigorous.
+
+	\textbf{Toned-down claims.}
+	The abstract, Discussion, and Conclusion now describe the result as empirical resistance against the modeled public-chain metadata attacks, and the Discussion lists every exclusion the reviewer names---timing and ordering, mempool and broadcast behaviour, off-chain TPS communication, adaptive probing, repeated attempts, correlations between outcomes and policy classes (every request in the corpus is granted, so this correlation is not exercised), and compromised TPS behaviour---with the statement that the results should not be read as establishing general policy confidentiality against them.
+	The threat model also states why the gas channel is wider than the verifier's arithmetic: the EVM prices calldata per byte, so any deterministic difference in how a public argument is encoded reaches the observer through gas even when calldata length is constant.
+
+	\textbf{A more rigorous treatment of the modeled channel.}
+	The evaluation was re-run on the revised system and a new corpus.
+	Two of the $45$ supervised tasks now meet the failure criterion; we report them as failures and trace them, by subtracting the logged pad target from the access gas, to coincidences of the padding's own random draws with a label (Reviewer~1, Comments~5 and~6), and we quantify the criterion's false-positive rate with a null simulation.
+	The re-run ablation shows what the un-padded transcript leaks and why: not the policy logic, which the fixed circuit already hides, but the byte pricing of the requester pseudonym, whose encoding width in our harness correlates with whether a policy activates the profile predicate.
+	We report this because it is the kind of channel the reviewer's broader adversary would exploit, and because it shows that the evaluation does detect sub-kilogas deterministic channels when they exist.
+
+	We did not add adaptive or timing experiments in this revision.
+	They require a different corpus design (repeated, adversarially chosen requests against the same policy, and control over block inclusion) and an adversary model with an active component; the Conclusion names them as the next step for the evaluation.
+
+	\RevisionLocation{Abstract; Section ``Privacy Evaluation,'' subsection ``Adversary and observables''; Section ``Discussion,'' first two paragraphs; Section ``Conclusion,'' third and fourth paragraphs.}
+	\begin{revisiontext}
+		That channel is wider than the verifier's arithmetic: because the EVM prices calldata per byte (four gas for a zero byte, sixteen otherwise), the gas of an access transaction also encodes the byte pattern of its public arguments, so any deterministic difference in how an argument is encoded reaches the observer through gas even when the calldata length is constant.
+	\end{revisiontext}
+\end{reviewresponse}
