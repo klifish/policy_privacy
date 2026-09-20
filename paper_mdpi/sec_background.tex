@@ -4,9 +4,10 @@ This section reviews the technical foundations relevant to policy-private consen
 
 \subsection{Cryptographic Access Control in Blockchain Healthcare}
 Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE)~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
-In CP-ABE, a data owner embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
+In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
-These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~\ref{sec:related-work}.
+Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself~\cite{yang2024hamed,ding2026badsabe,wu2023blockchain}.
+We cite the original constructions because the later systems inherit their trust and disclosure properties, which is what matters for this paper: these primitives establish who may obtain the data, and how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~\ref{sec:related-work}.
 
 \subsection{Zero-Knowledge Proofs}
 Zero-knowledge proofs (ZKPs) are cryptographic protocols that allow a prover to convince a verifier that a statement is true without revealing any information beyond the validity of the statement~\cite{groth2016size}.
