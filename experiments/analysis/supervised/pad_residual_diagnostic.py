@@ -50,6 +50,7 @@ from .common import (
     load_json,
 )
 from . import pch_supervised, spp_supervised
+from experiments.analysis.clustering.clustering_stats import ensemble_permutation_analysis
 
 TARGET_LINE = re.compile(r"access gas pad target = (\d+)")
 SUBMIT_LINE = re.compile(r"Submitted proof on-chain for policyId=(\d+)")
@@ -181,6 +182,32 @@ def build_spp_tasks_with_indices(dataset: List[dict]) -> List[dict]:
     return tasks
 
 
+def clustering_variants(dataset: List[dict], targets: Dict[int, int], labels_by_axis: Dict[str, np.ndarray],
+                        kmeans_seeds: int = 20, permutations: int = 200) -> Dict:
+    """K-Means (as in the clustering cross-check) on [commit gas, access gas] versus
+    [commit gas, access gas - target], per labelled axis, with the same
+    permutation-debiased ARI/NMI scoring as experiments/analysis/clustering."""
+    indices = np.arange(len(dataset))
+    target = _target_vectors(dataset, indices, targets)
+    commit = np.array([float(row["features"]["commitGasUsed"]) for row in dataset])
+    gas = np.array([float(row["features"]["accessGasUsed"]) for row in dataset])
+    out = {}
+    for axis, labels in labels_by_axis.items():
+        mask = np.array([lab is not None for lab in labels])
+        y = np.array([str(lab) for lab in labels[mask]])
+        k = len(set(y.tolist()))
+        if k < 2:
+            continue
+        out[axis] = {"n": int(mask.sum()), "classes": k}
+        for name, feature in (("gas", gas), ("residual", gas - target)):
+            X = np.column_stack([commit[mask], feature[mask]])
+            res = ensemble_permutation_analysis(X, y, k, kmeans_seeds=kmeans_seeds, permutations=permutations)
+            out[axis][name] = {"ari": res["observed"]["ari"], "ariP": res["nullAri"]["pValue"],
+                               "nmi": res["observed"]["nmi"], "nmiDebiased": res["nullNmi"]["debiased"],
+                               "nmiP": res["nullNmi"]["pValue"]}
+    return out
+
+
 def failed_keys(verdict_path: Path) -> List[str]:
     if not verdict_path.exists():
         return []
@@ -222,6 +249,17 @@ def render_markdown(report: Dict) -> str:
                     lr, rf = v["models"].get("lr"), v["models"].get("rf")
                     fmt = lambda m: f"{m['aucMean']:.3f} / {m['sigFraction']:.2f}" if m else "—"
                     lines.append(f"| {key} | {name} | {fmt(lr)} | {fmt(rf)} | {'PASS' if v['passed'] else 'FAIL'} |")
+            lines.append("")
+        if block.get("clustering"):
+            lines += ["### Clustering companion", "",
+                      "K-Means with K = number of classes on [commit gas, access gas] versus "
+                      "[commit gas, access gas − target]; ARI/NMI with the permutation null of the clustering cross-check.", "",
+                      "| axis | n | classes | ARI gas (p) | ARI residual (p) | NMI gas (debiased, p) | NMI residual (debiased, p) |",
+                      "|---|---|---|---|---|---|---|"]
+            for axis, c in block["clustering"].items():
+                g, r = c["gas"], c["residual"]
+                lines.append(f"| {axis} | {c['n']} | {c['classes']} | {g['ari']:.4f} ({g['ariP']:.3f}) | {r['ari']:.4f} ({r['ariP']:.3f}) "
+                             f"| {g['nmi']:.4f} ({g['nmiDebiased']:.4f}, {g['nmiP']:.3f}) | {r['nmi']:.4f} ({r['nmiDebiased']:.4f}, {r['nmiP']:.3f}) |")
             lines.append("")
     return "\n".join(lines)
 
@@ -267,8 +305,18 @@ def main() -> None:
                 reruns[task["key"]] = protocol_variants(
                     dataset, task, targets, args.seeds, args.models, args.jobs,
                     args.permutation_iterations, args.split_candidates)
+        if exp == "pch":
+            labels_by_axis = {
+                "primaryDuoTerm": np.array([(r.get("semantics") or {}).get("primaryDuoTerm") for r in dataset], dtype=object),
+                "icd10Chapter": np.array([pch_supervised._icd_chapter(r) for r in dataset], dtype=object),
+            }
+        else:
+            labels_by_axis = {axis: np.array([r.get(axis) for r in dataset], dtype=object)
+                              for axis in spp_supervised.TARGET_ATTRS}
+        print(f"[{exp}] clustering companion")
+        clustering = clustering_variants(dataset, targets, labels_by_axis)
         report["experiments"][exp] = {"datasetPath": str(path), "failedKeys": failed,
-                                       "tasks": rows, "protocolReruns": reruns}
+                                       "tasks": rows, "protocolReruns": reruns, "clustering": clustering}
         for r in rows:
             print(f"[{exp}] {r['key']:34s} AUC gas={r['rowAuc']['gas']:.3f} target={r['rowAuc']['target']:.3f} "
                   f"residual={r['rowAuc']['residual']:.3f}  residual∈[{int(r['residualMin'])},{int(r['residualMax'])}]")

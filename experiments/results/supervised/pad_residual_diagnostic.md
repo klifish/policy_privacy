@@ -39,6 +39,15 @@ Same `analyze_contrast` (seeds, split selection, LR+RF, permutation test, double
 | ICD ch5 | targetOnly | 0.686 / 0.63 | 0.606 / 0.30 | FAIL |
 | ICD ch5 | residualSubstituted | 0.556 / 0.10 | 0.561 / 0.17 | PASS |
 
+### Clustering companion
+
+K-Means with K = number of classes on [commit gas, access gas] versus [commit gas, access gas − target]; ARI/NMI with the permutation null of the clustering cross-check.
+
+| axis | n | classes | ARI gas (p) | ARI residual (p) | NMI gas (debiased, p) | NMI residual (debiased, p) |
+|---|---|---|---|---|---|---|
+| primaryDuoTerm | 1773 | 10 | 0.0000 (0.483) | -0.0003 (0.602) | 0.0109 (0.0002, 0.413) | 0.0094 (-0.0011, 0.796) |
+| icd10Chapter | 770 | 10 | 0.0021 (0.065) | 0.0003 (0.408) | 0.0281 (0.0044, 0.085) | 0.0257 (0.0015, 0.303) |
+
 ## SPP
 
 | task | policies (+) | const. feat. | residual range | AUC gas | AUC target | AUC residual | d gas | d target | d residual | of-record |
@@ -74,3 +83,14 @@ Same `analyze_contrast` (seeds, split selection, LR+RF, permutation test, double
 | nestingDepth: medium/deep | ofRecord | 0.563 / 0.53 | 0.558 / 0.40 | FAIL |
 | nestingDepth: medium/deep | targetOnly | 0.568 / 0.57 | 0.503 / 0.03 | FAIL |
 | nestingDepth: medium/deep | residualSubstituted | 0.530 / 0.13 | 0.544 / 0.33 | PASS |
+
+### Clustering companion
+
+K-Means with K = number of classes on [commit gas, access gas] versus [commit gas, access gas − target]; ARI/NMI with the permutation null of the clustering cross-check.
+
+| axis | n | classes | ARI gas (p) | ARI residual (p) | NMI gas (debiased, p) | NMI residual (debiased, p) |
+|---|---|---|---|---|---|---|
+| structureType | 1125 | 4 | 0.0004 (0.328) | 0.0002 (0.388) | 0.0034 (0.0005, 0.343) | 0.0029 (-0.0001, 0.453) |
+| predicateCombo | 1125 | 3 | -0.0005 (0.577) | -0.0001 (0.413) | 0.0015 (-0.0004, 0.507) | 0.0007 (-0.0009, 0.781) |
+| paramType | 1125 | 4 | -0.0000 (0.488) | 0.0026 (0.040) | 0.0030 (0.0000, 0.433) | 0.0051 (0.0022, 0.095) |
+| nestingDepth | 1125 | 4 | 0.0071 (0.005) | -0.0004 (0.602) | 0.0088 (0.0058, 0.005) | 0.0024 (-0.0007, 0.692) |
