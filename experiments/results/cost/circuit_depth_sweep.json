@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2026-09-20T11:21:54.357Z",
+  "host": {
+    "cpu": "Apple M1",
+    "cores": 8,
+    "node": "v22.22.0",
+    "platform": "darwin"
+  },
+  "fixedParameters": {
+    "N": 13,
+    "M": 11,
+    "K": 5,
+    "MERKLE_LEVELS": 8,
+    "RANGE_BITS": 32,
+    "publicSignals": 5
+  },
+  "rc1": {
+    "parameters": {
+      "N": 13,
+      "M": 11,
+      "DEPTH": 64,
+      "K": 5,
+      "MERKLE_LEVELS": 8,
+      "RANGE_BITS": 32
+    },
+    "r1cs": {
+      "wires": 80884,
+      "constraints": 81740,
+      "privateInputs": 496,
+      "publicInputs": 4,
+      "outputs": 1
+    },
+    "optimization": "O2"
+  },
+  "rows": [
+    {
+      "depth": 32,
+      "dir": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/build/cost_sweep/depth_32",
+      "r1cs": {
+        "constraints": 64945,
+        "wires": 64441,
+        "privateInputs": 464,
+        "publicInputs": 4,
+        "outputs": 1,
+        "labels": 234543
+      },
+      "zkeyBytes": 38671056,
+      "wasmBytes": 8586443,
+      "logic": "(DS OR RS) AND HMB AND US AND TS",
+      "tokens": 15,
+      "numOperations": 15,
+      "proofs": 5,
+      "backend": "rapidsnark",
+      "witnessMsMedian": 282,
+      "proveMsMedian": 382,
+      "verifyMsMedian": 11,
+      "timings": [
+        {
+          "witnessMs": 306,
+          "proveMs": 455,
+          "verifyMs": 164,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 282,
+          "proveMs": 386,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 282,
+          "proveMs": 382,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 281,
+          "proveMs": 380,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 283,
+          "proveMs": 379,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "depth": 64,
+      "dir": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/build/cost_sweep/depth_64",
+      "r1cs": {
+        "constraints": 81740,
+        "wires": 80884,
+        "privateInputs": 496,
+        "publicInputs": 4,
+        "outputs": 1,
+        "labels": 328471
+      },
+      "zkeyBytes": 52172040,
+      "wasmBytes": 8650796,
+      "logic": "(DS OR RS) AND HMB AND US AND TS",
+      "tokens": 15,
+      "numOperations": 15,
+      "proofs": 5,
+      "backend": "rapidsnark",
+      "witnessMsMedian": 343,
+      "proveMsMedian": 494,
+      "verifyMsMedian": 10,
+      "timings": [
+        {
+          "witnessMs": 376,
+          "proveMs": 541,
+          "verifyMs": 161,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 342,
+          "proveMs": 497,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 349,
+          "proveMs": 494,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 340,
+          "proveMs": 488,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 343,
+          "proveMs": 487,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "depth": 128,
+      "dir": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/build/cost_sweep/depth_128",
+      "r1cs": {
+        "constraints": 134009,
+        "wires": 132449,
+        "privateInputs": 560,
+        "publicInputs": 4,
+        "outputs": 1,
+        "labels": 653997
+      },
+      "zkeyBytes": 87451740,
+      "wasmBytes": 10052274,
+      "logic": "(DS OR RS) AND HMB AND US AND TS",
+      "tokens": 15,
+      "numOperations": 15,
+      "proofs": 5,
+      "backend": "rapidsnark",
+      "witnessMsMedian": 542,
+      "proveMsMedian": 730,
+      "verifyMsMedian": 11,
+      "timings": [
+        {
+          "witnessMs": 581,
+          "proveMs": 824,
+          "verifyMs": 162,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 545,
+          "proveMs": 730,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 539,
+          "proveMs": 722,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 542,
+          "proveMs": 733,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "witnessMs": 541,
+          "proveMs": 729,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    }
+  ]
+}

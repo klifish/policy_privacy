@@ -36,8 +36,13 @@ const ZKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_final.zkey');
 const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
-// circuits/policy_privacy_main_instance.circom
-const CIRCUIT = { N: 13, M: 11, DEPTH: 64, K: 5, MERKLE_LEVELS: 8 };
+// circuits/policy_privacy_main_instance.circom. PROTOCOL_CIRCUIT_DEPTH lets
+// the offline cost sweep (scripts/circuit_cost_sweep.js) prove against a
+// build compiled at another DEPTH; production and the capture runs leave it
+// unset.
+const CIRCUIT = {
+    N: 13, M: 11, DEPTH: Number(process.env.PROTOCOL_CIRCUIT_DEPTH || 64), K: 5, MERKLE_LEVELS: 8
+};
 
 /**
  * Build the full circuit witness from policy material + requester evidence.
