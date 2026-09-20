@@ -42,12 +42,9 @@ Encoding every pseudonym at full width would close this particular channel witho
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{ablation_paired_scatter.png}
-  \caption{Gas-padding ablation over all $45$ supervised contrasts: unpadded deviation
-    from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ (x) versus padded deviation
-    $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$ (y); points below the diagonal are contrasts where
-    padding moved the attacker toward chance. Color gives the sign of the $95\%$ interval
-    of $\Delta_{\text{leak}}$. Random forest is the reference criterion; logistic regression
-    is shown for robustness.}
+  \caption{Gas-padding ablation over all $45$ supervised contrasts: unpadded versus
+    padded deviation from chance, colored by the sign of the $95\%$ interval of
+    $\Delta_{\text{leak}}$.}
   \label{fig:ablation-paired}
 \end{figure}
 

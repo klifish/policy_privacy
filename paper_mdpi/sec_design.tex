@@ -4,19 +4,19 @@
 \subsection{Overview}
 
 As shown in Figure~\ref{fig:tps-zkpi-workflow}, the TPS-ZKPI workflow binds a provider-committed hidden policy to requester-submitted authorization evidence through TPS-side proof generation and on-chain proof verification.
-The provider registers only a policy commitment on-chain and sends policy-bound proving material to the TPS off-chain.
-For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of policy compliance, and submits a fixed-format proof statement for ACM verification.
-The ACM records the authorization outcome in contract storage and emits it in the blockchain event log (as access-granted or access-denied events); the data access layer consumes this recorded decision to serve or refuse the request.
+The provider registers only a policy commitment on-chain and sends policy-bound proving material to the TPS off-chain (steps 1--2 in the figure).
+For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of policy compliance, and submits a fixed-format proof statement for ACM verification (steps 3--4).
+The ACM records the authorization outcome in contract storage and emits it in the blockchain event log (as access-granted or access-denied events; step 5); the data access layer consults the recorded decision to serve or refuse the request (steps 6--9).
 
 This design separates confidentiality-sensitive proof generation from public verification.
 Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
 In a traditional requester-as-prover design, the requester generates the proof itself and must therefore receive the encoded policy and the commitment-opening randomness, so every requester learns the policy in normal operation.
 In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and policy confidentiality can fail only if the TPS trust assumption itself is violated.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\textwidth]{PP-TPS.png}
-	\caption{TPS-assisted policy-compliance workflow. The provider commits to the encoded policy on-chain and provisions proving material to the TPS (steps 1--2); the TPS constructs the witness from requester evidence and generates the proof (3--4); the ACM verifies the proof and records the outcome (5); the data access layer consults the recorded status to serve the requester (6--9).}
+	\caption{TPS-assisted policy-compliance workflow (steps are described in the text).}
 	\label{fig:tps-zkpi-workflow}
 \end{figure}
 
@@ -174,7 +174,7 @@ normalizes the public transcript so that different policies induce fixed or tigh
 bounded observable profiles. Table~\ref{tab:transcript-normalization}
 summarizes the mechanisms.
 
-\begin{table}[H]
+\begin{table}[htbp]
 	\centering
 	\caption{Transcript-normalization mechanisms in TPS-ZKPI.}
 	\label{tab:transcript-normalization} \footnotesize
