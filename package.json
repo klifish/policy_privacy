@@ -100,6 +100,7 @@
     "crosscheck:js:pi": "npm run crosscheck:pi",
     "crosscheck:js:spp": "npm run crosscheck:spp",
     "crosscheck:js:all": "npm run crosscheck:all",
+    "analysis:criterion-sensitivity": ".venv/bin/python -m experiments.analysis.supervised.criterion_sensitivity --null-replicates 10 --jobs -1",
     "analysis:pad-residual": ".venv/bin/python -m experiments.analysis.supervised.pad_residual_diagnostic --seeds 30 --jobs -1",
     "analysis:compare:js": ".venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pch && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pi && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment spp",
     "evaluation:verify": "node scripts/verify_evaluation_provenance.js",

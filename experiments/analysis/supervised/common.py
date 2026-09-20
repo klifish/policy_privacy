@@ -563,6 +563,10 @@ def analyze_contrast(
             "aucHigh": auc_high,
             "sigHigh": sig_high,
             "legFails": leg_fails,
+            # Per-seed values behind the two summary legs, kept so the
+            # criterion can be re-evaluated under other thresholds offline
+            # (criterion_sensitivity.py) without rerunning the attacks.
+            "perSeed": {"auc": [float(a) for a in aucs], "pval": [float(p) for p in pvals]},
         }
 
     result["passed"] = not any_leg_fails
