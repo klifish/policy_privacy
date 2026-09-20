@@ -3,24 +3,27 @@
 %   PI:  experiments/results/supervised/pi_supervised_verdict.json
 %   SPP: experiments/results/supervised/spp_supervised_verdict.json
 % (all 30 policy-disjoint seeds, deterministic per-seed RNG.)
+% Residual diagnostic for the two FAILs: experiments/results/supervised/pad_residual_diagnostic.md
 % Dataset: Polygon Amoy, fixed circuit + commitment-only interface + randomized gas padding.
-\begin{table}[H]
+\begin{table}[htbp]
   \centering
-  \caption{Results on the Polygon Amoy dataset. The supervised attacker
-    uses 30 policy-disjoint seeds and a permutation test. A task passes unless both
-    AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant.}
+  \caption{Headline supervised results on the Polygon Amoy dataset (30 policy-disjoint
+    seeds; a task fails iff AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are
+    significant).}
   \label{tab:privacy-summary}
   % Column widths sum to <1 so that the inter-column glue fits inside the text block.
-  \begin{tabular}{p{0.16\linewidth}p{0.32\linewidth}p{0.42\linewidth}}
+  \begin{tabular}{p{0.16\linewidth}p{0.30\linewidth}p{0.44\linewidth}}
     \toprule
     Property & Hidden target & Headline supervised result \\
     \midrule
     PCH & DUO terms and ICD-10 chapters
-        & 16 content-recovery tasks pass; AUC $0.433$--$0.561$; significant seeds median $2\%$, max $37\%$ \\
+        & 19 of 20 content-recovery tasks pass; AUC $0.464$--$0.570$, significant seeds median $3\%$. ICD ch5 fails (AUC $0.667$, $53\%$); its separability is carried entirely by the random pad target$^{\ast}$ \\
     PI & Related policy-pair identity
-       & 4 gating tasks pass; AUC $0.500$--$0.559$; significant seeds median $7\%$, max $30\%$ \\
+       & 3 gating tasks pass; AUC $0.509$--$0.549$; significant seeds median $7\%$, max $10\%$ \\
     SPP & Structure, predicate, parameter, and nesting-depth buckets
-        & 28 pairwise contrasts pass; AUC $0.483$--$0.629$; significant seeds median $3\%$, max $23\%$ \\
+        & 20 of 21 pairwise contrasts pass; AUC $0.468$--$0.571$, significant seeds median $7\%$. \texttt{nestingDepth} medium/deep fails (AUC $0.563$, $53\%$); carried by the pad target$^{\ast}$ \\
     \bottomrule
   \end{tabular}
+
+  \noindent{\footnotesize{$^{\ast}$ Rerunning the same protocol on the gas minus the logged pad target returns both tasks to PASS (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).}}
 \end{table}

@@ -1,73 +1,71 @@
 % Source of record: experiments/data/polygonAmoy/metadata.json
-%   (policyCount=1077, datasetEntries=2005, generator seed "unified-optimized-2025";
-%    per-axis bucket counts from metadata.summary) and
-%   experiments/results/crosscheck/pch/polygonAmoy/features.json
-%   (per-DUO-term and per-ICD-chapter policy/execution counts).
+%   (policyCount=1077, datasetEntries=1773, generator seed "unified-decoupled-2026")
+%   and experiments/data/polygonAmoy/executed_dataset.json (per-label policy and
+%   execution counts: duoTermCodes, ontologyNamespace/ontologyValue, structureType,
+%   nestingDepth, predicateCombo, paramType).
 % DUO is multi-label: an execution carries every term its policy references, so the
 % per-term rows overlap and their column sums exceed the corpus totals. ICD-10 rows
 % cover only the ICD-bearing subset of policies. Both are noted in the caption.
-% structureType's analysis-time "trivial" bucket (single predicate, no connective) is
-% carved from the raw four structure types at SPP scoring time, so it is not a separate
-% corpus row here.
-\begin{table}[H]
+\begin{table}[htbp]
   \centering\footnotesize
   \caption{Composition of the shared policy corpus (generator seed
-    \texttt{unified-optimized-2025}). Policies and executions are counted per label or
-    per structural bucket. DUO terms are \emph{multi-label}: an execution carries every
-    term its policy references, so the per-term counts overlap and sum above the corpus
-    totals; ICD-10 rows cover only the ICD-bearing subset of policies. Each SPP axis
-    partitions the full corpus, so its buckets sum to the corpus totals.}
+    \texttt{unified-decoupled-2026}). DUO terms are multi-label, so their counts
+    overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis
+    partitions the full corpus.}
   \label{tab:corpus}
   \begin{tabular}{llrr}
     \toprule
     Grouping & Category & Policies & Executions \\
     \midrule
     \multicolumn{4}{l}{\textit{DUO data-use term} (multi-label; counts = policies/executions containing the term)} \\
-    & GR  & $197$ & $342$  \\
-    & DS  & $514$ & $920$  \\
-    & RS  & $512$ & $1121$ \\
-    & POA & $438$ & $757$  \\
-    & GS  & $417$ & $910$  \\
-    & CC  & $484$ & $1035$ \\
+    & GRU  & $302$ & $447$ \\
+    & DS   & $422$ & $770$ \\
+    & RS   & $412$ & $760$ \\
+    & POA  & $392$ & $624$ \\
+    & GS   & $382$ & $556$ \\
+    & CC   & $392$ & $769$ \\
+    & NCU  & $206$ & $380$ \\
+    & HMB  & $331$ & $447$ \\
+    & NMDS & $237$ & $469$ \\
+    & GSO  & $236$ & $352$ \\
     \midrule
     \multicolumn{4}{l}{\textit{ICD-10 chapter} (ICD-bearing policies only)} \\
-    & ch0 & $50$ & $50$  \\
-    & ch1 & $69$ & $127$ \\
-    & ch2 & $59$ & $117$ \\
-    & ch3 & $54$ & $112$ \\
-    & ch4 & $47$ & $105$ \\
-    & ch5 & $34$ & $92$  \\
-    & ch6 & $49$ & $49$  \\
-    & ch7 & $58$ & $87$  \\
-    & ch8 & $55$ & $113$ \\
-    & ch9 & $39$ & $68$  \\
-    & \textit{ICD-bearing subtotal} & $514$ & $920$ \\
+    & ch0 & $44$ & $131$ \\
+    & ch1 & $49$ & $49$  \\
+    & ch2 & $33$ & $62$  \\
+    & ch3 & $55$ & $55$  \\
+    & ch4 & $41$ & $70$  \\
+    & ch5 & $34$ & $63$  \\
+    & ch6 & $48$ & $135$ \\
+    & ch7 & $48$ & $77$  \\
+    & ch8 & $33$ & $62$  \\
+    & ch9 & $37$ & $66$  \\
+    & \textit{ICD-bearing subtotal} & $422$ & $770$ \\
     \midrule
     \multicolumn{4}{l}{\textit{SPP structureType}} \\
-    & and\_only       & $246$ & $478$ \\
-    & or\_only        & $347$ & $579$ \\
-    & negation\_heavy & $292$ & $524$ \\
-    & and\_or\_mixed  & $192$ & $424$ \\
+    & trivial        & $130$ & $130$ \\
+    & and\_only      & $294$ & $526$ \\
+    & or\_only       & $303$ & $535$ \\
+    & and\_or\_mixed & $350$ & $582$ \\
     \midrule
     \multicolumn{4}{l}{\textit{SPP nestingDepth}} \\
-    & flat    & $147$ & $263$  \\
-    & shallow & $572$ & $1007$ \\
-    & medium  & $188$ & $304$  \\
-    & deep    & $170$ & $431$  \\
+    & flat    & $130$ & $130$ \\
+    & shallow & $210$ & $413$ \\
+    & medium  & $335$ & $509$ \\
+    & deep    & $402$ & $721$ \\
     \midrule
     \multicolumn{4}{l}{\textit{SPP predicateCombo}} \\
-    & none   & $7$   & $36$   \\
-    & single & $228$ & $344$  \\
-    & few    & $672$ & $1194$ \\
-    & many   & $170$ & $431$  \\
+    & single & $257$ & $344$  \\
+    & few    & $645$ & $1080$ \\
+    & many   & $175$ & $349$  \\
     \midrule
     \multicolumn{4}{l}{\textit{SPP paramType}} \\
-    & none   & $7$   & $36$   \\
-    & small  & $200$ & $345$  \\
-    & medium & $638$ & $1102$ \\
-    & large  & $232$ & $522$  \\
+    & none   & $147$ & $234$ \\
+    & small  & $232$ & $406$ \\
+    & medium & $352$ & $584$ \\
+    & large  & $346$ & $549$ \\
     \midrule
-    \multicolumn{2}{l}{\textbf{Corpus total}} & $\mathbf{1077}$ & $\mathbf{2005}$ \\
+    \multicolumn{2}{l}{\textbf{Corpus total}} & $\mathbf{1077}$ & $\mathbf{1773}$ \\
     \bottomrule
   \end{tabular}
 \end{table}

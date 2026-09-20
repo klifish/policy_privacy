@@ -1,0 +1,21 @@
+% Source of record: experiments/results/cost/circuit_depth_sweep.json
+%   (scripts/circuit_cost_sweep.js; Apple M1, 8 cores, rapidsnark prover, 5 proofs per
+%   depth, medians; benchmark-grade Groth16 setup, --O2 as the RC1 release build).
+% DEPTH=64 reproduces the RC1 constraint count exactly (81,740).
+\begin{table}[htbp]
+  \centering
+  \caption{Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$,
+    $M=11$ and the public interface fixed. On-chain verification cost does not change:
+    the statement keeps five public signals at every depth.}
+  \label{tab:cost-scaling}
+  \footnotesize
+  \begin{tabular}{rrrrrr}
+    \toprule
+    $\DEPTH$ & R1CS constraints & Proving key (MB) & Witness (ms) & Prove (ms) & Verify (ms) \\
+    \midrule
+    $32$  & $64{,}945$  & $38.7$ & $282$ & $382$ & $11$ \\
+    $64$  & $81{,}740$  & $52.2$ & $343$ & $494$ & $10$ \\
+    $128$ & $134{,}009$ & $87.5$ & $542$ & $730$ & $11$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}

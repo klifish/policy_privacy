@@ -4,58 +4,48 @@
 % AUC is the higher of logistic regression / random forest per contrast (the
 % "stronger attacker" leg used for gating).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05).
-% structureType has a 5th category, "trivial": single-atom policies with no boolean
-% connective (e.g. logicOriginal "GR" or "DS"), previously misclassified as and_only.
-% p_perm and the AUC-gap std are not emitted by the Python pipeline; %sig (the gating
-% significant-seed fraction) is retained, so the table now runs five columns.
-\begin{table}[H]
-  \caption{Structure \& Parameter Privacy: 28 pairwise contrasts across four annotation
-    axes, each over 30 policy-disjoint seeds. AUC is the higher-scoring of logistic
-    regression and random forest per contrast (the stronger-attacker classifier used for
-    the verdict). Every contrast passes: the four contrasts whose AUC exceeds $0.55$---all
-    separating the tiny \texttt{none}-predicate or \texttt{none}-parameter class from a
-    populated one---reach at most $20\%$ significant seeds, far short of the $50\%$ gate.}
+% AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
+% The nestingDepth medium/deep FAIL is analysed in
+% experiments/results/supervised/pad_residual_diagnostic.md.
+\begin{table}[htbp]
+  \caption{Structure \& Parameter Privacy: 21 pairwise contrasts across four annotation
+    axes over 30 policy-disjoint seeds (higher-scoring classifier per contrast). One
+    contrast, \texttt{nestingDepth} medium/deep, meets both legs of the criterion and is
+    reported as FAIL; Section~\ref{sec:eval-spp} traces it to the randomized pad target.}
   \label{tab:spp-contrasts}
   \centering\footnotesize
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccccl}
     \toprule
-    Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
+    Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ & Verdict \\
     \midrule
-    \multicolumn{5}{l}{\textit{structureType}} \\
-    trivial / or\_only                & $0.539 \pm 0.043$ & $0.042$ & $23\%$ & $156$ \\
-    trivial / and\_only                & $0.535 \pm 0.044$ & $0.042$ & $3\%$  & $78$  \\
-    trivial / negation\_heavy          & $0.508 \pm 0.046$ & $0.034$ & $3\%$  & $138$ \\
-    trivial / and\_or\_mixed           & $0.533 \pm 0.047$ & $0.047$ & $13\%$ & $108$ \\
-    and\_only / or\_only              & $0.531 \pm 0.050$ & $0.045$ & $10\%$ & $140$ \\
-    or\_only / negation\_heavy        & $0.520 \pm 0.036$ & $0.033$ & $10\%$ & $202$ \\
-    or\_only / and\_or\_mixed         & $0.489 \pm 0.026$ & $0.024$ & $0\%$  & $170$ \\
-    and\_only / negation\_heavy       & $0.512 \pm 0.041$ & $0.035$ & $3\%$  & $125$ \\
-    and\_only / and\_or\_mixed        & $0.513 \pm 0.059$ & $0.051$ & $0\%$  & $95$  \\
-    negation\_heavy / and\_or\_mixed  & $0.516 \pm 0.044$ & $0.038$ & $7\%$  & $155$ \\
+    \multicolumn{6}{l}{\textit{structureType}} \\
+    trivial / or\_only          & $0.520 \pm 0.048$ & $0.043$ & $0\%$  & $130$ & PASS \\
+    trivial / and\_only         & $0.502 \pm 0.040$ & $0.033$ & $3\%$  & $127$ & PASS \\
+    trivial / and\_or\_mixed    & $0.502 \pm 0.042$ & $0.034$ & $0\%$  & $144$ & PASS \\
+    or\_only / and\_only        & $0.506 \pm 0.034$ & $0.027$ & $0\%$  & $179$ & PASS \\
+    or\_only / and\_or\_mixed   & $0.518 \pm 0.035$ & $0.032$ & $10\%$ & $196$ & PASS \\
+    and\_only / and\_or\_mixed  & $0.503 \pm 0.040$ & $0.032$ & $7\%$  & $193$ & PASS \\
     \midrule
-    \multicolumn{5}{l}{\textit{predicateCombo}} \\
-    none / single   & $0.582 \pm 0.129$ & $0.130$ & $0\%$  & $74$  \\
-    none / few      & $0.629 \pm 0.099$ & $0.138$ & $20\%$ & $216$ \\
-    none / many     & $0.617 \pm 0.106$ & $0.119$ & $13\%$ & $59$  \\
-    single / few    & $0.515 \pm 0.036$ & $0.031$ & $7\%$  & $284$ \\
-    single / many   & $0.500 \pm 0.039$ & $0.029$ & $0\%$  & $127$ \\
-    few / many      & $0.483 \pm 0.029$ & $0.026$ & $0\%$  & $269$ \\
+    \multicolumn{6}{l}{\textit{predicateCombo}} \\
+    single / few                & $0.523 \pm 0.035$ & $0.033$ & $13\%$ & $271$ & PASS \\
+    single / many               & $0.519 \pm 0.048$ & $0.041$ & $7\%$  & $130$ & PASS \\
+    few / many                  & $0.527 \pm 0.048$ & $0.045$ & $17\%$ & $246$ & PASS \\
     \midrule
-    \multicolumn{5}{l}{\textit{paramType}} \\
-    none / small    & $0.543 \pm 0.115$ & $0.096$ & $3\%$  & $66$  \\
-    none / medium   & $0.612 \pm 0.080$ & $0.125$ & $17\%$ & $204$ \\
-    none / large    & $0.545 \pm 0.093$ & $0.086$ & $0\%$  & $78$  \\
-    small / medium  & $0.521 \pm 0.033$ & $0.030$ & $10\%$ & $263$ \\
-    small / large   & $0.513 \pm 0.048$ & $0.036$ & $0\%$  & $138$ \\
-    medium / large  & $0.486 \pm 0.023$ & $0.022$ & $0\%$  & $277$ \\
+    \multicolumn{6}{l}{\textit{paramType}} \\
+    none / small                & $0.571 \pm 0.046$ & $0.071$ & $40\%$ & $114$ & PASS \\
+    none / medium               & $0.525 \pm 0.035$ & $0.035$ & $3\%$  & $150$ & PASS \\
+    none / large                & $0.568 \pm 0.038$ & $0.069$ & $33\%$ & $148$ & PASS \\
+    small / medium              & $0.530 \pm 0.037$ & $0.037$ & $20\%$ & $175$ & PASS \\
+    small / large               & $0.504 \pm 0.036$ & $0.028$ & $3\%$  & $173$ & PASS \\
+    medium / large              & $0.493 \pm 0.027$ & $0.022$ & $0\%$  & $209$ & PASS \\
     \midrule
-    \multicolumn{5}{l}{\textit{nestingDepth}} \\
-    flat / shallow   & $0.522 \pm 0.040$ & $0.037$ & $13\%$ & $228$ \\
-    flat / medium    & $0.499 \pm 0.043$ & $0.036$ & $3\%$  & $106$ \\
-    flat / deep      & $0.490 \pm 0.033$ & $0.030$ & $0\%$  & $103$ \\
-    shallow / medium & $0.511 \pm 0.028$ & $0.023$ & $0\%$  & $240$ \\
-    shallow / deep   & $0.492 \pm 0.032$ & $0.026$ & $0\%$  & $237$ \\
-    medium / deep    & $0.492 \pm 0.040$ & $0.032$ & $0\%$  & $115$ \\
+    \multicolumn{6}{l}{\textit{nestingDepth}} \\
+    flat / shallow              & $0.522 \pm 0.038$ & $0.036$ & $3\%$  & $102$ & PASS \\
+    flat / medium               & $0.555 \pm 0.032$ & $0.055$ & $27\%$ & $140$ & PASS \\
+    flat / deep                 & $0.468 \pm 0.046$ & $0.047$ & $3\%$  & $160$ & PASS \\
+    shallow / medium            & $0.521 \pm 0.041$ & $0.039$ & $7\%$  & $164$ & PASS \\
+    shallow / deep              & $0.533 \pm 0.036$ & $0.039$ & $17\%$ & $184$ & PASS \\
+    medium / deep               & $0.563 \pm 0.028$ & $0.063$ & $53\%$ & $221$ & FAIL \\
     \bottomrule
   \end{tabular}
 \end{table}

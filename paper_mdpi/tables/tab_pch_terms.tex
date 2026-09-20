@@ -3,26 +3,26 @@
 % Policy Content Hiding -- supervised attack, multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5
 % (perm alpha=0.05); both legs required, else PASS.
-% p_perm and the AUC-gap std are not emitted by the Python pipeline; %sig (the gating
-% significant-seed fraction) is retained.
-\begin{table}[H]
+% AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
+\begin{table}[htbp]
   \centering
   \caption{Policy Content Hiding: per-term supervised attack over 30 policy-disjoint
-    seeds. Each DUO term is a one-vs-rest binary task. AUC is the higher-scoring of
-    logistic regression and random forest per task (Section~\ref{sec:eval-method}). \emph{\%sig} is the fraction of
-    seeds whose permutation test rejects at $\alpha{=}0.05$. All six tasks pass the
-    unified criterion.}
+    seeds (one-vs-rest tasks; higher-scoring classifier per task). All ten DUO tasks pass.}
   \label{tab:pch-terms}
   \begin{tabular}{lcccc}
     \toprule
     Term & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
     \midrule
-    DUO GR  & $0.507 \pm 0.027$ & $0.024$ & $3\%$  & $613$ \\
-    DUO DS  & $0.493 \pm 0.018$ & $0.015$ & $0\%$  & $613$ \\
-    DUO RS  & $0.526 \pm 0.022$ & $0.029$ & $37\%$ & $613$ \\
-    DUO POA & $0.496 \pm 0.018$ & $0.015$ & $3\%$  & $613$ \\
-    DUO GS  & $0.523 \pm 0.020$ & $0.027$ & $23\%$ & $613$ \\
-    DUO CC  & $0.495 \pm 0.026$ & $0.019$ & $0\%$  & $613$ \\
+    DUO GRU  & $0.540 \pm 0.026$ & $0.041$ & $23\%$ & $323$ \\
+    DUO DS   & $0.514 \pm 0.029$ & $0.027$ & $3\%$  & $323$ \\
+    DUO RS   & $0.498 \pm 0.028$ & $0.022$ & $0\%$  & $323$ \\
+    DUO POA  & $0.477 \pm 0.024$ & $0.027$ & $0\%$  & $323$ \\
+    DUO GS   & $0.502 \pm 0.027$ & $0.023$ & $0\%$  & $323$ \\
+    DUO CC   & $0.515 \pm 0.029$ & $0.025$ & $3\%$  & $323$ \\
+    DUO NCU  & $0.528 \pm 0.027$ & $0.031$ & $7\%$  & $323$ \\
+    DUO HMB  & $0.509 \pm 0.027$ & $0.024$ & $3\%$  & $323$ \\
+    DUO NMDS & $0.516 \pm 0.030$ & $0.025$ & $3\%$  & $323$ \\
+    DUO GSO  & $0.502 \pm 0.031$ & $0.026$ & $3\%$  & $323$ \\
     \bottomrule
   \end{tabular}
 \end{table}
