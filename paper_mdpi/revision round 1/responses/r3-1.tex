@@ -9,10 +9,11 @@
 	We agree that this is the main architectural limitation, and the revision states it as such in the Problem, Discussion, and Conclusion sections.
 	The distinction the reviewer asks for is now made in two places.
 	The trust-model subsection separates authorization correctness, which the commitment and the on-chain verification enforce regardless of the TPS (and which the revised relation strengthens by binding the program length, the authorization context, and the issuer-signed claims), from policy confidentiality, which is not cryptographically enforced against the TPS and rests on the service following its workflow; it also names what a compromised or colluding TPS can do (expose policy and evidence, substitute unsigned evidence, refuse to prove) and notes that the provider-operated TPS of the evaluation concentrates that trust at the provider.
-	A new threat/guarantee table then lists, for the public-chain observer, the requester, an honest-but-curious TPS, a compromised or colluding TPS, the provider-operated TPS, and a forged issuer, which of policy confidentiality, authorization correctness, liveness, and accountability is cryptographic, TPS-dependent, external, or not provided.
+	A new threat/guarantee table then distinguishes the public-chain observer, untrusted requester, workflow-following TPS, compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers across policy confidentiality, authorization correctness, liveness, and decision auditability.
+	A note below the table states that the provider-operated deployment used in the evaluation concentrates every TPS-dependent assumption at the provider.
 
 	The claim is scoped accordingly: what the evaluation establishes is what a public-chain observer can infer from the artifacts a workflow-following TPS produces, and the abstract, Discussion, and Conclusion say that confidentiality against the service itself is a trust assumption, not a cryptographic property.
-	The Discussion also names the mechanisms that would relocate that trust---collaborative-SNARK or attested proof generation so that no single party sees both policy and evidence, a holder-signed authorization context so that the service cannot reuse evidence it has seen, and accountable proof obligations so that refusals become attributable---and the Related Work section now relates this to self-sovereign-identity designs in which claim release is holder-controlled (Comment~5).
+	The Discussion also names the mechanisms that would relocate that trust---collaborative-SNARK or attested proof generation so that no single party sees both policy and evidence, a holder-signed authorization context so that the service cannot reuse evidence it has seen, and accountable proof obligations so that refusals become attributable---and the Related Work section now relates this to self-sovereign-identity designs with holder-authorized presentation (Comment~5).
 
 	\textbf{Changes in the manuscript.}
 	The trust distinction is stated explicitly in the system model, summarized in a new threat/guarantee matrix, interpreted as the principal architectural trade-off in the Discussion, and carried into the limitations and future directions of the Conclusion.
@@ -26,29 +27,24 @@
 		Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 		Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 		Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-		Table~3 summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+		Table~3 summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``What each guarantee of TPS-ZKPI rests on, per threat.''}
+	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``Guarantees under each actor or failure mode.''}
 	\begin{revisiontable}
-		\noindent\textbf{Table~3.} What each guarantee of TPS-ZKPI rests on, per threat. C: cryptographic (commitment binding, proof soundness and zero knowledge, credential signature, on-chain checks); T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype.
-		\begin{longtable}{p{0.17\textwidth}p{0.19\textwidth}p{0.22\textwidth}p{0.13\textwidth}p{0.16\textwidth}}
+		\noindent\textbf{Table~3.} Guarantees under each actor or failure mode.
+		\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
 			\toprule
-			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
 			\midrule
 			\endfirsthead
 			\toprule
-			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
 			\midrule
 			\endhead
-			Passive public-chain observer & C (proof, commitments) + empirical (gas padding) & C & n/a & C (recorded outcome) \\
-			Requester (untrusted) & C: sees only the public view & C: cannot forge a proof or reuse one in another context & n/a & C \\
-			Honest-but-curious TPS & T: TPS holds plaintext policy and evidence & C & T & -- \\
-			Compromised or colluding TPS & --: policy and evidence exposed & C for committed relation; T for origin of unsigned evidence & --: may refuse to prove & --: refusal indistinguishable from denial \\
-			Provider-operated TPS (this evaluation) & T, concentrated at the provider & C & T & -- \\
-			Forged or unauthorized issuer & n/a & C against forgery under the committed key; E for issuer legitimacy and revocation & n/a & E \\
-			\bottomrule
+			\input{../tables/tab_threat_guarantee_rows.tex}
 		\end{longtable}
+		\noindent\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
 	\end{revisiontable}
 
 	\RevisionLocation{Section ``Discussion,'' paragraphs on the TPS trust trade-off and reduced-trust directions.}

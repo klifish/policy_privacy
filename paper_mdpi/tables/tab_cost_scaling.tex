@@ -1,7 +1,7 @@
 % Source of record: experiments/results/cost/circuit_depth_sweep.json
 %   (scripts/circuit_cost_sweep.js; Apple M1, 8 cores, rapidsnark prover, 5 proofs per
-%   depth, medians; benchmark-grade Groth16 setup, --O2 as the RC1 release build).
-% DEPTH=64 reproduces the RC1 constraint count exactly (81,740).
+%   depth, medians; benchmark-grade Groth16 setup, --O2 as the evaluated prototype build).
+% DEPTH=64 reproduces the implemented circuit's constraint count exactly (81,740).
 \begin{table}[htbp]
   \centering
   \caption{Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$,

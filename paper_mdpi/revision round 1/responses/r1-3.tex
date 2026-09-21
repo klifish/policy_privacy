@@ -54,7 +54,7 @@
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
 	\begin{revisiontext}
 		Attribute-origin guarantees depend on the evidence type.
-		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+		For DUO terms evaluated from the claims in an issuer-signed profile credential presented by the requester (hereafter, profile-backed terms), the prototype verifies the EdDSA-Poseidon credential under an issuer key selected by the provider and bound to the policy commitment.
 		The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
 		Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
 		This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.

@@ -4,7 +4,7 @@
 \subsection{System and Trust Model}
 \label{subsec:trust-model}
 
-We consider a blockchain-based healthcare data-sharing system in which two types of users interact to share data: 1. data providers, who provide protected resources and govern access to them through consent policies, and 2. data requesters, who seek access to these resources subject to those policies.
+We consider a blockchain-based healthcare data-sharing system with two user roles: \textit{data providers}, who provide protected resources and govern access through consent policies, and \textit{data requesters}, who seek access to those resources subject to the applicable policies.
 TPS-ZKPI mediates this interaction through three components: a TPS operating off-chain, an on-chain access-control manager (ACM), and a data access layer.
 The provider defines a consent policy $P$ for a protected resource on behalf of the data subject whose consent it encodes, and registers an on-chain commitment $h$ to the encoded policy.
 The requester seeks access by submitting policy-relevant authorization evidence, such as attributes, credentials, and access context.
@@ -14,32 +14,22 @@ The ACM verifies the proof on-chain and records the authorization outcome, while
 
 TPS-ZKPI relies on the following assumptions.
 First, policies are provider-controlled: the provider is responsible for defining the applicable consent policy and committing the corresponding policy instance on-chain.
-Second, the TPS is trusted to preserve the confidentiality of policy-bound proving material and requester-submitted authorization evidence, and to follow the prescribed proof-generation
-workflow.
+Second, the TPS is trusted to preserve the confidentiality of policy-bound proving material and requester-submitted authorization evidence, and to follow the prescribed proof-generation workflow.
 Third, the commitment scheme is assumed to be hiding and binding, and the zero-knowledge proof system is assumed to satisfy completeness, soundness, and zero knowledge with respect to the implemented policy-compliance relation.
-Credential issuance, revocation, and real-world identity verification are treated as
-external functions.
+Issuer governance, credential issuance and revocation, and real-world identity verification are treated as external lifecycle functions.
 
-Conceptually, the TPS is an independent proof service, distinct from the provider; this
-separation is what makes relocating trust meaningful, since it prevents the provider from
-being the single party that holds both the policy and the requester evidence. Possible
-instantiations of such an independent service include a third-party proof service, a
-TEE-backed proof service that makes the trust assumption hardware-attested, or
-MPC/collaborative SNARK proof generation in which no single party sees both policy
-material and requester evidence.
+Conceptually, the TPS is an independent proof service, distinct from the provider; this separation is what makes relocating trust meaningful, since it prevents the provider from being the single party that holds both the policy and the requester evidence. Possible instantiations of such an independent service include a third-party proof service, a TEE-backed proof service that makes the trust assumption hardware-attested, or MPC/collaborative SNARK proof generation in which no single party sees both policy material and requester evidence. For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS). This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
 
-For implementation and evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
-This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
 Two guarantees must be distinguished here.
 Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-Table~\ref{tab:threat-guarantee} summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
 \input{tables/tab_threat_guarantee.tex}
 
 Attribute-origin guarantees depend on the evidence type.
-For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+For DUO terms evaluated from the claims in an issuer-signed profile credential presented by the requester (hereafter, profile-backed terms), the prototype verifies the EdDSA-Poseidon credential under an issuer key selected by the provider and bound to the policy commitment.
 The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
 Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
 This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.

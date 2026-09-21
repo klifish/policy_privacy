@@ -52,12 +52,12 @@
 	The Design section now defines the context digest and the five-signal statement, explains the circuit and ACM checks, and removes the former future-work language.
 	The Problem and Threat Model section now distinguishes the issuer-authenticated profile claims from other evidence, separates the pseudonymous requester identifier from real-world identity and issuer governance, and identifies adaptive requester probing and off-chain side channels as outside the present evaluation.
 	The response reports the measured marginal cost, while the Discussion states the scope of the resulting guarantee.
-	The cost profile now reports the final RC1 circuit and public interface together with the revised Polygon Amoy gas, calldata, and prover measurements.
+	The cost profile now reports the implemented circuit and public interface together with the revised Polygon Amoy gas, calldata, and prover measurements.
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
 	\begin{revisiontext}
 		Attribute-origin guarantees depend on the evidence type.
-		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+		For DUO terms evaluated from the claims in an issuer-signed profile credential presented by the requester (hereafter, profile-backed terms), the prototype verifies the EdDSA-Poseidon credential under an issuer key selected by the provider and bound to the policy commitment.
 		The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
 		Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
 		This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
@@ -115,9 +115,9 @@
 		Moreover, $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier and is not, by itself, proof of a real-world identity or of the origin of every private attribute.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' Table ``Single-point cost profile of the final RC1 configuration at $\mathsf{DEPTH}=64$.''}
+	\RevisionLocation{Section ``Privacy Evaluation,'' Table ``Single-point cost profile of the evaluated prototype configuration at $\mathsf{DEPTH}=64$.''}
 	\begin{revisiontable}
-		\noindent\textbf{Single-point cost profile of the final RC1 configuration at $\mathsf{DEPTH}=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.}
+		\noindent\textbf{Single-point cost profile of the evaluated prototype configuration at $\mathsf{DEPTH}=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.}
 		\begin{center}
 		\begin{tabular}{p{0.34\textwidth}p{0.54\textwidth}}
 			\toprule

@@ -3,15 +3,13 @@
 \label{sec:eval-method}
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
-The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by test AUC against the chance level of $0.5$. Its outcome serves as the main privacy verdict. The supervised adversary has strictly more information than the unsupervised one, and is thus the stronger of the two. Because this adversary is harder to defeat, a PASS under the supervised test is the more conservative verdict.
+The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by AUC against the chance level of $0.5$. Its outcome serves as the main privacy verdict. The supervised adversary has strictly more information than the unsupervised one, and is thus the stronger of the two. Because this adversary is harder to defeat, a PASS under the supervised test is the more conservative verdict.
 The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
 
-\noindent\textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicy}), generate the Groth16 proof locally in the role of the provider-operated TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBound}).
+\textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicy}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBound}).
 The provider-to-TPS and requester-to-TPS exchanges are in-process calls: they use no public channel and produce no on-chain artifacts. They therefore do not affect the observables of Section~\ref{sec:eval-threat}, which are extracted from the resulting transaction receipts, calldata, and event logs.
 
-Both methods run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, randomized gas padding).
-The corpus composition and the two-layer execution design that supplies balanced PI pairs are detailed in Section~\ref{sec:eval-dataset} and Table~\ref{tab:corpus}. Per-task sample sizes are listed in the result tables.
-The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review).
+Both methods run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, randomized gas padding). The dataset, attack code, and verdict files are released as an accompanying artifact (anonymized for review).
 
 \subsubsection{Supervised attacks}
 Each objective is operationalized as a set of binary \emph{tasks}, each defined by one hidden label to be recovered from the observables: detecting the presence of a specific data-use term or disease chapter (PCH, Section~\ref{sec:eval-pch}), distinguishing executions of two policies (PI, Section~\ref{sec:eval-pi}), or separating two structural buckets (SPP, Section~\ref{sec:eval-spp}).
@@ -19,15 +17,18 @@ For every task we train a linear and a non-linear classifier (logistic regressio
 Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} (the same $70/30$ ratio in each of PCH, PI, and SPP): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies.
 Because the split assigns whole policies rather than individual executions, we cannot partition executions to hit the target class proportions exactly. For each seed we therefore approximate stratification by sampling many candidate splits (512 per seed in our runs) and keeping the one whose per-class test proportions are closest to $70/30$.
 Here a class is one side of the binary task (the positive or negative value of its hidden label). By keeping each class's test share close to the target ratio, the candidate search ensures every seed's test set contains both classes, so each seed's AUC is estimated on a two-class test set.
+
 For each seed we assess the AUC with a label-permutation test.
 The classifier is trained once and its test-set probability outputs are fixed; the test-set labels are then shuffled $N{=}500$ times, and the AUC is recomputed against the fixed probabilities on each shuffle, giving the null distribution of the AUC under no association between scores and labels.
 The empirical $p$-value is $(b+1)/(N+1)$, where $b$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; the added counts keep the $p$-value away from an exact zero. The seed is counted as significant when this $p$-value falls below $\alpha{=}0.05$.
 
 For each task, the result tables report the AUC averaged over seeds ($\mathrm{AUC}_{\text{mean}}$) and the mean per-seed distance from chance, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap).
-Because the gap averages per-seed absolute deviations, it is generally larger than $|\mathrm{AUC}_{\text{mean}}-0.5|$ computed from the mean AUC.
-This AUC gap is an empirical, sample-estimated diagnostic, not the advantage of a formal cryptographic distinguisher and not a proven security bound.
-Unlike accuracy, whose chance level shifts with the number of classes, AUC is insensitive to class count and prevalence: a one-vs-rest AUC is a prevalence-weighted average of pairwise AUCs, so the results are not tied to the class counts of our generated corpus.
-Under any number of circulating classes, the one-vs-rest AUC decomposes into pairwise contrasts of the kind that PI and SPP measure directly; if every pairwise contrast sits at chance, so does any prevalence-weighted average of them.
+Because the gap is computed before averaging, deviations above and below $0.5$ cannot cancel.
+Consequently, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ is always at least as large as $|\mathrm{AUC}_{\text{mean}}-0.5|$.
+
+Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
+Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
+
 The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction---the fraction of seeds whose per-seed permutation test rejects at $\alpha{=}0.05$, reported as \%sig in the result tables.
 The verdict is:
 %
@@ -36,21 +37,26 @@ The verdict is:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-Both conditions of this \emph{double criterion} are required: a high AUC that does not reproduce across seeds is not a leak, and neither is a reproducibly significant but near-chance AUC.
+Both conditions of this \emph{double criterion} are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A task that does not satisfy both conditions is labeled PASS under this operational criterion; PASS does not constitute proof of zero leakage.
 
-\noindent\textbf{Choice of thresholds.} The two thresholds are application-set rather than derived, and we justify them by what each leg guards against.
-The AUC threshold of $0.55$ asks for an effect at least twice the seed-to-seed standard deviation of the AUC on our task sizes ($0.02$--$0.03$ for the DUO tasks, $0.06$--$0.08$ for the smaller ICD-10 tasks), so that a task cannot fail on the sampling noise of a single split; the $50\%$ threshold asks that the permutation test reject in a majority of the $30$ policy-disjoint splits, so that a task cannot fail on one lucky partition either.
-A single leg is not enough: with the AUC leg alone, $4$ PCH tasks and $4$ SPP contrasts would fail at $0.55$ ($8$ and $12$ at $0.52$), and with the significance leg alone the same two tasks fail at $50\%$ but three SPP contrasts at $30\%$.
-The conclusions are insensitive to the exact values: re-evaluating every task from its recorded per-seed AUCs and $p$-values over AUC thresholds $0.52$--$0.60$ and significance fractions $0.3$--$0.7$ fails at most the two tasks discussed in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} whenever the significance fraction is at least $0.5$, adds at most two further SPP contrasts when it is lowered to $0.3$--$0.4$, and fails nothing once it reaches $0.6$.
-The criterion has a measurable false-positive rate, because the padded gas contains a per-policy random draw and the coverage-layer policies are executed once, so the $30$ seeds resample the same draws: replacing the two gas features by policy-independent draws from the padding bands and rerunning the whole pipeline ten times produces at least one spurious PCH failure in four of the ten replicates (a per-task rate of $3\%$; none on SPP).
-We therefore treat a failure as a prompt to examine what the classifier separates rather than as proof of leakage, and Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} do so by subtracting the logged pad target from the access gas, an explanatory analysis that does not alter the criterion or the verdicts.
+\noindent\textbf{Operational thresholds and sensitivity.}
+The PASS/FAIL labels summarize residual distinguishability under the evaluated attacks; they do not by themselves establish the effectiveness of the defense.
+The AUC threshold imposes an operational effect-size floor of $0.05$ above chance, while the stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
+Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
 
-Tasks whose test split contains fewer than $20$ executions (median over the 30 seeded splits) are \emph{underpowered}---reported but excluded from the verdict, so a small task's sampling noise cannot decide it.
-The double criterion is applied to LR and RF independently for each task; a task fails if either classifier meets both conditions, and the result tables report the stronger (higher-AUC) classifier for each task.
+Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
+At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none.
+In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
+We therefore treat FAIL as a diagnostic flag and examine the two observed failures in the corresponding result sections without changing their verdicts.
 
-As established in Section~\ref{sec:eval-threat}, the transcript normalization leaves gas as the only policy-dependent channel; the LR/RF feature set is therefore the two gas measurements.
-A near-chance result alone cannot show whether the defense works or the attacker is simply too weak to find any signal.
-We therefore pair the main results with the gas-normalization positive control in Section~\ref{sec:eval-ablation}: the same features, splits, and classifiers recover signal on the un-padded gas transcript, and that signal collapses after padding.
+The effectiveness of gas normalization is assessed separately by the paired gas-normalization ablation.
+Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.
+Thus, the PASS/FAIL criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
+
+Tasks with a median test-set size below $20$ are reported as \emph{underpowered} and excluded from the verdict.
+The criterion is applied independently to LR and RF; a task fails if either classifier satisfies both conditions, and the result tables report the classifier with the higher mean AUC.
+
+The classifiers use the commit and access gas measurements, the only modeled policy-dependent channel remaining after transcript normalization.
 
 \subsubsection{Unsupervised clustering attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.

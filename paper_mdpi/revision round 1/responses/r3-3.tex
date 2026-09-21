@@ -20,17 +20,17 @@
 
 	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' paragraph ``Scope of the supported policies.''}
 	\begin{revisiontext}
-		The policy class is deliberately restricted, and Table~4 states what the RC1 prototype establishes end-to-end.
-		Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $64$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
+		The policy class is deliberately restricted, and Table~4 states what the prototype establishes end-to-end.
+		Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
 		Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state; profile-backed terms establish possession of issuer-signed claims, not conformity of subsequent data use with a declared purpose.
-		A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, negation is rejected by the DUO compiler, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
+		A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
 		On-chain policy revocation and resource rebinding affect future authorization decisions only; they do not retract data already released or enforce cessation or deletion after access.
-		The prototype is therefore an access-time consent checker for bounded Boolean policies over standardized terms, not a general consent-language engine.
+		Accordingly, the prototype is an access-time consent checker for bounded Boolean policies over standardized terms.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' new Table~4, ``Consent-policy features and how far the RC1 prototype establishes them.''}
+	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' new Table~4, ``Consent-policy features and how far the prototype establishes them.''}
 	\begin{revisiontable}
-		\noindent\textbf{Table~4.} Consent-policy features and how far the RC1 prototype establishes them. ``In-circuit'' means the condition is part of the proved relation; ``on-chain'' means the ACM enforces it from public state; ``committed'' means the value is bound into the policy but compliance is not decided at request time.
+		\noindent\textbf{Table~4.} Consent-policy features and how far the prototype establishes them. ``In-circuit'' means the condition is part of the proved relation; ``on-chain'' means the ACM enforces it from public state; ``committed'' means the value is bound into the policy but compliance is not decided at request time.
 		\begin{longtable}{p{0.30\textwidth}p{0.18\textwidth}p{0.44\textwidth}}
 			\toprule
 			Consent feature & Status & What is established at authorization time \\

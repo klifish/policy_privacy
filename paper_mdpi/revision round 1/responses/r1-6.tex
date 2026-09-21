@@ -9,30 +9,36 @@
 	We thank the reviewer for this request; the thresholds are indeed application-set, and the revised methodology now justifies each leg and reports a sensitivity analysis.
 
 	\textbf{Justification.}
-	The AUC threshold of $0.55$ asks for an effect at least twice the seed-to-seed standard deviation of the AUC on our task sizes ($0.02$--$0.03$ for the DUO tasks, $0.06$--$0.08$ for the smaller ICD-10 tasks), so that a task cannot fail on the sampling noise of a single split.
-	The $50\%$ threshold asks that the permutation test reject in a majority of the $30$ policy-disjoint splits, so that a task cannot fail on one lucky partition.
-	Neither leg suffices alone: with the AUC leg only, $4$ PCH tasks and $4$ SPP contrasts would fail at $0.55$ ($8$ and $12$ at $0.52$); with the significance leg only, three SPP contrasts would fail at $30\%$.
+	The AUC threshold of $0.55$ requires a mean separation of more than $0.05$ from chance, while the $50\%$ threshold requires the permutation test to reject in at least $15$ of the $30$ policy-disjoint splits.
+	Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
+	Both conditions must hold for a FAIL verdict.
 
 	\textbf{Sensitivity analysis.}
 	The analysis pipeline now records every task's per-seed AUCs and permutation $p$-values, and a new script re-applies the criterion over AUC thresholds $\{0.52, 0.55, 0.58, 0.60\}$ and significance fractions $\{0.3, 0.4, 0.5, 0.6, 0.7\}$ without retraining.
 	Whenever the significance fraction is at least $0.5$, at most the two tasks that fail at the of-record thresholds (ICD ch5 and nesting-depth medium/deep) fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts; raising it to $0.6$ fails nothing.
 	The PI verdict is unchanged in every cell.
-	The conclusions therefore do not depend on the exact values.
+	Thus, the exact failure count varies with the operating point, but the qualitative conclusion---that the evaluation shows no widespread leakage---is stable across the grid.
 
-	\textbf{False-positive rate.}
-	The same analysis exposed a property of the criterion that we now state openly.
+	\textbf{Null calibration.}
+	We also calibrated how often the operational criterion produces spurious flags under policy-independent features.
 	The padded access gas contains a per-policy random draw (the pad target), and the coverage-layer policies are executed once, so the $30$ seeds resample the same draws; a coincidence between the draws and a label reproduces across seeds.
 	Replacing the two gas features by policy-independent draws from the padding bands and rerunning the entire pipeline ten times produced at least one spurious PCH failure in four of the ten replicates (a per-task rate of about $3\%$; none on SPP).
 	The two failures in the of-record run are of exactly this kind: subtracting the logged target from the access gas returns both to PASS (Comment~5).
 	We kept the criterion as stated, report the failures, and treat a failure as a prompt to examine what the classifier separates; the manuscript now says so.
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Attack methodology,'' new paragraph ``Choice of thresholds.''}
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Attack methodology,'' paragraph ``Operational thresholds and sensitivity'': the operational AUC and stability conditions, threshold-sensitivity and null-calibration results, and the paired-ablation basis for the effectiveness claim.}
 	\begin{revisiontext}
-		The two thresholds are application-set rather than derived, and we justify them by what each leg guards against.
-		The AUC threshold of $0.55$ asks for an effect at least twice the seed-to-seed standard deviation of the AUC on our task sizes ($0.02$--$0.03$ for the DUO tasks, $0.06$--$0.08$ for the smaller ICD-10 tasks), so that a task cannot fail on the sampling noise of a single split; the $50\%$ threshold asks that the permutation test reject in a majority of the $30$ policy-disjoint splits, so that a task cannot fail on one lucky partition either.
-		A single leg is not enough: with the AUC leg alone, $4$ PCH tasks and $4$ SPP contrasts would fail at $0.55$ ($8$ and $12$ at $0.52$), and with the significance leg alone the same two tasks fail at $50\%$ but three SPP contrasts at $30\%$.
-		The conclusions are insensitive to the exact values: re-evaluating every task from its recorded per-seed AUCs and $p$-values over AUC thresholds $0.52$--$0.60$ and significance fractions $0.3$--$0.7$ fails at most the two tasks discussed in the PCH and SPP sections whenever the significance fraction is at least $0.5$, adds at most two further SPP contrasts when it is lowered to $0.3$--$0.4$, and fails nothing once it reaches $0.6$.
-		The criterion has a measurable false-positive rate, because the padded gas contains a per-policy random draw and the coverage-layer policies are executed once, so the $30$ seeds resample the same draws: replacing the two gas features by policy-independent draws from the padding bands and rerunning the whole pipeline ten times produces at least one spurious PCH failure in four of the ten replicates (a per-task rate of $3\%$; none on SPP).
-		We therefore treat a failure as a prompt to examine what the classifier separates rather than as proof of leakage, and the PCH and SPP sections do so by subtracting the logged pad target from the access gas, an explanatory analysis that does not alter the criterion or the verdicts.
+		The PASS/FAIL labels summarize residual distinguishability under the evaluated attacks; they do not by themselves establish the effectiveness of the defense.
+		The AUC threshold imposes an operational effect-size floor of $0.05$ above chance, while the stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
+		Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
+
+		Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
+		At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none.
+		In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
+		We therefore treat FAIL as a diagnostic flag and examine the two observed failures in the corresponding result sections without changing their verdicts.
+
+		The effectiveness of gas normalization is assessed separately by the paired gas-normalization ablation.
+		Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.
+		Thus, the PASS/FAIL criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
 	\end{revisiontext}
 \end{reviewresponse}

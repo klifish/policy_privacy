@@ -17,9 +17,10 @@
 	The provider-operated TPS used in the evaluation concentrates this trust at the provider.
 
 	Second, we added the requested matrix (the threat/guarantee table in the revised Problem and Threat Model section).
-	Its rows are the threats---passive public-chain observer, untrusted requester, honest-but-curious TPS, compromised or colluding TPS, provider-operated TPS, and forged or unauthorized issuer---and its columns the four guarantees the workflow provides: policy confidentiality, authorization correctness, liveness, and accountability.
-	Each cell states whether the guarantee is cryptographic (C), rests on the TPS following its workflow (T), is an external or lifecycle function (E), or is not provided (--).
-	The matrix makes the practical implications visible at a glance: against a compromised TPS the prototype keeps authorization correctness for the committed relation but loses confidentiality, liveness (a refusal is indistinguishable from a legitimate denial), and accountability; the Discussion lists accountable proof obligations and reduced-trust proving (collaborative SNARKs, attested execution) as the mechanisms that would recover them.
+	Its rows distinguish the passive public-chain observer, untrusted requester, workflow-following TPS, compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers; its columns cover policy confidentiality, authorization correctness, liveness, and decision auditability.
+	Each cell states whether the guarantee is cryptographic (C), rests on the TPS following its workflow (T), is an external or lifecycle function (E), is not provided (--), or is not applicable (n/a).
+	The matrix makes the practical implications visible at a glance: against a compromised TPS, the prototype retains authorization correctness for the committed relation and signed claims but loses confidentiality and liveness; submitted decisions remain auditable, whereas a refusal to prove is not attributable.
+	A note below the table states that the evaluated provider-operated deployment concentrates every TPS-dependent assumption at the provider.
 
 	\textbf{Changes in the manuscript.}
 	The revised trust model states the cryptographic and TPS-dependent guarantees separately, the new matrix makes the distinction explicit for every threat, and the Discussion identifies the practical consequences and reduced-trust directions.
@@ -33,29 +34,24 @@
 		Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 		Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 		Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-		Table~3 summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+		Table~3 summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``What each guarantee of TPS-ZKPI rests on, per threat.''}
+	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``Guarantees under each actor or failure mode.''}
 	\begin{revisiontable}
-		\noindent\textbf{Table~3.} What each guarantee of TPS-ZKPI rests on, per threat. C: cryptographic (commitment binding, proof soundness and zero knowledge, credential signature, on-chain checks); T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype.
-		\begin{longtable}{p{0.17\textwidth}p{0.19\textwidth}p{0.22\textwidth}p{0.13\textwidth}p{0.16\textwidth}}
+		\noindent\textbf{Table~3.} Guarantees under each actor or failure mode.
+		\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
 			\toprule
-			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
 			\midrule
 			\endfirsthead
 			\toprule
-			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
 			\midrule
 			\endhead
-			Passive public-chain observer & C (proof, commitments) + empirical (gas padding) & C & n/a & C (recorded outcome) \\
-			Requester (untrusted) & C: sees only the public view & C: cannot forge a proof or reuse one in another context & n/a & C \\
-			Honest-but-curious TPS & T: TPS holds plaintext policy and evidence & C & T & -- \\
-			Compromised or colluding TPS & --: policy and evidence exposed & C for committed relation; T for origin of unsigned evidence & --: may refuse to prove & --: refusal indistinguishable from denial \\
-			Provider-operated TPS (this evaluation) & T, concentrated at the provider & C & T & -- \\
-			Forged or unauthorized issuer & n/a & C against forgery under the committed key; E for issuer legitimacy and revocation & n/a & E \\
-			\bottomrule
+			\input{../tables/tab_threat_guarantee_rows.tex}
 		\end{longtable}
+		\noindent\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
 	\end{revisiontable}
 
 	\RevisionLocation{Section ``Discussion,'' paragraph on the TPS trust trade-off.}

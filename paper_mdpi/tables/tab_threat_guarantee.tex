@@ -1,26 +1,23 @@
-% Threat/guarantee matrix for the trust model of Section 3.1 (reviewer request).
-% Rows: parties or failure modes. Columns: the four guarantees the workflow provides.
+% Threat/guarantee matrix for the trust model (reviewer request).
+% Rows: actors or failure modes. Columns: the four scoped guarantees.
 % Cell values: C = enforced cryptographically (commitment binding, Groth16 soundness/ZK,
 %   EdDSA-Poseidon unforgeability, on-chain checks); T = holds only if the TPS follows
 %   the prescribed workflow; E = external/lifecycle function; -- = not provided.
 \begin{table}[htbp]
-  \centering\footnotesize
-  \caption{What each guarantee of TPS-ZKPI rests on, per threat. C: cryptographic
-    (commitment binding, proof soundness and zero knowledge, credential signature,
-    on-chain checks); T: trust in the TPS following the prescribed workflow; E: external
-    or lifecycle function; --: not provided by the prototype.}
+  \centering\small
+  \caption{Guarantees under each actor or failure mode.}
   \label{tab:threat-guarantee}
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{p{0.18\linewidth}p{0.20\linewidth}p{0.22\linewidth}p{0.13\linewidth}p{0.16\linewidth}}
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.12}
+  \begin{tabular}{>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}p{0.23\linewidth}>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}p{0.10\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}}
     \toprule
-    Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+    Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
     \midrule
-    Passive public-chain observer & C (proof, commitments) + empirical (gas padding) & C & n/a & C (recorded outcome) \\
-    Requester (untrusted) & C: sees only the public view & C: cannot forge a proof or reuse one in another context & n/a & C \\
-    Honest-but-curious TPS & T: TPS holds plaintext policy and evidence & C & T & -- \\
-    Compromised or colluding TPS & --: policy and evidence exposed & C for committed relation; T for origin of unsigned evidence & --: may refuse to prove & --: refusal indistinguishable from denial \\
-    Provider-operated TPS (this evaluation) & T, concentrated at the provider & C & T & -- \\
-    Forged or unauthorized issuer & n/a & C against forgery under the committed key; E for issuer legitimacy and revocation & n/a & E \\
-    \bottomrule
+    \input{tables/tab_threat_guarantee_rows.tex}
   \end{tabular}
+
+  \vspace{0.4em}
+  \begin{minipage}{0.98\linewidth}
+    \footnotesize\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
+  \end{minipage}
 \end{table}
