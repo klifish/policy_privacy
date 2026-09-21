@@ -7,10 +7,40 @@
 	For the two examples: the workflow figure's caption is now ``TPS-assisted policy-compliance workflow (steps are described in the text),'' with the step numbering explained in the Overview paragraph; the ablation table's caption is now two lines, with the selection rule for its rows and the reading of $\Delta_{\text{leak}}$ stated in the ablation section.
 	The captions of the corpus, PCH, SPP, PI, clustering, related-work, and cost tables and of the two result figures were shortened in the same way.
 
-	\RevisionLocation{Captions of Figures~1, 2, and 3 and of all result tables.}
+	\textbf{Changes in the manuscript.}
+	The revised captions are reproduced below; methodological explanations and selection rules now appear in the surrounding prose instead of the captions.
+
+	\RevisionLocation{Captions of Figures~1, 2, and 3.}
 	\begin{revisiontext}
-		TPS-assisted policy-compliance workflow (steps are described in the text).
-		[\ldots]
-		Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed randomized padding) on the same 1119-execution subset; supervised rows are the largest-signal contrasts per experiment (random-forest AUC).
+		Figure~1. TPS-assisted policy-compliance workflow (steps are described in the text).
+
+		Figure~2. Unsupervised K-Means clustering across all three objectives: ARI (top) and NMI (bottom) per target.
+
+		Figure~3. Gas-padding ablation over all $45$ supervised contrasts: unpadded versus padded deviation from chance, colored by the sign of the $95\%$ interval of $\Delta_{\text{leak}}$.
+	\end{revisiontext}
+
+	\RevisionLocation{Captions of the Privacy Evaluation result and cost tables (Tables~6--16).}
+	\begin{revisiontext}
+		Table~6. Composition of the shared policy corpus (generator seed \texttt{unified-\allowbreak decoupled-\allowbreak 2026}). DUO terms are multi-label, so their counts overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis partitions the full corpus.
+
+		Table~7. Headline supervised results on the Polygon Amoy dataset (30 policy-disjoint seeds; a task fails iff AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant).
+
+		Table~8. Policy Content Hiding: per-term supervised attack over 30 policy-disjoint seeds (one-vs-rest tasks; higher-scoring classifier per task). All ten DUO tasks pass.
+
+		Table~9. Policy Content Hiding: per-chapter ICD-10 supervised attack over 30 policy-disjoint seeds (higher-scoring classifier per chapter).
+
+		Table~10. Policy Indistinguishability: single-execution distinguisher over 30 policy-disjoint seeds, by policy-pair type (higher-scoring classifier per type). \texttt{controlled\_difference} is reported for reference and excluded from the PI verdict. All gating rows pass.
+
+		Table~11. Structure \& Parameter Privacy: 21 pairwise contrasts across four annotation axes over 30 policy-disjoint seeds (higher-scoring classifier per contrast).
+
+		Table~12. Unsupervised clustering attack (K-Means, $K$ = number of classes, $K{=}2$ for pairs) on the on-chain gas features, with the permutation $p$-value of ARI. PCH clusters all executions globally.
+
+		Table~13. Sample-size sensitivity of NMI and ARI under the null hypothesis where all classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row).
+
+		Table~14. Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed randomized padding) on the same 1119-execution subset; supervised rows are the largest-signal contrasts per experiment (random-forest AUC).
+
+		Table~15. Single-point cost profile of the final RC1 configuration at $\DEPTH=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.
+
+		Table~16. Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$, $M=11$ and the public interface fixed. On-chain verification cost does not change: the statement keeps five public signals at every depth.
 	\end{revisiontext}
 \end{reviewresponse}

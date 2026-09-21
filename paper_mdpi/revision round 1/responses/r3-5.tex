@@ -11,12 +11,24 @@
 		\item \emph{Verifier authorization.} In the CP-ABPRE design the holder's claims are readable only by verifiers that satisfy a holder-defined policy. In TPS-ZKPI the protected object is the provider's consent policy, not the requester's claim set: the claims are consumed as private witnesses of a proof whose statement is fixed and whose verifier is a public contract, so any observer may verify and verifier authorization is not a design question.
 		\item \emph{Smart-contract accountability.} There the contract meters the release of claims and keeps verifiers accountable; here the contract records the context-bound authorization outcome, and accountability attaches to that record rather than to claim release.
 		\item \emph{Off-chain trust.} An SSI verifier that decrypts a claim learns it; the TPS learns both policy and claims. This is why the Problem section treats the TPS as an explicit trust boundary and the new threat/guarantee table states what survives its compromise (Comment~1).
-		\item \emph{Access-control workflow.} The two designs sit on opposite sides of the same authorization relation, and we note that combining them---holder-controlled release of exactly the claims that TPS-ZKPI consumes as witnesses---would remove the TPS's view of the requester evidence; the Discussion lists this among the reduced-trust directions.
+		\item \emph{Access-control workflow.} The two designs sit on opposite sides of the same authorization relation. Combining them through holder-authorized presentation, including a per-request signature over the authorization context, would prevent a TPS that observes one credential presentation from reusing the evidence for fresh sessions.
 	\end{itemize}
 
-	\RevisionLocation{Section ``Related Work,'' new paragraph on self-sovereign-identity architectures; reference list.}
+	\textbf{Changes in the manuscript.}
+	The complete comparison paragraph and the added reference are reproduced below.
+
+	\RevisionLocation{Section ``Related Work,'' new paragraph on self-sovereign-identity architectures.}
 	\begin{revisiontext}
+		Self-sovereign-identity (SSI) architectures move authorization to verifiable claims held by the requester and shift the question to whom the holder may trust with those claims.
+		Buccafurri et al. combine smart contracts with ciphertext-policy attribute-based proxy re-encryption so that a holder's claims can be read only by verifiers that satisfy a holder-defined policy, with the contract keeping verifiers accountable for the access they obtain; zero-knowledge presentations of credentials likewise let a patient authenticate anonymously against public or private chains, and surveys of zero-knowledge proofs for blockchain privacy catalogue this design space.
 		TPS-ZKPI sits on the other side of the same authorization relation.
 		In SSI designs the protected object is the requester's claim set and the policy that governs it is the holder's, whereas here the protected object is the provider's consent policy: the requester's claims are consumed as private witnesses of a proof whose statement is fixed and whose verifier is a public contract, so verifier authorization is not a design question (any observer may verify) and accountability is carried by the recorded, context-bound outcome rather than by a contract that meters the release of claims.
+		The trust the two settings place off-chain also differs: an SSI verifier that decrypts a claim learns it, whereas the TPS learns both policy and claims, which is why Section~4 treats the TPS as an explicit trust boundary and Table~3 states what survives its compromise.
+		Combining the two---holder-authorized presentation of the claims that TPS-ZKPI consumes as witnesses, including a per-request signature over the authorization context---would prevent a TPS that observes one presentation from reusing the evidence for fresh sessions, as discussed in Section~7.
+	\end{revisiontext}
+
+	\RevisionLocation{Reference list, new entry for Buccafurri et al. (2024).}
+	\begin{revisiontext}
+		Buccafurri, F.; De Angelis, V.; Nardone, R. How can the holder trust the verifier? A CP-ABPRE-based solution to control the access to claims in a Self-Sovereign-Identity scenario. \emph{Blockchain: Research and Applications} 2024, 5, 100196. \url{https://doi.org/10.1016/j.bcra.2024.100196}.
 	\end{revisiontext}
 \end{reviewresponse}

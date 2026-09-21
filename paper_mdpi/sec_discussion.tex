@@ -39,7 +39,7 @@ Second, an issuer would sign a domain-separated credential containing a holder-k
 Third, the circuit would verify both the credential signature and a Merkle proof that the issuer key is active in the registry, while continuing to derive policy attributes from the signed claims.
 The holder would retain its secret key and authorize each request by signing the context digest and request epoch; verifying this second signature inside the circuit would prevent a TPS that observes one credential presentation from generating proofs for fresh sessions.
 Finally, an epoch-specific sparse-Merkle or accumulator root would support a private non-revocation witness for the credential identifier.
-The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the policy-independent verification interface.
+The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the Boolean interpreter and the shape of the policy-independent public interface; integrating these checks would nevertheless require a revised circuit and new proving and verification keys.
 If an existing healthcare credential uses a non-circuit-friendly signature such as Ed25519 or ECDSA, integration requires either verifying that signature in-circuit at higher constraint cost or having the issuer additionally issue a SNARK-friendly credential; re-signing by the TPS would not preserve issuer-origin assurance.
 
 As described in Section~\ref{sec:design}, the policy commitment covers both the padded encoding $P_{\mathrm{enc}}$ and its active length $\ell$.

@@ -24,7 +24,8 @@ In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requeste
 
 TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length, circuit-friendly format.
 This policy class is chosen for two reasons.
-First, the targeted biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and institutional or ethics requirements---are categorical conditions combined with AND/OR/NOT, and conditions that are not natively Boolean enter through fixed external-predicate slots.
+First, the supported biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and requester restrictions---are categorical conditions combined with AND/OR, and conditions that are not natively Boolean enter through fixed external-predicate slots.
+The generic interpreter also evaluates NOT, but the RC1 DUO compiler does not expose negation because its membership witnesses establish inclusion rather than non-membership.
 Second, a Boolean policy class admits a fixed-length encoding evaluated by a single reusable interpreter circuit, which keeps the verification interface policy-independent---a prerequisite for the privacy objectives evaluated later.
 Let
 \begin{equation}
@@ -77,8 +78,10 @@ An output of $0$ therefore indicates unsatisfied evidence for a well-formed prog
 The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
 
 \noindent\textbf{Scope of the supported policies.} The policy class is deliberately restricted, and Table~\ref{tab:policy-support} states what the RC1 prototype establishes end-to-end.
-Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state.
-A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, negation is rejected by the DUO compiler because membership witnesses prove inclusion only, and purpose limitation, post-access duties, delegation, and credential revocation are left to the data access agreement and the issuer lifecycle.
+Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $64$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
+Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state; profile-backed terms establish possession of issuer-signed claims, not conformity of subsequent data use with a declared purpose.
+A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, negation is rejected by the DUO compiler, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
+On-chain policy revocation and resource rebinding affect future authorization decisions only; they do not retract data already released or enforce cessation or deletion after access.
 The prototype is therefore an access-time consent checker for bounded Boolean policies over standardized terms, not a general consent-language engine.
 \input{tables/tab_policy_support.tex}
 

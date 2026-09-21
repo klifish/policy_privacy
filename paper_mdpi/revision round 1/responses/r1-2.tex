@@ -51,22 +51,24 @@
 	\textbf{Changes in the manuscript.}
 	The Design section now defines the context digest and the five-signal statement, explains the circuit and ACM checks, and removes the former future-work language.
 	The Problem and Threat Model section now distinguishes the issuer-authenticated profile claims from other evidence, separates the pseudonymous requester identifier from real-world identity and issuer governance, and identifies adaptive requester probing and off-chain side channels as outside the present evaluation.
-	The Discussion reports the measured marginal cost and states the scope of the resulting guarantee.
+	The response reports the measured marginal cost, while the Discussion states the scope of the resulting guarantee.
 	The cost profile now reports the final RC1 circuit and public interface together with the revised Polygon Amoy gas, calldata, and prover measurements.
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model.''}
 	\begin{revisiontext}
 		Attribute-origin guarantees depend on the evidence type.
-		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under the issuer-key commitment selected in the policy parameters.
-		The signed claims are bound to the policy commitment, requester pseudonym, protected resource, validity interval, and credential identifier, and the corresponding policy attributes are derived from those claims inside the circuit.
-		This guarantee is not universal: ontology checks prove membership in a provider-committed code set, and requester allowlists prove inclusion of a holder pseudonym in a provider-committed list, but neither mechanism independently establishes a requester's real-world identity or the external origin of every submitted value.
-		The authority and correct provisioning of an issuer key, the truthfulness of issuance, credential revocation, and real-world identity verification therefore remain external trust and lifecycle functions.
+		For profile-backed DUO terms, the prototype verifies an EdDSA-Poseidon credential under a provider-selected, policy-bound issuer-key commitment.
+		The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
+		Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
+		This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
+		Ontology and requester-allowlist predicates likewise establish membership only relative to provider-committed sets.
+		Issuer-key governance, credential revocation, real-world identity verification, and protection against a compromised TPS remain external trust and lifecycle functions.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``Public-Chain Adversary.''}
 	\begin{revisiontext}
 		Adaptive requester probing and off-chain side channels are outside the scope of the present evaluation.
-		The proved authorization outcome is bound to a pseudonymous requester identifier, a protected resource, and a session nonce through the context digest defined in the Design section.
+		The proved authorization outcome is bound to a pseudonymous requester identifier, a protected resource, and a session nonce through the context digest defined in Section~5.
 		This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
 	\end{revisiontext}
 
@@ -80,6 +82,8 @@
 			\mathit{id}_{\mathrm{res}}\parallel\nu),
 		\end{equation*}
 		where $\nu$ is a fresh session nonce.
+		Here $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier.
+		For policies that activate a holder-bound credential or requester-allowlist predicate, the circuit derives it as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ from a private holder secret $s_{\mathrm{holder}}$; otherwise, it may be a requester-supplied pseudonym.
 		The TPS constructs the private circuit witness
 		\begin{equation*}
 			w=(P_{\mathrm{enc}},\ell,a,b,r,\omega,\chi).
@@ -95,21 +99,39 @@
 		\begin{equation*}
 			\pi\leftarrow\mathsf{Prove}\bigl(\mathit{pk},w;(1,h,\mathit{pp},d_{\chi},\tau)\bigr).
 		\end{equation*}
-		The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and required external-predicate checks are internally consistent with respect to the supplied parameters and placeholder gadgets.
+		The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and the selected external-predicate witnesses satisfy their policy-bound verification relations.
 		Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
 		Thus, within one ACM deployment, a proof generated for one requester identifier, resource, and nonce cannot be accepted under a different tuple.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Discussion.''}
+	\RevisionLocation{Section ``Discussion,'' paragraphs on authorization-context binding and its deployment scope.}
 	\begin{revisiontext}
+		The authorization context is likewise part of the proved relation.
 		The circuit constrains the public digest $d_{\chi}$ to the requester identifier, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
 		Consequently, changing any of these values invalidates the request.
+
+		The guarantee is scoped to the bound tuple within one ACM deployment.
+		The digest does not include the transaction submitter or a chain/contract domain, so exact-context front-running and cross-deployment reuse require separate deployment-level controls.
+		Moreover, $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier and is not, by itself, proof of a real-world identity or of the origin of every private attribute.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Evaluation,'' cost profile table.}
-	\begin{revisiontext}
-		Circuit size: $81{,}740$ R1CS constraints and $80{,}884$ wires at $\mathsf{DEPTH}=64$.
-		Public interface: four public inputs plus one output.
-		Across the $1{,}773$ revised Polygon Amoy executions, mean padded gas is $304{,}167$ for commit and $1{,}057{,}283$ for access; the fixed calldata lengths are $196$ and $612$ bytes, respectively.
-	\end{revisiontext}
+	\RevisionLocation{Section ``Privacy Evaluation,'' Table ``Single-point cost profile of the final RC1 configuration at $\mathsf{DEPTH}=64$.''}
+	\begin{revisiontable}
+		\noindent\textbf{Single-point cost profile of the final RC1 configuration at $\mathsf{DEPTH}=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.}
+		\begin{center}
+		\begin{tabular}{p{0.34\textwidth}p{0.54\textwidth}}
+			\toprule
+			Metric & Value / source \\
+			\midrule
+			Circuit size & $81{,}740$ R1CS constraints; $80{,}884$ wires; $\mathsf{DEPTH}=64$ \\
+			Public interface & $4$ public inputs plus $1$ output \\
+			Padded on-chain gas & Commit $304{,}167$; access $1{,}057{,}283$ mean gas \\
+			Event logs & Commit: $1$ log / $180$ bytes; access: $2$ logs / $296$ bytes \\
+			Calldata length & Commit $196$ bytes; access $612$ bytes (constant across policies) \\
+			Local witness time & $763.6$ ms mean \\
+			Local prove time & $2{,}884.2$ ms mean \\
+			\bottomrule
+		\end{tabular}
+		\end{center}
+	\end{revisiontable}
 \end{reviewresponse}

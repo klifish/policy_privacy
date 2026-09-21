@@ -21,9 +21,44 @@
 	The padding overhead is a fixed premium per transaction (about $330{,}000$ gas on access and $85{,}000$ on commit; $0.032$ versus $0.022$~POL per access at the evaluation's gas price), so it scales linearly with the number of authorizations and does not compound; the Discussion now states this together with how the band is calibrated per network (Reviewer~1, Comment~7).
 	We did not run a throughput benchmark: the on-chain path is one Groth16 verification plus bookkeeping per authorization and is bounded by the chain, not by the design, while the off-chain path is embarrassingly parallel across TPS instances.
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' paragraph ``Cost'' and the new cost-scaling table; Section ``Discussion,'' paragraph ``The cost of padding.''}
+	\textbf{Changes in the manuscript.}
+	The Ablation subsection now reports the measured on-chain cost and separates it from prover-side scaling; the new scaling table gives the complete depth sweep; and the Discussion explains transaction-volume scaling and network calibration.
+
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' paragraph ``Cost.''}
 	\begin{revisiontext}
-		The cost-scaling table shows how the prover-side cost scales when the program length grows from $32$ to $128$ with $N$ and $M$ fixed: constraints, proving-key size, and proving time grow roughly linearly with the program length (from $65{,}000$ to $134{,}000$ constraints and from $0.38$ to $0.73$~s per proof on a laptop-class prover), while the statement keeps its five public signals, so the verifier contract, its gas, and the padding band are unchanged.
-		Richer predicates would enter through $M$ and the per-slot gadgets rather than through the program length; each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, since predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs.
+		Padding is not free: over the subset it raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
+		The padded access cost is set by the padding band, not by the policy: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, and the base of that band is chosen above the bare access cost measured on the target network ($748{,}000$ gas on Amoy, whose pricing of the pairing precompiles is higher than the local EVM's) so that the whole band stays above real usage.
+		At the $30$~gwei tip used throughout, one padded access transaction costs about $0.032$~POL and one commit about $0.009$~POL; the overhead is therefore a fixed per-transaction premium of roughly $330{,}000$ gas on access and $85{,}000$ on commit, independent of transaction volume, and it does not grow with policy complexity, because neither the bare cost nor the band depends on the policy.
+		Table~15 gives the single-point cost characterization of the final RC1 configuration at $\DEPTH=64$.
+		The circuit compiles to $81{,}740$ R1CS constraints; across the $1{,}773$ Polygon Amoy executions, mean witness and proving times on the two-core capture host are $763.6$ ms and $2{,}884.2$ ms, respectively.
+		Gas, logs, calldata lengths, and transaction objects are taken from the same executed dataset, whose transactions use the context-bound five-signal statement.
+		Table~16 shows how the prover-side cost scales when the program length grows from $\DEPTH=32$ to $128$ with $N$ and $M$ fixed: constraints, proving-key size, and proving time grow roughly linearly with $\DEPTH$ (from $65{,}000$ to $134{,}000$ constraints and from $0.38$ to $0.73$~s per proof on a laptop-class prover), while the statement keeps its five public signals, so the verifier contract, its gas, and the padding band are unchanged.
+		Richer predicates would enter through $M$ and the per-slot gadgets rather than through $\DEPTH$; each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, since predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Privacy Evaluation,'' new Table~16, ``Prover-side cost as the policy program length grows.''}
+	\begin{revisiontable}
+		\noindent\textbf{Table~16.} Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$, $M=11$ and the public interface fixed. On-chain verification cost does not change: the statement keeps five public signals at every depth.
+		\begin{center}
+		\begin{tabular}{rrrrrr}
+			\toprule
+			$\DEPTH$ & R1CS constraints & Proving key (MB) & Witness (ms) & Prove (ms) & Verify (ms) \\
+			\midrule
+			$32$  & $64{,}945$  & $38.7$ & $282$ & $382$ & $11$ \\
+			$64$  & $81{,}740$  & $52.2$ & $343$ & $494$ & $10$ \\
+			$128$ & $134{,}009$ & $87.5$ & $542$ & $730$ & $11$ \\
+			\bottomrule
+		\end{tabular}
+		\end{center}
+	\end{revisiontable}
+
+	\RevisionLocation{Section ``Discussion,'' paragraph ``The cost of padding.''}
+	\begin{revisiontext}
+		Within this scope, the residual cost is the randomized padding's gas overhead: on the ablation subset, about $46\%$ on access gas and $38\%$ on commit gas.
+		Three observations bound its practical weight.
+		First, the overhead is a fixed premium per transaction---roughly $330{,}000$ gas on access and $85{,}000$ on commit at the band used here---so it scales linearly with transaction volume and does not compound: at the $30$~gwei tip of the evaluation, a padded access transaction costs about $0.032$~POL against $0.022$~POL unpadded.
+		Second, neither the bare cost nor the band depends on the policy: the fixed circuit gives every proof the same verification work and the same five public signals, and the prover-side cost of longer or richer policies (Table~16) is paid off-chain.
+		Third, the band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose pairing precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
+		Padding cannot, of course, hide a difference larger than its band, and it does not address channels that are not gas.
 	\end{revisiontext}
 \end{reviewresponse}

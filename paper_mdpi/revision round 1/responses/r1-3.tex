@@ -64,9 +64,11 @@
 
 	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Credential-Origin Binding.''}
 	\begin{revisiontext}
-		Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use, respectively.
-		Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag.
-		The circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$ from these claims.
+		The circuit reserves one fixed predicate slot for a credential carrying a fixed set of DUO-relevant claims.
+		Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use.
+		Let $t_{\mathrm{from}}$ and $t_{\mathrm{until}}$ define its validity interval, and let $\gamma$ be its credential identifier.
+		Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag for this credential type.
+		From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$.
 		For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
 		\begin{equation*}
 			m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel
@@ -74,23 +76,21 @@
 			c_0\parallel\cdots\parallel c_6\parallel
 			t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma)
 		\end{equation*}
-		Before proof generation, an issuer holding the corresponding private signing key $s_{\mathrm{iss}}$ issues the credential by computing $\sigma\leftarrow\mathsf{Sign}_{\mathrm{EdDSA\text{-}Poseidon}}(s_{\mathrm{iss}},m_{\mathrm{cred}})$.
+		Before proof generation, an issuer holding the corresponding private signing key $s_{\mathrm{iss}}$ issues the credential by computing
+		\begin{equation*}
+			\sigma\leftarrow\mathsf{Sign}_{\mathrm{EdDSA\text{-}Poseidon}}(s_{\mathrm{iss}},m_{\mathrm{cred}}).
+		\end{equation*}
 		The resulting credential is supplied to the TPS as private off-chain evidence for proof generation.
 		At proof generation, the TPS supplies $A$, $\sigma$, and the credential fields as private witness values.
 		The circuit then enforces
 		\begin{equation*}
 			\mathsf{Verify}_{\mathrm{EdDSA\text{-}Poseidon}}(A,\sigma,m_{\mathrm{cred}})=1,
 			\qquad
-			\mathsf{Poseidon}(A_x\parallel A_y)=k_{\mathrm{iss}}.
+			\mathsf{Poseidon}(A_x\parallel A_y)=k_{\mathrm{iss}}
 		\end{equation*}
-		The circuit additionally requires
-		\begin{equation*}
-			t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{until}},
-			\qquad \gamma\neq0,
-		\end{equation*}
-		For a policy that activates this holder-bound credential slot, it also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the pseudonymous requester identifier in the authorization context.
-		The corresponding DUO attributes are constrained to these claim-derived values rather than accepted independently from the prover.
-		This is a cryptographic signature check, not a hash-consistency placeholder.
+		where $k_{\mathrm{iss}}$ is the issuer-key commitment contained in the policy-bound parameter commitment $\mathit{pp}$.
+		The circuit additionally requires $t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{until}}$ and $\gamma\neq0$.
+		Because this credential is holder-bound, a policy that activates this slot also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the pseudonymous requester identifier in the authorization context. The corresponding DUO attributes are constrained to these claim-derived values.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Dataset and corpus generation.''}
@@ -98,12 +98,29 @@
 		For reproducibility, the evaluation generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate; this testing key does not model issuer governance or production key management.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Discussion.''}
+	\RevisionLocation{Section ``Discussion,'' paragraphs on the implemented attribute-origin guarantee and its remaining trust anchor.}
 	\begin{revisiontext}
+		Attribute origin is only partially delegated to the TPS.
+		For the profile-backed DUO terms, the circuit verifies the EdDSA-Poseidon signature described in the Design section and derives eight policy attributes from the seven signed claims.
+		A compromised TPS cannot modify the signed claims, policy commitment, requester pseudonym, resource, validity interval, or credential identifier without invalidating the signature.
+		The implemented relation rejects a non-committed issuer, an invalid signature under the committed key, an expired or premature credential, and substitutions of any signed field.
+		Other evidence has a narrower meaning: ontology proofs establish that a supplied code belongs to a provider-committed set, and requester allowlists establish that a holder pseudonym belongs to a provider-committed list; they do not authenticate every underlying real-world fact.
+		Moreover, because the TPS receives the holder secret and credential witness in the current workflow, holder binding does not protect against a malicious TPS reusing otherwise valid evidence within its signed scope.
+
 		The remaining trust anchor is therefore issuer governance.
 		The prototype binds the proof to a policy-selected issuer-key commitment, but it has no independent registry establishing that this key belongs to an accredited healthcare authority, and it does not check credential revocation.
+		The evaluation uses a deterministic test-only issuer key to exercise the complete signature path; it is not evidence of institutional issuance or production key management.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Discussion,'' paragraphs presenting the production credential-integration design.}
+	\begin{revisiontext}
 		A concrete deployment can close this gap without changing the Boolean interpreter.
-		A governed issuer registry would publish schema-qualified issuer keys and their validity epochs; the circuit would verify both the credential signature and a Merkle proof that the issuer key is active in the registry.
-		The holder would retain its secret key and authorize each request by signing the context digest and request epoch, while an epoch-specific sparse-Merkle or accumulator root would support a private non-revocation witness for the credential identifier.
+		First, a governed issuer registry would publish schema-qualified issuer keys and their validity epochs; registration would validate a canonical, subgroup-safe public key and require proof of possession.
+		Second, an issuer would sign a domain-separated credential containing a holder-key commitment, claim vector, authorization scope, validity interval, and unique credential identifier.
+		Third, the circuit would verify both the credential signature and a Merkle proof that the issuer key is active in the registry, while continuing to derive policy attributes from the signed claims.
+		The holder would retain its secret key and authorize each request by signing the context digest and request epoch; verifying this second signature inside the circuit would prevent a TPS that observes one credential presentation from generating proofs for fresh sessions.
+		Finally, an epoch-specific sparse-Merkle or accumulator root would support a private non-revocation witness for the credential identifier.
+		The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the Boolean interpreter and the shape of the policy-independent public interface; integrating these checks would nevertheless require a revised circuit and new proving and verification keys.
+		If an existing healthcare credential uses a non-circuit-friendly signature such as Ed25519 or ECDSA, integration requires either verifying that signature in-circuit at higher constraint cost or having the issuer additionally issue a SNARK-friendly credential; re-signing by the TPS would not preserve issuer-origin assurance.
 	\end{revisiontext}
 \end{reviewresponse}

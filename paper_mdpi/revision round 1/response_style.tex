@@ -7,6 +7,7 @@
 \usepackage{xcolor}
 \usepackage{amsmath,amssymb}
 \usepackage{enumitem}
+\usepackage{booktabs,longtable}
 \usepackage{microtype}
 \usepackage{fancyhdr}
 \usepackage[hidelinks]{hyperref}
@@ -18,6 +19,7 @@
 
 \providecommand{\ReviewerNumber}{0}
 \newcommand{\ManuscriptTitle}{Enhancing Consent Policy Privacy in Blockchain-Based Healthcare Data Sharing}
+\providecommand{\DEPTH}{\mathsf{DEPTH}}
 \hypersetup{
   pdftitle={Response to Reviewer \ReviewerNumber},
   pdfauthor={},
@@ -26,6 +28,7 @@
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.62em}
+\setlength{\emergencystretch}{2em}
 \setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em}
 \setlist[enumerate]{leftmargin=1.9em,itemsep=0.25em,topsep=0.3em}
 \raggedbottom
@@ -68,6 +71,13 @@
 \newenvironment{revisiontext}
   {\begin{quote}\color{RevisionRed}}
   {\end{quote}}
+
+% Full-width, non-floating revised tables. Longtable permits a long manuscript
+% table to break cleanly across response pages, unlike a table float nested in
+% the quote-based revisiontext environment.
+\newenvironment{revisiontable}
+  {\par\begingroup\color{RevisionRed}\footnotesize\setlength{\tabcolsep}{4pt}}
+  {\par\endgroup}
 
 \newcommand{\RevisionLocation}[1]{%
   \par\noindent\textbf{Location in the revised manuscript:} #1\par

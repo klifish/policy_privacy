@@ -6,10 +6,40 @@
 	The Conclusion has been rewritten as four paragraphs: what the revised construction contributes and which soundness gaps it closes; what the evaluation shows and what the ablation teaches about the un-padded channel; the limitations (trust in the TPS, the supported policy class, the unmodeled channels, the criterion's false-positive rate); and three directions that follow from those limitations.
 	The Discussion likewise opens with the authors' reading of the results, including the two criterion failures and why we report rather than absorb them, before turning to the trust model.
 
-	\RevisionLocation{Section ``Conclusion'' (entire section); Section ``Discussion,'' first paragraph.}
+	\textbf{Changes in the manuscript.}
+	The revised Discussion interprets the empirical findings before turning to architectural trade-offs, and the Conclusion now covers contribution, findings, limitations, and future directions in four distinct paragraphs.
+
+	\RevisionLocation{Section ``Discussion,'' opening paragraph.}
 	\begin{revisiontext}
+		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance rather than proven policy confidentiality.
+		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
+		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
+		This is a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
+		The gas-padding ablation attributes the gas-channel protection to randomized gas padding: without it the same attacks recover the policy family with AUCs up to $0.90$.
+		Content hiding itself rests on the commitment-only interface and the content-independent transcript normalization; padding is the defense-in-depth layer that absorbs whatever deterministic gas differences remain, of which the ablation exhibits one that does not come from the policy logic at all but from the byte encoding of a public transaction argument.
+		Together with fixed-length policy representation, reusable interpretation, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Conclusion'' (entire section).}
+	\begin{revisiontext}
+		This paper studied policy-private consent enforcement in blockchain-based healthcare data sharing under public-chain observability and an explicit TPS trust assumption.
+		We proposed TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach that binds hidden provider-defined policies to on-chain commitments, evaluates Boolean-based consent policies through a reusable policy interpreter, and normalizes public verification artifacts to reduce metadata-level leakage.
+		The revised construction closes two soundness gaps of the original prototype: the program length is part of the committed and proved relation, so an authorizing proof cannot rest on a shorter valid prefix, and the proof is bound to the requester pseudonym, resource, and session nonce, so a captured proof cannot be replayed under fresh parameters within a deployment.
+		Profile-backed data-use terms are derived in-circuit from an issuer-signed credential, which separates what the proof establishes cryptographically from what remains a matter of issuer governance.
+
 		The evaluation shows what such a design can and cannot promise.
 		On a live testnet corpus, a supervised attacker with policy-disjoint training data and an unsupervised clustering attacker recover neither policy content, nor policy identity, nor structure and parameters from the normalized transcript beyond what the padding's own random draws produce, and the paired ablation shows that the padding is what removes the last policy-correlated gas signal.
 		The ablation also delivers a cautionary result: the un-padded channel it exposes is not the policy logic, which the fixed circuit already hides, but the byte-level pricing of one public transaction argument---a reminder that on a public chain any deterministic encoding difference that correlates with the policy is a channel, and that the defense must cover the class rather than the instances one anticipated.
+
+		The results hold for a metadata-only public-chain adversary and are empirical.
+		Policy confidentiality against the TPS itself is not cryptographic but rests on the service following its workflow, and the evaluation's provider-operated TPS concentrates that trust at the provider.
+		The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
+		On-chain policy revocation and evolution govern future authorization decisions but do not retract data already released or enforce downstream cessation or deletion.
+		Timing, ordering, mempool, and off-chain channels, adaptive probing, and correlations between outcomes and policy classes are not modeled, and the leakage criterion has a measurable false-positive rate on corpora that execute each policy once.
+
+		Three directions follow.
+		Reduced-trust proof generation---collaborative SNARKs or attested execution---would relax the trust concentration that the TPS introduces and, with a holder-signed authorization context, remove the service's ability to reuse valid evidence.
+		A governed issuer registry with in-circuit membership and revocation witnesses would turn the credential path into an institutional guarantee.
+		And extending the evaluation to active adversaries and to the timing and ordering channels excluded here would test whether transcript normalization remains sufficient once the observer is no longer passive.
 	\end{revisiontext}
 \end{reviewresponse}

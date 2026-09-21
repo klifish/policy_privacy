@@ -21,11 +21,42 @@
 	The gas-padding ablation, re-run on the same corpus, sharpened the scoping in one more respect: the channel that the un-padded transcript exposes is not the policy logic, which the fixed circuit already hides (the un-padded access gas of $1{,}119$ executions spans $276$ gas), but the calldata byte pricing of the requester pseudonym, whose encoding width in our harness correlates with whether a policy activates the profile predicate.
 	We state this in the revised ablation section because it illustrates the reviewer's point: on a public chain, any deterministic encoding difference that correlates with the policy is a channel, and the empirical claim covers the channels we modeled.
 
-	\RevisionLocation{Abstract; Section ``Discussion,'' first and second paragraphs; Section ``Conclusion,'' third paragraph.}
+	\textbf{Changes in the manuscript.}
+	The Abstract identifies the modeled adversary, the Discussion states the empirical result and all excluded channels, and the Conclusion repeats the limitations without claiming general policy confidentiality.
+
+	\RevisionLocation{Abstract.}
+	\begin{revisiontext}
+		In blockchain-based healthcare data sharing, consent policies are expected to be enforced verifiably and auditably, but public-chain transparency may expose sensitive policy information through on-chain representations, verification interfaces, and execution artifacts.
+		Existing privacy-preserving solutions mainly protect data contents, identities, or transactions, not the governing consent policies.
+		We propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which lets an on-chain verifier check authorization decisions while limiting leakage about policy content, identity, and structure.
+		TPS-ZKPI combines fixed-length policy encoding, a reusable zero-knowledge policy interpreter, commitment-based policy binding, and public-chain transcript normalization.
+		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Under a multi-seed leakage criterion, no attack recovers hidden policy information reproducibly above chance; a paired ablation attributes the gas-channel protection to the gas padding of transcript normalization, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Discussion,'' opening two paragraphs.}
 	\begin{revisiontext}
 		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance rather than proven policy confidentiality.
-		[\ldots]
-		The scope of this claim is the adversary of the evaluation's threat model: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies.
+		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
+		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
+		This is a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
+		The gas-padding ablation attributes the gas-channel protection to randomized gas padding: without it the same attacks recover the policy family with AUCs up to $0.90$.
+		Content hiding itself rests on the commitment-only interface and the content-independent transcript normalization; padding is the defense-in-depth layer that absorbs whatever deterministic gas differences remain, of which the ablation exhibits one that does not come from the policy logic at all but from the byte encoding of a public transaction argument.
+		Together with fixed-length policy representation, reusable interpretation, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
+
+		The scope of this claim is the adversary of Section~6.1: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies.
 		Timing and ordering of transactions, mempool and broadcast behaviour, off-chain communication with the TPS, adaptive requester probing, repeated access attempts, correlations between authorization outcomes and policy classes (every request in the corpus is granted), and compromised TPS behaviour are not modeled, and the results should not be read as establishing general policy confidentiality against them.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Conclusion,'' second and third paragraphs.}
+	\begin{revisiontext}
+		The evaluation shows what such a design can and cannot promise.
+		On a live testnet corpus, a supervised attacker with policy-disjoint training data and an unsupervised clustering attacker recover neither policy content, nor policy identity, nor structure and parameters from the normalized transcript beyond what the padding's own random draws produce, and the paired ablation shows that the padding is what removes the last policy-correlated gas signal.
+		The ablation also delivers a cautionary result: the un-padded channel it exposes is not the policy logic, which the fixed circuit already hides, but the byte-level pricing of one public transaction argument---a reminder that on a public chain any deterministic encoding difference that correlates with the policy is a channel, and that the defense must cover the class rather than the instances one anticipated.
+
+		The results hold for a metadata-only public-chain adversary and are empirical.
+		Policy confidentiality against the TPS itself is not cryptographic but rests on the service following its workflow, and the evaluation's provider-operated TPS concentrates that trust at the provider.
+		The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
+		On-chain policy revocation and evolution govern future authorization decisions but do not retract data already released or enforce downstream cessation or deletion.
+		Timing, ordering, mempool, and off-chain channels, adaptive probing, and correlations between outcomes and policy classes are not modeled, and the leakage criterion has a measurable false-positive rate on corpora that execute each policy once.
 	\end{revisiontext}
 \end{reviewresponse}

@@ -15,5 +15,52 @@
 	\textbf{Format.}
 	The AZTEC entry is now a properly formatted technical whitepaper with its URL and access date, the Zeth entry an arXiv e-print with identifier, and the Ibraimi et al.\ entry a University of Twente technical report (the submitted version carried a wrong journal name); all new entries include DOIs.
 
-	\RevisionLocation{Section ``Background,'' first paragraph; Section ``Related Work,'' hidden-policy and SSI paragraphs; reference list.}
+	\textbf{Changes in the manuscript.}
+	The revised passages and the seven added references are reproduced below.
+
+	\RevisionLocation{Section ``Background,'' subsection ``Cryptographic Access Control in Blockchain Healthcare,'' first paragraph.}
+	\begin{revisiontext}
+		Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE).
+		In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data.
+		PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext.
+		Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself.
+		We cite the original constructions because the later systems inherit their trust and disclosure properties, which is what matters for this paper: these primitives establish who may obtain the data, and how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~3.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Related Work,'' paragraph on hidden-policy access control.}
+	\begin{revisiontext}
+		Hidden-policy access-control work reduces direct policy exposure by using encrypted policies, hidden-policy ABE variants, off-chain matching, or policy-holder components.
+		Functional encryption gives a more general cryptographic abstraction for revealing function outputs while hiding inputs, but it does not by itself yield publicly verifiable authorization evidence.
+		Private-state blockchain systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or execution through encrypted state and trusted execution environments.
+		These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI targets a more specific setting: hiding consent policies on a public chain while retaining public verifiability of each authorization decision.
+		Even where policies are hidden, existing designs may still leak policy-dependent artifacts through ciphertext structures, policy-update transactions, authorization workflows, or repeated interactions.
+		Moreover, many target permissioned or off-chain settings, where enforcement artifacts are not globally visible as they are on public blockchains.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Related Work,'' new paragraph on self-sovereign-identity architectures.}
+	\begin{revisiontext}
+		Self-sovereign-identity (SSI) architectures move authorization to verifiable claims held by the requester and shift the question to whom the holder may trust with those claims.
+		Buccafurri et al. combine smart contracts with ciphertext-policy attribute-based proxy re-encryption so that a holder's claims can be read only by verifiers that satisfy a holder-defined policy, with the contract keeping verifiers accountable for the access they obtain; zero-knowledge presentations of credentials likewise let a patient authenticate anonymously against public or private chains, and surveys of zero-knowledge proofs for blockchain privacy catalogue this design space.
+		TPS-ZKPI sits on the other side of the same authorization relation.
+		In SSI designs the protected object is the requester's claim set and the policy that governs it is the holder's, whereas here the protected object is the provider's consent policy: the requester's claims are consumed as private witnesses of a proof whose statement is fixed and whose verifier is a public contract, so verifier authorization is not a design question (any observer may verify) and accountability is carried by the recorded, context-bound outcome rather than by a contract that meters the release of claims.
+		The trust the two settings place off-chain also differs: an SSI verifier that decrypts a claim learns it, whereas the TPS learns both policy and claims, which is why Section~4 treats the TPS as an explicit trust boundary and Table~3 states what survives its compromise.
+		Combining the two---holder-authorized presentation of the claims that TPS-ZKPI consumes as witnesses, including a per-request signature over the authorization context---would prevent a TPS that observes one presentation from reusing the evidence for fresh sessions, as discussed in Section~7.
+	\end{revisiontext}
+
+	\RevisionLocation{Reference list, seven new entries from 2024--2026.}
+	\begin{revisiontext}
+		Pei, H.; Yang, P.; Li, W.; Du, M.; Hu, Z. Proxy Re-Encryption for Secure Data Sharing with Blockchain in Internet of Medical Things. \emph{Computer Networks} 2024, 245, 110373. \url{https://doi.org/10.1016/j.comnet.2024.110373}.
+
+		Zhou, H.; Si, X.-M.; Zhao, B.; Zhang, Y.; Qu, Y. Secure electronic medical records sharing scheme based on blockchain by using proxy re-encryption. \emph{Peer-to-Peer Networking and Applications} 2024, 17, 4197--4209. \url{https://doi.org/10.1007/s12083-024-01775-y}.
+
+		Yang, X.; Liu, J. HA-Med: A Blockchain-Based Solution for Sharing Medical Data with Hidden Policies and Attributes. \emph{IET Information Security} 2024, 2024, 2498245. \url{https://doi.org/10.1049/2024/2498245}.
+
+		Ding, X.; Liu, Y.; Ning, J.; Chen, D. Blockchain-Enhanced Anonymous Data Sharing Scheme for 6G-Enabled Smart Healthcare With Distributed Key Generation and Policy Hiding. \emph{IEEE Journal of Biomedical and Health Informatics} 2026, 30, 666--675. \url{https://doi.org/10.1109/JBHI.2025.3550261}.
+
+		Buccafurri, F.; De Angelis, V.; Nardone, R. How can the holder trust the verifier? A CP-ABPRE-based solution to control the access to claims in a Self-Sovereign-Identity scenario. \emph{Blockchain: Research and Applications} 2024, 5, 100196. \url{https://doi.org/10.1016/j.bcra.2024.100196}.
+
+		Madine, M.; Salah, K.; Jayaraman, R.; Yaqoob, I. Zero-knowledge proofs for anonymous authentication of patients on public and private blockchains. \emph{Array} 2025, 28, 100590. \url{https://doi.org/10.1016/j.array.2025.100590}.
+
+		Shashidhara, R.; Chirakarotu Nair, R.; Kumar Panakalapati, P. Promise of Zero-Knowledge Proofs (ZKPs) for Blockchain Privacy and Security: Opportunities, Challenges, and Future Directions. \emph{Security and Privacy} 2024, 8, e461. \url{https://doi.org/10.1002/spy2.461}.
+	\end{revisiontext}
 \end{reviewresponse}

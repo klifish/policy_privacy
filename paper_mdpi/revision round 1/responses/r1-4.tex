@@ -21,12 +21,55 @@
 	Each cell states whether the guarantee is cryptographic (C), rests on the TPS following its workflow (T), is an external or lifecycle function (E), or is not provided (--).
 	The matrix makes the practical implications visible at a glance: against a compromised TPS the prototype keeps authorization correctness for the committed relation but loses confidentiality, liveness (a refusal is indistinguishable from a legitimate denial), and accountability; the Discussion lists accountable proof obligations and reduced-trust proving (collaborative SNARKs, attested execution) as the mechanisms that would recover them.
 
-	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model,'' and the new threat/guarantee table.}
+	\textbf{Changes in the manuscript.}
+	The revised trust model states the cryptographic and TPS-dependent guarantees separately, the new matrix makes the distinction explicit for every threat, and the Discussion identifies the practical consequences and reduced-trust directions.
+
+	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model,'' paragraphs on the provider-operated TPS.}
 	\begin{revisiontext}
+		For implementation and evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
+		This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
 		Two guarantees must be distinguished here.
 		Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
 		Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
-		[\ldots]
-		The threat/guarantee table summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+		Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
+		Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
+		Table~3 summarizes, for each party or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and accountability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``What each guarantee of TPS-ZKPI rests on, per threat.''}
+	\begin{revisiontable}
+		\noindent\textbf{Table~3.} What each guarantee of TPS-ZKPI rests on, per threat. C: cryptographic (commitment binding, proof soundness and zero knowledge, credential signature, on-chain checks); T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype.
+		\begin{longtable}{p{0.17\textwidth}p{0.19\textwidth}p{0.22\textwidth}p{0.13\textwidth}p{0.16\textwidth}}
+			\toprule
+			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			\midrule
+			\endfirsthead
+			\toprule
+			Threat & Policy confidentiality & Authorization correctness & Liveness & Accountability \\
+			\midrule
+			\endhead
+			Passive public-chain observer & C (proof, commitments) + empirical (gas padding) & C & n/a & C (recorded outcome) \\
+			Requester (untrusted) & C: sees only the public view & C: cannot forge a proof or reuse one in another context & n/a & C \\
+			Honest-but-curious TPS & T: TPS holds plaintext policy and evidence & C & T & -- \\
+			Compromised or colluding TPS & --: policy and evidence exposed & C for committed relation; T for origin of unsigned evidence & --: may refuse to prove & --: refusal indistinguishable from denial \\
+			Provider-operated TPS (this evaluation) & T, concentrated at the provider & C & T & -- \\
+			Forged or unauthorized issuer & n/a & C against forgery under the committed key; E for issuer legitimacy and revocation & n/a & E \\
+			\bottomrule
+		\end{longtable}
+	\end{revisiontable}
+
+	\RevisionLocation{Section ``Discussion,'' paragraph on the TPS trust trade-off.}
+	\begin{revisiontext}
+		The TPS trust assumption is the main architectural tradeoff.
+		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~4).
+		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS or provider can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
+	\end{revisiontext}
+
+	\RevisionLocation{Section ``Discussion,'' final paragraph.}
+	\begin{revisiontext}
+		Three directions follow.
+		First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
+		Second, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make proof refusals attributable.
+		Third, the reduced-trust TPS instantiations of Section~4 (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
 	\end{revisiontext}
 \end{reviewresponse}
