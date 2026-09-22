@@ -6,7 +6,7 @@
 	The three texts now serve different purposes.
 	The abstract states the result and the overhead figures once.
 	The Discussion interprets the results---the scope of the claim, the two criterion failures and their origin, the cost of padding, the trust model, and the attribute-origin guarantee---without restating the abstract.
-	The Conclusion no longer repeats the numbers; it summarizes the contribution, the meaning of the results (including the cautionary finding of the ablation), the limitations, and the directions that follow.
+	The Conclusion avoids repeating the abstract's task counts and overhead figures; it summarizes the contribution, the meaning of the results, the limitations, and the directions that follow.
 
 	\textbf{Changes in the manuscript.}
 	Representative passages showing the distinct role of each section are reproduced below.
@@ -17,12 +17,12 @@
 		Existing privacy-preserving solutions mainly protect data contents, identities, or transactions, not the governing consent policies.
 		We propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which lets an on-chain verifier check authorization decisions while limiting leakage about policy content, identity, and structure.
 		TPS-ZKPI combines fixed-length policy encoding, a reusable zero-knowledge policy interpreter, commitment-based policy binding, and public-chain transcript normalization.
-		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Under a multi-seed leakage criterion, no attack recovers hidden policy information reproducibly above chance; a paired ablation attributes the gas-channel protection to the gas padding of transcript normalization, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
+		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Of $45$ supervised tasks, $43$ remain below the multi-seed leakage criterion; diagnostic analysis traces the two threshold crossings, and one corresponding small clustering result, to finite-corpus coincidences in policy-independent padding targets. A paired ablation attributes suppression of the modeled gas channel to randomized padding, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Discussion,'' opening and scope paragraphs.}
 	\begin{revisiontext}
-		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance rather than proven policy confidentiality.
+		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance to policy leakage.
 		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
 		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
 		The scope of this claim is the adversary of Section~6.1: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies.
@@ -31,14 +31,8 @@
 
 	\RevisionLocation{Section ``Conclusion,'' contribution and future-directions paragraphs.}
 	\begin{revisiontext}
-		This paper studied policy-private consent enforcement in blockchain-based healthcare data sharing under public-chain observability and an explicit TPS trust assumption.
-		We proposed TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach that binds hidden provider-defined policies to on-chain commitments, evaluates Boolean-based consent policies through a reusable policy interpreter, and normalizes public verification artifacts to reduce metadata-level leakage.
-		The revised construction closes two soundness gaps of the original prototype: the program length is part of the committed and proved relation, so an authorizing proof cannot rest on a shorter valid prefix, and the proof is bound to the requester pseudonym, resource, and session nonce, so a captured proof cannot be replayed under fresh parameters within a deployment.
-		Profile-backed data-use terms are derived in-circuit from an issuer-signed credential, which separates what the proof establishes cryptographically from what remains a matter of issuer governance.
+		This work presents TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach for policy-private consent enforcement in blockchain-based healthcare data sharing. TPS-ZKPI commits hidden provider-defined policies, evaluates bounded Boolean policies through a reusable interpreter, and normalizes the public verification transcript to reduce metadata-level leakage. Its authorization relation binds each proof to the committed policy and request context, while profile-backed attributes derive in-circuit from issuer-signed credentials under an explicit issuer-governance assumption.
 
-		Three directions follow.
-		Reduced-trust proof generation---collaborative SNARKs or attested execution---would relax the trust concentration that the TPS introduces and, with a holder-signed authorization context, remove the service's ability to reuse valid evidence.
-		A governed issuer registry with in-circuit membership and revocation witnesses would turn the credential path into an institutional guarantee.
-		And extending the evaluation to active adversaries and to the timing and ordering channels excluded here would test whether transcript normalization remains sufficient once the observer is no longer passive.
+		The next steps are therefore clear: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
 	\end{revisiontext}
 	\end{reviewresponse}

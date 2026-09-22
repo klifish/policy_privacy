@@ -30,12 +30,12 @@
 		Existing privacy-preserving solutions mainly protect data contents, identities, or transactions, not the governing consent policies.
 		We propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which lets an on-chain verifier check authorization decisions while limiting leakage about policy content, identity, and structure.
 		TPS-ZKPI combines fixed-length policy encoding, a reusable zero-knowledge policy interpreter, commitment-based policy binding, and public-chain transcript normalization.
-		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Under a multi-seed leakage criterion, no attack recovers hidden policy information reproducibly above chance; a paired ablation attributes the gas-channel protection to the gas padding of transcript normalization, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
+		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Of $45$ supervised tasks, $43$ remain below the multi-seed leakage criterion; diagnostic analysis traces the two threshold crossings, and one corresponding small clustering result, to finite-corpus coincidences in policy-independent padding targets. A paired ablation attributes suppression of the modeled gas channel to randomized padding, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Discussion,'' opening two paragraphs.}
 	\begin{revisiontext}
-		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance rather than proven policy confidentiality.
+		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance to policy leakage.
 		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
 		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
 		This is a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
@@ -49,14 +49,11 @@
 
 	\RevisionLocation{Section ``Conclusion,'' second and third paragraphs.}
 	\begin{revisiontext}
-		The evaluation shows what such a design can and cannot promise.
-		On a live testnet corpus, a supervised attacker with policy-disjoint training data and an unsupervised clustering attacker recover neither policy content, nor policy identity, nor structure and parameters from the normalized transcript beyond what the padding's own random draws produce, and the paired ablation shows that the padding is what removes the last policy-correlated gas signal.
-		The ablation also delivers a cautionary result: the un-padded channel it exposes is not the policy logic, which the fixed circuit already hides, but the byte-level pricing of one public transaction argument---a reminder that on a public chain any deterministic encoding difference that correlates with the policy is a channel, and that the defense must cover the class rather than the instances one anticipated.
+		The evaluation on Polygon Amoy provides empirical support for resistance to policy leakage under the modeled public-chain metadata adversary. Most supervised tasks remained below the multi-seed leakage criterion, and unsupervised clustering recovered no usable policy structure beyond one small nesting-depth result. Diagnostic analysis associated the two threshold crossings with random padding targets and reproduced them with policy-independent controls. The paired ablation establishes the role of randomized gas padding: without it, the attacks recover policy-family signal; with the full mechanism, padding suppresses this channel at a substantial fixed per-transaction gas premium.
 
-		The results hold for a metadata-only public-chain adversary and are empirical.
-		Policy confidentiality against the TPS itself is not cryptographic but rests on the service following its workflow, and the evaluation's provider-operated TPS concentrates that trust at the provider.
-		The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
-		On-chain policy revocation and evolution govern future authorization decisions but do not retract data already released or enforce downstream cessation or deletion.
-		Timing, ordering, mempool, and off-chain channels, adaptive probing, and correlations between outcomes and policy classes are not modeled, and the leakage criterion has a measurable false-positive rate on corpora that execute each policy once.
+		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
+		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
+		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
+		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
 	\end{revisiontext}
 \end{reviewresponse}

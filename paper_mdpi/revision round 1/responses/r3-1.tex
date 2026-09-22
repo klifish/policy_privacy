@@ -50,8 +50,8 @@
 	\RevisionLocation{Section ``Discussion,'' paragraphs on the TPS trust trade-off and reduced-trust directions.}
 	\begin{revisiontext}
 		The TPS trust assumption is the main architectural tradeoff.
-		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~4).
-		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS or provider can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
+		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~4).
+		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
 
 		Three directions follow.
 		First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
@@ -61,15 +61,11 @@
 
 	\RevisionLocation{Section ``Conclusion,'' limitations and future-directions paragraphs.}
 	\begin{revisiontext}
-		The results hold for a metadata-only public-chain adversary and are empirical.
-		Policy confidentiality against the TPS itself is not cryptographic but rests on the service following its workflow, and the evaluation's provider-operated TPS concentrates that trust at the provider.
-		The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
-		On-chain policy revocation and evolution govern future authorization decisions but do not retract data already released or enforce downstream cessation or deletion.
-		Timing, ordering, mempool, and off-chain channels, adaptive probing, and correlations between outcomes and policy classes are not modeled, and the leakage criterion has a measurable false-positive rate on corpora that execute each policy once.
+		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
+		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
+		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
+		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
 
-		Three directions follow.
-		Reduced-trust proof generation---collaborative SNARKs or attested execution---would relax the trust concentration that the TPS introduces and, with a holder-signed authorization context, remove the service's ability to reuse valid evidence.
-		A governed issuer registry with in-circuit membership and revocation witnesses would turn the credential path into an institutional guarantee.
-		And extending the evaluation to active adversaries and to the timing and ordering channels excluded here would test whether transcript normalization remains sufficient once the observer is no longer passive.
+		The next steps are therefore clear: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
 	\end{revisiontext}
 \end{reviewresponse}

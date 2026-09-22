@@ -13,10 +13,10 @@
 
 	A new table in the Design section classifies each consent feature as decided in-circuit, decided on-chain by the access-control contract from public state, committed but not decided at request time, or not provided. It also states the compiler's composition limits and distinguishes institution-specific allowlists from institutional or ethics approval, which remains an out-of-circuit step. Policy revocation and resource rebinding govern future authorizations but cannot retract data already released or enforce downstream duties.
 
-	The Conclusion lists the unsupported features among its limitations. The Discussion proposes a governed issuer registry with in-circuit membership and non-revocation witnesses, together with holder-authorized presentation through a per-request signature. These extensions could preserve the Boolean interpreter and the fixed public-signal shape, but they would require a revised circuit and new proving and verification keys.
+	The Conclusion lists the unsupported features among its limitations; the Design table separately states that policy revocation and resource rebinding affect future decisions only. The Discussion proposes a governed issuer registry with in-circuit membership and non-revocation witnesses, together with holder-authorized presentation through a per-request signature. These extensions could preserve the Boolean interpreter and the fixed public-signal shape, but they would require a revised circuit and new proving and verification keys.
 
 	\textbf{Changes in the manuscript.}
-	The supported policy class and its composition rules are now stated explicitly in the Design section and summarized feature by feature in a new table. The Discussion distinguishes implementable extensions from current guarantees, and the Conclusion lists the unsupported features and the prospective-only effect of policy withdrawal.
+	The supported policy class and its composition rules are now stated explicitly in the Design section and summarized feature by feature in a new table. The Discussion distinguishes implementable extensions from current guarantees, and the Conclusion lists the unsupported features.
 
 	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' paragraph ``Scope of the supported policies.''}
 	\begin{revisiontext}
@@ -57,7 +57,9 @@
 
 	\RevisionLocation{Section ``Conclusion,'' third paragraph.}
 	\begin{revisiontext}
-		The supported policy class is an access-time checker for bounded Boolean policies over standardized terms: institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation stay outside the proved statement.
-		On-chain policy revocation and evolution govern future authorization decisions but do not retract data already released or enforce downstream cessation or deletion.
+		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
+		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
+		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
+		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
 	\end{revisiontext}
 	\end{reviewresponse}

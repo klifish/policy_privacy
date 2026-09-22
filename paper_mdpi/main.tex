@@ -42,8 +42,22 @@
 
 % --- misc ---
 \usepackage{pifont}
+\usepackage{longtable}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
+
+% Keep consecutive tables together near the top of float-only pages instead of
+% stretching the inter-float glue across the full page.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{12pt plus 2pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\setcounter{topnumber}{5}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.80}
 
 % Long identifiers such as controlled\_difference are single unbreakable words, and the
 % single-column MDPI text block is narrower than IEEEtran's two-column measure. Permit a
@@ -111,10 +125,9 @@
 %=================================================================
 % Abbreviations. MDPI renders this via \abbreviations in the back matter.
 \abbreviations{Abbreviations}{
-The following abbreviations are used in this manuscript:\\
+The following abbreviations are used in this manuscript:
 
-\noindent
-\begin{tabular}{@{}ll@{}}
+\begin{longtable}{@{}ll@{}}
 TPS-ZKPI & Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter \\
 TPS & Trusted Proof Service \\
 ACM & Access-Control Manager \\
@@ -136,7 +149,7 @@ ARI & Adjusted Rand Index \\
 NMI & Normalized Mutual Information \\
 LR & Logistic Regression \\
 RF & Random Forest \\
-\end{tabular}
+\end{longtable}
 }
 
 %=================================================================
