@@ -5,32 +5,37 @@
 \subsection{Dataset and corpus generation}
 \label{sec:eval-dataset}
 
-\noindent\textbf{Shared corpus.} We evaluate all three objectives on one policy corpus, so the supervised attacks and the clustering cross-check see the same transactions.
-The corpus holds \textbf{1077 distinct policies} run as \textbf{1773 on-chain executions} on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
+\textbf{Shared corpus.} We evaluate all three objectives on one policy corpus, so the supervised attacks and the clustering cross-check see the same transactions.
+The corpus holds 1077 distinct policies run as 1773 on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
 The policies are produced by a deterministic generator with a fixed seed (\texttt{unified-decoupled-2026}).
 For reproducibility, this generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate; this testing key does not model issuer governance or production key management.
+
 For each policy the generator picks its content and its structure.
 The content is a set of DUO data-use terms drawn from ten terms: five ontology-bound terms, each checked against a code set from a biomedical vocabulary (DS against ICD-10, RS against the Ontology for Biomedical Investigations, OBI~\cite{bandrowski2016ontology}, POA against HANCESTRO, GS against ISO~3166, CC against SNOMED~CT), and five profile-backed terms (GRU, HMB, NMDS, GSO, NCU) that are derived from the signed claims of the requester's profile credential (Section~\ref{sec:design}).
 The structure is the logical form joining the terms; whitelist sizes are drawn once per policy from a global set of buckets, independently of the logical form, so that the four structural axes of Section~\ref{sec:eval-spp} are not functions of one another.
 For example, one generated policy permits research-specific and disease-specific use (DUO terms RS and DS) and grants access only when \emph{both} conditions hold, joined by \texttt{AND}: the study design belongs to the OBI \emph{observational and comparative designs} family, and the requested record falls in the ICD-10 \emph{diseases of the circulatory system} chapter.
 Each condition is one predicate---hence the two predicates---and each is checked against a whitelist of the codes it admits: $8$ OBI study-design codes and $8$ ICD-10 codes drawn from that chapter, the ``medium'' parameter-size bucket of Table~\ref{tab:corpus}.
-Every code set is a real subset of its vocabulary (each of the $30$ scopes holds at least $32$ resolvable identifiers), and the recorded whitelist size is the number of leaves actually committed.
+
+\input{tables/tab_corpus.tex}
+
+Every code set is a subset of its vocabulary, and the recorded whitelist size is the number of leaves actually committed.
 Table~\ref{tab:corpus} gives the resulting counts for every label and structural bucket.
 
-\noindent\textbf{Two-layer execution design.} We run the policies in two layers that serve different needs.
+\textbf{Two-layer execution design.} We run the policies in two layers that serve different needs.
 The \emph{coverage layer} runs $1053$ policies once each.
 It provides breadth, spreading distinct policies across the content labels and structural buckets, so the PCH and SPP attacks have enough different policies to train on one set and test on another.
+
 The \emph{depth layer} runs $24$ policies $30$ times each ($720$ executions).
 It provides depth, which the PI attacks need because they compare two policies execution-by-execution, and for that each policy must have multiple executions of its own.
 This layer is what lets PI form its $127$ balanced $30$-vs-$30$ pairs and run the per-pair clustering check (Section~\ref{sec:eval-method}).
 
-\noindent\textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and the ten ICD-10 chapters, sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
-Category-level labels are also the right granularity for the privacy question: the observer wants to know whether the \emph{category} of permitted use or disease leaks.
+\textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and the ten ICD-10 chapters, sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
+Category-level labels are also the feasible granularity for the privacy question: the observer wants to know whether the \emph{category} of permitted use or disease leaks.
 This choice is conservative.
 A coarse label has more executions behind it than a rare leaf term, and more data makes the attack \emph{stronger}; so if the attack cannot recover a coarse label, it would fail even more clearly on a fine one.
 Passing at the category level therefore does not hide a leak that finer labels would expose.
 The restriction also cannot flatter the defenses, which behave the same whatever content a policy carries: the commitment-only interface and gas padding are content-agnostic by construction (Section~\ref{sec:design}).
 
-\noindent\textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.
-All $1773$ executions completed with the outcome the generator planned (every request was granted), and the feature file holds all of them.
+\textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.
+All executions completed with the outcome the generator planned, and the feature file holds all of them.
 As established in Section~\ref{sec:eval-threat}, transcript normalization leaves gas as the only policy-dependent channel, so the residual per-transaction variation the attacker sees is confined to the two gas measurements.

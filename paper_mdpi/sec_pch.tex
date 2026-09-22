@@ -2,21 +2,44 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-\noindent\textbf{Property.} PCH requires that the public-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes it references---better than chance.
+\textbf{Property.} PCH requires that the public-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes DS references---better than chance.
 
-\noindent\textbf{Scope of the labels.} The attack targets the ten DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no methods development (NMDS), and genetic studies only (GSO)---and disease codes aggregated to the ten ICD-10 chapters. This label restriction, its statistical-power rationale, and why category-level granularity is a conservative choice are detailed in Section~\ref{sec:eval-dataset}.
+\textbf{Scope of the labels.} The attack targets the ten DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no methods development (NMDS), and genetic studies only (GSO)---and disease codes aggregated to the ten ICD-10 chapters. This label restriction, its statistical-power rationale, and why category-level granularity is a conservative choice are detailed in Section~\ref{sec:eval-dataset}.
 
-\noindent\textbf{Supervised attack.} Each DUO term defines a one-vs-rest binary task, on which we run the multi-seed pipeline of Section~\ref{sec:eval-method}.
-Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ gate, and with the AUC leg unmet none approaches the failure criterion.
+\textbf{Supervised attack.} Each DUO term defines a one-vs-rest binary task, on which we run the multi-seed pipeline of Section~\ref{sec:eval-method}.
+Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ gate, and with the AUC unmet none approaches the failure criterion.
+
+\input{tables/tab_pch_terms.tex}
+
 The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the ICD-bearing rows only, median test $n{=}127$ per chapter; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
-Chapters ch1, ch2, and ch4 sit just above the AUC line (mean AUC $0.558$--$0.570$) but reproduce in at most $23\%$ of seeds, so they are boundary cases rather than stable channels.
+Chapters ch1, ch2, and ch4 sit just above the AUC line (mean AUC $0.558$--$0.570$) but reproduce in at most $23\%$ of seeds, so they are boundary cases.
 Chapter ch5 (diseases of the nervous system) meets both legs: mean AUC $0.667$ with $53\%$ of seeds significant.
 We report it as a FAIL of the criterion and examine below what the classifier separates.
 
-\noindent\textbf{What the ch5 classifier separates.} The two gas features are the only non-constant observables, and the access-gas measurement is itself the sum of two parts: the target that the TPS draws uniformly at random from the padding band for that execution (Section~\ref{sec:design}) and the gas that the padded call consumes beyond it, which on Amoy is a near-constant $4{,}661$--$4{,}750$ gas for all $1773$ executions.
-The observer sees only the sum, but the capture log records every target, so we can ask how much of the separability survives once the target is subtracted.
-None does.
-Over all $20$ PCH tasks the rank-based AUC of the access gas coincides with the AUC of the target alone to three decimals, and the AUC of the residual (gas minus target) lies between $0.47$ and $0.52$; for ch5 the gas and target AUCs are both $0.601$ and the residual AUC is $0.472$.
-The $34$ ch5 policies simply drew targets whose mean lies $33{,}000$ gas above that of the other $388$ ICD-bearing policies, a $3.2\sigma$ deviation for a uniform draw of that size; because each coverage-layer policy is executed once, the $30$ seeds resample the same $34$ fixed draws, which is why the deviation reproduces across seeds.
-Rerunning the of-record protocol unchanged on the residual in place of the access gas gives mean AUC $0.556$ with $10\%$ significant seeds (logistic regression) and $0.561$ with $17\%$ (random forest), a PASS; rerunning it on the target alone reproduces the FAIL ($0.686$, $63\%$).
-The padded gas therefore carries a policy-independent random draw that happened to correlate with one chapter in this corpus, not information about the chapter; Section~\ref{sec:eval-method} quantifies how often the criterion produces such a false positive.
+\input{tables/tab_pch_icd10.tex}
+
+\textbf{What the ch5 classifier separates.} The two gas measurements are the only non-constant observables.
+For each padded access transaction, the recorded gas can be decomposed as
+\[
+	\texttt{accessGasUsed}
+	=
+	\texttt{padTarget}
+	+
+	\texttt{residualOverhead},
+\]
+where the TPS draws \texttt{padTarget} uniformly from the padding band (Section~\ref{sec:design}).
+On Polygon Amoy, the residual overhead ranges only from $4{,}661$ to $4{,}750$ gas across all $1{,}773$ executions, so almost all variation in the padded access gas comes from the randomized target.
+The observer sees only the total gas, whereas the capture log also records each padding target.
+We therefore rerun the analysis on $\texttt{accessGasUsed}-\texttt{padTarget}$ to determine whether the ch5 separation remains after removing the randomized component.
+\textbf{This subtraction is diagnostic of the padded transcript only: the resulting residual overhead is not the gas usage of an unpadded execution.}
+
+Across all $20$ PCH tasks, the rank-based AUC of the padded access gas coincides with that of the padding target to three decimal places, while the residual AUC lies between $0.47$ and $0.52$.
+For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $0.472$.
+The $34$ ch5 policies happened to draw targets whose mean is $33{,}000$ gas higher than that of the other $388$ ICD-bearing policies, a $3.2\sigma$ deviation for a uniform draw of that size.
+Because each coverage-layer policy is executed once, the $30$ evaluation seeds repeatedly partition the same fixed draws, causing this accidental difference to reproduce across seeds.
+
+Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ with $10\%$ significant seeds for logistic regression and $0.561$ with $17\%$ significant seeds for random forest, both yielding PASS.
+Applying it to the padding target alone reproduces the observed FAIL ($0.686$, $63\%$).
+Moreover, in the separate unpadded ablation, ch5 is already near chance (AUC $0.510$ for logistic regression and $0.466$ for random forest).
+Thus, for ch5 specifically, we find no detectable policy-dependent gas signal without padding; the FAIL in the padded corpus is instead caused by an accidental finite-corpus correlation between the random padding targets and the ch5 labels.
+This task-specific result does not imply that padding is unnecessary: the unpadded ablation reveals substantial leakage for many other policy contrasts, as shown in Section~\ref{sec:eval-ablation}.

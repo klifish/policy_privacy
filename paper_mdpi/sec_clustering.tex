@@ -8,6 +8,9 @@
 
 The supervised attacks (Sections~\ref{sec:eval-pch}--\ref{sec:eval-spp}) assume an adversary who can train on labeled executions.
 A weaker but assumption-free attacker simply asks whether the on-chain gas features \emph{cluster} along the hidden property with no supervision at all.
+
+\input{tables/tab_clustering_summary.tex}
+
 Table~\ref{tab:clustering-summary} consolidates this attack across all three objectives: K-Means recovers essentially nothing, with ARI within $\pm 0.003$ and NMI below $0.03$ for every DUO, PI, and SPP target except one.
 NMI values are interpreted against the null finite-sample simulation in Section~\ref{sec:eval-nmi-sensitivity}, which shows that the slightly higher ICD-10 NMI is consistent with small-sample inflation rather than recoverable signal.
 The exception is the SPP \texttt{nestingDepth} axis, whose ARI of $0.007$ is tiny in magnitude but permutation-significant ($p_{\mathrm{ARI}}=0.005$).
@@ -15,11 +18,11 @@ It is the unsupervised face of the \texttt{medium}/\texttt{deep} contrast of Sec
 With that qualification, the unsupervised attacker agrees with the supervised verdict as a second, label-free attack family on the same dataset (Figure~\ref{fig:clust-summary}).
 
 \begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{clustering_summary_unified.png}
-  \caption{Unsupervised K-Means clustering across all three objectives: ARI (top) and
-    NMI (bottom) per target.}
-  \label{fig:clust-summary}
+	\centering
+	\includegraphics[width=\linewidth]{clustering_summary_unified.png}
+	\caption{Unsupervised K-Means clustering across all three objectives: ARI (top) and
+		NMI (bottom) per target.}
+	\label{fig:clust-summary}
 \end{figure}
 
 \noindent\textbf{Removing sample-size confounds.} The PI clustering inputs are rebalanced into $30$-vs-$30$ contrasts and permutation-debiased as described in Section~\ref{sec:eval-method}, so the near-zero ARI/NMI is not a degenerate-measurement artifact: over the $127$ balanced pairs the mean ARI is $0.002$, the mean debiased NMI $0.001$, and $6$ pairs ($5\%$) reach nominal significance, the fraction expected under the null at $\alpha=0.05$. The conclusion matches the supervised PI verdict (Section~\ref{sec:eval-pi}), and the ablation (Section~\ref{sec:eval-ablation}) confirms the clustering device itself is live: on the un-padded transcript the same balanced pairs cluster with a mean debiased NMI $0.67$ higher, and the signal disappears after normalization.
