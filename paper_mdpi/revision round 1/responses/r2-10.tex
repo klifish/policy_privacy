@@ -25,7 +25,7 @@
 		In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data.
 		PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext.
 		Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself.
-		We cite the original constructions because the later systems inherit their trust and disclosure properties, which is what matters for this paper: these primitives establish who may obtain the data, and how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~3.
+		These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~3.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Related Work,'' paragraph on hidden-policy access control.}
