@@ -49,7 +49,10 @@ const { buildWitness, generateProof, WASM_PATH, ZKEY_PATH, VKEY_PATH } = require
 // Constants (must match circuits/policy_privacy_main_instance.circom and the
 // fixed slot layout in compiler/policy_generator.js)
 // ---------------------------------------------------------------------------
-const MERKLE_LEVELS = 8;
+// The frozen production circuit uses eight levels. Offline capacity benchmarks
+// may override this in a child process; all normal tests and deployments leave
+// the variable unset and retain the RC1 value.
+const MERKLE_LEVELS = Number(process.env.PROTOCOL_MERKLE_LEVELS || 8);
 const MAX_UINT32 = 4294967295;
 const ONTOLOGY_EPOCH = 2026;
 const ONTOLOGY_POLICY_ID = (slot) => 100 + slot;
@@ -230,9 +233,14 @@ async function buildTermFixtures() {
 
   const allowlists = {};
   const decoyAllowlists = {};
-  for (const [term, { scopeKind, scopeId }] of Object.entries(SCOPED_TERMS)) {
-    allowlists[term] = await buildRequesterAllowlist({ requesterIds: [requesterIds.alice, requesterIds.bob], scopeKind, scopeId });
-    decoyAllowlists[term] = await buildRequesterAllowlist({ requesterIds: [requesterIds.decoy], scopeKind, scopeId });
+  // Requester allowlists are part of the frozen eight-level production
+  // protocol. Non-eight-level benchmark variants exercise ontology slots only,
+  // so do not weaken the production helper's depth guard for a synthetic run.
+  if (MERKLE_LEVELS === 8) {
+    for (const [term, { scopeKind, scopeId }] of Object.entries(SCOPED_TERMS)) {
+      allowlists[term] = await buildRequesterAllowlist({ requesterIds: [requesterIds.alice, requesterIds.bob], scopeKind, scopeId });
+      decoyAllowlists[term] = await buildRequesterAllowlist({ requesterIds: [requesterIds.decoy], scopeKind, scopeId });
+    }
   }
 
   const issuers = {};

@@ -1,0 +1,3580 @@
+{
+  "generatedAt": "2026-09-22T14:45:59.298Z",
+  "host": {
+    "cpu": "Apple M1",
+    "cores": 8,
+    "node": "v22.22.0",
+    "platform": "darwin"
+  },
+  "circuit": {
+    "N": 13,
+    "M": 11,
+    "DEPTH": 64,
+    "MERKLE_LEVELS": 8,
+    "publicSignals": 5
+  },
+  "warmups": 5,
+  "policyRepetitions": 30,
+  "loadRequests": 100,
+  "policyScenarios": [
+    {
+      "id": "simple",
+      "label": "Simple",
+      "logic": "DS",
+      "tokens": 3,
+      "activePredicateSlots": 1,
+      "repetitions": 30,
+      "timings": {
+        "totalMs": {
+          "median": 925,
+          "p25": 856.25,
+          "p75": 957.75,
+          "p95": 1170.3499999999997
+        },
+        "witnessMs": {
+          "median": 353.5,
+          "p25": 343,
+          "p75": 361,
+          "p95": 417.59999999999997
+        },
+        "proveMs": {
+          "median": 545,
+          "p25": 490.25,
+          "p75": 569.75,
+          "p95": 745.6499999999999
+        },
+        "verifyMs": {
+          "median": 12,
+          "p25": 10.25,
+          "p75": 12,
+          "p95": 14
+        },
+        "backend": "rapidsnark",
+        "verified": true
+      },
+      "rawTimings": [
+        {
+          "totalMs": 834,
+          "witnessMs": 341,
+          "proveMs": 469,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 857,
+          "witnessMs": 341,
+          "proveMs": 490,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 837,
+          "witnessMs": 342,
+          "proveMs": 470,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 834,
+          "witnessMs": 342,
+          "proveMs": 469,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 842,
+          "witnessMs": 343,
+          "proveMs": 476,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 844,
+          "witnessMs": 345,
+          "proveMs": 476,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 832,
+          "witnessMs": 343,
+          "proveMs": 466,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 856,
+          "witnessMs": 343,
+          "proveMs": 491,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 851,
+          "witnessMs": 360,
+          "proveMs": 464,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 924,
+          "witnessMs": 344,
+          "proveMs": 552,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1106,
+          "witnessMs": 366,
+          "proveMs": 711,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 971,
+          "witnessMs": 372,
+          "proveMs": 573,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 941,
+          "witnessMs": 351,
+          "proveMs": 567,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 941,
+          "witnessMs": 339,
+          "proveMs": 577,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 940,
+          "witnessMs": 361,
+          "proveMs": 554,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 922,
+          "witnessMs": 352,
+          "proveMs": 545,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 977,
+          "witnessMs": 356,
+          "proveMs": 595,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 935,
+          "witnessMs": 359,
+          "proveMs": 550,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 935,
+          "witnessMs": 365,
+          "proveMs": 545,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 914,
+          "witnessMs": 354,
+          "proveMs": 535,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 958,
+          "witnessMs": 361,
+          "proveMs": 570,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 917,
+          "witnessMs": 353,
+          "proveMs": 538,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1047,
+          "witnessMs": 452,
+          "proveMs": 569,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 926,
+          "witnessMs": 357,
+          "proveMs": 543,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 957,
+          "witnessMs": 356,
+          "proveMs": 576,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1358,
+          "witnessMs": 411,
+          "proveMs": 917,
+          "verifyMs": 17,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1223,
+          "witnessMs": 423,
+          "proveMs": 774,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 958,
+          "witnessMs": 366,
+          "proveMs": 568,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 860,
+          "witnessMs": 343,
+          "proveMs": 493,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 871,
+          "witnessMs": 353,
+          "proveMs": 494,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "id": "ontology_heavy",
+      "label": "Ontology-heavy",
+      "logic": "DS AND RS AND POA AND GS AND CC",
+      "tokens": 19,
+      "activePredicateSlots": 5,
+      "repetitions": 30,
+      "timings": {
+        "totalMs": {
+          "median": 879.5,
+          "p25": 860.25,
+          "p75": 894.5,
+          "p95": 939.1
+        },
+        "witnessMs": {
+          "median": 348.5,
+          "p25": 344,
+          "p75": 353.75,
+          "p95": 390.9
+        },
+        "proveMs": {
+          "median": 505.5,
+          "p25": 487.25,
+          "p75": 511,
+          "p95": 550.1
+        },
+        "verifyMs": {
+          "median": 10,
+          "p25": 10,
+          "p75": 10,
+          "p95": 12
+        },
+        "backend": "rapidsnark",
+        "verified": true
+      },
+      "rawTimings": [
+        {
+          "totalMs": 871,
+          "witnessMs": 347,
+          "proveMs": 500,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 944,
+          "witnessMs": 370,
+          "proveMs": 549,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 895,
+          "witnessMs": 359,
+          "proveMs": 510,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 876,
+          "witnessMs": 349,
+          "proveMs": 503,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 926,
+          "witnessMs": 350,
+          "proveMs": 551,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 880,
+          "witnessMs": 347,
+          "proveMs": 510,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 888,
+          "witnessMs": 354,
+          "proveMs": 506,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 898,
+          "witnessMs": 364,
+          "proveMs": 511,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 879,
+          "witnessMs": 349,
+          "proveMs": 507,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 938,
+          "witnessMs": 408,
+          "proveMs": 505,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 870,
+          "witnessMs": 348,
+          "proveMs": 500,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 878,
+          "witnessMs": 350,
+          "proveMs": 502,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 880,
+          "witnessMs": 352,
+          "proveMs": 505,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 915,
+          "witnessMs": 359,
+          "proveMs": 532,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 886,
+          "witnessMs": 353,
+          "proveMs": 509,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 940,
+          "witnessMs": 399,
+          "proveMs": 517,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 880,
+          "witnessMs": 352,
+          "proveMs": 506,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 881,
+          "witnessMs": 346,
+          "proveMs": 512,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 855,
+          "witnessMs": 343,
+          "proveMs": 488,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 836,
+          "witnessMs": 343,
+          "proveMs": 470,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 831,
+          "witnessMs": 341,
+          "proveMs": 468,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 839,
+          "witnessMs": 343,
+          "proveMs": 473,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 845,
+          "witnessMs": 343,
+          "proveMs": 480,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 857,
+          "witnessMs": 346,
+          "proveMs": 487,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 893,
+          "witnessMs": 346,
+          "proveMs": 522,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 876,
+          "witnessMs": 381,
+          "proveMs": 472,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 920,
+          "witnessMs": 342,
+          "proveMs": 555,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 841,
+          "witnessMs": 344,
+          "proveMs": 474,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 833,
+          "witnessMs": 342,
+          "proveMs": 468,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 878,
+          "witnessMs": 344,
+          "proveMs": 511,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "id": "profile_heavy",
+      "label": "Profile-heavy",
+      "logic": "GRU AND HMB AND NMDS AND GSO AND NPUNCU AND NPOA AND NPU AND NCU",
+      "tokens": 31,
+      "activePredicateSlots": 1,
+      "repetitions": 30,
+      "timings": {
+        "totalMs": {
+          "median": 1479,
+          "p25": 1463.5,
+          "p75": 1498.75,
+          "p95": 1516.3
+        },
+        "witnessMs": {
+          "median": 337,
+          "p25": 335.25,
+          "p75": 338.75,
+          "p95": 349.04999999999995
+        },
+        "proveMs": {
+          "median": 491.5,
+          "p25": 478.25,
+          "p75": 506,
+          "p95": 522.3
+        },
+        "verifyMs": {
+          "median": 10,
+          "p25": 9,
+          "p75": 10,
+          "p95": 11
+        },
+        "backend": "rapidsnark",
+        "verified": true
+      },
+      "rawTimings": [
+        {
+          "totalMs": 1480,
+          "witnessMs": 338,
+          "proveMs": 491,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1486,
+          "witnessMs": 343,
+          "proveMs": 498,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1499,
+          "witnessMs": 337,
+          "proveMs": 518,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1513,
+          "witnessMs": 337,
+          "proveMs": 525,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1478,
+          "witnessMs": 335,
+          "proveMs": 495,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1465,
+          "witnessMs": 341,
+          "proveMs": 482,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1469,
+          "witnessMs": 337,
+          "proveMs": 490,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1484,
+          "witnessMs": 338,
+          "proveMs": 497,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1487,
+          "witnessMs": 336,
+          "proveMs": 497,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1491,
+          "witnessMs": 354,
+          "proveMs": 476,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1453,
+          "witnessMs": 337,
+          "proveMs": 473,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1458,
+          "witnessMs": 335,
+          "proveMs": 478,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1472,
+          "witnessMs": 337,
+          "proveMs": 484,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1458,
+          "witnessMs": 336,
+          "proveMs": 473,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1451,
+          "witnessMs": 335,
+          "proveMs": 470,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1473,
+          "witnessMs": 338,
+          "proveMs": 484,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1501,
+          "witnessMs": 340,
+          "proveMs": 500,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1497,
+          "witnessMs": 339,
+          "proveMs": 503,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1499,
+          "witnessMs": 337,
+          "proveMs": 509,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1457,
+          "witnessMs": 334,
+          "proveMs": 475,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1454,
+          "witnessMs": 335,
+          "proveMs": 477,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1498,
+          "witnessMs": 338,
+          "proveMs": 508,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1800,
+          "witnessMs": 369,
+          "proveMs": 690,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1519,
+          "witnessMs": 336,
+          "proveMs": 507,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1472,
+          "witnessMs": 339,
+          "proveMs": 479,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1502,
+          "witnessMs": 335,
+          "proveMs": 511,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1463,
+          "witnessMs": 334,
+          "proveMs": 481,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1460,
+          "witnessMs": 337,
+          "proveMs": 478,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1476,
+          "witnessMs": 335,
+          "proveMs": 492,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1513,
+          "witnessMs": 339,
+          "proveMs": 519,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "id": "max_mixed",
+      "label": "Max-mixed",
+      "logic": "DS AND RS AND POA AND GS AND CC AND US AND PS AND IS AND MOR AND TS AND GRU AND HMB AND NMDS AND GSO AND NPUNCU AND NPOA AND NPU AND NCU",
+      "tokens": 61,
+      "activePredicateSlots": 11,
+      "repetitions": 30,
+      "timings": {
+        "totalMs": {
+          "median": 1467.5,
+          "p25": 1459.5,
+          "p75": 1482.5,
+          "p95": 1537.6999999999998
+        },
+        "witnessMs": {
+          "median": 335,
+          "p25": 334,
+          "p75": 336,
+          "p95": 345.59999999999997
+        },
+        "proveMs": {
+          "median": 484,
+          "p25": 475.5,
+          "p75": 494.5,
+          "p95": 537.3499999999998
+        },
+        "verifyMs": {
+          "median": 10,
+          "p25": 9,
+          "p75": 10,
+          "p95": 10
+        },
+        "backend": "rapidsnark",
+        "verified": true
+      },
+      "rawTimings": [
+        {
+          "totalMs": 1486,
+          "witnessMs": 333,
+          "proveMs": 503,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1463,
+          "witnessMs": 335,
+          "proveMs": 470,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1473,
+          "witnessMs": 338,
+          "proveMs": 490,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1465,
+          "witnessMs": 335,
+          "proveMs": 484,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1495,
+          "witnessMs": 337,
+          "proveMs": 506,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1553,
+          "witnessMs": 336,
+          "proveMs": 563,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1581,
+          "witnessMs": 336,
+          "proveMs": 598,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1519,
+          "witnessMs": 335,
+          "proveMs": 495,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1487,
+          "witnessMs": 351,
+          "proveMs": 487,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1455,
+          "witnessMs": 334,
+          "proveMs": 481,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1459,
+          "witnessMs": 334,
+          "proveMs": 479,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1446,
+          "witnessMs": 335,
+          "proveMs": 467,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1468,
+          "witnessMs": 334,
+          "proveMs": 478,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1478,
+          "witnessMs": 339,
+          "proveMs": 497,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1478,
+          "witnessMs": 335,
+          "proveMs": 495,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1477,
+          "witnessMs": 354,
+          "proveMs": 475,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1462,
+          "witnessMs": 334,
+          "proveMs": 483,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1467,
+          "witnessMs": 334,
+          "proveMs": 485,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1464,
+          "witnessMs": 335,
+          "proveMs": 488,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1461,
+          "witnessMs": 335,
+          "proveMs": 478,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1484,
+          "witnessMs": 337,
+          "proveMs": 490,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1453,
+          "witnessMs": 337,
+          "proveMs": 472,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1453,
+          "witnessMs": 336,
+          "proveMs": 471,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1455,
+          "witnessMs": 336,
+          "proveMs": 474,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1450,
+          "witnessMs": 334,
+          "proveMs": 471,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1470,
+          "witnessMs": 333,
+          "proveMs": 493,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1484,
+          "witnessMs": 336,
+          "proveMs": 503,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1462,
+          "witnessMs": 334,
+          "proveMs": 477,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1470,
+          "witnessMs": 335,
+          "proveMs": 484,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1445,
+          "witnessMs": 334,
+          "proveMs": 470,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    }
+  ],
+  "load": [
+    {
+      "concurrency": 1,
+      "requests": 100,
+      "wallMs": 124201,
+      "throughputPerSecond": 0.8051464964050209,
+      "latencyMs": {
+        "median": 1230,
+        "p25": 892.5,
+        "p75": 1535,
+        "p95": 1659.4
+      },
+      "verified": true,
+      "rawTimings": [
+        {
+          "totalMs": 849,
+          "witnessMs": 352,
+          "proveMs": 472,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 843,
+          "witnessMs": 342,
+          "proveMs": 478,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1455,
+          "witnessMs": 335,
+          "proveMs": 473,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1462,
+          "witnessMs": 335,
+          "proveMs": 477,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 881,
+          "witnessMs": 337,
+          "proveMs": 522,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 863,
+          "witnessMs": 345,
+          "proveMs": 495,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1527,
+          "witnessMs": 339,
+          "proveMs": 542,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1454,
+          "witnessMs": 338,
+          "proveMs": 472,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 926,
+          "witnessMs": 339,
+          "proveMs": 564,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 872,
+          "witnessMs": 357,
+          "proveMs": 492,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1462,
+          "witnessMs": 335,
+          "proveMs": 478,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1467,
+          "witnessMs": 338,
+          "proveMs": 480,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 839,
+          "witnessMs": 340,
+          "proveMs": 477,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 868,
+          "witnessMs": 343,
+          "proveMs": 501,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1478,
+          "witnessMs": 336,
+          "proveMs": 494,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1489,
+          "witnessMs": 335,
+          "proveMs": 504,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 838,
+          "witnessMs": 340,
+          "proveMs": 475,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 861,
+          "witnessMs": 343,
+          "proveMs": 496,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1502,
+          "witnessMs": 339,
+          "proveMs": 512,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1501,
+          "witnessMs": 337,
+          "proveMs": 512,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 871,
+          "witnessMs": 346,
+          "proveMs": 502,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 893,
+          "witnessMs": 347,
+          "proveMs": 523,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1504,
+          "witnessMs": 338,
+          "proveMs": 514,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1502,
+          "witnessMs": 359,
+          "proveMs": 494,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 846,
+          "witnessMs": 337,
+          "proveMs": 485,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 864,
+          "witnessMs": 340,
+          "proveMs": 499,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1555,
+          "witnessMs": 337,
+          "proveMs": 512,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1499,
+          "witnessMs": 335,
+          "proveMs": 519,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 856,
+          "witnessMs": 339,
+          "proveMs": 495,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 982,
+          "witnessMs": 358,
+          "proveMs": 600,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2806,
+          "witnessMs": 342,
+          "proveMs": 1766,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1817,
+          "witnessMs": 384,
+          "proveMs": 685,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 893,
+          "witnessMs": 353,
+          "proveMs": 515,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 930,
+          "witnessMs": 373,
+          "proveMs": 533,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1684,
+          "witnessMs": 345,
+          "proveMs": 674,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1535,
+          "witnessMs": 343,
+          "proveMs": 527,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 968,
+          "witnessMs": 344,
+          "proveMs": 601,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 939,
+          "witnessMs": 351,
+          "proveMs": 566,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1518,
+          "witnessMs": 343,
+          "proveMs": 510,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1555,
+          "witnessMs": 360,
+          "proveMs": 524,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 870,
+          "witnessMs": 342,
+          "proveMs": 505,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 972,
+          "witnessMs": 355,
+          "proveMs": 594,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1567,
+          "witnessMs": 376,
+          "proveMs": 523,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1535,
+          "witnessMs": 343,
+          "proveMs": 519,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 885,
+          "witnessMs": 348,
+          "proveMs": 514,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 954,
+          "witnessMs": 346,
+          "proveMs": 584,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1576,
+          "witnessMs": 351,
+          "proveMs": 521,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1551,
+          "witnessMs": 347,
+          "proveMs": 538,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1006,
+          "witnessMs": 354,
+          "proveMs": 629,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 914,
+          "witnessMs": 354,
+          "proveMs": 536,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1575,
+          "witnessMs": 354,
+          "proveMs": 547,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1637,
+          "witnessMs": 403,
+          "proveMs": 551,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 931,
+          "witnessMs": 352,
+          "proveMs": 555,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 966,
+          "witnessMs": 356,
+          "proveMs": 587,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1857,
+          "witnessMs": 373,
+          "proveMs": 699,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1607,
+          "witnessMs": 361,
+          "proveMs": 562,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 990,
+          "witnessMs": 389,
+          "proveMs": 574,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 991,
+          "witnessMs": 389,
+          "proveMs": 577,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1602,
+          "witnessMs": 352,
+          "proveMs": 565,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1617,
+          "witnessMs": 358,
+          "proveMs": 548,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 922,
+          "witnessMs": 352,
+          "proveMs": 546,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 926,
+          "witnessMs": 359,
+          "proveMs": 543,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1568,
+          "witnessMs": 349,
+          "proveMs": 543,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1573,
+          "witnessMs": 345,
+          "proveMs": 509,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 979,
+          "witnessMs": 391,
+          "proveMs": 564,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 875,
+          "witnessMs": 351,
+          "proveMs": 501,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1619,
+          "witnessMs": 383,
+          "proveMs": 531,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1659,
+          "witnessMs": 340,
+          "proveMs": 536,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 896,
+          "witnessMs": 344,
+          "proveMs": 528,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 883,
+          "witnessMs": 350,
+          "proveMs": 510,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1505,
+          "witnessMs": 342,
+          "proveMs": 489,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1508,
+          "witnessMs": 357,
+          "proveMs": 496,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 908,
+          "witnessMs": 355,
+          "proveMs": 530,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 869,
+          "witnessMs": 347,
+          "proveMs": 499,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1595,
+          "witnessMs": 351,
+          "proveMs": 515,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1534,
+          "witnessMs": 343,
+          "proveMs": 525,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 871,
+          "witnessMs": 344,
+          "proveMs": 503,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 898,
+          "witnessMs": 355,
+          "proveMs": 520,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1506,
+          "witnessMs": 347,
+          "proveMs": 493,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1555,
+          "witnessMs": 343,
+          "proveMs": 551,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 915,
+          "witnessMs": 359,
+          "proveMs": 531,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 888,
+          "witnessMs": 357,
+          "proveMs": 507,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1533,
+          "witnessMs": 352,
+          "proveMs": 511,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1529,
+          "witnessMs": 341,
+          "proveMs": 494,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 865,
+          "witnessMs": 344,
+          "proveMs": 498,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 911,
+          "witnessMs": 351,
+          "proveMs": 536,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1539,
+          "witnessMs": 340,
+          "proveMs": 542,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1534,
+          "witnessMs": 344,
+          "proveMs": 523,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 864,
+          "witnessMs": 349,
+          "proveMs": 493,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 884,
+          "witnessMs": 345,
+          "proveMs": 515,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1659,
+          "witnessMs": 408,
+          "proveMs": 576,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1667,
+          "witnessMs": 347,
+          "proveMs": 633,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 891,
+          "witnessMs": 361,
+          "proveMs": 506,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 911,
+          "witnessMs": 370,
+          "proveMs": 518,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1514,
+          "witnessMs": 340,
+          "proveMs": 496,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1518,
+          "witnessMs": 340,
+          "proveMs": 517,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 899,
+          "witnessMs": 341,
+          "proveMs": 535,
+          "verifyMs": 9,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 872,
+          "witnessMs": 353,
+          "proveMs": 495,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1507,
+          "witnessMs": 350,
+          "proveMs": 499,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1592,
+          "witnessMs": 410,
+          "proveMs": 515,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "concurrency": 2,
+      "requests": 100,
+      "wallMs": 127131,
+      "throughputPerSecond": 0.7865902100982451,
+      "latencyMs": {
+        "median": 2492,
+        "p25": 1707.5,
+        "p75": 3052,
+        "p95": 3805.2
+      },
+      "verified": true,
+      "rawTimings": [
+        {
+          "totalMs": 2380,
+          "witnessMs": 614,
+          "proveMs": 1162,
+          "verifyMs": 577,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1693,
+          "witnessMs": 615,
+          "proveMs": 1029,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2866,
+          "witnessMs": 1249,
+          "proveMs": 938,
+          "verifyMs": 18,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2555,
+          "witnessMs": 266,
+          "proveMs": 1294,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1320,
+          "witnessMs": 400,
+          "proveMs": 884,
+          "verifyMs": 22,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1643,
+          "witnessMs": 465,
+          "proveMs": 767,
+          "verifyMs": 396,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3369,
+          "witnessMs": 1136,
+          "proveMs": 1022,
+          "verifyMs": 350,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2308,
+          "witnessMs": 247,
+          "proveMs": 990,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1644,
+          "witnessMs": 611,
+          "proveMs": 1005,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2072,
+          "witnessMs": 253,
+          "proveMs": 1139,
+          "verifyMs": 666,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3762,
+          "witnessMs": 1689,
+          "proveMs": 1249,
+          "verifyMs": 36,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2954,
+          "witnessMs": 296,
+          "proveMs": 1248,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1910,
+          "witnessMs": 654,
+          "proveMs": 1228,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2128,
+          "witnessMs": 638,
+          "proveMs": 1234,
+          "verifyMs": 242,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3450,
+          "witnessMs": 783,
+          "proveMs": 1131,
+          "verifyMs": 369,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2832,
+          "witnessMs": 593,
+          "proveMs": 1102,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1473,
+          "witnessMs": 414,
+          "proveMs": 1030,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1842,
+          "witnessMs": 509,
+          "proveMs": 896,
+          "verifyMs": 422,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3333,
+          "witnessMs": 1179,
+          "proveMs": 1210,
+          "verifyMs": 22,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3010,
+          "witnessMs": 282,
+          "proveMs": 1635,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1582,
+          "witnessMs": 453,
+          "proveMs": 1097,
+          "verifyMs": 16,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3515,
+          "witnessMs": 540,
+          "proveMs": 1708,
+          "verifyMs": 1253,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4804,
+          "witnessMs": 1534,
+          "proveMs": 1339,
+          "verifyMs": 24,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2830,
+          "witnessMs": 284,
+          "proveMs": 1398,
+          "verifyMs": 343,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1353,
+          "witnessMs": 419,
+          "proveMs": 904,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1715,
+          "witnessMs": 474,
+          "proveMs": 772,
+          "verifyMs": 456,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2965,
+          "witnessMs": 1267,
+          "proveMs": 938,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2658,
+          "witnessMs": 380,
+          "proveMs": 1263,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1393,
+          "witnessMs": 454,
+          "proveMs": 881,
+          "verifyMs": 27,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2162,
+          "witnessMs": 515,
+          "proveMs": 734,
+          "verifyMs": 898,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3115,
+          "witnessMs": 1289,
+          "proveMs": 977,
+          "verifyMs": 16,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2276,
+          "witnessMs": 258,
+          "proveMs": 1022,
+          "verifyMs": 334,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1695,
+          "witnessMs": 664,
+          "proveMs": 1001,
+          "verifyMs": 16,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2605,
+          "witnessMs": 342,
+          "proveMs": 1071,
+          "verifyMs": 1178,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3789,
+          "witnessMs": 1757,
+          "proveMs": 1358,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2888,
+          "witnessMs": 384,
+          "proveMs": 1378,
+          "verifyMs": 367,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1825,
+          "witnessMs": 658,
+          "proveMs": 1130,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1789,
+          "witnessMs": 284,
+          "proveMs": 1274,
+          "verifyMs": 217,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3377,
+          "witnessMs": 959,
+          "proveMs": 1062,
+          "verifyMs": 360,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2657,
+          "witnessMs": 262,
+          "proveMs": 1025,
+          "verifyMs": 17,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1617,
+          "witnessMs": 623,
+          "proveMs": 960,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1647,
+          "witnessMs": 304,
+          "proveMs": 1130,
+          "verifyMs": 199,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3569,
+          "witnessMs": 770,
+          "proveMs": 1100,
+          "verifyMs": 361,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2791,
+          "witnessMs": 576,
+          "proveMs": 1069,
+          "verifyMs": 16,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1700,
+          "witnessMs": 638,
+          "proveMs": 1038,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1645,
+          "witnessMs": 267,
+          "proveMs": 1149,
+          "verifyMs": 214,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3031,
+          "witnessMs": 1016,
+          "proveMs": 1041,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3145,
+          "witnessMs": 324,
+          "proveMs": 1416,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1431,
+          "witnessMs": 461,
+          "proveMs": 941,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2070,
+          "witnessMs": 489,
+          "proveMs": 778,
+          "verifyMs": 790,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2694,
+          "witnessMs": 1010,
+          "proveMs": 936,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2047,
+          "witnessMs": 446,
+          "proveMs": 939,
+          "verifyMs": 12,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1443,
+          "witnessMs": 451,
+          "proveMs": 963,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1841,
+          "witnessMs": 420,
+          "proveMs": 910,
+          "verifyMs": 498,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2867,
+          "witnessMs": 1064,
+          "proveMs": 988,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2554,
+          "witnessMs": 478,
+          "proveMs": 1046,
+          "verifyMs": 14,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1638,
+          "witnessMs": 534,
+          "proveMs": 1071,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1827,
+          "witnessMs": 430,
+          "proveMs": 976,
+          "verifyMs": 408,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 6811,
+          "witnessMs": 2094,
+          "proveMs": 3820,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 6184,
+          "witnessMs": 1743,
+          "proveMs": 3063,
+          "verifyMs": 34,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2040,
+          "witnessMs": 757,
+          "proveMs": 1248,
+          "verifyMs": 15,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2698,
+          "witnessMs": 693,
+          "proveMs": 1370,
+          "verifyMs": 621,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3542,
+          "witnessMs": 1159,
+          "proveMs": 1446,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3200,
+          "witnessMs": 256,
+          "proveMs": 1507,
+          "verifyMs": 346,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1710,
+          "witnessMs": 641,
+          "proveMs": 1031,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2530,
+          "witnessMs": 316,
+          "proveMs": 1134,
+          "verifyMs": 1067,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3904,
+          "witnessMs": 1396,
+          "proveMs": 1580,
+          "verifyMs": 78,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3423,
+          "witnessMs": 326,
+          "proveMs": 2348,
+          "verifyMs": 29,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1842,
+          "witnessMs": 755,
+          "proveMs": 1045,
+          "verifyMs": 18,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1986,
+          "witnessMs": 619,
+          "proveMs": 1001,
+          "verifyMs": 349,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3800,
+          "witnessMs": 1204,
+          "proveMs": 1248,
+          "verifyMs": 17,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2946,
+          "witnessMs": 271,
+          "proveMs": 1247,
+          "verifyMs": 32,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2454,
+          "witnessMs": 645,
+          "proveMs": 1122,
+          "verifyMs": 672,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1657,
+          "witnessMs": 630,
+          "proveMs": 995,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4028,
+          "witnessMs": 1410,
+          "proveMs": 1088,
+          "verifyMs": 16,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3634,
+          "witnessMs": 272,
+          "proveMs": 1095,
+          "verifyMs": 389,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1564,
+          "witnessMs": 654,
+          "proveMs": 878,
+          "verifyMs": 17,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1944,
+          "witnessMs": 328,
+          "proveMs": 1042,
+          "verifyMs": 560,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3201,
+          "witnessMs": 1184,
+          "proveMs": 1060,
+          "verifyMs": 31,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2420,
+          "witnessMs": 274,
+          "proveMs": 1049,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2318,
+          "witnessMs": 639,
+          "proveMs": 1170,
+          "verifyMs": 496,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1695,
+          "witnessMs": 625,
+          "proveMs": 1044,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2892,
+          "witnessMs": 1158,
+          "proveMs": 950,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2666,
+          "witnessMs": 252,
+          "proveMs": 1011,
+          "verifyMs": 337,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1618,
+          "witnessMs": 640,
+          "proveMs": 951,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1460,
+          "witnessMs": 291,
+          "proveMs": 1039,
+          "verifyMs": 117,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3333,
+          "witnessMs": 930,
+          "proveMs": 887,
+          "verifyMs": 23,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3534,
+          "witnessMs": 671,
+          "proveMs": 1320,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1479,
+          "witnessMs": 440,
+          "proveMs": 1005,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2634,
+          "witnessMs": 464,
+          "proveMs": 1190,
+          "verifyMs": 967,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3528,
+          "witnessMs": 1355,
+          "proveMs": 951,
+          "verifyMs": 22,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2319,
+          "witnessMs": 371,
+          "proveMs": 948,
+          "verifyMs": 334,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1584,
+          "witnessMs": 395,
+          "proveMs": 1157,
+          "verifyMs": 17,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2025,
+          "witnessMs": 668,
+          "proveMs": 849,
+          "verifyMs": 495,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3019,
+          "witnessMs": 1237,
+          "proveMs": 946,
+          "verifyMs": 29,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2611,
+          "witnessMs": 252,
+          "proveMs": 1355,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1339,
+          "witnessMs": 421,
+          "proveMs": 889,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1523,
+          "witnessMs": 455,
+          "proveMs": 762,
+          "verifyMs": 293,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3311,
+          "witnessMs": 1314,
+          "proveMs": 1036,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2742,
+          "witnessMs": 284,
+          "proveMs": 1048,
+          "verifyMs": 11,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    },
+    {
+      "concurrency": 4,
+      "requests": 100,
+      "wallMs": 106782,
+      "throughputPerSecond": 0.9364874229739095,
+      "latencyMs": {
+        "median": 4113,
+        "p25": 3869.75,
+        "p75": 4424.5,
+        "p95": 5854.45
+      },
+      "verified": true,
+      "rawTimings": [
+        {
+          "totalMs": 4826,
+          "witnessMs": 2194,
+          "proveMs": 1909,
+          "verifyMs": 358,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4422,
+          "witnessMs": 2195,
+          "proveMs": 1839,
+          "verifyMs": 23,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4809,
+          "witnessMs": 571,
+          "proveMs": 1851,
+          "verifyMs": 393,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4935,
+          "witnessMs": 482,
+          "proveMs": 1898,
+          "verifyMs": 466,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2931,
+          "witnessMs": 711,
+          "proveMs": 1126,
+          "verifyMs": 1075,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4186,
+          "witnessMs": 2572,
+          "proveMs": 1573,
+          "verifyMs": 25,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5803,
+          "witnessMs": 1161,
+          "proveMs": 2162,
+          "verifyMs": 591,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5142,
+          "witnessMs": 1100,
+          "proveMs": 2153,
+          "verifyMs": 40,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3064,
+          "witnessMs": 846,
+          "proveMs": 1824,
+          "verifyMs": 380,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3919,
+          "witnessMs": 1044,
+          "proveMs": 588,
+          "verifyMs": 2271,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5351,
+          "witnessMs": 1047,
+          "proveMs": 2187,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 6207,
+          "witnessMs": 980,
+          "proveMs": 2358,
+          "verifyMs": 1044,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 6012,
+          "witnessMs": 2573,
+          "proveMs": 2365,
+          "verifyMs": 1060,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3603,
+          "witnessMs": 442,
+          "proveMs": 2196,
+          "verifyMs": 937,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3756,
+          "witnessMs": 1574,
+          "proveMs": 1370,
+          "verifyMs": 95,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4090,
+          "witnessMs": 487,
+          "proveMs": 1620,
+          "verifyMs": 804,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4106,
+          "witnessMs": 1461,
+          "proveMs": 1706,
+          "verifyMs": 926,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4072,
+          "witnessMs": 1446,
+          "proveMs": 1704,
+          "verifyMs": 909,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3787,
+          "witnessMs": 1543,
+          "proveMs": 1154,
+          "verifyMs": 23,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4149,
+          "witnessMs": 628,
+          "proveMs": 1517,
+          "verifyMs": 824,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4027,
+          "witnessMs": 1522,
+          "proveMs": 1575,
+          "verifyMs": 916,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3903,
+          "witnessMs": 1504,
+          "proveMs": 1576,
+          "verifyMs": 810,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4126,
+          "witnessMs": 1537,
+          "proveMs": 1258,
+          "verifyMs": 25,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4489,
+          "witnessMs": 540,
+          "proveMs": 1885,
+          "verifyMs": 890,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4399,
+          "witnessMs": 1485,
+          "proveMs": 1879,
+          "verifyMs": 1022,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4252,
+          "witnessMs": 1466,
+          "proveMs": 1882,
+          "verifyMs": 890,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4207,
+          "witnessMs": 800,
+          "proveMs": 1464,
+          "verifyMs": 427,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5851,
+          "witnessMs": 2055,
+          "proveMs": 675,
+          "verifyMs": 1089,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4301,
+          "witnessMs": 2498,
+          "proveMs": 1222,
+          "verifyMs": 568,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3981,
+          "witnessMs": 2484,
+          "proveMs": 1218,
+          "verifyMs": 264,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3835,
+          "witnessMs": 1405,
+          "proveMs": 614,
+          "verifyMs": 265,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4076,
+          "witnessMs": 705,
+          "proveMs": 1057,
+          "verifyMs": 1019,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3588,
+          "witnessMs": 1672,
+          "proveMs": 1064,
+          "verifyMs": 835,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3143,
+          "witnessMs": 1676,
+          "proveMs": 661,
+          "verifyMs": 791,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3628,
+          "witnessMs": 1492,
+          "proveMs": 728,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3953,
+          "witnessMs": 1296,
+          "proveMs": 1040,
+          "verifyMs": 629,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3662,
+          "witnessMs": 1549,
+          "proveMs": 1123,
+          "verifyMs": 976,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2979,
+          "witnessMs": 1282,
+          "proveMs": 1138,
+          "verifyMs": 546,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3764,
+          "witnessMs": 1355,
+          "proveMs": 658,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4144,
+          "witnessMs": 1765,
+          "proveMs": 694,
+          "verifyMs": 388,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4057,
+          "witnessMs": 1540,
+          "proveMs": 1052,
+          "verifyMs": 1452,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3659,
+          "witnessMs": 1528,
+          "proveMs": 1047,
+          "verifyMs": 1071,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4099,
+          "witnessMs": 713,
+          "proveMs": 625,
+          "verifyMs": 1377,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5672,
+          "witnessMs": 1875,
+          "proveMs": 1329,
+          "verifyMs": 745,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3863,
+          "witnessMs": 2308,
+          "proveMs": 1520,
+          "verifyMs": 18,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5258,
+          "witnessMs": 2405,
+          "proveMs": 1710,
+          "verifyMs": 1128,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3666,
+          "witnessMs": 1014,
+          "proveMs": 1148,
+          "verifyMs": 729,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3103,
+          "witnessMs": 1182,
+          "proveMs": 614,
+          "verifyMs": 255,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4116,
+          "witnessMs": 1668,
+          "proveMs": 1069,
+          "verifyMs": 1366,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3752,
+          "witnessMs": 1652,
+          "proveMs": 1068,
+          "verifyMs": 1019,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4065,
+          "witnessMs": 1608,
+          "proveMs": 717,
+          "verifyMs": 341,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3896,
+          "witnessMs": 1176,
+          "proveMs": 787,
+          "verifyMs": 424,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3373,
+          "witnessMs": 1799,
+          "proveMs": 1010,
+          "verifyMs": 551,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3075,
+          "witnessMs": 2034,
+          "proveMs": 627,
+          "verifyMs": 399,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3872,
+          "witnessMs": 1772,
+          "proveMs": 637,
+          "verifyMs": 246,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4657,
+          "witnessMs": 1131,
+          "proveMs": 1487,
+          "verifyMs": 784,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3218,
+          "witnessMs": 1483,
+          "proveMs": 1135,
+          "verifyMs": 576,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3204,
+          "witnessMs": 1434,
+          "proveMs": 1132,
+          "verifyMs": 592,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4301,
+          "witnessMs": 1437,
+          "proveMs": 976,
+          "verifyMs": 23,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4382,
+          "witnessMs": 1575,
+          "proveMs": 724,
+          "verifyMs": 552,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4247,
+          "witnessMs": 1901,
+          "proveMs": 1071,
+          "verifyMs": 1261,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4121,
+          "witnessMs": 2369,
+          "proveMs": 1146,
+          "verifyMs": 592,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4945,
+          "witnessMs": 1583,
+          "proveMs": 1484,
+          "verifyMs": 25,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4370,
+          "witnessMs": 679,
+          "proveMs": 1654,
+          "verifyMs": 831,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4245,
+          "witnessMs": 1577,
+          "proveMs": 1725,
+          "verifyMs": 930,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4110,
+          "witnessMs": 1562,
+          "proveMs": 1722,
+          "verifyMs": 812,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 7714,
+          "witnessMs": 2283,
+          "proveMs": 2503,
+          "verifyMs": 1777,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 6234,
+          "witnessMs": 651,
+          "proveMs": 2471,
+          "verifyMs": 1675,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4329,
+          "witnessMs": 1818,
+          "proveMs": 2472,
+          "verifyMs": 26,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4853,
+          "witnessMs": 1798,
+          "proveMs": 2479,
+          "verifyMs": 561,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5920,
+          "witnessMs": 1603,
+          "proveMs": 2205,
+          "verifyMs": 1217,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5513,
+          "witnessMs": 779,
+          "proveMs": 2303,
+          "verifyMs": 1236,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2944,
+          "witnessMs": 767,
+          "proveMs": 2140,
+          "verifyMs": 21,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4303,
+          "witnessMs": 760,
+          "proveMs": 2257,
+          "verifyMs": 1273,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4557,
+          "witnessMs": 2037,
+          "proveMs": 1658,
+          "verifyMs": 22,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 5016,
+          "witnessMs": 735,
+          "proveMs": 1798,
+          "verifyMs": 838,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4866,
+          "witnessMs": 2037,
+          "proveMs": 1864,
+          "verifyMs": 931,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4722,
+          "witnessMs": 2044,
+          "proveMs": 1814,
+          "verifyMs": 825,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4417,
+          "witnessMs": 1576,
+          "proveMs": 1647,
+          "verifyMs": 13,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4432,
+          "witnessMs": 622,
+          "proveMs": 1780,
+          "verifyMs": 840,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4450,
+          "witnessMs": 1479,
+          "proveMs": 1993,
+          "verifyMs": 963,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4417,
+          "witnessMs": 1469,
+          "proveMs": 1987,
+          "verifyMs": 948,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4132,
+          "witnessMs": 1642,
+          "proveMs": 1276,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4312,
+          "witnessMs": 632,
+          "proveMs": 1593,
+          "verifyMs": 838,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4187,
+          "witnessMs": 1561,
+          "proveMs": 1680,
+          "verifyMs": 933,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4062,
+          "witnessMs": 1601,
+          "proveMs": 1623,
+          "verifyMs": 825,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4118,
+          "witnessMs": 1603,
+          "proveMs": 1248,
+          "verifyMs": 20,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4031,
+          "witnessMs": 650,
+          "proveMs": 1361,
+          "verifyMs": 802,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4045,
+          "witnessMs": 1507,
+          "proveMs": 1600,
+          "verifyMs": 924,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4013,
+          "witnessMs": 1493,
+          "proveMs": 1597,
+          "verifyMs": 909,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4019,
+          "witnessMs": 1527,
+          "proveMs": 1294,
+          "verifyMs": 19,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4067,
+          "witnessMs": 493,
+          "proveMs": 1589,
+          "verifyMs": 826,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3942,
+          "witnessMs": 1435,
+          "proveMs": 1576,
+          "verifyMs": 919,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3818,
+          "witnessMs": 1423,
+          "proveMs": 1569,
+          "verifyMs": 813,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3997,
+          "witnessMs": 1560,
+          "proveMs": 1315,
+          "verifyMs": 24,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4193,
+          "witnessMs": 625,
+          "proveMs": 1560,
+          "verifyMs": 823,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 4082,
+          "witnessMs": 1520,
+          "proveMs": 1614,
+          "verifyMs": 933,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 3956,
+          "witnessMs": 1447,
+          "proveMs": 1668,
+          "verifyMs": 827,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 2838,
+          "witnessMs": 573,
+          "proveMs": 673,
+          "verifyMs": 416,
+          "verified": true,
+          "backend": "rapidsnark"
+        },
+        {
+          "totalMs": 1837,
+          "witnessMs": 356,
+          "proveMs": 516,
+          "verifyMs": 10,
+          "verified": true,
+          "backend": "rapidsnark"
+        }
+      ]
+    }
+  ]
+}

@@ -2,8 +2,9 @@
 
 /*
  * Child process of scripts/circuit_cost_sweep.js: compile one representative
- * DUO V3 policy at the requested DEPTH, generate `count` proofs against the
- * build in PROTOCOL_CIRCUITS_DIR, and print the timings as one JSON line.
+ * DUO V3 policy at the requested DEPTH/MERKLE_LEVELS capacity, generate
+ * `count` proofs against the build in PROTOCOL_CIRCUITS_DIR, and print the
+ * timings as one JSON line.
  *
  * Runs in its own process because tps/proofGenerator.js reads
  * PROTOCOL_CIRCUITS_DIR and PROTOCOL_CIRCUIT_DEPTH at module load.
@@ -15,6 +16,7 @@
 const path = require('path');
 
 const depth = Number(process.env.PROTOCOL_CIRCUIT_DEPTH || 64);
+const merkleLevels = Number(process.env.PROTOCOL_MERKLE_LEVELS || 8);
 const args = process.argv.slice(2);
 const count = Number((args.find((a) => a.startsWith('--count=')) || '--count=5').split('=')[1]);
 const logicArg = args.find((a) => a.startsWith('--logic='));
@@ -34,7 +36,9 @@ async function main() {
   );
   const material = await H.materialFromArtifacts(artifacts);
   const ctx = { logic, terms, artifacts, material };
-  const profile = H.resolveProfile({ flip: ['RS'] });
+  // Use the fully satisfying requester for both the mixed and ontology-heavy
+  // benchmark policies so every timed proof exercises the granting path.
+  const profile = H.resolveProfile();
   const timings = [];
   for (let i = 0; i < count; i++) {
     const { evidence, idReq } = await H.evidenceFor(ctx, profile, fixtures, {
@@ -49,7 +53,7 @@ async function main() {
     timings.push(result.timings);
   }
   process.stdout.write(JSON.stringify({
-    depth, logic, tokens: artifacts.tokens.length, numOperations: artifacts.numOperations,
+    depth, merkleLevels, logic, tokens: artifacts.tokens.length, numOperations: artifacts.numOperations,
     predicateTypes: material.predicateTypes, timings
   }) + '\n');
 }

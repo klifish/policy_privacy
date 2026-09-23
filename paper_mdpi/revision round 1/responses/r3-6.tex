@@ -6,58 +6,42 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{6}
-	We added a cost-scaling analysis and restructured the cost discussion around the distinction that decides practicality: which costs are paid on-chain, and which off-chain.
+	We added two reproducible offline scalability experiments and a scenario-based workload analysis. No new Amoy data were collected and the frozen RC1 circuit, proving key, and verifier semantics were not modified.
 
-	\textbf{Larger policy programs.}
-	A new table reports the prover-side cost of the revised circuit at program lengths $32$, $64$ (the deployed value), and $128$ with the attribute and predicate counts fixed: R1CS constraints grow from $64{,}945$ to $81{,}740$ to $134{,}009$, the proving key from $39$ to $52$ to $88$~MB, and proving time from $0.38$ to $0.49$ to $0.73$~s per proof on a laptop-class prover (witness generation $0.28$--$0.54$~s).
-	The verification side does not change: the statement keeps its five public signals at every length, so the verifier contract, its gas, and the padding band are the same.
+	\textbf{Program and ontology capacity.}
+	For program lengths $32$, $64$, and $128$ (with eight Merkle levels), constraints are $64{,}945$, $81{,}740$, and $134{,}009$; median proving times are $0.411$, $0.521$, and $0.734$~s.
+	For Merkle depths $4$, $8$, $12$, and $16$ (with $\DEPTH=64$), constraints are $73{,}876$, $81{,}740$, $89{,}604$, and $97{,}468$; median proving times are $0.512$, $0.499$, $0.552$, and $0.571$~s.
+	Each row contains $30$ verified proofs and reports constraints, wires, WASM/zkey size, and witness/prove/verify median, p95, and IQR.
+	Every variant retains five public signals, so the verifier interface is unchanged.
 
-	\textbf{Richer predicates and more complex DUO/ICD conditions.}
-	These enter through the predicate slots and their gadgets (Merkle membership for ontology scopes and allowlists, the credential verifier for profile-backed terms) rather than through the program length.
-	Each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, because predicate parameters are bound through the fixed-format parameter commitment rather than exposed as public inputs; a larger ICD or OBI whitelist changes only the Merkle root the provider commits, not the circuit or the gas.
-	The revised corpus exercises this: whitelists range from $2$ to $32$ codes across five vocabularies, and the access gas of the un-padded ablation run varies by $276$ gas across $1{,}119$ executions.
+	\textbf{Policy and DUO complexity in the production circuit.}
+	We additionally ran $30$ verified proofs each for: Simple (\texttt{DS}); Ontology-heavy (five ontology slots); Profile-heavy (multiple profile-backed DUO terms); and Max-mixed (all five ontology categories, profile terms, \texttt{US/PS/IS}, \texttt{MOR}, and \texttt{TS}).
+	The programs range from $3$ to $61$ tokens and activate one to all $11$ production slots, but their median witness times remain $0.335$--$0.354$~s and median proving times $0.484$--$0.545$~s.
+	Profile-backed cases have about $0.6$~s of additional end-to-end evidence preparation; the fixed-circuit witness/prove/verify work remains stable.
+	We did not directly sweep $M$ because only $N=13,M=11$ activates the implemented production slot masks; other $M$ values use a generic verifier branch and would not be a like-for-like scalability comparison.
 
 	\textbf{Access workloads.}
-	The padding overhead is a fixed premium per transaction (about $330{,}000$ gas on access and $85{,}000$ on commit; $0.032$ versus $0.022$~POL per access at the evaluation's gas price), so it scales linearly with the number of authorizations and does not compound; the Discussion now states this together with how the band is calibrated per network (Reviewer~1, Comment~7).
-	We did not run a throughput benchmark: the on-chain path is one Groth16 verification plus bookkeeping per authorization and is bounded by the chain, not by the design, while the off-chain path is embarrassingly parallel across TPS instances.
+	At concurrency 1, 2, and 4, we executed five warm-ups and then $100$ verified requests per level, rotating the four policy classes.
+	The measured throughputs are $0.805$, $0.787$, and $0.936$ proofs/s; the best observed single-host result is therefore $0.936$ proofs/s.
+	At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, the average loads are $0.012$, $0.116$, and $1.157$ requests/s, requiring one, one, and two equivalent prover instances when retaining $50\%$ headroom.
+	Using the measured $1{,}056{,}674$ gas/access at 30~gwei, these scenarios consume $31.70$, $317.00$, and $3170.02$~POL/day.
+	One commit is $304{,}098$ gas ($0.009$~POL) and is stated separately; we do not invent a commit/access ratio.
+	The manuscript labels all workload rows as scenarios rather than measurements of hospital traffic or public-chain throughput.
 
 	\textbf{Changes in the manuscript.}
-	The Ablation subsection now reports the measured on-chain cost and separates it from prover-side scaling; the new scaling table gives the complete depth sweep; and the Discussion explains transaction-volume scaling and network calibration.
+	New Table~16 reports both capacity sweeps; new Table~17 reports fixed-circuit policy complexity, TPS load, and daily-volume scenarios.
+	The Ablation subsection replaces the former theoretical $M$ statement with these measurements and the fairness rationale for not sweeping $M$.
+	The Discussion reports the observed throughput boundary and cost scenarios without extending the production-availability claim.
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' paragraph ``Cost.''}
+	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' and new Tables~16--17.}
 	\begin{revisiontext}
-		Padding is not free: over the subset it raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
-		The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, and the base of that band is chosen above the bare access cost measured on the target network ($748{,}000$ gas on Amoy) so that the whole band stays above real usage.
-		At the $30$~gwei tip used throughout, one padded access transaction costs about $0.032$~POL and one commit about $0.009$~POL; the overhead is therefore a fixed per-transaction premium of roughly $330{,}000$ gas on access and $85{,}000$ on commit, independent of transaction volume, and it does not grow with policy complexity, because neither the bare cost nor the band depends on the policy.
-		Table~15 gives the single-point cost characterization of the evaluated prototype configuration at $\DEPTH=64$.
-		The circuit compiles to $81{,}740$ R1CS constraints; across the $1{,}773$ Polygon Amoy executions, mean witness and proving times on the two-core capture host are $763.6$ ms and $2{,}884.2$ ms, respectively.
-		Gas, logs, calldata lengths, and transaction objects are taken from the same executed dataset, whose transactions use the context-bound five-signal statement.
-		Table~16 shows how the prover-side cost scales when the program length grows from $\DEPTH=32$ to $128$ with $N$ and $M$ fixed: constraints, proving-key size, and proving time grow roughly linearly with $\DEPTH$ (from $65{,}000$ to $134{,}000$ constraints and from $0.38$ to $0.73$~s per proof on a laptop-class prover), while the statement keeps its five public signals, so the verifier contract, its gas, and the padding band are unchanged.
-		Richer predicates would enter through $M$ and the per-slot gadgets; each additional slot adds its gadget's constraints to the prover and nothing to the on-chain cost, since predicate parameters are bound through the fixed-format parameter commitment.
-	\end{revisiontext}
+		Table~16 reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using rapidsnark. With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s. With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s.
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' new Table~16, ``Prover-side cost as the policy program length grows.''}
-	\begin{revisiontable}
-		\noindent\textbf{Table~16.} Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$, $M=11$ and the public interface fixed. On-chain verification cost does not change: the statement keeps five public signals at every depth.
-		\begin{center}
-		\begin{tabular}{rrrrrr}
-			\toprule
-			$\DEPTH$ & R1CS constraints & Proving key (MB) & Witness (ms) & Prove (ms) & Verify (ms) \\
-			\midrule
-			$32$  & $64{,}945$  & $38.7$ & $282$ & $382$ & $11$ \\
-			$64$  & $81{,}740$  & $52.2$ & $343$ & $494$ & $10$ \\
-			$128$ & $134{,}009$ & $87.5$ & $542$ & $730$ & $11$ \\
-			\bottomrule
-		\end{tabular}
-		\end{center}
-	\end{revisiontable}
+		We deliberately do not sweep $M$: only the production configuration $N=13,M=11$ activates the implemented production slot masks, whereas other $M$ values enter a generic verifier branch and would not be a like-for-like comparison. Across the four fixed-circuit policy classes, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s.
+	\end{revisiontext}
 
 	\RevisionLocation{Section ``Discussion,'' paragraph ``The cost of padding.''}
 	\begin{revisiontext}
-		Within this scope, the residual cost is the randomized padding's gas overhead: on the ablation subset, about $46\%$ on access gas and $38\%$ on commit gas.
-		The overhead is a fixed premium per transaction---roughly $330{,}000$ gas on access and $85{,}000$ on commit at the band used here---so it scales linearly with transaction volume and does not compound: at the $30$~gwei tip of the evaluation, a padded access transaction costs about $0.032$~POL against $0.022$~POL unpadded. Both the bare cost and the band are policy-independent: the fixed circuit gives every proof the same verification work and the same five public signals, and the prover-side cost of longer or richer policies (Table~16) is paid off-chain.
-
-		The band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose pairing precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
-		Padding cannot, of course, hide a difference larger than its band, and it does not address channels that are not gas.
+		The offline load benchmark rotates the four policy classes through $100$ verified requests after five warm-ups at each concurrency level. On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four. At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, retaining $50\%$ headroom requires one, one, and two equivalent prover instances. These are scenario-based calculations, not hospital-traffic measurements or public-chain throughput claims.
 	\end{revisiontext}
 \end{reviewresponse}

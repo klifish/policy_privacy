@@ -19,7 +19,7 @@
 		Figure~3. Gas-padding ablation over all $45$ supervised contrasts: unpadded versus padded deviation from chance, colored by the sign of the $95\%$ interval of $\Delta_{\text{leak}}$.
 	\end{revisiontext}
 
-	\RevisionLocation{Captions of the Privacy Evaluation result and cost tables (Tables~6--16).}
+	\RevisionLocation{Captions of the Privacy Evaluation result and cost tables (Tables~6--17).}
 	\begin{revisiontext}
 		Table~6. Composition of the shared policy corpus (generator seed \texttt{unified-\allowbreak decoupled-\allowbreak 2026}). DUO terms are multi-label, so their counts overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis partitions the full corpus.
 
@@ -41,6 +41,8 @@
 
 		Table~15. Single-point cost profile of the evaluated prototype configuration at $\DEPTH=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.
 
-		Table~16. Prover-side cost as the policy program length $\DEPTH$ grows, with $N=13$, $M=11$ and the public interface fixed. On-chain verification cost does not change: the statement keeps five public signals at every depth.
+		Table~16. Offline circuit-capacity sweeps (30 verified proofs per row). Timing cells report median [IQR] (p95) in ms; every variant keeps $N=13$, $M=11$, $K=5$ and five public signals.
+
+		Table~17. Fixed-circuit policy and workload scalability. Measurements use the RC1 circuit; daily workloads are scenarios, not hospital traces or public-chain throughput.
 	\end{revisiontext}
 \end{reviewresponse}

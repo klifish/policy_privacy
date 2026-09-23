@@ -36,12 +36,16 @@ const ZKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_final.zkey');
 const VKEY_PATH = path.join(BUILD_DIR, 'policy_privacy_main_vk.json');
 
 // Must match the concrete circuit instantiation in
-// circuits/policy_privacy_main_instance.circom. PROTOCOL_CIRCUIT_DEPTH lets
-// the offline cost sweep (scripts/circuit_cost_sweep.js) prove against a
-// build compiled at another DEPTH; production and the capture runs leave it
-// unset.
+// circuits/policy_privacy_main_instance.circom. PROTOCOL_CIRCUIT_DEPTH and
+// PROTOCOL_MERKLE_LEVELS let the offline scalability sweep prove against a
+// build compiled at another capacity; production and capture runs leave both
+// unset and therefore retain the frozen RC1 dimensions.
 const CIRCUIT = {
-    N: 13, M: 11, DEPTH: Number(process.env.PROTOCOL_CIRCUIT_DEPTH || 64), K: 5, MERKLE_LEVELS: 8
+    N: 13,
+    M: 11,
+    DEPTH: Number(process.env.PROTOCOL_CIRCUIT_DEPTH || 64),
+    K: 5,
+    MERKLE_LEVELS: Number(process.env.PROTOCOL_MERKLE_LEVELS || 8)
 };
 
 /**

@@ -1,0 +1,38 @@
+% Source of record: experiments/results/cost/scalability_sweep.json
+% Apple M1 (8 cores), RC1 DEPTH=64/MERKLE_LEVELS=8. Policy rows contain 30
+% verified proofs after five warm-ups. Load rows contain 100 verified requests
+% after five warm-ups. Timing cells are median [IQR] (p95), in milliseconds.
+\begin{table}[htbp]
+  \centering
+  \caption{Fixed-circuit policy and workload scalability. Measurements use the
+    RC1 circuit; daily workloads are scenarios, not hospital traces or public-chain throughput.}
+  \label{tab:workload-scaling}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Policy & Tokens & Slots & Total ms & Witness ms & Prove ms & Verify ms \\
+    \midrule
+    Simple & $3$ & $1$ & $925[102](1170)$ & $354[18](418)$ & $545[80](746)$ & $12[2](14)$ \\
+    Ontology-heavy & $19$ & $5$ & $880[34](939)$ & $349[10](391)$ & $506[24](550)$ & $10[0](12)$ \\
+    Profile-heavy & $31$ & $1$ & $1479[35](1516)$ & $337[4](349)$ & $492[28](522)$ & $10[1](11)$ \\
+    Max-mixed & $61$ & $11$ & $1468[23](1538)$ & $335[2](346)$ & $484[19](537)$ & $10[1](10)$ \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{3pt}
+  \begin{tabular}{rrrrrr}
+    \toprule
+    Concurrency & Requests & Proofs/s & Latency ms & Accesses/day & TPS instances$^{a}$ \\
+    \midrule
+    $1$ & $100$ & $0.805$ & $1230[643](1659)$ & \multicolumn{2}{c}{---} \\
+    $2$ & $100$ & $0.787$ & $2492[1345](3805)$ & \multicolumn{2}{c}{---} \\
+    $4$ & $100$ & $0.936$ & $4113[555](5854)$ & \multicolumn{2}{c}{---} \\
+    \addlinespace
+    \multicolumn{4}{r}{Scenario at $0.936$ proofs/s:} & $1{,}000$ & $1$ \\
+    \multicolumn{4}{r}{} & $10{,}000$ & $1$ \\
+    \multicolumn{4}{r}{} & $100{,}000$ & $2$ \\
+    \bottomrule
+    \multicolumn{6}{l}{\parbox{0.94\textwidth}{\scriptsize Timing cells are median [IQR] (p95), with five warm-ups. $^{a}$Identical prover instances with 50\% capacity headroom. The three scenarios require 0.012, 0.116 and 1.157 average requests/s and consume 1.057, 10.567 and 105.667 billion access gas/day (31.70, 317.00 and 3170.02 POL/day at 30 gwei). One policy commit is reported separately: 304,098 gas (0.009 POL); no commit/access ratio is assumed.}} \\
+  \end{tabular}
+\end{table}
