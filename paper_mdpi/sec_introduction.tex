@@ -36,7 +36,7 @@ Fourth, it applies observability-aware transcript normalization to reduce policy
 We evaluate TPS-ZKPI using attack-driven empirical analysis under a metadata-only threat model.
 The evaluation operationalizes policy privacy through three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 Supervised and unsupervised attacks test whether observable public-chain artifacts allow adversaries to recover hidden policy content, distinguish otherwise-equivalent policies, or infer structural and parameter properties.
-After transcript normalization, $43$ of the $45$ supervised tasks stay below a multi-seed leakage criterion; the two that cross it are carried by the random padding targets rather than by the policies.
+After transcript normalization, $43$ of the $45$ supervised tasks stay below a multi-seed leakage criterion; the two that cross it are carried by the random padding targets.
 A paired ablation serves as a positive control: without gas padding, the same attacks recover a policy-correlated gas signal, and randomized padding suppresses it.
 
 This paper makes the following contributions:
