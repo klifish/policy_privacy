@@ -105,6 +105,7 @@
     "cost:policy-scalability": "node scripts/policy_scalability_benchmark.js --proofs=30 --warmups=5 --load-requests=100 --concurrency=1,2,4",
     "cost:scalability:render": "node scripts/render_scalability_report.js",
     "cost:scalability": "npm run cost:capacity-sweep && npm run cost:policy-scalability && npm run cost:scalability:render",
+    "cost:context-binding": "node scripts/context_binding_gas.js",
     "analysis:criterion-sensitivity": ".venv/bin/python -m experiments.analysis.supervised.criterion_sensitivity --null-replicates 10 --jobs -1",
     "analysis:pad-residual": ".venv/bin/python -m experiments.analysis.supervised.pad_residual_diagnostic --seeds 30 --jobs -1",
     "analysis:compare:js": ".venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pch && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pi && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment spp",

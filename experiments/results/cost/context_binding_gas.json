@@ -1,0 +1,700 @@
+{
+  "generatedAt": "2026-09-23T08:18:26.338Z",
+  "host": {
+    "cpu": "Apple M1",
+    "cores": 8,
+    "node": "v22.22.0",
+    "platform": "darwin"
+  },
+  "local": {
+    "hardhat": "2.26.3",
+    "hardfork": "prague",
+    "solc": "0.8.27",
+    "optimizer": false
+  },
+  "proofs": 20,
+  "repetitionsPerPolicy": 5,
+  "byScenario": [
+    {
+      "id": "simple",
+      "label": "Simple",
+      "logic": "DS",
+      "evaluated": {
+        "n": 5,
+        "min": 553018,
+        "median": 553030,
+        "max": 570106
+      },
+      "noBind": {
+        "n": 5,
+        "min": 503466,
+        "median": 503478,
+        "max": 520554
+      },
+      "noBindNoRecord": {
+        "n": 5,
+        "min": 437040,
+        "median": 437052,
+        "max": 454128
+      }
+    },
+    {
+      "id": "ontology_heavy",
+      "label": "Ontology-heavy",
+      "logic": "DS AND RS AND POA AND GS AND CC",
+      "evaluated": {
+        "n": 5,
+        "min": 553006,
+        "median": 553018,
+        "max": 553042
+      },
+      "noBind": {
+        "n": 5,
+        "min": 503454,
+        "median": 503466,
+        "max": 503490
+      },
+      "noBindNoRecord": {
+        "n": 5,
+        "min": 437028,
+        "median": 437040,
+        "max": 437064
+      }
+    },
+    {
+      "id": "profile_heavy",
+      "label": "Profile-heavy",
+      "logic": "GRU AND HMB AND NMDS AND GSO AND NPUNCU AND NPOA AND NPU AND NCU",
+      "evaluated": {
+        "n": 5,
+        "min": 553378,
+        "median": 553402,
+        "max": 553402
+      },
+      "noBind": {
+        "n": 5,
+        "min": 503826,
+        "median": 503850,
+        "max": 503850
+      },
+      "noBindNoRecord": {
+        "n": 5,
+        "min": 437400,
+        "median": 437424,
+        "max": 437424
+      }
+    },
+    {
+      "id": "max_mixed",
+      "label": "Max-mixed",
+      "logic": "DS AND RS AND POA AND GS AND CC AND US AND PS AND IS AND MOR AND TS AND GRU AND HMB AND NMDS AND GSO AND NPUNCU AND NPOA AND NPU AND NCU",
+      "evaluated": {
+        "n": 5,
+        "min": 555720,
+        "median": 555756,
+        "max": 600965
+      },
+      "noBind": {
+        "n": 5,
+        "min": 506168,
+        "median": 506204,
+        "max": 551413
+      },
+      "noBindNoRecord": {
+        "n": 5,
+        "min": 439742,
+        "median": 439778,
+        "max": 484987
+      }
+    }
+  ],
+  "summary": {
+    "evaluatedAccess": {
+      "n": 20,
+      "min": 553006,
+      "median": 553390,
+      "max": 600965
+    },
+    "acmBinding": {
+      "n": 20,
+      "min": 49552,
+      "median": 49552,
+      "max": 49552
+    },
+    "record": {
+      "n": 20,
+      "min": 66426,
+      "median": 66426,
+      "max": 66426
+    },
+    "poseidonCall": {
+      "n": 20,
+      "min": 48309,
+      "median": 48309,
+      "max": 48309
+    },
+    "verify5": {
+      "n": 20,
+      "min": 220036,
+      "median": 220036,
+      "max": 220036
+    },
+    "verify4": {
+      "n": 20,
+      "min": 213382,
+      "median": 213382,
+      "max": 213382
+    },
+    "verifierInput": {
+      "n": 20,
+      "min": 6654,
+      "median": 6654,
+      "max": 6654
+    },
+    "store3": {
+      "n": 20,
+      "min": 66959,
+      "median": 66959,
+      "max": 66959
+    },
+    "calldata": {
+      "n": 20,
+      "min": 640,
+      "median": 826,
+      "max": 1012
+    },
+    "bindingTotal": {
+      "n": 20,
+      "min": 56846,
+      "median": 57032,
+      "max": 57218
+    },
+    "total": {
+      "n": 20,
+      "min": 123272,
+      "median": 123458,
+      "max": 123644
+    }
+  },
+  "localSchedule": {
+    "identity": 939,
+    "ecAdd": 1056,
+    "ecMul": 6828,
+    "pairing2": 114528,
+    "pairing4": 183467,
+    "sloadCold": 2193
+  },
+  "amoy": {
+    "evaluationBlocks": {
+      "median": 47784388,
+      "min": 47763984,
+      "max": 47809906,
+      "n": 1773
+    },
+    "byBlock": [
+      {
+        "label": "evaluation median",
+        "block": 47784388,
+        "samples": [
+          {
+            "scenario": "simple",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "ontology_heavy",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "profile_heavy",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "max_mixed",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          }
+        ],
+        "schedule": {
+          "identity": 939,
+          "ecAdd": 1446,
+          "ecMul": 13428,
+          "pairing2": 171028,
+          "pairing4": 273967,
+          "sloadCold": 5553
+        },
+        "verify5": 345486,
+        "verify4": 331842,
+        "verifierInput": 13644,
+        "poseidon3": 48309,
+        "store3": 69479,
+        "acmBinding": 49552,
+        "record": 68946,
+        "bindingTotal": 64022,
+        "total": 132968
+      },
+      {
+        "label": "latest",
+        "block": 48329264,
+        "samples": [
+          {
+            "scenario": "simple",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "ontology_heavy",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "profile_heavy",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          },
+          {
+            "scenario": "max_mixed",
+            "verify5": 345486,
+            "verify4": 331842,
+            "poseidon3": 48309,
+            "store3": 69479
+          }
+        ],
+        "schedule": {
+          "identity": 939,
+          "ecAdd": 1446,
+          "ecMul": 13428,
+          "pairing2": 171028,
+          "pairing4": 273967,
+          "sloadCold": 5553
+        },
+        "verify5": 345486,
+        "verify4": 331842,
+        "verifierInput": 13644,
+        "poseidon3": 48309,
+        "store3": 69479,
+        "acmBinding": 49552,
+        "record": 68946,
+        "bindingTotal": 64022,
+        "total": 132968
+      }
+    ],
+    "stableAcrossBlocks": true,
+    "block": 47784388,
+    "verify5": 345486,
+    "verify4": 331842,
+    "poseidon3": 48309,
+    "store3": 69479,
+    "schedule": {
+      "identity": 939,
+      "ecAdd": 1446,
+      "ecMul": 13428,
+      "pairing2": 171028,
+      "pairing4": 273967,
+      "sloadCold": 5553
+    },
+    "verifierInput": 13644,
+    "acmBinding": 49552,
+    "record": 68946,
+    "bindingTotal": 64022,
+    "total": 132968
+  },
+  "rows": [
+    {
+      "scenario": "simple",
+      "rep": 0,
+      "gas": {
+        "evaluated": 570106,
+        "noBind": 520554,
+        "noBindNoRecord": 454128
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "simple",
+      "rep": 1,
+      "gas": {
+        "evaluated": 553030,
+        "noBind": 503478,
+        "noBindNoRecord": 437052
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "simple",
+      "rep": 2,
+      "gas": {
+        "evaluated": 553018,
+        "noBind": 503466,
+        "noBindNoRecord": 437040
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "simple",
+      "rep": 3,
+      "gas": {
+        "evaluated": 553018,
+        "noBind": 503466,
+        "noBindNoRecord": 437040
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "simple",
+      "rep": 4,
+      "gas": {
+        "evaluated": 553030,
+        "noBind": 503478,
+        "noBindNoRecord": 437052
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "ontology_heavy",
+      "rep": 0,
+      "gas": {
+        "evaluated": 553042,
+        "noBind": 503490,
+        "noBindNoRecord": 437064
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "ontology_heavy",
+      "rep": 1,
+      "gas": {
+        "evaluated": 553030,
+        "noBind": 503478,
+        "noBindNoRecord": 437052
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "ontology_heavy",
+      "rep": 2,
+      "gas": {
+        "evaluated": 553018,
+        "noBind": 503466,
+        "noBindNoRecord": 437040
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "ontology_heavy",
+      "rep": 3,
+      "gas": {
+        "evaluated": 553018,
+        "noBind": 503466,
+        "noBindNoRecord": 437040
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 500
+      }
+    },
+    {
+      "scenario": "ontology_heavy",
+      "rep": 4,
+      "gas": {
+        "evaluated": 553006,
+        "noBind": 503454,
+        "noBindNoRecord": 437028
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 140,
+        "digest": 500
+      }
+    },
+    {
+      "scenario": "profile_heavy",
+      "rep": 0,
+      "gas": {
+        "evaluated": 553402,
+        "noBind": 503850,
+        "noBindNoRecord": 437424
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "profile_heavy",
+      "rep": 1,
+      "gas": {
+        "evaluated": 553378,
+        "noBind": 503826,
+        "noBindNoRecord": 437400
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "profile_heavy",
+      "rep": 2,
+      "gas": {
+        "evaluated": 553402,
+        "noBind": 503850,
+        "noBindNoRecord": 437424
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "profile_heavy",
+      "rep": 3,
+      "gas": {
+        "evaluated": 553402,
+        "noBind": 503850,
+        "noBindNoRecord": 437424
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "profile_heavy",
+      "rep": 4,
+      "gas": {
+        "evaluated": 553402,
+        "noBind": 503850,
+        "noBindNoRecord": 437424
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "max_mixed",
+      "rep": 0,
+      "gas": {
+        "evaluated": 600965,
+        "noBind": 551413,
+        "noBindNoRecord": 484987
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "max_mixed",
+      "rep": 1,
+      "gas": {
+        "evaluated": 555756,
+        "noBind": 506204,
+        "noBindNoRecord": 439778
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 500
+      }
+    },
+    {
+      "scenario": "max_mixed",
+      "rep": 2,
+      "gas": {
+        "evaluated": 555768,
+        "noBind": 506216,
+        "noBindNoRecord": 439790
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "max_mixed",
+      "rep": 3,
+      "gas": {
+        "evaluated": 555732,
+        "noBind": 506180,
+        "noBindNoRecord": 439754
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 512
+      }
+    },
+    {
+      "scenario": "max_mixed",
+      "rep": 4,
+      "gas": {
+        "evaluated": 555720,
+        "noBind": 506168,
+        "noBindNoRecord": 439742
+      },
+      "probes": {
+        "verify5": 220036,
+        "verify4": 213382,
+        "poseidon3": 48309,
+        "store3": 66959
+      },
+      "calldata": {
+        "idReq": 500,
+        "digest": 500
+      }
+    }
+  ]
+}
