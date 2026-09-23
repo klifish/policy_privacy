@@ -30,11 +30,9 @@ It provides depth, which the PI attacks need because they compare two policies e
 This layer is what lets PI form its $127$ balanced $30$-vs-$30$ pairs and run the per-pair clustering check (Section~\ref{sec:eval-method}).
 
 \textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and the ten ICD-10 chapters, sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
-Category-level labels are also the feasible granularity for the privacy question: the observer wants to know whether the \emph{category} of permitted use or disease leaks.
-This choice is conservative.
-A coarse label has more executions behind it than a rare leaf term, and more data makes the attack \emph{stronger}; so if the attack cannot recover a coarse label, it would fail even more clearly on a fine one.
-Passing at the category level therefore does not hide a leak that finer labels would expose.
-The restriction also cannot flatter the defenses, which behave the same whatever content a policy carries: the commitment-only interface and gas padding are content-agnostic by construction (Section~\ref{sec:design}).
+Category-level labels are therefore the finest granularity at which the attack has adequate power.
+They do not directly test individual leaf terms: a signal specific to one term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
+The transcript mechanisms themselves do not depend on the policy content: the verifier work and the public interface are fixed, and the padding band is the same for every policy (Section~\ref{sec:design}).
 
 \textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.
 All executions completed with the outcome the generator planned, and the feature file holds all of them.

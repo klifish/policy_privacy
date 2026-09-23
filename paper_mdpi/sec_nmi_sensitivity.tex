@@ -1,5 +1,6 @@
 % Sample-size sensitivity of NMI under a null where all classes are i.i.d.
-% Source of record: theoretical null-model simulation (T=1000 trials per config).
+% Source of record: experiments/analysis/clustering/nmi_null_simulation.py (seed 20260923)
+%   -> experiments/results/clustering/null/nmi_null_simulation.{json,md}; T=1000 per row.
 % Supports the clustering cross-check (Section~\ref{sec:eval-clustering}): explains why
 % small-sample NMI can be elevated even with no class-distinguishing signal.
 \subsection{Sample-size sensitivity of NMI}
@@ -10,21 +11,22 @@ To justify that choice, we quantify how \emph{finite-sample effects} alone can i
 even when there is \emph{no} discriminative signal, using an idealized null in which all
 classes are statistically indistinguishable.
 
-\noindent\textbf{Null hypothesis.} We sample every class from the \emph{same} distribution, $x_{i}\sim\mathcal{N}(0,I_{d})$ for all classes, where $d$ is the synthetic feature dimension and $I_d$ is the $d$-dimensional identity covariance. 
+\noindent\textbf{Null hypothesis.} We sample every class from the \emph{same} distribution, $x_{i}\sim\mathcal{N}(0,I_{d})$ for all classes, where $I_d$ is the $d$-dimensional identity covariance and $d=2$ matches the two gas features the clustering uses.
 Since no class carries class-specific information, a clustering algorithm should not recover class membership,
 and both NMI and ARI should concentrate around $0$ as the sample size grows.
 
-\noindent\textbf{Simulation.} For each configuration we run $T=1000$ independent trials. 
-In each trial we 
+\noindent\textbf{Simulation.} For each configuration we run $T=1000$ independent trials.
+In each trial we
 (i)~generate $C$ classes with $n$ i.i.d.\ samples per class from $\mathcal{N}(0,I_d)$, assigning each sample a class label by construction order (these labels are independent of the sample values, since all classes share one distribution),
-(ii)~apply K-Means with $K=C$ to the pooled data, and
+(ii)~standardize the pooled data and apply K-Means with $K=C$ and ten initializations, as in the evaluation, and
 (iii)~score the predicted assignments against these assigned class labels with NMI and ARI.
-We sweep $n$ while holding $C$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$. 
-We consider a \textbf{PI-like} binary structure ($C=2$, $n\in\{3,10,50,100\}$) and an \textbf{ICD10-like} multi-class structure ($C=5$, $n\in\{3,10,100\}$).
+We sweep $n$ while holding $C$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$.
+We consider a \textbf{PI-like} binary structure ($C=2$, $n\in\{3,10,50,100\}$), a five-class structure ($C=5$, $n\in\{3,10,100\}$), and a ten-class structure ($C=10$, $n\in\{3,10,77\}$) together with the observed ICD-10 chapter sizes ($49$--$135$ executions per chapter, $N=770$).
 
-\noindent\textbf{Results.} Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}. 
-For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.1808$ at $n{=}3$ ($N{=}6$) to $0.0404$ at $n{=}10$, and to $0.0066$/$0.0038$ at $n{=}50$/$100$, while $\overline{\mathrm{ARI}}$ stays at $-0.0190$, $-0.0020$, $-0.0011$, $0.0002$. 
-For the multi-class structure the same trend holds: $\overline{\mathrm{NMI}}$ goes from $0.4168$ ($n{=}3$) to $0.1249$ ($n{=}10$) to $0.0105$ ($n{=}100$), with $\overline{\mathrm{ARI}}$ near zero ($0.0005$, $0.0018$, $-0.0000$). 
+\noindent\textbf{Results.} Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}.
+For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.2074$ at $n{=}3$ ($N{=}6$) to $0.0420$ at $n{=}10$, and to $0.0072$/$0.0034$ at $n{=}50$/$100$.
+The same trend holds with more classes, at a higher level for every $n$: with five classes $\overline{\mathrm{NMI}}$ goes from $0.4152$ ($n{=}3$) to $0.0102$ ($n{=}100$), and with ten classes from $0.5346$ ($n{=}3$) to $0.0239$ ($n{=}77$).
+For the observed ICD-10 chapter sizes, averaging each trial over $20$ K-Means seeds as the evaluation does, the null NMI has mean $0.0246$ and $95$th percentile $0.0302$; the observed ICD-10 NMI of $0.0281$ is reached in $145$ of $1000$ null trials ($p=0.15$).
 Hence moderately high NMI in small-sample clustering should not be read as actionable leakage, and ARI is the more conservative indicator of practical recoverability in our unsupervised evaluation.
 
 \begin{table}[htbp]
@@ -36,14 +38,20 @@ Hence moderately high NMI in small-sample clustering should not be read as actio
     \toprule
     Structure & $n$ (per class) & $C$ & $N$ & $\overline{\mathrm{NMI}}$ & $\overline{\mathrm{ARI}}$ \\
     \midrule
-    PI-like    & 3   & 2 & 6   & $0.1808$ & $-0.0190$ \\
-    PI-like    & 10  & 2 & 20  & $0.0404$ & $-0.0020$ \\
-    PI-like    & 50  & 2 & 100 & $0.0066$ & $-0.0011$ \\
-    PI-like    & 100 & 2 & 200 & $0.0038$ & $0.0002$  \\
+    PI-like      & 3      & 2  & 6   & $0.2074$ & $0.0127$ \\
+    PI-like      & 10     & 2  & 20  & $0.0420$ & $0.0008$ \\
+    PI-like      & 50     & 2  & 100 & $0.0072$ & $-0.0003$ \\
+    PI-like      & 100    & 2  & 200 & $0.0034$ & $-0.0004$ \\
     \midrule
-    ICD10-like & 3   & 5 & 15  & $0.4168$ & $0.0005$  \\
-    ICD10-like & 10  & 5 & 50  & $0.1249$ & $0.0018$  \\
-    ICD10-like & 100 & 5 & 500 & $0.0105$ & $-0.0000$ \\
+    5-class      & 3      & 5  & 15  & $0.4152$ & $-0.0034$ \\
+    5-class      & 10     & 5  & 50  & $0.1226$ & $0.0003$ \\
+    5-class      & 100    & 5  & 500 & $0.0102$ & $-0.0000$ \\
+    \midrule
+    10-class     & 3      & 10 & 30  & $0.5346$ & $-0.0009$ \\
+    10-class     & 10     & 10 & 100 & $0.2087$ & $0.0003$ \\
+    10-class     & 77     & 10 & 770 & $0.0239$ & $-0.0001$ \\
+    \midrule
+    ICD-10 sizes & 49--135 & 10 & 770 & $0.0244$ & $-0.0001$ \\
     \bottomrule
   \end{tabular}
 \end{table}

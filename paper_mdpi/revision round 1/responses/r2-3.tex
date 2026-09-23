@@ -4,12 +4,12 @@
 
 \begin{reviewresponse}{3}
 	The passage (the first paragraph of the Background section in the submitted version) introduced CP-ABE and PRE through their original constructions.
-	We kept those two citations, because the paragraph describes the two primitives themselves and these papers define them, but we now also cite the current blockchain healthcare designs built on them---PRE-based sharing of medical records and IoMT data (Pei et al., 2024; Zhou et al., 2024) and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies (Yang and Liu, 2024; Ding et al., 2026; Wu et al., 2023).
-	The Related Work section discusses the hidden-policy variants and the recent self-sovereign-identity and zero-knowledge authentication work in the same spirit (see also the responses to Reviewer~3, Comment~5, and to Comment~10 below).
+	We kept those two citations, because the paragraph describes the two primitives themselves and these papers define them, but we now also cite the current blockchain healthcare designs built on them---PRE-based sharing of medical records and IoMT data (Pei et al., 2024; Zhou et al., 2024) and CP-ABE variants that hide the access policy and attributes, one of them also with distributed key generation (Yang and Liu, 2024; Ding et al., 2026).
+	The Related Work section discusses the hidden-policy variants, including the homomorphic scheme of Wu et al. (2023), and the recent self-sovereign-identity and zero-knowledge authentication work in the same spirit (see also the responses to Reviewer~3, Comment~5, and to Comment~10 below).
 
 	\RevisionLocation{Section ``Background,'' subsection ``Cryptographic Access Control in Blockchain Healthcare,'' first paragraph.}
 	\begin{revisiontext}
-		Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself.
+		Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data, and CP-ABE variants hide the access policy and attributes, in one case also replacing the single trusted authority with distributed key generation.
 		These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~3.
 	\end{revisiontext}
 \end{reviewresponse}

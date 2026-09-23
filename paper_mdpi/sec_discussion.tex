@@ -6,14 +6,14 @@ The evaluation supports a scoped claim: against the modeled public-chain metadat
 Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
 
 The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates (Sections~\ref{sec:eval-method}--\ref{sec:eval-spp}).
-This is a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
+Such false failures are a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
 
 The gas-padding ablation (Section~\ref{sec:eval-ablation}) attributes the gas-channel protection to randomized gas padding: without it the same attacks recover the policy family with AUCs up to $0.90$.
 Content hiding itself rests on the commitment-only interface and the content-independent transcript normalization; padding is the defense-in-depth layer that absorbs whatever deterministic gas differences remain, of which the ablation exhibits one that does not come from the policy logic at all but from the byte encoding of a public transaction argument.
 Together with fixed-length policy representation, reusable interpretation, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
 
 \textbf{Scope.}
-The scope of this claim is the adversary of Section~\ref{sec:eval-threat}: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies.
+The scope of this claim is the adversary of Section~\ref{sec:eval-threat}: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies without time-limited use, whose term and duration the design makes public (Section~\ref{sec:design}).
 Channels outside this evaluation include transaction timing and ordering, mempool and broadcast behaviour, off-chain communication with the TPS, adaptive requester probing, repeated access attempts, correlations between authorization outcomes and policy classes (every request in the corpus is granted), and compromised TPS behaviour; the results should not be read as establishing general policy confidentiality against them.
 
 \textbf{The cost of padding.} Within this scope, the residual cost is the randomized padding's gas overhead: on the ablation subset, about $46\%$ on access gas and $38\%$ on commit gas (Section~\ref{sec:eval-ablation}).
@@ -25,7 +25,7 @@ At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, the average loads are $0
 The corresponding access costs are $31.70$, $317.00$, and $3170.02$~POL/day at 30~gwei, based on the measured mean of $1{,}056{,}674$ gas per padded access.
 These are scenario-based calculations, not hospital-traffic measurements or claims about public-chain throughput; the $304{,}098$-gas ($0.009$~POL) policy-commit cost is stated separately because the experiment does not assume a commit/access ratio.
 
-The band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose pairing precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
+The band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose BN254 precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
 Padding cannot, of course, hide a difference larger than its band, and it does not address channels that are not gas.
 
 \textbf{TPS trust and credential provenance.}

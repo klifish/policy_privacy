@@ -11,7 +11,7 @@ The ACM records the authorization outcome in contract storage and emits it in th
 This design separates confidentiality-sensitive proof generation from public verification.
 Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
 In a traditional requester-as-prover design, the requester generates the proof itself and must therefore receive the encoded policy and the commitment-opening randomness, so every requester learns the policy in normal operation.
-In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and policy confidentiality can fail only if the TPS trust assumption itself is violated.
+In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and the policy itself is disclosed only if the TPS violates its trust assumption; what the public transcript reveals about it is evaluated in Section~\ref{sec:eval}.
 
 \begin{figure}[htbp]
 	\centering
@@ -80,8 +80,9 @@ The fixed-length interpreter thus realizes the policy-independent interface moti
 \noindent\textbf{Scope of the supported policies.} The policy class is deliberately restricted, and Table~\ref{tab:policy-support} states what the prototype establishes end-to-end.
 Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
 Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state; profile-backed terms establish possession of issuer-signed claims, not conformity of subsequent data use with a declared purpose.
+Because the ACM enforces time-limited use from public state, a policy containing TS is not content-private for that term: the commit transaction emits the duration, and the first grant emits the requester's window. The evaluated corpus contains no TS policies (Section~\ref{sec:eval-dataset}).
 A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
-On-chain policy revocation and resource rebinding affect future authorization decisions only; they do not retract data already released or enforce cessation or deletion after access.
+On-chain policy revocation and resource rebinding affect future authorization decisions only; they do not retract data already released or enforce cessation or deletion after access. These lifecycle transactions are public: they reveal when a policy is replaced or revoked, but not its content.
 Accordingly, the prototype is an access-time consent checker for bounded Boolean policies over standardized terms.
 \input{tables/tab_policy_support.tex}
 
@@ -188,7 +189,7 @@ summarizes the mechanisms.
 		Calldata          & Fixed verification interface and fixed-size proof/public-input encoding.           \\
 		Logs              & Fixed event structure with constant topic and payload layout.                      \\
 		Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses.          \\
-		Gas usage         & Policy-independent verifier logic and randomized gas padding toward fixed targets. \\
+		Gas usage         & Policy-independent verifier logic and gas padding toward a target drawn at random from a fixed band. \\
 		\hline
 	\end{tabular}
 \end{table}

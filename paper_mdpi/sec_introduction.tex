@@ -13,7 +13,7 @@ If such policies are directly represented in smart contracts, embedded in verifi
 Existing privacy-preserving blockchain solutions mainly protect data contents, user identities, or transaction details~\cite{rondelet2019zeth, williamson2018aztec,	nadler2023tornado}.
 Encrypted data-sharing mechanisms such as attribute-based encryption and proxy re-encryption protect access to data~\cite{ibraimi2009ciphertext, ullah2023survey}, while zero-knowledge transaction systems hide asset ownership, values, or participant relationships~\cite{zhou2024leveraging}.
 None of these mechanisms protects the confidentiality of the policies that govern access decisions.
-Even mechanisms designed to hide policy content, such as hidden-policy attribute-based encryption~\cite{hu2023access}, do not control the policy-dependent artifacts that a public chain exposes while enforcing the policy.
+Even mechanisms designed to hide policy content, such as hidden-policy attribute-based encryption~\cite{yang2024hamed,ding2026badsabe}, do not control the policy-dependent artifacts that a public chain exposes while enforcing the policy.
 In blockchain-based consent management, policy leakage may arise not only from explicit policy disclosure, but also from policy-dependent artifacts such as calldata size, public-input layout, emitted events, verifier interfaces, and gas usage.
 Therefore, policy-private consent enforcement requires more than hiding data or proving correctness in zero knowledge; it also requires controlling what the public-chain transcript reveals about the hidden policy.
 This paper studies this problem for blockchain-based healthcare data sharing under public-chain observability.
@@ -21,7 +21,7 @@ The central challenge is to enable an on-chain verifier to check that a requeste
 We focus on Boolean-based consent policies, including policies derived from biomedical data-use conditions such as terms from the Data Use Ontology (DUO), the GA4GH standard vocabulary of consent-based data-use conditions~\cite{lawson2021data}, and disease-scope constraints~\cite{WHO_ICD10}.
 
 We address this problem with the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
-In TPS-ZKPI, the data provider (who can be seen as the data owner) commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
+In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
 The requester submits policy-relevant authorization evidence, such as attributes, credentials, and access context, to the TPS.
 The TPS constructs the private witness and generates a zero-knowledge proof showing that the requester satisfies the committed policy.
 The proof is then verified on-chain against the provider's policy commitment.
@@ -36,8 +36,8 @@ Fourth, it applies observability-aware transcript normalization to reduce policy
 We evaluate TPS-ZKPI using attack-driven empirical analysis under a metadata-only threat model.
 The evaluation operationalizes policy privacy through three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 Supervised and unsupervised attacks test whether observable public-chain artifacts allow adversaries to recover hidden policy content, distinguish otherwise-equivalent policies, or infer structural and parameter properties.
-The results show that, after transcript normalization, no modeled attack recovers hidden policy information reproducibly above chance under a multi-seed leakage criterion.
-A paired ablation serves as a positive control: when gas padding is removed, the same attackers recover policy-dependent signal, and that signal collapses under the full mechanism, isolating randomized gas padding as the defense responsible for closing the gas channel.
+After transcript normalization, $43$ of the $45$ supervised tasks stay below a multi-seed leakage criterion; the two that cross it are carried by the random padding targets rather than by the policies.
+A paired ablation serves as a positive control: without gas padding, the same attacks recover a policy-correlated gas signal, and randomized padding suppresses it.
 
 This paper makes the following contributions:
 
@@ -59,9 +59,9 @@ This paper makes the following contributions:
 	      leakage from normalized public-chain metadata on the Polygon~Amoy
 	      testnet\footnote{\url{https://amoy.polygonscan.com}}, using
 	      supervised classification and unsupervised clustering attacks under a multi-seed
-	      permutation-test criterion. A paired gas-padding ablation then isolates
-	      randomized gas padding as the defense responsible for closing the gas
-	      channel and quantifies its gas-cost overhead.
+	      permutation-test criterion. A paired gas-padding ablation then attributes
+	      the suppression of the modeled gas channel to randomized gas padding
+	      and quantifies its gas-cost overhead.
 \end{itemize}
 
 The remainder of this paper is organized as follows.

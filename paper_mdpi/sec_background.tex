@@ -6,7 +6,7 @@ This section reviews the technical foundations relevant to policy-private consen
 Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE)~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
 In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
-Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants with hidden policies and attributes, distributed key generation, or multi-authority hierarchies address the exposure of the access structure itself~\cite{yang2024hamed,ding2026badsabe,wu2023blockchain}.
+Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants hide the access policy and attributes~\cite{yang2024hamed,ding2026badsabe}, in one case also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
 These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~\ref{sec:related-work}.
 
 \subsection{Zero-Knowledge Proofs}
@@ -35,7 +35,7 @@ To structure their handling in a zero-knowledge setting, we group DUO terms into
 \end{itemize}
 
 \noindent
-Table~\ref{tab:duo-categories} summarizes representative DUO terms under this classification. Some terms reduce to simple Boolean flags, while others rely on ontology references, external obligations, or credential attestations. Later sections describe how these heterogeneous requirements are harmonized into a unified privacy-preserving verification process.
+Table~\ref{tab:duo-categories} summarizes representative DUO terms under this classification. Some terms reduce to simple Boolean flags, while others rely on ontology references, external obligations, or credential attestations. Section~\ref{sec:design} describes how each category enters the proved relation and which requirements remain outside it (Table~\ref{tab:policy-support}).
 
 \begin{table}[htbp]
 	\centering
