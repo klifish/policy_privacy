@@ -43,6 +43,9 @@
 
 	\RevisionLocation{Section ``Discussion,'' paragraph ``The cost of padding.''}
 	\begin{revisiontext}
-		On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four. At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, retaining $50\%$ headroom requires one, one, and two equivalent prover instances, respectively. The corresponding access costs are $31.70$, $317.00$, and $3170.02$~POL/day at 30~gwei. These are scenario-based calculations, not hospital-traffic measurements or claims about public-chain throughput; the policy-commit cost is stated separately because the experiment does not assume a commit/access ratio.
+		On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower, so these are single-host measurements rather than a linear-scaling claim.
+		At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, the average loads are $0.012$, $0.116$, and $1.157$ requests/s; retaining $50\%$ headroom against the measured boundary requires one, one, and two equivalent prover instances, respectively.
+		The corresponding access costs are $31.70$, $317.00$, and $3170.02$~POL/day at 30~gwei, based on the measured mean of $1{,}056{,}674$ gas per padded access.
+		These are scenario-based calculations, not hospital-traffic measurements or claims about public-chain throughput; the $304{,}098$-gas ($0.009$~POL) policy-commit cost is stated separately because the experiment does not assume a commit/access ratio.
 	\end{revisiontext}
 \end{reviewresponse}

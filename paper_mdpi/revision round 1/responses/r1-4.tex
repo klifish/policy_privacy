@@ -27,7 +27,7 @@
 
 	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model,'' paragraphs on the provider-operated TPS.}
 	\begin{revisiontext}
-		For implementation and evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
+		For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
 		This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
 		Two guarantees must be distinguished here.
 		Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
@@ -57,8 +57,8 @@
 	\RevisionLocation{Section ``Discussion,'' paragraph on the TPS trust trade-off.}
 	\begin{revisiontext}
 		The TPS trust assumption is the main architectural tradeoff.
-		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer; the provider-operated TPS used here concentrates that burden at the provider rather than at an independent service (Section~4).
-		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS or provider can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
+		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~4).
+		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Discussion,'' final paragraph.}

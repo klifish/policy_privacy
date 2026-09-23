@@ -39,6 +39,13 @@
 	We measured the context-binding change in isolation against the length-bound circuit immediately preceding it.
 	It adds $605$ R1CS constraints, increasing the total from $75{,}185$ to $75{,}790$ ($0.8\%$), and adds one public input.
 
+	We also measured its on-chain gas, which the evaluation's padded figures cannot show because the padding band sets the padded cost.
+	On a local Hardhat EVM, $20$ real proofs, five for each of four policies ranging from a single term to all $11$ predicate slots, were submitted unpadded to the evaluated access-control contract and to copies that omit only the binding checks or, in addition, the recorded context fields; every submission was granted, and the paired differences were identical for all $20$ proofs.
+	Because Polygon Amoy prices the BN254 precompiles and cold storage access higher than the local EVM, we converted these differences with probes executed read-only against Amoy state, which gave identical results at a block inside the evaluation window and at the current block.
+	At Amoy's gas schedule, the binding adds $64{,}022$ gas to an access transaction: $49{,}552$ for recomputing the digest and the associated checks, of which the Poseidon call accounts for $48{,}309$; $13{,}644$ for the digest as a verifier input; and $826$ for the two additional calldata words.
+	Recording the requester identifier, resource, and digest with each request, which makes the binding auditable from chain state, adds a further $68{,}946$ gas, for a total of $132{,}968$ gas, or $18\%$ of the $723{,}462$-gas mean unpadded access cost in the ablation (Table~14).
+	Under padding, the transaction cost is set by the padding target, so this increase leaves the padded cost unchanged as long as the bare access cost that includes it ($748{,}000$ gas on Amoy) stays below the band's $945{,}000$-gas base.
+
 	The revised implementation is covered at both layers.
 	At the circuit layer, the test rejects a context digest computed for another nonce.
 	At the contract layer, the tests confirm agreement between the circuit-side and EVM Poseidon implementations and reject substitutions of the requester, resource, and nonce.

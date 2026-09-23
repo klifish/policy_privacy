@@ -25,7 +25,7 @@
 	Consequently, evaluating a different prefix would require opening $h$ to a different $(P_{\mathrm{enc}},\ell)$ pair, which is excluded by the commitment's binding property under the collision resistance of Poseidon.
 	The length remains private, and this modification adds no public proof input.
 
-	We added a dedicated regression suite as regression test that checks the following properties:
+	We added a dedicated regression suite that checks the following properties:
 	\begin{enumerate}[label=(\roman*)]
 		\item the same padded token array and randomizer produce different commitments for different lengths;
 		\item a missing or out-of-range length is rejected;

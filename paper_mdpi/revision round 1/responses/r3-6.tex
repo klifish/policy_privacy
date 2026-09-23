@@ -35,13 +35,23 @@
 
 	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation,'' and new Tables~16--17.}
 	\begin{revisiontext}
-		Table~16 reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using rapidsnark. With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s. With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s.
+		Table~16 reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using rapidsnark.
+		With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s.
+		With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s for a five-slot ontology-heavy policy.
+		Every variant retains five public signals, so enlarging either capacity changes the prover artifacts but not the verifier interface.
 
-		We deliberately do not sweep $M$: only the production configuration $N=13,M=11$ activates the implemented production slot masks, whereas other $M$ values enter a generic verifier branch and would not be a like-for-like comparison. Across the four fixed-circuit policy classes, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s.
+		We deliberately do not sweep $M$: only the production configuration $N=13,M=11$ activates the implemented production slot masks, whereas other $M$ values enter a generic verifier branch and would not be a like-for-like comparison.
+		Instead, Table~17 evaluates policy content within the fixed RC1 circuit ($\DEPTH=64$, eight Merkle levels).
+		Across simple, ontology-heavy, profile-heavy, and max-mixed policies, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s, despite the encoded programs ranging from $3$ to $61$ tokens and activating from one to all $11$ production predicate slots.
+		The larger end-to-end time for profile-backed cases reflects off-circuit credential and allowlist preparation; the fixed-circuit witness/prove/verify work remains stable.
 	\end{revisiontext}
 
 	\RevisionLocation{Section ``Discussion,'' paragraph ``The cost of padding.''}
 	\begin{revisiontext}
-		The offline load benchmark rotates the four policy classes through $100$ verified requests after five warm-ups at each concurrency level. On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four. At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, retaining $50\%$ headroom requires one, one, and two equivalent prover instances. These are scenario-based calculations, not hospital-traffic measurements or public-chain throughput claims.
+		The offline load benchmark in Table~17 rotates the four policy classes through $100$ verified requests after five warm-ups at each concurrency level.
+		On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower, so these are single-host measurements rather than a linear-scaling claim.
+		At $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day, the average loads are $0.012$, $0.116$, and $1.157$ requests/s; retaining $50\%$ headroom against the measured boundary requires one, one, and two equivalent prover instances, respectively.
+		The corresponding access costs are $31.70$, $317.00$, and $3170.02$~POL/day at 30~gwei, based on the measured mean of $1{,}056{,}674$ gas per padded access.
+		These are scenario-based calculations, not hospital-traffic measurements or claims about public-chain throughput; the $304{,}098$-gas ($0.009$~POL) policy-commit cost is stated separately because the experiment does not assume a commit/access ratio.
 	\end{revisiontext}
 \end{reviewresponse}

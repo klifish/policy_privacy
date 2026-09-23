@@ -10,7 +10,7 @@
 
 	The policy commitment now covers the program length, $h = \mathsf{Poseidon}(\mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}) \parallel \ell \parallel r)$, and the same private $\ell$ drives both the commitment check and the interpreter, so an authorizing proof cannot rest on a shorter stack-consistent prefix.
 	The proof statement now carries a public context digest $d_{\chi} = \mathsf{Poseidon}(\mathit{id}_{\mathrm{req}} \parallel \mathit{id}_{\mathrm{res}} \parallel \nu)$ that the circuit constrains and the access-control contract recomputes from the transaction parameters, so a captured proof cannot be paired with a fresh nonce, another resource, or another requester within a deployment.
-	The measured marginal costs (88 constraints for the length binding; 605 constraints, one public input, and about $56{,}000$ gas for the context binding including the on-chain Poseidon recomputation) are given in the responses to Reviewer~1, Comments~1 and~2, which also describe the regression and end-to-end tests.
+	The measured marginal costs (88 constraints for the length binding; 605 constraints, one public input, and $64{,}022$ gas per access transaction at Amoy's gas schedule for the context binding, plus $68{,}946$ gas for recording the bound context) are given in the responses to Reviewer~1, Comments~1 and~2, which also describe the regression and end-to-end tests.
 
 	The re-evaluation is complete rather than partial.
 	All of-record numbers in the revised manuscript come from a new capture of $1{,}077$ policies and $1{,}773$ Polygon Amoy executions under the frozen revised release (five-signal statement, length- and context-bound relation, credential-derived profile attributes), followed by a new un-padded ablation run of $1{,}119$ executions on the same policy subset.
@@ -63,9 +63,9 @@
 		For reproducibility, this generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate; this testing key does not model issuer governance or production key management.
 	\end{revisiontext}
 
-	\RevisionLocation{Section ``Privacy Evaluation,'' updated Table~7, ``Headline supervised results on the Polygon Amoy dataset.''}
+	\RevisionLocation{Section ``Privacy Evaluation,'' updated Table~6, ``Headline supervised results on the Polygon Amoy dataset.''}
 	\begin{revisiontable}
-		\noindent\textbf{Table~7.} Headline supervised results on the Polygon Amoy dataset (30 policy-disjoint seeds; a task fails iff AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant).
+		\noindent\textbf{Table~6.} Headline supervised results on the Polygon Amoy dataset (30 policy-disjoint seeds; a task fails iff AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant).
 		\begin{longtable}{p{0.14\textwidth}p{0.28\textwidth}p{0.50\textwidth}}
 			\toprule
 			Property & Hidden target & Headline supervised result \\
