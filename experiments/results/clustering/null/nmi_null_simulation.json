@@ -1,0 +1,168 @@
+{
+  "generatedAt": "2026-09-23T11:33:05+0200",
+  "null": "all classes i.i.d. N(0, I_d); labels by construction order",
+  "clustering": "StandardScaler, KMeans(K = classes, n_init=10)",
+  "dim": 2,
+  "trials": 1000,
+  "seed": 20260923,
+  "rows": [
+    {
+      "structure": "PI-like",
+      "classes": 2,
+      "perClass": 3,
+      "n": 6,
+      "nmiMean": 0.20743657695378967,
+      "nmiP95": 0.47870397138568005,
+      "ariMean": 0.012720720720720717,
+      "published": {
+        "nmi": 0.1808,
+        "ari": -0.019
+      }
+    },
+    {
+      "structure": "PI-like",
+      "classes": 2,
+      "perClass": 10,
+      "n": 20,
+      "nmiMean": 0.04197754950150609,
+      "nmiP95": 0.15605571950205027,
+      "ariMean": 0.0007795987283808026,
+      "published": {
+        "nmi": 0.0404,
+        "ari": -0.002
+      }
+    },
+    {
+      "structure": "PI-like",
+      "classes": 2,
+      "perClass": 50,
+      "n": 100,
+      "nmiMean": 0.007180969819643398,
+      "nmiP95": 0.026900587058972573,
+      "ariMean": -0.00027059009572047985,
+      "published": {
+        "nmi": 0.0066,
+        "ari": -0.0011
+      }
+    },
+    {
+      "structure": "PI-like",
+      "classes": 2,
+      "perClass": 100,
+      "n": 200,
+      "nmiMean": 0.0033591724303246194,
+      "nmiP95": 0.012431638692245381,
+      "ariMean": -0.0003987581058887205,
+      "published": {
+        "nmi": 0.0038,
+        "ari": 0.0002
+      }
+    },
+    {
+      "structure": "5-class",
+      "classes": 5,
+      "perClass": 3,
+      "n": 15,
+      "nmiMean": 0.4152154535294617,
+      "nmiP95": 0.5405831970157722,
+      "ariMean": -0.0034315493229910158,
+      "published": {
+        "nmi": 0.4168,
+        "ari": 0.0005
+      }
+    },
+    {
+      "structure": "5-class",
+      "classes": 5,
+      "perClass": 10,
+      "n": 50,
+      "nmiMean": 0.12258576506056186,
+      "nmiP95": 0.19063789550132038,
+      "ariMean": 0.0002710797771733919,
+      "published": {
+        "nmi": 0.1249,
+        "ari": 0.0018
+      }
+    },
+    {
+      "structure": "5-class",
+      "classes": 5,
+      "perClass": 100,
+      "n": 500,
+      "nmiMean": 0.010164656109193019,
+      "nmiP95": 0.017223311136796392,
+      "ariMean": -1.5716989242163168e-05,
+      "published": {
+        "nmi": 0.0105,
+        "ari": -0.0
+      }
+    },
+    {
+      "structure": "10-class",
+      "classes": 10,
+      "perClass": 3,
+      "n": 30,
+      "nmiMean": 0.5345707295125669,
+      "nmiP95": 0.5940981635620474,
+      "ariMean": -0.0008997149867799662
+    },
+    {
+      "structure": "10-class",
+      "classes": 10,
+      "perClass": 10,
+      "n": 100,
+      "nmiMean": 0.20869797101154125,
+      "nmiP95": 0.24817795032737935,
+      "ariMean": 0.0003380199477714588
+    },
+    {
+      "structure": "10-class",
+      "classes": 10,
+      "perClass": 77,
+      "n": 770,
+      "nmiMean": 0.023862118110285976,
+      "nmiP95": 0.030313340135868685,
+      "ariMean": -0.0001022406745857434
+    },
+    {
+      "structure": "ICD-10 sizes",
+      "classes": 10,
+      "perClass": "49-135",
+      "n": 770,
+      "nmiMean": 0.02438602736091955,
+      "nmiP95": 0.03141463590952922,
+      "ariMean": -0.00010039348799495495
+    }
+  ],
+  "matchedIcd10": {
+    "sizes": [
+      131,
+      49,
+      62,
+      55,
+      70,
+      63,
+      135,
+      77,
+      62,
+      66
+    ],
+    "kmeansSeedsPerTrial": 20,
+    "nmiMean": 0.02462080931715063,
+    "nmiP95": 0.030186112449769008,
+    "ariMean": 6.231740203500263e-05,
+    "observedNmi": 0.028138867015640452,
+    "trialsAtOrAboveObserved": 145,
+    "empiricalP": 0.14585414585414586
+  },
+  "observedIcd10": {
+    "n": 770,
+    "classes": 10,
+    "nmi": 0.028138867015640452,
+    "ari": 0.002065329179354153,
+    "permutationBaselineNmi": 0.023748514449836566,
+    "debiasedNmi": 0.0043903525658038865,
+    "permutationNmiP": 0.0845771144278607
+  },
+  "runtimeSeconds": 758.2
+}
