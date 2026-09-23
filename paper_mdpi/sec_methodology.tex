@@ -41,11 +41,16 @@ Both conditions of this \emph{double criterion} are required to trigger a FAIL v
 
 \noindent\textbf{Operational thresholds and sensitivity.}
 The PASS/FAIL labels summarize residual distinguishability under the evaluated attacks; they do not by themselves establish the effectiveness of the defense.
-The AUC threshold imposes an operational effect-size floor of $0.05$ above chance, while the stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
+The two conditions guard against different errors.
+The AUC threshold is an effect-size floor of $0.05$ above chance: with large test sets, a permutation test can reject for a negligible AUC excess, and the floor keeps such an effect from triggering a FAIL.
+The stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
+Under the null hypothesis, each split rejects with probability $0.05$, so a majority of rejections indicates an effect that recurs across splits rather than one carried by a few favorable splits.
 Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
+In the evaluated run, the stability condition is the binding one: the AUC condition alone would flag four PCH and four SPP tasks, three of each being significant in fewer than half of the splits, whereas the stability condition alone flags the same single task per experiment as the double criterion.
+The AUC floor therefore acts as a safeguard rather than as the deciding condition.
 
 Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
-At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none.
+At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none. No PI task fails under any of these threshold pairs.
 In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
 We therefore treat FAIL as a diagnostic flag and examine the two observed failures in the corresponding result sections without changing their verdicts.
 
