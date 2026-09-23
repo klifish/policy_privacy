@@ -6,60 +6,11 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{4}
-	We chose to tone down the claims and to say precisely what the evaluation covers, while making the evaluation of the modeled channel more rigorous.
+	We toned down the claims and made the evaluation of the modeled channel more rigorous.
+	The Abstract, Discussion, and Conclusion now claim only empirical resistance against the modeled passive metadata adversary, and the Discussion lists each channel you named as excluded.
+	In the re-run evaluation, two of the $45$ tasks fail; we report them, trace them to the random padding targets, and quantify the criterion's false-positive rate.
+	The re-run ablation also identified the source of the unpadded signal, the calldata byte pricing of the requester pseudonym, which shows that the evaluation detects small deterministic channels.
+	Adaptive and timing experiments require an active-adversary design and are named as future work.
 
-	\textbf{Toned-down claims.}
-	The abstract, Discussion, and Conclusion now describe the result as empirical resistance against the modeled public-chain metadata attacks, and the Discussion lists every exclusion the reviewer names---timing and ordering, mempool and broadcast behaviour, off-chain TPS communication, adaptive probing, repeated attempts, correlations between outcomes and policy classes (every request in the corpus is granted, so this correlation is not exercised), and compromised TPS behaviour---with the statement that the results should not be read as establishing general policy confidentiality against them.
-	The threat model also states why the gas channel is wider than the verifier's arithmetic: the EVM prices calldata per byte, so any deterministic difference in how a public argument is encoded reaches the observer through gas even when calldata length is constant.
-
-	\textbf{A more rigorous treatment of the modeled channel.}
-	The evaluation was re-run on the revised system and a new corpus.
-	Two of the $45$ supervised tasks now meet the failure criterion; we report them as failures and trace them, by subtracting the logged pad target from the access gas, to coincidences of the padding's own random draws with a label (Reviewer~1, Comments~5 and~6), and we quantify the criterion's false-positive rate with a null simulation.
-	The re-run ablation shows what the un-padded transcript leaks and why: not the policy logic, which the fixed circuit already hides, but the byte pricing of the requester pseudonym, whose encoding width in our harness correlates with whether a policy activates the profile predicate.
-	We report this because it is the kind of channel the reviewer's broader adversary would exploit, and because it shows that the evaluation does detect sub-kilogas deterministic channels when they exist.
-
-	We did not add adaptive or timing experiments in this revision.
-	They require a different corpus design (repeated, adversarially chosen requests against the same policy, and control over block inclusion) and an adversary model with an active component; the Conclusion names them as the next step for the evaluation.
-
-	\textbf{Changes in the manuscript.}
-	The revised Abstract names the evaluated adversary, the evaluation defines the observable channel and exclusions, and the Discussion and Conclusion state the empirical scope and unmodeled channels explicitly.
-
-	\RevisionLocation{Abstract.}
-	\begin{revisiontext}
-		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Of $45$ supervised tasks, $43$ remain below the multi-seed leakage criterion; diagnostic analysis traces the two threshold crossings, and one corresponding small clustering result, to finite-corpus coincidences in policy-independent padding targets. A paired ablation attributes suppression of the modeled gas channel to randomized padding, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Adversary and observables.''}
-	\begin{revisiontext}
-		Of these features, calldata length, proof size, and log counts/sizes are constant across the evaluated policies by design; any policy-dependent signal can therefore only flow through the two gas measurements (\texttt{commitGasUsed}, \texttt{accessGasUsed}).
-		The fixed circuit and the commitment-only interface make the non-gas features constant; randomized gas padding protects the gas channel that remains.
-		That channel is wider than the verifier's arithmetic: because the EVM prices calldata per byte (four gas for a zero byte, sixteen otherwise), the gas of an access transaction also encodes the byte pattern of its public arguments, so any deterministic difference in how an argument is encoded reaches the observer through gas even when the calldata length is constant.
-		The constant features remain in the attack pipeline but carry no variation to exploit.
-		Time-limited use (TS) is the exception by design: the ACM enforces it from public state, so a TS policy discloses the term and its duration through additional events (Section~5); the evaluated corpus contains no TS policies.
-		We do not model side channels such as block timing, transaction ordering, mempool or broadcast patterns, or off-chain TPS communication, nor the non-goals stated in the Problem and Threat Model section.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Discussion,'' opening and scope paragraphs.}
-	\begin{revisiontext}
-		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance to policy leakage.
-		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
-		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
-		Such false failures are a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
-		The gas-padding ablation attributes the gas-channel protection to randomized gas padding: without it the same attacks recover the policy family with AUCs up to $0.90$.
-		Content hiding itself rests on the commitment-only interface and the content-independent transcript normalization; padding is the defense-in-depth layer that absorbs whatever deterministic gas differences remain, of which the ablation exhibits one that does not come from the policy logic at all but from the byte encoding of a public transaction argument.
-		Together with fixed-length policy representation, reusable interpretation, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
-
-		The scope of this claim is the adversary of Section~6.1: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies without time-limited use, whose term and duration the design makes public (Section~5).
-		Channels outside this evaluation include transaction timing and ordering, mempool and broadcast behaviour, off-chain communication with the TPS, adaptive requester probing, repeated access attempts, correlations between authorization outcomes and policy classes (every request in the corpus is granted), and compromised TPS behaviour; the results should not be read as establishing general policy confidentiality against them.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Conclusion,'' limitations and future-directions paragraphs.}
-	\begin{revisiontext}
-		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
-		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
-		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
-		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
-
-		Three directions follow: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
-	\end{revisiontext}
+	\RevisionLocation{Abstract (\Loc{abstract}); Section~6.1, third paragraph (\Loc{ev-obs}); Section~6.9, paragraph ``Source of the unpadded signal'' and the two paragraphs that follow (\Loc{ab-source}); Section~7, paragraphs under ``Privacy findings'' and ``Scope'' (\Loc{di-find}; \Loc{di-scope}); Section~8, third and fourth paragraphs (\Loc{co-limits}).}
 \end{reviewresponse}

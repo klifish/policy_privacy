@@ -3,17 +3,9 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{4}
-	The gaps were caused by forcing every float to its source position (\texttt{[H]}), which pushed a large table to the next page and left the preceding page unfilled.
-	All ordinary tables and figures now use the standard \texttt{[htbp]} placement. We also adjusted the float-page thresholds so that consecutive result tables can share a page with the analysis that follows instead of being isolated on a sparsely populated float page.
-	Finally, the abbreviations list now uses a breakable \texttt{longtable}; this prevents its heading from being stranded at the foot of one page while the entire list moves to the next.
-	We recompiled and visually checked the complete manuscript. In the revised pagination, the two PCH result tables are followed immediately by the diagnostic analysis on the same page, and the conclusion, back matter, and abbreviations occupy the former sparse end matter continuously.
+	The gaps were caused by forcing every float to its source position.
+	All tables and figures now use standard float placement, we adjusted the float-page settings, and the abbreviations list can now break across pages.
+	We checked the recompiled manuscript page by page, and the large empty areas are gone.
 
-	\RevisionLocation{All table and figure environments.}
-	\begin{revisiontext}
-		\texttt{\textbackslash begin\{table\}[htbp]}
-
-		\texttt{\textbackslash begin\{figure\}[htbp]}
-
-		\texttt{\textbackslash begin\{longtable\}\{@\{\}ll@\{\}\}} (abbreviations)
-	\end{revisiontext}
+	\RevisionLocation{Whole manuscript; the former Tables~2, 9, and~12 are now Tables~2 (\Loc{tab2}), 11 (\Loc{tab11}), and~14 (\Loc{tab14}).}
 \end{reviewresponse}

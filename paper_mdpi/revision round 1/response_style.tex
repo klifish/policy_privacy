@@ -21,9 +21,9 @@
 \newcommand{\ManuscriptTitle}{Enhancing Consent Policy Privacy in Blockchain-Based Healthcare Data Sharing}
 \providecommand{\DEPTH}{\mathsf{DEPTH}}
 \hypersetup{
-  pdftitle={Response to Reviewer \ReviewerNumber},
-  pdfauthor={},
-  pdfsubject={Revision Round 1}
+	pdftitle={Response to Reviewer \ReviewerNumber},
+	pdfauthor={},
+	pdfsubject={Revision Round 1}
 }
 
 \setlength{\parindent}{0pt}
@@ -41,48 +41,38 @@
 \renewcommand{\headrulewidth}{0.4pt}
 
 \newcommand{\ResponseTitle}{%
-  \begin{center}
-    {\Large\bfseries Response to Reviewer \ReviewerNumber\par}
-    \vspace{0.7em}
-    {\large\itshape \ManuscriptTitle\par}
-  \end{center}
-  \vspace{0.6em}
-  \noindent\color{RuleGray}\rule{\textwidth}{0.7pt}\color{black}
-  \vspace{0.6em}
-}
-
-\newcommand{\WorkingDraftNotice}[1]{%
-  \begin{center}
-    \fcolorbox{NoteBorder}{NoteBackground}{%
-      \parbox{0.91\textwidth}{\small\textbf{Working draft.} #1}%
-    }
-  \end{center}
-  \vspace{0.4em}
+	\begin{center}
+		{\Large\bfseries Response to Reviewer \ReviewerNumber\par}
+		\vspace{0.7em}
+		{\large\itshape \ManuscriptTitle\par}
+	\end{center}
+	\vspace{0.6em}
+	\noindent\color{RuleGray}\rule{\textwidth}{0.7pt}\color{black}
+	\vspace{0.6em}
 }
 
 \newenvironment{reviewcomment}[1]
-  {\par\vspace{0.7em}\noindent\textbf{Comments #1: }\itshape}
-  {\par\normalfont}
+{\par\vspace{0.7em}\noindent\textbf{Comments #1: }\itshape}
+{\par\normalfont}
 
 \newenvironment{reviewresponse}[1]
-  {\par\vspace{0.5em}\noindent\textbf{Response #1: }}
-  {\par}
+{\par\vspace{0.5em}\noindent\textbf{Response #1: }}
+{\par}
 
-\newenvironment{revisiontext}
-  {\begin{quote}\color{RevisionRed}}
-  {\end{quote}}
-
-% Full-width, non-floating revised tables. Longtable permits a long manuscript
-% table to break cleanly across response pages, unlike a table float nested in
-% the quote-based revisiontext environment.
-\newenvironment{revisiontable}
-  {\par\begingroup\color{RevisionRed}\footnotesize\setlength{\tabcolsep}{4pt}}
-  {\par\endgroup}
+% Page and line references into the revised manuscript. locations.tex is generated
+% by tools/build_manuscripts.sh from the marked PDF, whose pagination equals the
+% clean PDF's; an unknown key prints in bold so it cannot pass unnoticed.
+\InputIfFileExists{locations.tex}{}{}
+\newcommand{\Loc}[1]{\ifcsname loc@#1\endcsname\csname loc@#1\endcsname\else\textbf{[?? #1]}\fi}
 
 \newcommand{\RevisionLocation}[1]{%
-  \par\noindent\textbf{Location in the revised manuscript:} #1\par
+	\par\noindent\textit{Revised in:} #1\par
 }
 
-\newcommand{\NoProcessedResponses}{%
-  \WorkingDraftNotice{No response entries have been finalized for this reviewer yet. This PDF is intentionally limited to the shared journal-response layout and will be populated as the review comments are processed.}
+% Opening paragraph shared by the three letters.
+\newcommand{\OpeningNote}{%
+	Dear Reviewer~\ReviewerNumber,
+
+	We thank you for your careful review and constructive comments, which have helped us to improve the manuscript considerably.
+	Our point-by-point responses follow and a marked manuscript in which all new or revised text appears in red is provided.
 }

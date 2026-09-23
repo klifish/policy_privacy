@@ -6,62 +6,12 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{3}
-	We agree that ``external predicate bit'' left the guarantee unclear, and the revision answers the question in two steps: the relation no longer accepts unconstrained predicate bits, and the Design section now states feature by feature what the prototype establishes at authorization time.
+	We now state exactly which consent policies are supported end-to-end.
+	Every predicate is now derived in-circuit from evidence bound to committed parameters rather than supplied as an unconstrained bit.
+	Ontology conditions use Merkle membership proofs; user-, project-, and institution-specific restrictions use allowlist membership; and profile-backed terms use signed credential claims.
+	The policy validity window is checked against the public request epoch, and the contract enforces time-limited use from public state.
+	A new table classifies each consent feature as checked in-circuit, checked on-chain, committed but not decided at request time, or not supported.
+	Institutional or ethics approval, downstream purpose limitation, post-access obligations, delegation, and credential revocation remain outside the proved statement, and the Conclusion lists them as limitations.
 
-	In the revised relation every predicate bit is derived in-circuit from a witness bound to committed parameters: ontology-scoped conditions (disease, study design, ancestry, geography, clinical term) are Merkle-membership proofs against a provider-committed whitelist root; user-, project-, and institution-specific restrictions are membership proofs of the holder pseudonym in provider-committed allowlists; and the profile-backed data-use terms are derived from the claims of an EdDSA-Poseidon credential that binds the policy commitment, the requester pseudonym, the resource, the claims, a validity interval, and a credential identifier. These profile-backed terms prove possession of signed claims at authorization time, not that subsequent use conforms to a declared purpose.
-	The policy's own validity window is committed and checked against the public request epoch, which the contract requires to equal the current hour.
-
-	A new table in the Design section classifies each consent feature as decided in-circuit, decided on-chain by the access-control contract from public state, committed but not decided at request time, or not provided. It also states the compiler's composition limits and distinguishes institution-specific allowlists from institutional or ethics approval, which remains an out-of-circuit step. Policy revocation and resource rebinding govern future authorizations but cannot retract data already released or enforce downstream duties.
-
-	The Conclusion lists the unsupported features among its limitations; the Design table separately states that policy revocation and resource rebinding affect future decisions only. The Discussion proposes a governed issuer registry with in-circuit membership and non-revocation witnesses, together with holder-authorized presentation through a per-request signature. These extensions could preserve the Boolean interpreter and the fixed public-signal shape, but they would require a revised circuit and new proving and verification keys.
-
-	\textbf{Changes in the manuscript.}
-	The supported policy class and its composition rules are now stated explicitly in the Design section and summarized feature by feature in a new table. The Discussion distinguishes implementable extensions from current guarantees, and the Conclusion lists the unsupported features.
-
-	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' paragraph ``Scope of the supported policies.''}
-	\begin{revisiontext}
-		The policy class is deliberately restricted, and Table~4 states what the prototype establishes end-to-end.
-		Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
-		Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state; profile-backed terms establish possession of issuer-signed claims, not conformity of subsequent data use with a declared purpose.
-		Because the ACM enforces time-limited use from public state, a policy containing TS is not content-private for that term: the commit transaction emits the duration, and the first grant emits the requester's window.
-		The evaluated corpus contains no TS policies (Section~6.3).
-		A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
-		On-chain policy revocation and resource rebinding affect future authorization decisions only; they do not retract data already released or enforce cessation or deletion after access.
-		These lifecycle transactions are public: they reveal when a policy is replaced or revoked, but not its content.
-		Accordingly, the prototype is an access-time consent checker for bounded Boolean policies over standardized terms.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``TPS-ZKPI Design,'' subsection ``Policy Representation and Interpretation,'' new Table~4, ``Consent-policy features and how far the prototype establishes them.''}
-	\begin{revisiontable}
-		\noindent\textbf{Table~4.} Consent-policy features and how far the prototype establishes them. ``In-circuit'' means the condition is part of the proved relation; ``on-chain'' means the ACM enforces it from public state; ``committed'' means the value is bound into the policy but compliance is not decided at request time.
-		\begin{longtable}{p{0.30\textwidth}p{0.18\textwidth}p{0.44\textwidth}}
-			\toprule
-			Consent feature & Status & What is established at authorization time \\
-			\midrule
-			\endfirsthead
-			\toprule
-			Consent feature & Status & What is established at authorization time \\
-			\midrule
-			\endhead
-			\input{../tables/tab_policy_support_rows.tex}
-		\end{longtable}
-	\end{revisiontable}
-
-	\RevisionLocation{Section ``Discussion,'' paragraphs on issuer governance and the proposed extension.}
-	\begin{revisiontext}
-		A concrete deployment can add issuer governance without changing the Boolean interpreter: a governed registry would publish schema-qualified issuer keys and their validity epochs, while an issuer would sign a domain-separated credential containing a holder-key commitment, claim vector, authorization scope, validity interval, and unique credential identifier.
-		The circuit would verify the credential signature and a Merkle proof that the issuer key is active in the registry, while continuing to derive policy attributes from the signed claims.
-		The holder would authorize each request by signing the context digest and request epoch, preventing a TPS that observes one credential presentation from generating proofs for fresh sessions; an epoch-specific sparse-Merkle or accumulator root would provide a private non-revocation witness for the credential identifier.
-
-		The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the Boolean interpreter and the shape of the policy-independent public interface, although these checks require a revised circuit and new proving and verification keys.
-		Existing healthcare credentials using Ed25519 or ECDSA require either higher-cost in-circuit verification or an additional SNARK-friendly credential; TPS re-signing cannot establish issuer-origin assurance.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Conclusion,'' third paragraph.}
-	\begin{revisiontext}
-		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
-		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
-		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
-		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
-	\end{revisiontext}
-	\end{reviewresponse}
+	\RevisionLocation{Section~5.2, paragraph ``Scope of the supported policies'' (\Loc{ds-scope}); Table~4 (\Loc{tab4}); Section~7, second and third paragraphs under ``Issuer governance and deployment path'' (\Loc{di-ext}); Section~8, third paragraph (\Loc{co-limits}).}
+\end{reviewresponse}

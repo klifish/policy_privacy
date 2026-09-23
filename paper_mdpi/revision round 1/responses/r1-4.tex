@@ -9,63 +9,11 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{4}
-	We agree, and we have made the distinction explicit in two places.
+	We have made the distinction explicit and added the requested matrix.
+	Section~4.1 now separates authorization correctness, which the commitment and on-chain verification enforce regardless of the TPS, from policy confidentiality and liveness, which depend on the TPS following its workflow.
+	The new Table~3 states, for each actor or failure mode, whether each guarantee is cryptographic, TPS-dependent, external, or not provided.
+	The rows cover the public observer, the requester, an honest TPS, a compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers.
+	In short, a compromised TPS cannot break authorization correctness but can breach confidentiality and refuse service; the Discussion addresses the resulting accountability gap.
 
-	First, the trust-model subsection now separates the two kinds of guarantee in the text.
-	Authorization correctness is enforced by the commitment and the on-chain proof verification: a proof that does not satisfy the committed relation is rejected regardless of how the TPS is instantiated, and, following the revisions for Comments~1--3, the relation now binds the program length, the authorization context, and the issuer-signed profile claims, so a compromised TPS cannot shorten the program, replay a proof under fresh parameters, or alter signed claims.
-	Policy confidentiality, in contrast, is not cryptographically enforced against the TPS: the TPS holds the plaintext policy material and the requester evidence, and a compromised or colluding TPS can expose them, substitute unsigned evidence, or refuse to prove.
-	The provider-operated TPS used in the evaluation concentrates this trust at the provider.
-
-	Second, we added the requested matrix (the threat/guarantee table in the revised Problem and Threat Model section).
-	Its rows distinguish the passive public-chain observer, untrusted requester, workflow-following TPS, compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers; its columns cover policy confidentiality, authorization correctness, liveness, and decision auditability.
-	Each cell states whether the guarantee is cryptographic (C), rests on the TPS following its workflow (T), is an external or lifecycle function (E), is not provided (--), or is not applicable (n/a).
-	The matrix makes the practical implications visible at a glance: against a compromised TPS, the prototype retains authorization correctness for the committed relation and signed claims but loses confidentiality and liveness; submitted decisions remain auditable, whereas a refusal to prove is not attributable.
-	A note below the table states that the evaluated provider-operated deployment concentrates every TPS-dependent assumption at the provider.
-
-	\textbf{Changes in the manuscript.}
-	The revised trust model states the cryptographic and TPS-dependent guarantees separately, the new matrix makes the distinction explicit for every threat, and the Discussion identifies the practical consequences and reduced-trust directions.
-
-	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model,'' paragraphs on the provider-operated TPS.}
-	\begin{revisiontext}
-		For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
-		This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
-		Two guarantees must be distinguished here.
-		Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
-		Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
-		Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
-		Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-		Table~3 summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``Guarantees under each actor or failure mode.''}
-	\begin{revisiontable}
-		\noindent\textbf{Table~3.} Guarantees under each actor or failure mode.
-		\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
-			\toprule
-			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
-			\midrule
-			\endfirsthead
-			\toprule
-			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
-			\midrule
-			\endhead
-			\input{../tables/tab_threat_guarantee_rows.tex}
-		\end{longtable}
-		\noindent\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
-	\end{revisiontable}
-
-	\RevisionLocation{Section ``Discussion,'' paragraph on the TPS trust trade-off.}
-	\begin{revisiontext}
-		The TPS trust assumption is the main architectural tradeoff.
-		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~4).
-		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Discussion,'' final paragraph.}
-	\begin{revisiontext}
-		Three directions follow.
-		First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
-		Second, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make proof refusals attributable.
-		Third, the reduced-trust TPS instantiations of Section~4 (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
-	\end{revisiontext}
+	\RevisionLocation{Section~4.1, third and fourth paragraphs (\Loc{tm-tps}); Table~3 (\Loc{tab3}); Section~7, paragraphs ``TPS trust and credential provenance'' (\Loc{di-tps}) and ``Future directions'' (\Loc{di-future}).}
 \end{reviewresponse}

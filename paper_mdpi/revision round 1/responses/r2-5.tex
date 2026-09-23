@@ -3,46 +3,8 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{5}
-	We shortened every caption to one or two sentences that name what is shown, and moved the explanatory material into the body text next to the first reference.
-	For the two examples: the workflow figure's caption is now ``TPS-assisted policy-compliance workflow (steps are described in the text),'' with the step numbering explained in the Overview paragraph; the ablation table's caption is now two lines, with the selection rule for its rows and the reading of $\Delta_{\text{leak}}$ stated in the ablation section.
-	The captions of the corpus, PCH, SPP, PI, clustering, related-work, and cost tables and of the two result figures were shortened in the same way.
+	We shortened every caption to one or two sentences and moved the explanations into the main text.
+	For example, the caption of Figure~1 now fits on one line (formerly four), and that of the former Table~12 (now Table~14) on three (formerly six).
 
-	\textbf{Changes in the manuscript.}
-	The revised captions are reproduced below; methodological explanations and selection rules now appear in the surrounding prose instead of the captions.
-
-	\RevisionLocation{Captions of Figures~1, 2, and 3.}
-	\begin{revisiontext}
-		Figure~1. TPS-assisted policy-compliance workflow (steps are described in the text).
-
-		Figure~2. Unsupervised K-Means clustering across all three objectives: ARI (top) and NMI (bottom) per target.
-
-		Figure~3. Gas-padding ablation over all $45$ supervised contrasts: unpadded versus padded deviation from chance, colored by the sign of the $95\%$ interval of $\Delta_{\text{leak}}$.
-	\end{revisiontext}
-
-	\RevisionLocation{Captions of the Privacy Evaluation result and cost tables (Tables~6--17).}
-	\begin{revisiontext}
-		Table~6. Headline supervised results on the Polygon Amoy dataset (30 policy-disjoint seeds; a task fails iff AUC$_{\text{mean}}>0.55$ and at least $50\%$ of seeds are significant).
-
-		Table~7. Composition of the shared policy corpus (generator seed \texttt{unified-\allowbreak decoupled-\allowbreak 2026}). DUO terms are multi-label, so their counts overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis partitions the full corpus.
-
-		Table~8. Policy Content Hiding: per-term supervised attack over 30 policy-disjoint seeds (one-vs-rest tasks; higher-scoring classifier per task). All ten DUO tasks pass.
-
-		Table~9. Policy Content Hiding: per-chapter ICD-10 supervised attack over 30 policy-disjoint seeds (higher-scoring classifier per chapter).
-
-		Table~10. Policy Indistinguishability: single-execution distinguisher over 30 policy-disjoint seeds, by policy-pair type (higher-scoring classifier per type). \texttt{controlled\_difference} is reported for reference and excluded from the PI verdict. All gating rows pass.
-
-		Table~11. Structure \& Parameter Privacy: 21 pairwise contrasts across four annotation axes over 30 policy-disjoint seeds (higher-scoring classifier per contrast).
-
-		Table~12. Unsupervised clustering attack (K-Means, $K$ = number of classes, $K{=}2$ for pairs) on the on-chain gas features, with the permutation $p$-value of ARI. PCH clusters all executions globally.
-
-		Table~13. Sample-size sensitivity of NMI and ARI under the null hypothesis where all classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row).
-
-		Table~14. Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed randomized padding) on the same 1119-execution subset; supervised rows are the largest-signal contrasts per experiment (random-forest AUC).
-
-		Table~15. Single-point cost profile of the evaluated prototype configuration at $\DEPTH=64$. Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ revised Polygon Amoy executions.
-
-		Table~16. Offline circuit-capacity sweeps (30 verified proofs per row). Timing cells report median [IQR] (p95) in ms; every variant keeps $N=13$, $M=11$, $K=5$ and five public signals.
-
-		Table~17. Fixed-circuit policy and workload scalability. Measurements use the RC1 circuit; daily workloads are scenarios, not hospital traces or public-chain throughput.
-	\end{revisiontext}
+	\RevisionLocation{All figure and table captions, for example Figure~1 (\Loc{fig1}) and Table~14 (\Loc{tab14}).}
 \end{reviewresponse}

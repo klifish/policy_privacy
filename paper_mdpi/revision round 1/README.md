@@ -1,23 +1,24 @@
-# Reviewer response PDFs
+# Revision Round 1: response letters and revised manuscript
 
-The revision uses one independent LaTeX entry point per reviewer:
-
-- `reviewer1_response.tex`
-- `reviewer2_response.tex`
-- `reviewer3_response.tex`
-
-Shared typography and response environments are defined in `response_style.tex`.
-Individual responses live under `responses/` and are included by the relevant reviewer entry point.
-
-From the repository root, build all three PDFs with:
+From the repository root, build everything with:
 
 ```sh
 make -C "paper_mdpi/revision round 1" all
 ```
 
-Or build one reviewer PDF with `reviewer1`, `reviewer2`, or `reviewer3` as the target.
-Generated PDFs are written to `paper_mdpi/revision round 1/output/`.
-Temporary compilation files remain under `tmp/pdfs/revision-round-1/`.
+This writes to `output/`:
 
-Use the `revisiontext` environment for manuscript excerpts that must appear in red under the journal's response template.
-Add page and line references only after the revised manuscript pagination is stable.
+- `manuscript_revised_clean.pdf` and `manuscript_revised_marked.pdf`: the revised manuscript, clean and with new or revised text in red (deleted text is not shown). The baseline is commit `57142fe`, the version submitted on 13 July 2026.
+- `reviewer1_response.pdf`, `reviewer2_response.pdf`, `reviewer3_response.pdf`: one letter per reviewer.
+
+`make manuscript` runs `tools/build_manuscripts.sh`, and `make letters` rebuilds only the letters.
+Run `make all` after any manuscript edit, because the letters cite page and line numbers.
+
+## How the pieces fit
+
+- Both manuscript PDFs are typeset from one `latexdiff` source; the clean PDF only switches red to black. Their page and line numbers are therefore identical.
+- The abstract and keywords are marked by `tools/mark_frontmatter.py`, since MDPI sets them in the preamble, which `latexdiff` does not mark. References are marked by `tools/mark_bbl.py`: new entries entirely, and existing entries only in their added or edited blocks, such as DOIs.
+- `tools/locations.py` finds each cited passage in the marked PDF by its opening and closing words and writes `locations.tex`. The responses cite passages as `\Loc{key}`. If an anchor phrase is edited away, the build stops with an error naming it; update the anchor in `PASSAGES`.
+- Each response lives in `responses/`, is included by its reviewer's entry point, and uses the shared layout in `response_style.tex`.
+
+Temporary files are written to `tmp/pdfs/revision-round-1/`.

@@ -3,36 +3,10 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{9}
-	The three texts now serve different purposes.
-	The abstract states the result and the overhead figures once.
-	The Discussion interprets the results---the scope of the claim, the two criterion failures and their origin, the cost of padding, the trust model, and the attribute-origin guarantee---without restating the abstract.
-	The Conclusion avoids repeating the abstract's task counts and overhead figures; it summarizes the contribution, the meaning of the results, the limitations, and the directions that follow.
+	We removed the repetition by giving each part a distinct role.
+	The Abstract states the results and overhead figures once.
+	The Discussion interprets them (scope, the two criterion failures, cost, and trust model) without restating the Abstract.
+	The Conclusion summarizes the contribution, findings, limitations, and future directions without repeating the task counts or overhead figures.
 
-	\textbf{Changes in the manuscript.}
-	Representative passages showing the distinct role of each section are reproduced below.
-
-	\RevisionLocation{Abstract.}
-	\begin{revisiontext}
-		In blockchain-based healthcare data sharing, consent policies are expected to be enforced verifiably and auditably, but public-chain transparency may expose sensitive policy information through on-chain representations, verification interfaces, and execution artifacts.
-		Existing privacy-preserving solutions mainly protect data contents, identities, or transactions, not the governing consent policies.
-		We propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which lets an on-chain verifier check authorization decisions while limiting leakage about policy content, identity, and structure.
-		TPS-ZKPI combines fixed-length policy encoding, a reusable zero-knowledge policy interpreter, commitment-based policy binding, and public-chain transcript normalization.
-		We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Of $45$ supervised tasks, $43$ remain below the multi-seed leakage criterion; diagnostic analysis traces the two threshold crossings, and one corresponding small clustering result, to finite-corpus coincidences in policy-independent padding targets. A paired ablation attributes suppression of the modeled gas channel to randomized padding, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Discussion,'' opening and scope paragraphs.}
-	\begin{revisiontext}
-		The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance to policy leakage.
-		Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
-		The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target rather than by the policy: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates.
-		The scope of this claim is the adversary of Section~6.1: a passive observer of commitments, proofs, public parameters, calldata, events, and gas, on a corpus of generated policies without time-limited use, whose term and duration the design makes public (Section~5).
-		Channels outside this evaluation include transaction timing and ordering, mempool and broadcast behaviour, off-chain communication with the TPS, adaptive requester probing, repeated access attempts, correlations between authorization outcomes and policy classes (every request in the corpus is granted), and compromised TPS behaviour; the results should not be read as establishing general policy confidentiality against them.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Conclusion,'' contribution and future-directions paragraphs.}
-	\begin{revisiontext}
-		This work presents TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach for policy-private consent enforcement in blockchain-based healthcare data sharing. TPS-ZKPI commits hidden provider-defined policies, evaluates bounded Boolean policies through a reusable interpreter, and normalizes the public verification transcript to reduce metadata-level leakage. Its authorization relation binds each proof to the committed policy and request context, while profile-backed attributes derive in-circuit from issuer-signed credentials under an explicit issuer-governance assumption.
-
-		Three directions follow: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
-	\end{revisiontext}
-	\end{reviewresponse}
+	\RevisionLocation{Abstract (\Loc{abstract}); Section~7, paragraphs under ``Privacy findings'' and ``Scope'' (\Loc{di-find}; \Loc{di-scope}); Section~8 (\Loc{co-all}).}
+\end{reviewresponse}

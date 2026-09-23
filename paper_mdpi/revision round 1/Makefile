@@ -4,9 +4,16 @@ BUILD_DIR := $(ROOT)/tmp/pdfs/revision-round-1
 OUTPUT_DIR := output
 SOURCES := reviewer1_response reviewer2_response reviewer3_response
 
-.PHONY: all reviewer1 reviewer2 reviewer3 clean
+.PHONY: all manuscript letters reviewer1 reviewer2 reviewer3 clean
 
-all: reviewer1 reviewer2 reviewer3
+# The manuscripts come first: they regenerate locations.tex, whose page and line
+# numbers the letters cite.
+all: manuscript letters
+
+manuscript:
+	./tools/build_manuscripts.sh
+
+letters: reviewer1 reviewer2 reviewer3
 
 reviewer1: reviewer1_response
 reviewer2: reviewer2_response

@@ -6,66 +6,12 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{1}
-	We agree that this is the main architectural limitation, and the revision states it as such in the Problem, Discussion, and Conclusion sections.
-	The distinction the reviewer asks for is now made in two places.
-	The trust-model subsection separates authorization correctness, which the commitment and the on-chain verification enforce regardless of the TPS (and which the revised relation strengthens by binding the program length, the authorization context, and the issuer-signed claims), from policy confidentiality, which is not cryptographically enforced against the TPS and rests on the service following its workflow; it also names what a compromised or colluding TPS can do (expose policy and evidence, substitute unsigned evidence, refuse to prove) and notes that the provider-operated TPS of the evaluation concentrates that trust at the provider.
-	A new threat/guarantee table then distinguishes the public-chain observer, untrusted requester, workflow-following TPS, compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers across policy confidentiality, authorization correctness, liveness, and decision auditability.
-	A note below the table states that the provider-operated deployment used in the evaluation concentrates every TPS-dependent assumption at the provider.
+	We agree that this is the main architectural limitation, and the revision now states it as such.
+	Section~4.1 separates what is protected cryptographically from what is only trusted to the TPS.
+	Authorization correctness is protected: a compromised TPS cannot alter the program length, the authorization context, or the signed claims.
+	Policy confidentiality and liveness are only trusted to the TPS, and the provider-operated TPS in our evaluation concentrates this trust at the provider.
+	The new Table~3 lists these guarantees for each actor and failure mode.
+	The Discussion and Conclusion describe confidentiality against the TPS as a trust assumption, and the Discussion names mechanisms that would reduce it.
 
-	The claim is scoped accordingly: what the evaluation establishes is what a public-chain observer can infer from the artifacts a workflow-following TPS produces, and the abstract, Discussion, and Conclusion say that confidentiality against the service itself is a trust assumption, not a cryptographic property.
-	The Discussion also names the mechanisms that would relocate that trust---collaborative-SNARK or attested proof generation so that no single party sees both policy and evidence, a holder-signed authorization context so that the service cannot reuse evidence it has seen, and accountable proof obligations so that refusals become attributable---and the Related Work section now relates this to self-sovereign-identity designs with holder-authorized presentation (Comment~5).
-
-	\textbf{Changes in the manuscript.}
-	The trust distinction is stated explicitly in the system model, summarized in a new threat/guarantee matrix, interpreted as the principal architectural trade-off in the Discussion, and carried into the limitations and future directions of the Conclusion.
-
-	\RevisionLocation{Section ``Problem and Threat Model,'' subsection ``System and Trust Model,'' paragraphs on the provider-operated TPS.}
-	\begin{revisiontext}
-		For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
-		This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
-		Two guarantees must be distinguished here.
-		Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
-		Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
-		Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
-		Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-		Table~3 summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Problem and Threat Model,'' new Table~3, ``Guarantees under each actor or failure mode.''}
-	\begin{revisiontable}
-		\noindent\textbf{Table~3.} Guarantees under each actor or failure mode.
-		\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
-			\toprule
-			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
-			\midrule
-			\endfirsthead
-			\toprule
-			Actor or failure mode & Policy confidentiality & Authorization correctness & Liveness & Decision auditability \\
-			\midrule
-			\endhead
-			\input{../tables/tab_threat_guarantee_rows.tex}
-		\end{longtable}
-		\noindent\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
-	\end{revisiontable}
-
-	\RevisionLocation{Section ``Discussion,'' paragraphs on the TPS trust trade-off and reduced-trust directions.}
-	\begin{revisiontext}
-		The TPS trust assumption is the main architectural tradeoff.
-		Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~4).
-		This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
-
-		Three directions follow.
-		First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
-		Second, accountable proof obligations---for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms---would make proof refusals attributable.
-		Third, the reduced-trust TPS instantiations of Section~4 (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Conclusion,'' limitations and future-directions paragraphs.}
-	\begin{revisiontext}
-		These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
-		Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
-		The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
-		Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, or correlations between authorization outcomes and policy classes.
-
-		Three directions follow: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
-	\end{revisiontext}
+	\RevisionLocation{Section~4.1, third and fourth paragraphs (\Loc{tm-tps}); Table~3 (\Loc{tab3}); Section~7, paragraphs ``TPS trust and credential provenance'' (\Loc{di-tps}) and ``Future directions'' (\Loc{di-future}); Section~8, third and fourth paragraphs (\Loc{co-limits}).}
 \end{reviewresponse}

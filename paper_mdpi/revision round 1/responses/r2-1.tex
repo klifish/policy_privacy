@@ -3,11 +3,8 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{1}
-	The abstract has been rewritten and shortened to under 200 words.
-	It also reflects the re-measured padding overhead of the revised system.
+	We rewrote the abstract, which is now shorter than $200$ words.
+	It also reports the re-measured padding overhead of the revised system.
 
-	\RevisionLocation{Abstract.}
-	\begin{revisiontext}
-		In blockchain-based healthcare data sharing, consent policies are expected to be enforced verifiably and auditably, but public-chain transparency may expose sensitive policy information through on-chain representations, verification interfaces, and execution artifacts. Existing privacy-preserving solutions mainly protect data contents, identities, or transactions, not the governing consent policies. We propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which lets an on-chain verifier check authorization decisions while limiting leakage about policy content, identity, and structure. TPS-ZKPI combines fixed-length policy encoding, a reusable zero-knowledge policy interpreter, commitment-based policy binding, and public-chain transcript normalization. We evaluate TPS-ZKPI on Polygon Amoy against metadata-only public-chain adversaries with supervised and unsupervised inference attacks. Of $45$ supervised tasks, $43$ remain below the multi-seed leakage criterion; diagnostic analysis traces the two threshold crossings, and one corresponding small clustering result, to finite-corpus coincidences in policy-independent padding targets. A paired ablation attributes suppression of the modeled gas channel to randomized padding, at an overhead of about $46\%$ on access and $38\%$ on commit gas.
-	\end{revisiontext}
+	\RevisionLocation{Abstract (\Loc{abstract}).}
 \end{reviewresponse}

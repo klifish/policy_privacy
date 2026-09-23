@@ -3,39 +3,9 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{6}
-	Row 681 of the submitted manuscript belonged to the PCH results paragraph, which reported per-task statistics as inline formulas of the form $\mathrm{AUC}_{\text{mean}} = 0.561 \pm 0.053$.
-	We removed inline formulas from the results prose of the PCH, SPP, and PI sections: statistics are now stated in words with the numeric values (``mean AUC $0.667$ with $53\%$ of seeds significant''), and the full figures live in the tables.
-	The remaining displayed formulas are the definitions in the Design and Methodology sections and the paired leakage metric of the ablation, which is now a numbered equation.
+	We removed the inline formulas from the results text.
+	Statistics are now given as plain numbers (for example, ``mean AUC $0.667$ with $53\%$ of seeds significant''), and the full values remain in the tables.
+	The only formula in this part of the evaluation, the paired leakage metric, is now a displayed and numbered equation (Equation~(\Loc{ab-eqnum})).
 
-	\textbf{Changes in the manuscript.}
-	The revised result prose uses short inline numeric quantities rather than sentence-length formulas; the only new formula in this part of the evaluation is the displayed, numbered ablation metric.
-
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Policy Content Hiding,'' supervised-attack paragraph.}
-	\begin{revisiontext}
-		Chapter ch5 (diseases of the nervous system) meets both legs: mean AUC $0.667$ with $53\%$ of seeds significant.
-		We report it as a FAIL of the criterion and examine below what the classifier separates.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Policy Indistinguishability,'' supervised-attack paragraph.}
-	\begin{revisiontext}
-		Pooled over all pairs, the AUC is $0.509\pm0.035$ with $3\%$ of seeds significant.
-		Both gating pair types stay below the $0.55$ line: \texttt{semantic\_equivalent} at $0.549$ ($7\%$ significant seeds) and \texttt{weak\_equivalent} at $0.544$ ($10\%$), so PI passes.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Structure \& Parameter Privacy,'' supervised-attack paragraph.}
-	\begin{revisiontext}
-		One contrast, \texttt{nestingDepth} \texttt{medium}/\texttt{deep}, meets both legs of the criterion (mean AUC $0.563$, $53\%$ significant seeds) and is reported as FAIL.
-		Its separability has the same origin as the PCH ch5 case.
-	\end{revisiontext}
-
-	\RevisionLocation{Section ``Privacy Evaluation,'' subsection ``Ablation: gas-normalization positive control,'' displayed equation defining $\Delta_{\text{leak}}$.}
-	\begin{revisiontext}
-		The paired leakage metric is
-		\begin{equation*}
-			\Delta_{\text{leak}} =
-			|\mathrm{AUC}_{\mathrm{B1}} - 0.5| -
-			|\mathrm{AUC}_{\mathrm{B2}} - 0.5|,
-		\end{equation*}
-		where positive values mean padding moved the attacker closer to chance; we bound each $\Delta_{\text{leak}}$ with a $95\%$ stability interval over $30$ paired train/test splits.
-	\end{revisiontext}
+	\RevisionLocation{Section~6.4, paragraph ``Supervised attack'' and the paragraph that follows (\Loc{pch-sup}); Section~6.5, last paragraph (\Loc{pi-sup}); Section~6.6, paragraph ``Supervised attack'' and the paragraph that follows (\Loc{spp-sup}); Section~6.9, fourth paragraph (\Loc{ab-eq}).}
 \end{reviewresponse}
