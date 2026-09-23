@@ -5,19 +5,17 @@
 The main results show that the full mechanism hides content, policy identity, and structure/parameters. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized access-gas padding after the fixed circuit and commitment-only interface have already eliminated calldata, proof-size, and event-log
 channels.
 
-We compare two aligned protection profiles on the same selected policy set. 
-\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding. 
-\textbf{B2} is the full mechanism used in the main evaluation, with randomized access-gas padding. 
-This is the positive control for the gas channel: calldata, proof size, and event-log shape are already fixed, so B1 is an un-padded gas-transcript control rather than a run with every normalization layer
-removed. 
-The same features, splits, and classifiers produce well-above-chance AUCs on B1 when padding is absent, while B2 returns the attacker toward chance. 
-Thus the main privacy claim rests on a real ablation contrast rather than on a synthetic label derived from an input feature. 
+We compare two aligned protection profiles on the same selected policy set.
+\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
+\textbf{B2} is the full mechanism used in the main evaluation, with randomized access-gas padding.
+This is the positive control for the gas channel: calldata, proof size, and event-log shape are already fixed, so B1 is an un-padded gas-transcript control.
+The same features, splits, and classifiers produce well-above-chance AUCs on B1 when padding is absent, while B2 returns the attacker toward chance.
 The paired leakage metric is
 %
 \[
-  \Delta_{\text{leak}} =
-  |\mathrm{AUC}_{\mathrm{B1}} - 0.5| -
-  |\mathrm{AUC}_{\mathrm{B2}} - 0.5|.
+	\Delta_{\text{leak}} =
+	|\mathrm{AUC}_{\mathrm{B1}} - 0.5| -
+	|\mathrm{AUC}_{\mathrm{B2}} - 0.5|.
 \]
 %
 Positive values mean padding moved the attacker closer to chance, and we bound each $\Delta_{\text{leak}}$ with a $500$-iteration bootstrap $95\%$ confidence interval.
@@ -26,40 +24,40 @@ Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main pr
 \paragraph{Padding removes otherwise-recoverable signal}
 Figure~\ref{fig:ablation-paired} reports the \emph{full} set of supervised contrasts: each point places a contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ against its padded deviation
 $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are contrasts where
-padding moved the attacker back toward chance. 
-The distribution is asymmetric in exactly the way an effective defense predicts. 
+padding moved the attacker back toward chance.
+The distribution is asymmetric in exactly the way an effective defense predicts.
 Every contrast on which B1 carries a sizable signal ($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses to near the padded axis under B2. The two strongest SPP contrasts illustrate this: \texttt{nestingDepth flat/medium} falls from AUC $0.85$ to $0.49$, and \texttt{structureType trivial/and\_or\_mixed} from $0.85$ to $0.50$, each with a bootstrap $\Delta_{\text{leak}}$ whose $95\%$ CI excludes zero (a statistically significant reduction).
 Across the $49$ random-forest contrasts the median unpadded deviation of $0.103$ drops to $0.024$ under padding, and the per-family median $\Delta_{\text{leak}}$ is $+0.126$ (SPP) and $+0.052$ (PI).
-The clustering attacker shows the same pattern on a second, label-free attack family: PI pairwise clustering reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$ under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.043$ (B1) to $-0.001$ (B2). 
+The clustering attacker shows the same pattern on a second, label-free attack family: PI pairwise clustering reaches debiased significance on $68\%$ of pairs under B1 (mean ARI $0.50$) versus $5\%$ under B2 (mean ARI $0.0015$), and SPP logic-structure clustering drops from ARI $0.043$ (B1) to $-0.001$ (B2).
 This attributes the gas-channel protection reported in Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}
-to randomized access-gas padding, rather than to weak attacks or insufficient sample size.
+to randomized access-gas padding.
 
-The effect is conditional, and we report it as such. 
+The effect is conditional, and we report it as such.
 Padding reduces leakage wherever a recoverable gas-channel signal exists and is otherwise inert: the $7$ random-forest contrasts with no detectable effect ($\Delta_{\text{leak}}$ CI spanning zero) sit in the lower-left of Figure~\ref{fig:ablation-paired}, where B1 is already near chance so there is little to remove.
-This is most visible for PCH, whose gas-channel signal is weak even unpadded (per-family median $\Delta_{\text{leak}}=-0.012$); padding neither helps nor hurts there. This does not mean PCH is free of leakage---a few DUO contrasts do carry a small B1 signal that padding removes (e.g.\ \texttt{DUO POA}, AUC $0.62\to0.49$)---but PCH content hiding rests mainly on the commitment-only interface and the content-independent transcript normalization rather than on gas padding, so the gas-padding ablation has little to attribute to it. Six random-forest contrasts have a $\Delta_{\text{leak}}$ CI on the negative side; all are rare ICD-10 chapters on which B1 already sits near chance (AUC $0.48$--$0.54$), so the negative value reflects finite-sample movement of an already-uninformative attacker rather than padding creating leakage, and none of these tasks is flagged as a leak by the multi-seed verdict. 
-These per-contrast counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker. 
+This is most visible for PCH, whose gas-channel signal is weak even unpadded (per-family median $\Delta_{\text{leak}}=-0.012$); padding neither helps nor hurts there. This does not mean PCH is free of leakage---a few DUO contrasts do carry a small B1 signal that padding removes (e.g.\ \texttt{DUO POA}, AUC $0.62\to0.49$)---but PCH content hiding rests mainly on the commitment-only interface and the content-independent transcript normalization, so the gas-padding ablation has little to attribute to it. Six random-forest contrasts have a $\Delta_{\text{leak}}$ CI on the negative side; all are rare ICD-10 chapters on which B1 already sits near chance (AUC $0.48$--$0.54$), so the negative value reflects finite-sample movement of an already-uninformative attacker, and none of these tasks is flagged as a leak by the multi-seed verdict.
+These per-contrast counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker.
 The logistic-regression panel (shown for robustness only, since it over-separates on the near-constant execution features) exhibits the same below-diagonal shift.
 
 \begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{ablation_paired_scatter.png}
-  \caption{Gas-padding ablation over \emph{all} supervised contrasts. Each point is one
-    contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$
-    (x) versus its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$ (y); points below
-    the $y=x$ diagonal are cases where randomized access-gas padding moved the attacker
-    back toward chance. Color encodes the sign of the bootstrap $95\%$ CI of
-    $\Delta_{\text{leak}}$: reduce (CI$>0$), no effect (CI spans $0$), negative (CI$<0$).
-    Every contrast with a sizable unpadded signal collapses toward the padded axis, while
-    the few negative cases sit in the lower-left, where B1 is already near chance. The
-    random-forest panel is the reference criterion; logistic regression is shown only for
-    robustness, as it over-separates on the near-constant execution features.}
-  \label{fig:ablation-paired}
+	\centering
+	\includegraphics[width=\linewidth]{ablation_paired_scatter.png}
+	\caption{Gas-padding ablation over \emph{all} supervised contrasts. Each point is one
+		contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$
+		(x) versus its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$ (y); points below
+		the $y=x$ diagonal are cases where randomized access-gas padding moved the attacker
+		back toward chance. Color encodes the sign of the bootstrap $95\%$ CI of
+		$\Delta_{\text{leak}}$: reduce (CI$>0$), no effect (CI spans $0$), negative (CI$<0$).
+		Every contrast with a sizable unpadded signal collapses toward the padded axis, while
+		the few negative cases sit in the lower-left, where B1 is already near chance. The
+		random-forest panel is the reference criterion; logistic regression is shown only for
+		robustness, as it over-separates on the near-constant execution features.}
+	\label{fig:ablation-paired}
 \end{figure}
 
-\paragraph{Cost} Padding is not free: it raises mean commit gas from $216{,}562$ (B1) to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to $753{,}310$, a $37.7\%$ increase. 
-This overhead is the principal efficiency tradeoff of the design. 
-Table~\ref{tab:cost-profile} adds a single-point $\DEPTH=20$ cost characterization: the circuit compiles to $75{,}097$ R1CS constraints, and mean local proof generation takes $3{,}881.5$ ms, preceded by $190.8$ ms of witness generation (about $4.1$ s end to end). 
-Gas, logs, and transaction objects are taken from the Polygon Amoy executed datasets; transaction hashes are stored in the B1/B2 executed datasets. 
+\paragraph{Cost} Padding is not free: it raises mean commit gas from $216{,}562$ (B1) to $303{,}556$ (B2), a $40.2\%$ increase, and mean access gas from $546{,}876$ to $753{,}310$, a $37.7\%$ increase.
+This overhead is the principal efficiency tradeoff of the design.
+Table~\ref{tab:cost-profile} adds a single-point $\DEPTH=20$ cost characterization: the circuit compiles to $75{,}097$ R1CS constraints, and mean local proof generation takes $3{,}881.5$ ms, preceded by $190.8$ ms of witness generation (about $4.1$ s end to end).
+Gas, logs, and transaction objects are taken from the Polygon Amoy executed datasets; transaction hashes are stored in the B1/B2 executed datasets.
 Calldata lengths are the on-chain transaction input sizes fetched by hash from Polygon Amoy, and are constant across policies (B1 commit/access $164$/$452$ bytes, B2 $196$/$484$).
-Proving time is local prover timing from the B1 run, not an on-chain measurement. 
+Proving time is local prover timing from the B1 run, not an on-chain measurement.
 Cost-vs-$\DEPTH$ scaling is left to future work because only $\DEPTH=20$ is compiled and evaluated here.

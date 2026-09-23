@@ -31,7 +31,7 @@ The confidentiality of the governing consent policy---and what public-chain enfo
 
 Beyond the consent-management setting, existing work addresses important fragments of policy-private consent enforcement, but not their combination under public-chain observability.
 Encrypted data-sharing mechanisms, such as Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and proxy re-encryption (PRE)~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, standard CP-ABE attaches the access policy to the ciphertext in the clear, exposing the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
-Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
+Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships.
 
 Hidden-policy access-control work reduces direct policy exposure by using encrypted policies, hidden-policy ABE variants, off-chain matching, or policy-holder components~\cite{wu2023blockchain,hu2023access}.
 Functional encryption gives a more general cryptographic abstraction for revealing function
@@ -58,7 +58,7 @@ decoys, and traffic shaping can reduce some observable signals~\cite{miller2023v
 usually designed for payment privacy, anonymity sets, or transaction-linkability
 settings. They do not directly provide hidden-policy compliance verification
 or auditable consent enforcement. In contrast, TPS-ZKPI treats metadata leakage as
-part of the policy-privacy objective rather than as a separate transaction-level concern.
+part of the policy-privacy objective.
 
 Existing approaches address verifiable consent recording, data confidentiality,
 transaction privacy, policy hiding, confidential policy evaluation, proof reuse, or
