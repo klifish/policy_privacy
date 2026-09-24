@@ -1,6 +1,8 @@
 %DIF PREAMBLE: additions in red, deletions omitted
+% \leavevmode keeps a color special from opening a p{} table cell in vertical mode,
+% which would drop the cell's baseline and misalign the row.
 \RequirePackage{xcolor}
-\providecommand{\DIFadd}[1]{{\color{red}#1}}
+\providecommand{\DIFadd}[1]{{\leavevmode\color{red}#1}}
 \providecommand{\DIFdel}[1]{}
 \providecommand{\DIFaddbegin}{}
 \providecommand{\DIFaddend}{}
@@ -8,7 +10,7 @@
 \providecommand{\DIFdelend}{}
 \providecommand{\DIFmodbegin}{}
 \providecommand{\DIFmodend}{}
-\providecommand{\DIFaddFL}[1]{{\color{red}#1}}
+\providecommand{\DIFaddFL}[1]{{\leavevmode\color{red}#1}}
 \providecommand{\DIFdelFL}[1]{}
 \providecommand{\DIFaddbeginFL}{}
 \providecommand{\DIFaddendFL}{}
