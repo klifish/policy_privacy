@@ -11,7 +11,7 @@ The ACM records the authorization outcome in contract storage and emits it in th
 This design separates confidentiality-sensitive proof generation from public verification.
 Policy material and requester evidence remain off-chain---policy material within the provider--TPS boundary, requester evidence between the requester and the TPS---while the blockchain verifies only a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
 In a traditional requester-as-prover design, the requester generates the proof itself and must therefore receive the encoded policy and the commitment-opening randomness, so every requester learns the policy in normal operation.
-In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and the policy itself is disclosed only if the TPS violates its trust assumption; what the public transcript reveals about it is evaluated in Section~\ref{sec:eval}.
+In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and the policy itself is disclosed only if the TPS violates its trust assumption; what the public-chain transcript reveals about it is evaluated in Section~\ref{sec:eval}.
 
 \begin{figure}[htbp]
 	\centering
@@ -22,7 +22,7 @@ In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requeste
 
 \subsection{Policy Representation and Interpretation}
 
-TPS-ZKPI represents heterogeneous Boolean-based consent policies in a fixed-length, circuit-friendly format.
+TPS-ZKPI represents heterogeneous Boolean consent policies in a fixed-length, circuit-friendly format.
 This policy class is chosen for two reasons.
 First, the supported biomedical consent conditions---DUO-style data-use terms, disease-scope constraints, and requester restrictions---are categorical conditions combined with AND/OR, and conditions that are not natively Boolean enter through fixed external-predicate slots.
 The generic interpreter also evaluates NOT, but the DUO compiler does not expose negation because its membership witnesses establish inclusion rather than non-membership.
@@ -38,8 +38,6 @@ The full assignment space is
 \end{equation}
 where $a \in X$ encodes requester attributes and $b \in B$ encodes predicate outcomes, including credential, ontology-membership, requester-allowlist, and obligation-related checks.
 The implemented relation derives these bits from their associated witnesses rather than accepting unconstrained predicate assertions.
-The strength of the resulting provenance guarantee nevertheless depends on the mechanism: the profile-credential slot verifies an issuer signature in-circuit, whereas ontology and requester-allowlist slots establish membership relative to provider-committed sets.
-Issuer authorization, issuance practice, and credential revocation remain external lifecycle functions (Section~\ref{subsec:trust-model}).
 
 Ontology-linked conditions are represented extensionally rather than through in-circuit ontology reasoning.
 At encoding time, the provider expands an ontology concept into a whitelist of codes and commits the whitelist as a Merkle root among the policy's per-predicate parameters; in-circuit, the predicate check is a set-membership proof of the requested term against this root.
@@ -111,7 +109,7 @@ For an access request, let
 	\mathit{id}_{\mathrm{res}}\parallel\nu),
 \end{equation}
 where $\nu$ is a fresh session nonce.
-Here $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier.
+Here $\mathit{id}_{\mathrm{req}}$ is the requester pseudonym.
 For policies that activate a holder-bound credential or requester-allowlist predicate, the circuit derives it as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ from a private holder secret $s_{\mathrm{holder}}$; otherwise, it may be a requester-supplied pseudonym.
 The TPS constructs the private circuit witness
 \begin{equation}
@@ -136,7 +134,7 @@ The TPS generates a proof
 \end{equation}
 The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and the selected external-predicate witnesses satisfy their policy-bound verification relations.
 Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
-Thus, within one ACM deployment, a proof generated for one requester identifier, resource, and nonce cannot be accepted under a different tuple.
+Thus, within one ACM deployment, a proof generated for one requester pseudonym, resource, and nonce cannot be accepted under a different tuple.
 The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
 The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
 
@@ -168,13 +166,13 @@ The circuit then enforces
 \end{equation}
 where $k_{\mathrm{iss}}$ is the issuer-key commitment contained in the policy-bound parameter commitment $\mathit{pp}$.
 The circuit additionally requires $t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{until}}$ and $\gamma\neq0$.
-Because this credential is holder-bound, a policy that activates this slot also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the pseudonymous requester identifier in the authorization context. The corresponding DUO attributes are constrained to these claim-derived values.
+Because this credential is holder-bound, a policy that activates this slot also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the requester pseudonym in the authorization context. The corresponding DUO attributes are constrained to these claim-derived values.
 
 \subsection{Transcript Normalization}
 
 Zero-knowledge proofs hide private witness values, but surrounding
 blockchain artifacts may still leak policy-dependent information. TPS-ZKPI therefore
-normalizes the public transcript so that different policies induce fixed or tightly
+normalizes the public-chain transcript so that different policies induce fixed or tightly
 bounded observable profiles. Table~\ref{tab:transcript-normalization}
 summarizes the mechanisms.
 
@@ -194,5 +192,4 @@ summarizes the mechanisms.
 	\end{tabular}
 \end{table}
 
-These mechanisms do not eliminate all public observability. Rather, they reduce policy-dependent variation in calldata, logs, public parameters, and gas-related behavior that could otherwise serve as a fingerprint for the metadata-only adversary defined in Section~\ref{sec:problem}.
-TPS-ZKPI does not flatten all residual channels: timing between transactions, transaction ordering, mempool or broadcast patterns, and off-chain TPS communication remain outside the normalized public transcript.
+These mechanisms reduce policy-dependent variation in calldata, logs, public parameters, and gas usage that could otherwise serve as a fingerprint for the passive public-chain observer of Section~\ref{sec:problem}.

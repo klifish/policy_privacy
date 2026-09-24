@@ -6,11 +6,10 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{4}
-	We toned down the claims and made the evaluation of the modeled channel more rigorous.
-	The Abstract, Discussion, and Conclusion now claim only empirical resistance against the modeled passive metadata adversary, and the Conclusion lists each channel you named as excluded.
+	We agree your comment.
+	The Abstract, Discussion, and Conclusion now claim only empirical resistance against the modeled passive metadata adversary, and Section~6.1 lists each channel you named as excluded.
 	In the re-run evaluation, two of the $45$ tasks fail; we report them, trace them to the random padding targets, and quantify the criterion's false-positive rate.
 	The re-run ablation also identified the source of the unpadded signal, the calldata byte pricing of the requester pseudonym, which shows that the evaluation detects small deterministic channels.
-	Adaptive and timing experiments require an active-adversary design and are named as future work.
 
-	\RevisionLocation{Abstract (\Loc{abstract}); Section~6.1, third paragraph (\Loc{ev-obs}); Section~6.9, paragraph ``Source of the unpadded signal'' and the two paragraphs that follow (\Loc{ab-source}); Section~7, paragraphs under ``Privacy findings'' (\Loc{di-find}); Section~8, third and fourth paragraphs (\Loc{co-limits}).}
+	\RevisionLocation{Abstract (\Loc{abstract}); Section~6.1, third paragraph (\Loc{ev-obs}); Section~6.9, paragraph ``Source of the unpadded signal'' and the two paragraphs that follow (\Loc{ab-source}); Section~7, paragraphs under ``Privacy findings'' (\Loc{di-find}); Section~8, last sentence (\Loc{co-limits}).}
 \end{reviewresponse}

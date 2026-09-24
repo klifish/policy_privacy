@@ -1,14 +1,10 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-This work presents TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach for policy-private consent enforcement in blockchain-based healthcare data sharing. TPS-ZKPI commits hidden provider-defined policies, evaluates bounded Boolean policies through a reusable interpreter, and normalizes the public verification transcript to reduce metadata-level leakage. Its authorization relation binds each proof to the committed policy and request context, while profile-backed attributes derive in-circuit from issuer-signed credentials under an explicit issuer-governance assumption.
-
-The evaluation on Polygon Amoy provides empirical support for resistance to policy leakage under the modeled public-chain metadata adversary. Most supervised tasks remained below the multi-seed leakage criterion, and unsupervised clustering recovered no usable policy structure beyond one small nesting-depth result. Diagnostic analysis associated the two threshold crossings with random padding targets and reproduced them with policy-independent controls. The paired ablation establishes the role of randomized gas padding: without it, the attacks recover policy-family signal; with the full mechanism, padding suppresses this channel at a substantial fixed per-transaction gas premium.
-
-These findings are empirical and scoped to passive observation of commitments, proofs, public parameters, calldata, events, and gas on the generated-policy corpus.
-Offline scalability measurements cover bounded program and ontology capacities, fixed-circuit policy classes, and single-host proof throughput; they do not establish production hospital capacity.
-Policy confidentiality remains contingent on the TPS following its workflow, and institutional credential trust remains contingent on issuer governance.
-The proved policy class covers access-time checks for bounded Boolean policies over standardized terms.
-Outside this scope lie downstream purpose limitation, post-access duties, delegation, credential revocation, and channels involving timing, ordering, mempool activity, off-chain communication, adaptive probing, repeated access attempts, or correlations between authorization outcomes and policy classes, which the corpus does not exercise because every evaluated request is granted; the results do not establish policy confidentiality against these channels.
-
-Three directions follow: reduced-trust proof generation and holder-signed request contexts can reduce the TPS trust concentration; governed issuer registries with in-circuit membership and revocation witnesses can strengthen credential provenance; and evaluation against active adversaries can test transcript normalization in the timing and ordering channels beyond the present model.
+This paper presented TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach to policy-private consent enforcement on public blockchains.
+In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain, the TPS proves in zero knowledge that a requester satisfies this policy, and a smart contract verifies the proof.
+Because each policy is compiled into a fixed-length program for a reusable zero-knowledge policy interpreter, all policies share one verification interface, and randomized gas padding masks residual gas differences.
+We evaluated TPS-ZKPI on the Polygon Amoy testnet with supervised and unsupervised attacks in which a passive public-chain observer tried to infer hidden policy properties from public-chain metadata.
+The results showed that nearly all supervised tasks stayed below our leakage criterion, that both failures traced to chance correlations with the padding, and that unsupervised clustering found no policy structure beyond the same padding effect.
+Furthermore, the gas-padding ablation showed that, without padding, the same attacks often recovered policy content and structure, which confirmed that padding protects the gas channel at a fixed gas cost per transaction.
+Overall, this paper showed empirically that consent enforcement on a public blockchain can resist the modeled metadata attacks, provided that the TPS follows its workflow.

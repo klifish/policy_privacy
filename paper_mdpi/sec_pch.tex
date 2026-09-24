@@ -2,12 +2,12 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-\textbf{Property.} PCH requires that the public-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes DS references---better than chance.
+\textbf{Objective.} PCH requires that the public-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes DS references---better than chance.
 
 \textbf{Scope of the labels.} The attack targets the ten DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO)---and disease codes aggregated to the ten ICD-10 chapters. Section~\ref{sec:eval-dataset} explains this label restriction, its statistical-power rationale, and what category-level labels do not test.
 
-\textbf{Supervised attack.} Each DUO term defines a one-vs-rest binary task, on which we run the multi-seed pipeline of Section~\ref{sec:eval-method}.
-Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ gate, and with the AUC unmet none approaches the failure criterion.
+\textbf{Supervised attack.} Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline of Section~\ref{sec:eval-method}.
+Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ gate, and with the AUC unmet none approaches the leakage criterion.
 
 \input{tables/tab_pch_terms.tex}
 

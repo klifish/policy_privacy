@@ -17,12 +17,14 @@
 % MDPI requires a single paragraph, so this abstract carries no blank lines.
 % Condensed (~200 words) from the IEEEtran version in ../paper/sec_frontmatter.tex.
 \abstract{
-	Public-chain consent enforcement in healthcare data sharing can expose governing policies through transaction artifacts even when health data are encrypted.
-	Hiding policy logic alone leaves policy-dependent metadata observable.
-	To address this gap, we present the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), which delegates private proof generation to a trusted service while verifying compliance with committed, bounded Boolean consent policies on-chain.
-	Fixed-length encoding, commitment binding, and a reusable interpreter make the proof interface policy-independent, while transcript normalization limits variation in calldata, event shape, and gas for the evaluated policies.
-	We assess the resulting public transcript on Polygon Amoy using generated policies and supervised and unsupervised attacks that model a passive public-chain metadata observer. Of $45$ supervised tasks, $43$ stay below our multi-seed leakage criterion. Diagnostics link the two threshold crossings to chance correlations between policy labels and independently drawn padding targets. A paired ablation further shows that padding suppresses policy-correlated gas signals on the evaluated subset, with mean gas overheads of about $46\%$ for access and $38\%$ for policy commitment.
-	Together, these results support reduced leakage through the modeled metadata channels within the tested policy class and under the trusted-service assumption.
+	Blockchain-based consent management makes healthcare data sharing auditable, but on a public blockchain, enforcement can reveal the consent policies.
+	These policies encode conditions such as disease-specific research restrictions, whose exposure can disclose sensitive information about the data subject.
+	To address this, we propose TPS-ZKPI, in which a Trusted Proof Service (TPS) generates zero-knowledge proofs of compliance that a smart contract verifies against committed policies.
+	In TPS-ZKPI, we compile each policy into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface, and mask residual gas differences with randomized gas padding.
+	We evaluate TPS-ZKPI on Polygon Amoy with supervised and unsupervised attacks in which a passive public-chain observer tries to infer hidden policy properties from public-chain metadata.
+	The results show that $43$ of $45$ supervised tasks stay below our leakage criterion, and both failures trace to chance correlations with the padding.
+	Furthermore, an ablation shows that without padding the same attacks often recover policy content and structure, while padding adds about $46\%$ gas to access and $38\%$ to policy commitment.
+	Overall, this paper shows empirically that consent enforcement on a public blockchain can resist the modeled metadata attacks, provided the TPS is trusted.
 }
 
 % MDPI keywords are semicolon-separated.

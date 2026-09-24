@@ -34,6 +34,5 @@ Category-level labels are therefore the finest granularity at which the attack h
 They do not directly test individual leaf terms: a signal specific to one term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
 The transcript mechanisms themselves do not depend on the policy content: the verifier work and the public interface are fixed, and the padding band is the same for every policy (Section~\ref{sec:design}).
 
-\textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.
+\textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the full defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.
 All executions completed with the outcome the generator planned, and the feature file holds all of them.
-As established in Section~\ref{sec:eval-threat}, transcript normalization leaves gas as the only policy-dependent channel, so the residual per-transaction variation the attacker sees is confined to the two gas measurements.

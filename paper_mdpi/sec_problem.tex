@@ -35,7 +35,6 @@ The credential binds the policy commitment, requester pseudonym, protected resou
 Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
 This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
 Ontology and requester-allowlist predicates likewise establish membership only relative to provider-committed sets.
-Issuer-key governance, credential revocation, real-world identity verification, and protection against a compromised TPS remain external trust and lifecycle functions.
 
 \subsection{Public-Chain Adversary}
 
@@ -54,12 +53,11 @@ where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-kno
 exposed by the enforcement layer, such as calldata footprint, event structure, public-input layout, timing, and gas usage. The adversary's goal is to infer hidden information about the committed policy or the authorization interaction from this public view.
 
 In addition to the public-chain observer, we treat the requester as untrusted with respect to policy confidentiality.
-The requester initiates access requests, observes its own submitted evidence and authorization outcome, and inspects the public transcript.
+The requester initiates access requests, observes its own submitted evidence and authorization outcome, and inspects the public-chain transcript.
 However, the requester does not receive the encoded policy, commitment-opening randomness, or policy-bound proving material, which remain within the provider-to-TPS proof-generation boundary.
 This restriction matters because a requester that learned the policy could infer sensitive facts about the data subject from the consent terms themselves and, in addition, would learn the policy's full acceptance region---which attribute combinations are granted---enabling targeted evidence construction or probing beyond its own legitimate sessions.
 
-Adaptive requester probing and off-chain side channels are outside the scope of the present evaluation.
-The proved authorization outcome is bound to a pseudonymous requester identifier, a protected resource, and a session nonce through the context digest defined in Section~\ref{sec:design}.
+The proved authorization outcome is bound to the requester pseudonym, a protected resource, and a session nonce through the context digest defined in Section~\ref{sec:design}.
 This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
 
 \subsection{Privacy Objectives}
@@ -84,8 +82,8 @@ hidden policy, such as logical structure, nesting depth, predicate count, set si
 \subsection{Problem Statement}
 
 Given a provider-defined consent policy $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption of Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
-First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester identifier, resource, and session), so that it cannot be reused for another context.
+First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester pseudonym, resource, and session), so that it cannot be reused for another context.
 Second, the policy must remain confidential: public-chain artifacts should not reveal its content, identity, or structure and parameters (PCH, PI, and SPP; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
 Third, authorization decisions should be auditable: each processed request, granted or denied, is recorded on-chain together with its bound context and can be checked later without exposing the policy logic.
 Fourth, one policy-independent verification interface should serve every policy in the supported class, so that policies can be added or changed without changing the on-chain verifier.
-The first, third, and fourth requirements are met by construction (Section~\ref{sec:design}); the second is evaluated empirically against the modeled public-chain adversary (Section~\ref{sec:eval}).
+The first, third, and fourth requirements are met by construction (Section~\ref{sec:design}); the second is evaluated empirically against the passive public-chain observer (Section~\ref{sec:eval}).

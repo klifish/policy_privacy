@@ -14,16 +14,16 @@
   % Column widths sum to <1 so that the inter-column glue fits inside the text block.
   \begin{tabular}{p{0.16\linewidth}p{0.30\linewidth}p{0.44\linewidth}}
     \toprule
-    Property & Hidden target & Headline supervised result \\
+    Objective & Hidden target & Headline supervised result \\
     \midrule
     PCH & DUO terms and ICD-10 chapters
-        & 19 of 20 content-recovery tasks pass; AUC $0.464$--$0.570$, significant seeds median $3\%$. ICD ch5 fails (AUC $0.667$, $53\%$); its separability is carried entirely by the random pad target$^{\ast}$ \\
+        & 19 of 20 content-recovery tasks pass; AUC $0.464$--$0.570$, significant seeds median $3\%$. ICD ch5 fails (AUC $0.667$, $53\%$); its separability is carried entirely by the randomly drawn padding target$^{\ast}$ \\
     PI & Related policy-pair identity
        & 3 gating tasks pass; AUC $0.509$--$0.549$; significant seeds median $7\%$, max $10\%$ \\
     SPP & Structure, predicate, parameter, and nesting-depth buckets
-        & 20 of 21 pairwise contrasts pass; AUC $0.468$--$0.571$, significant seeds median $7\%$. \texttt{nestingDepth} medium/deep fails (AUC $0.563$, $53\%$); carried by the pad target$^{\ast}$ \\
+        & 20 of 21 pairwise contrasts pass; AUC $0.468$--$0.571$, significant seeds median $7\%$. \texttt{nestingDepth} medium/deep fails (AUC $0.563$, $53\%$); carried by the padding target$^{\ast}$ \\
     \bottomrule
   \end{tabular}
 
-  \noindent{\footnotesize{$^{\ast}$ Rerunning the same protocol on the gas minus the logged pad target returns both tasks to PASS (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).}}
+  \noindent{\footnotesize{$^{\ast}$ Rerunning the same protocol on the gas minus the logged padding target returns both tasks to PASS (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).}}
 \end{table}

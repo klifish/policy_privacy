@@ -2,41 +2,39 @@
 \label{sec:discussion}
 
 \textbf{Privacy findings.}
-The evaluation supports a scoped claim: against the modeled public-chain metadata adversary, TPS-ZKPI provides empirical resistance to policy leakage.
-Of the $45$ supervised tasks, $43$ stay below the multi-seed leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
+The evaluation supports a scoped claim: against the passive public-chain observer, TPS-ZKPI provides empirical resistance to policy leakage.
+Of the $45$ supervised tasks, $43$ stay below the leakage criterion, and unsupervised clustering shows no recoverable structure beyond one small, permutation-significant nesting-depth ARI.
 
-The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the random pad target: subtracting the logged target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates (Sections~\ref{sec:eval-method}--\ref{sec:eval-spp}).
+The two tasks that meet the criterion---one ICD-10 chapter and the \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast---are reported as failures, and both are carried by the randomly drawn padding target: subtracting the logged padding target from the access gas returns each to PASS, and replacing the gas features by policy-independent draws reproduces such failures in four of ten replicates (Sections~\ref{sec:eval-method}--\ref{sec:eval-spp}).
 Such false failures are a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws; we keep the criterion as stated and document the diagnostic, since lowering the significance threshold or raising the AUC threshold to absorb these cases would weaken it for genuine leaks.
 
-The gas-padding ablation (Section~\ref{sec:eval-ablation}) attributes the gas-channel protection to randomized gas padding: without it the same attacks recover the policy family with AUCs up to $0.90$.
+The gas-padding ablation (Section~\ref{sec:eval-ablation}) attributes the gas-channel protection to randomized gas padding: without it the same attacks recover policy content and structure with AUCs up to $0.90$.
 Content hiding itself rests on the commitment-only interface and the content-independent transcript normalization; padding is the defense-in-depth layer that absorbs whatever deterministic gas differences remain, of which the ablation exhibits one that does not come from the policy logic at all but from the byte encoding of a public transaction argument.
-Together with fixed-length policy representation, reusable interpretation, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
+Together with fixed-length policy encoding, the reusable interpreter, and commitment binding, these mechanisms limit the extent to which public-chain observers infer hidden policy content or structural properties from authorization transactions.
 
 \textbf{The cost of padding.} Within the evaluated scope, the residual cost is the randomized padding's gas overhead: on the ablation subset, about $46\%$ on access gas and $38\%$ on commit gas (Section~\ref{sec:eval-ablation}).
 The overhead is a fixed premium per transaction---roughly $330{,}000$ gas on access and $85{,}000$ on commit at the band used here---so it scales linearly with transaction volume and does not compound: at the $30$~gwei tip of the evaluation, a padded access transaction costs about $0.032$~POL against $0.022$~POL unpadded. Both the bare cost and the band are policy-independent: the fixed circuit gives every proof the same verification work and the same five public signals, and the prover-side cost of larger capacities or different policy contents (Tables~\ref{tab:cost-scaling} and~\ref{tab:workload-scaling}) is paid off-chain.
 
 The offline load benchmark in Table~\ref{tab:workload-scaling} rotates the four policy classes through $100$ verified requests after five warm-ups at each concurrency level.
-On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower, so these are single-host measurements rather than a linear-scaling claim.
-At this throughput, one prover handles about $80{,}900$ requests per day, or about $53{,}900$ if half of its capacity is held in reserve; these figures describe the measured host, not hospital traffic or public-chain throughput.
+On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower.
+At this throughput, one prover on this host handles about $80{,}900$ requests per day, or about $53{,}900$ if half of its capacity is held in reserve.
 On-chain, each padded access costs $1{,}056{,}674$ gas on average (about $0.032$~POL at $30$~gwei), so the access cost grows linearly with the number of requests, and each policy commit adds a one-time $304{,}098$ gas ($0.009$~POL).
 
 The band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose BN254 precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, is what determines how large a deterministic difference it can submerge.
-Padding cannot, of course, hide a difference larger than its band, and it does not address channels that are not gas.
 
 \textbf{TPS trust and credential provenance.}
 The TPS trust assumption is the main architectural tradeoff.
-Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving information away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~\ref{sec:problem}).
-This tradeoff leaves on-chain verifiability intact but does affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
+Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound proving material away from requesters and public smart contracts while preserving on-chain verifiability, but it shifts part of the confidentiality burden to the service layer (Section~\ref{sec:problem}).
+It does, however, affect liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
 
 Attribute origin is only partially delegated to the TPS.
 For the profile-backed DUO terms, the circuit verifies the EdDSA-Poseidon signature described in Section~\ref{sec:design} and derives eight policy attributes from the seven signed claims.
 A compromised TPS cannot modify the signed claims, policy commitment, requester pseudonym, resource, validity interval, or credential identifier without invalidating the signature.
 The implemented relation rejects a non-committed issuer, an invalid signature under the committed key, an expired or premature credential, and substitutions of any signed field.
-Other evidence has a narrower meaning: ontology proofs establish that a supplied code belongs to a provider-committed set, and requester allowlists establish that a holder pseudonym belongs to a provider-committed list; they do not authenticate every underlying real-world fact.
 Moreover, because the TPS receives the holder secret and credential witness in the current workflow, holder binding does not protect against a malicious TPS reusing otherwise valid evidence within its signed scope.
 
 \textbf{Issuer governance and deployment path.}
-The remaining trust anchor is therefore issuer governance. The prototype binds the proof to a policy-selected issuer-key commitment, but it has no independent registry establishing that this key belongs to an accredited healthcare authority, and it does not check credential revocation. The evaluation uses a deterministic test-only issuer key to exercise the complete signature path; it is not evidence of institutional issuance or production key management.
+The remaining trust anchor is therefore issuer governance. The prototype binds the proof to a policy-selected issuer-key commitment, but it has no independent registry establishing that this key belongs to an accredited healthcare authority, and it does not check credential revocation.
 
 A concrete deployment can add issuer governance without changing the Boolean interpreter: a governed registry would publish schema-qualified issuer keys and their validity epochs, while an issuer would sign a domain-separated credential containing a holder-key commitment, claim vector, authorization scope, validity interval, and unique credential identifier. The circuit would verify the credential signature and a Merkle proof that the issuer key is active in the registry, while continuing to derive policy attributes from the signed claims. The holder would authorize each request by signing the context digest and request epoch, preventing a TPS that observes one credential presentation from generating proofs for fresh sessions; an epoch-specific sparse-Merkle or accumulator root would provide a private non-revocation witness for the credential identifier.
 
@@ -48,12 +46,11 @@ Because $\ell$ also determines how many tokens the interpreter evaluates, an aut
 This integrity guarantee is separate from our privacy evaluation, which measures whether public-chain artifacts reveal information about the hidden policy.
 
 The authorization context is likewise part of the proved relation.
-The circuit constrains the public digest $d_{\chi}$ to the requester identifier, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
+The circuit constrains the public digest $d_{\chi}$ to the requester pseudonym, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
 Consequently, changing any of these values invalidates the request.
 
 The guarantee is scoped to the bound tuple within one ACM deployment.
 The digest does not include the transaction submitter or a chain/contract domain, so exact-context front-running and cross-deployment reuse require separate deployment-level controls.
-Moreover, $\mathit{id}_{\mathrm{req}}$ is a pseudonymous authorization identifier and is not, by itself, proof of a real-world identity or of the origin of every private attribute.
 
 \textbf{Future directions.}
 Three directions follow.

@@ -37,16 +37,15 @@ The verdict is:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-Both conditions of this \emph{double criterion} are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A task that does not satisfy both conditions is labeled PASS under this operational criterion; PASS does not constitute proof of zero leakage.
+We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A task that does not satisfy both conditions is labeled PASS; PASS does not constitute proof of zero leakage.
 
 \noindent\textbf{Operational thresholds and sensitivity.}
-The PASS/FAIL labels summarize residual distinguishability under the evaluated attacks; they do not by themselves establish the effectiveness of the defense.
 The two conditions guard against different errors.
 The AUC threshold is an effect-size floor of $0.05$ above chance: with large test sets, a permutation test can reject for a negligible AUC excess, and the floor keeps such an effect from triggering a FAIL.
 The stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
 Under the null hypothesis, each split rejects with probability $0.05$, so a majority of rejections indicates an effect that recurs across splits rather than one carried by a few favorable splits.
 Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
-In the evaluated run, the stability condition is the binding one: the AUC condition alone would flag four PCH and four SPP tasks, three of each being significant in fewer than half of the splits, whereas the stability condition alone flags the same single task per experiment as the double criterion.
+In the evaluated run, the stability condition is the binding one: the AUC condition alone would flag four PCH and four SPP tasks, three of each being significant in fewer than half of the splits, whereas the stability condition alone flags the same single task per experiment as the full leakage criterion.
 The AUC floor therefore acts as a safeguard rather than as the deciding condition.
 
 Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
@@ -54,9 +53,9 @@ At fractions of at least $0.5$, at most the two tasks discussed in the PCH and S
 In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
 We therefore treat FAIL as a diagnostic flag and examine the two observed failures in the corresponding result sections without changing their verdicts.
 
-The effectiveness of gas normalization is assessed separately by the paired gas-normalization ablation.
+The effectiveness of gas padding is assessed separately by the paired gas-padding ablation (Section~\ref{sec:eval-ablation}).
 Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.
-Thus, the PASS/FAIL criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
+Thus, the leakage criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
 
 Tasks with a median test-set size below $20$ are reported as \emph{underpowered} and excluded from the verdict.
 The criterion is applied independently to LR and RF; a task fails if either classifier satisfies both conditions, and the result tables report the classifier with the higher mean AUC.

@@ -12,7 +12,6 @@
 	The circuit verifies the issuer's signature over the policy commitment, requester pseudonym, resource, claims, validity interval, and credential identifier; it checks the issuer key against a commitment bound to the policy and derives the profile-backed DUO attributes from the signed claims.
 	A compromised TPS can therefore no longer alter these attributes; all $25$ targeted tests pass, including forged, expired, and substituted credentials.
 	We also state what remains trusted: the prototype does not prove that the issuer key belongs to an accredited healthcare authority, and it does not check revocation.
-	The Discussion now gives a concrete integration design with a governed issuer registry, a holder-signed request context, and a private non-revocation proof.
 
 	\RevisionLocation{Section~4.1, fifth paragraph (\Loc{tm-origin}); Section~5.4 (\Loc{ds-cred}); Section~6.3, paragraph ``Shared corpus'' (\Loc{ev-issuer}); Section~7, second paragraph under ``TPS trust and credential provenance'' (\Loc{di-origin}) and paragraphs under ``Issuer governance and deployment path'' (\Loc{di-issuer}).}
 \end{reviewresponse}

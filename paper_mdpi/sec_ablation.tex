@@ -1,12 +1,12 @@
 % Gas-padding ablation / mechanism attribution.
-\subsection{Ablation: gas-normalization positive control}
+\subsection{Gas-padding ablation}
 \label{sec:eval-ablation}
 
-The results show that the mechanism hides content, policy identity, and structure/parameters up to the two pad-target coincidences discussed above. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
+The results show that TPS-ZKPI hides content, policy identity, and structure/parameters up to the two padding-target coincidences discussed above. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
 
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
-\textbf{B2} is the full mechanism used in the main evaluation, with randomized gas padding.
+\textbf{B2} is the full defense configuration of the main evaluation, with randomized gas padding.
 The subset is chosen deterministically from the of-record corpus so that every content label and structural bucket keeps at least $70$ executions and $8$ independent policies and every depth-layer policy is retained: $1119$ executions of $423$ policies.
 
 B1 replays exactly these policies (same tokens, randomizers, and commitments) without padding, so B1 and B2 differ only in the padding calls; B1 was executed three days after B2, on a fresh contract deployment, which the paired analysis treats as a non-contemporaneous control.
@@ -22,20 +22,20 @@ The paired leakage metric is
 \end{equation}
 %
 where positive values mean padding moved the attacker closer to chance; we bound each $\Delta_{\text{leak}}$ with a $95\%$ stability interval over $30$ paired train/test splits (denoted CI in Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
-Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main privacy verdicts: the main verdicts answer whether the full mechanism is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
+Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main privacy verdicts: the main verdicts answer whether the full defense configuration is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
 
 \input{tables/tab_ablation_gas_padding.tex}
 
 \textbf{Padding removes otherwise-recoverable signal.}
 Under the criterion of Section~\ref{sec:eval-method}, the unpadded transcript fails $9$ of the $10$ DUO tasks, $14$ of the $21$ SPP contrasts, and the PI positive control, with mean AUCs up to $0.90$; the padded transcript of the same subset passes every task.
 
-Figure~\ref{fig:ablation-paired} reports the full set of $45$ supervised contrasts: each point places a contrast at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ against its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are contrasts where padding moved the attacker back toward chance.
-Every one of the $21$ contrasts on which B1 carries a sizable signal ($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses below that line under B2; across the $45$ random-forest contrasts the median unpadded deviation of $0.137$ drops to $0.038$, and the per-family median $\Delta_{\text{leak}}$ is $+0.173$ (SPP), $+0.058$ (PCH), and $-0.011$ (PI, whose gating pair types are already at chance under B1).
+Figure~\ref{fig:ablation-paired} reports all $45$ supervised tasks: each point places a task at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ against its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are tasks where padding moved the attacker back toward chance.
+Every one of the $21$ tasks on which B1 carries a sizable signal ($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses below that line under B2; across the $45$ tasks, the median random-forest deviation drops from $0.137$ unpadded to $0.038$ padded, and the per-family median $\Delta_{\text{leak}}$ is $+0.173$ (SPP), $+0.058$ (PCH), and $-0.011$ (PI, whose gating pair types are already at chance under B1).
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{ablation_paired_scatter.png}
-	\caption{Gas-padding ablation over all $45$ supervised contrasts: unpadded versus
+	\caption{Gas-padding ablation over all $45$ supervised tasks: unpadded versus
 		padded deviation from chance, colored by the sign of the $95\%$ interval of
 		$\Delta_{\text{leak}}$.}
 	\label{fig:ablation-paired}
@@ -54,8 +54,8 @@ Encoding every pseudonym at full width would close this particular channel witho
 
 As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker shows the same pattern on a second, label-free attack family: the debiased NMI of the balanced PI pairs is $0.67$ higher under B1 than under B2, and the DUO-term and logic-structure clusterings lose $0.35$ and $0.10$ of NMI, each with a policy-group bootstrap interval excluding zero.
 
-The effect is conditional, and we report it as such: the $12$ random-forest contrasts with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ contrasts on which padding \emph{raises} the deviation ($\Delta_{\text{leak}}<0$, red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy pad-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
-These per-contrast counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker.
+The effect is conditional, and we report it as such: the $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation ($\Delta_{\text{leak}}<0$, red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
+These per-task counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker.
 
 \textbf{Cost.} Padding is not free: over the subset it raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
 The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, and the base of that band is chosen above the bare access cost measured on the target network ($748{,}000$ gas on Amoy) so that the whole band stays above real usage.

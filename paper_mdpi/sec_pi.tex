@@ -2,7 +2,7 @@
 \subsection{Policy Indistinguishability (PI)}
 \label{sec:eval-pi}
 
-\textbf{Property.} PI strengthens PCH: even when two policies are \emph{semantically related}, the observer must not tell which one was executed.
+\textbf{Objective.} PI strengthens PCH: even when two policies are \emph{semantically related}, the observer must not tell which one was executed.
 
 We construct policy pairs of three types, defined by semantic similarity: \texttt{semantic\_equivalent} (near-identical semantics, similarity $\ge 0.999$, but a different parameter fingerprint---whitelist size, Merkle depth, or proof type), \texttt{weak\_equivalent} ($\ge 0.95$ semantic overlap), and \texttt{controlled\_difference} (similarity $<0.95$, the least similar pairs by construction; reported for reference but excluded from the verdict).
 
@@ -15,4 +15,4 @@ We train a logistic-regression and a random-forest classifier and, per pair type
 We evaluate this single-execution attacker over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}).
 Pooled over all pairs, the AUC is $0.509\pm0.035$ with $3\%$ of seeds significant.
 Both gating pair types stay below the $0.55$ line: \texttt{semantic\_equivalent} at $0.549$ ($7\%$ significant seeds) and \texttt{weak\_equivalent} at $0.544$ ($10\%$), so PI passes.
-\texttt{controlled\_difference}, the least similar pairs by construction and hence the easiest to separate, is excluded from the verdict and reported for reference; under the full mechanism it sits at $0.544$ with $13\%$ of seeds significant, whereas the ablation of Section~\ref{sec:eval-ablation} separates the same pair type at AUC $0.71$ once padding is removed, which confirms that the pair construction produces a distinguishable positive control.
+\texttt{controlled\_difference}, the least similar pairs by construction and hence the easiest to separate, is excluded from the verdict and reported for reference; under the full defense configuration it sits at $0.544$ with $13\%$ of seeds significant, whereas the ablation of Section~\ref{sec:eval-ablation} separates the same pair type at AUC $0.71$ once padding is removed, which confirms that the pair construction produces a distinguishable positive control.

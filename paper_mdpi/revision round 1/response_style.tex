@@ -65,14 +65,15 @@
 \InputIfFileExists{locations.tex}{}{}
 \newcommand{\Loc}[1]{\ifcsname loc@#1\endcsname\csname loc@#1\endcsname\else\textbf{[?? #1]}\fi}
 
+% In red, matching the markup of the revised manuscript it points into.
 \newcommand{\RevisionLocation}[1]{%
-	\par\noindent\textit{Revised in:} #1\par
+	\par\noindent{\color{red}\textit{Revised in:} #1\par}
 }
 
 % Opening paragraph shared by the three letters.
 \newcommand{\OpeningNote}{%
 	Dear Reviewer~\ReviewerNumber,
 
-	We thank you for your careful review and constructive comments, which have helped us to improve the manuscript considerably.
-	Our point-by-point responses follow and a marked manuscript in which all new or revised text appears in red is provided.
+	We thank you for your review and comments, which have helped us to improve the manuscript considerably.
+	Below we provide a point-by-point response to your comments, and we have revised the manuscript accordingly.
 }
