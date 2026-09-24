@@ -10,11 +10,11 @@ Encrypted data-sharing mechanisms, such as Ciphertext-Policy Attribute-Based Enc
 Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
 
 Hidden-policy access-control work reduces direct policy exposure: CP-ABE variants hide the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}.
-Wu et al.~\cite{wu2023blockchain} instead encrypt policy and attribute values under an additively homomorphic cryptosystem.
+Wu et al.~\cite{wu2023blockchain} instead realize attribute-based access control (ABAC) by encrypting policy and attribute values under an additively homomorphic cryptosystem.
 A smart contract computes their encrypted difference, one assistant node per organization decrypts it partially with a zero-knowledge proof of correct decryption, and the contract decides without seeing the values; every request therefore needs every organization online.
 Functional encryption gives a more general cryptographic abstraction for revealing function
 outputs while hiding inputs~\cite{boneh2011functional}, but it does not by itself yield publicly verifiable authorization evidence.
-Private-state blockchain systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or execution through encrypted state and trusted execution environments~\cite{secretnetwork_docs, cheng2019ekiden}.
+Private-state blockchain systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or execution through encrypted state and trusted execution environments (TEEs)~\cite{secretnetwork_docs, cheng2019ekiden}.
 These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI
 targets a more specific setting: hiding consent policies on a public chain while
 retaining public verifiability of each authorization decision.
@@ -31,11 +31,11 @@ First, the smart contract decides rather than notarizes: it verifies the proof a
 Second, off-chain trust is concentrated rather than split: their proxy never sees claim contents, whereas the TPS sees both the policy and the claims, which is why Section~\ref{sec:problem} treats the TPS as an explicit trust boundary and Table~\ref{tab:threat-guarantee} states what survives its compromise.
 The designs are complementary: the requester could release its claims only to a TPS whose certified attributes satisfy a requester-defined policy, which is the verifier-authorization problem of~\cite{buccafurri2024holder} with the TPS as verifier, and a per-request holder signature over the authorization context would further prevent a TPS from reusing observed evidence for fresh sessions (Section~\ref{sec:discussion}).
 
-Privacy-preserving access-control and policy-evaluation mechanisms have been studied in credential-based and XACML/SAML settings~\cite{ardagna2009xacml}, as well as in multi-party policy evaluation using homomorphic encryption and secure function evaluation~\cite{sheikhalishahi2019privacy}.
+Privacy-preserving access-control and policy-evaluation mechanisms have been studied in credential-based settings built on the eXtensible Access Control Markup Language (XACML) and the Security Assertion Markup Language (SAML)~\cite{ardagna2009xacml}, as well as in policy evaluation by multi-party computation (MPC) using homomorphic encryption (HE) and secure function evaluation~\cite{sheikhalishahi2019privacy}.
 These approaches support confidential authorization computation, but they are not primarily designed for settings where policy-evaluation artifacts---calldata, public inputs, emitted events, timing, and gas usage---are permanently and globally visible on a public blockchain.
 In addition, these approaches do not directly provide compact evidence that a smart contract can verify against a committed, provider-defined policy instance.
 
-Reusable proving systems, including universal-setup SNARKs, composable proof systems, and zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.
+Reusable proving systems, including universal-setup succinct non-interactive arguments of knowledge (SNARKs), composable proof systems, and zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.
 However, when deployed for public-chain consent enforcement, reusable proving alone does not guarantee policy privacy: policy-dependent program representations, public inputs, calldata layouts, logs, or gas profiles may still remain observable.
 This motivates TPS-ZKPI's use of a domain-specific reusable policy interpreter, which preserves proof reuse while exposing only a policy-independent public verification interface.
 

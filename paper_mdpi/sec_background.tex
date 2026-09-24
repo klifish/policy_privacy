@@ -6,7 +6,7 @@ This section reviews the technical foundations relevant to policy-private consen
 Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE)~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
 In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
-Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and IoMT data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants hide the access policy and attributes~\cite{yang2024hamed,ding2026badsabe}, in one case also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
+Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and Internet of Medical Things (IoMT) data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants hide the access policy and attributes~\cite{yang2024hamed,ding2026badsabe}, in one case also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
 These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~\ref{sec:related-work}.
 
 \subsection{Zero-Knowledge Proofs}
@@ -18,14 +18,14 @@ These properties make ZKPs a natural building block for proving that a requester
 \subsection{The Data Use Ontology}
 \label{subsec:duo}
 The Data Use Ontology (DUO) provides a standardized vocabulary for expressing biomedical data-sharing consent conditions, and its terms are widely adopted in genomics and biobanking to enable semantic interoperability~\cite{lawson2021data, dyke2016consent}.
-A DUO-based policy combines permissions and modifiers---for example, general research use (GR), disease-specific research (DS), or a requirement that ethics-committee approval be obtained (IRB)---into the condition under which access is granted.
+A DUO-based policy combines permissions and modifiers---for example, general research use (GRU), disease-specific research (DS), or a requirement that ethics-committee approval be obtained (IRB)---into the condition under which access is granted.
 
 \paragraph{DUO Term Categories}
 Although DUO offers a rich set of permissions and modifiers, its terms are heterogeneous in how they must be evaluated for compliance.
 To structure their handling in a zero-knowledge setting, we group DUO terms into four categories:
 
 \begin{itemize}
-	\item \textbf{Boolean-only:} simple yes/no conditions that can be represented directly without external validation, e.g.\ ``no restriction'' (NRES), general research use (GR), or ``health/medical/biomedical research'' (HMB).
+	\item \textbf{Boolean-only:} simple yes/no conditions that can be represented directly without external validation, e.g.\ ``no restriction'' (NRES), general research use (GRU), or ``health/medical/biomedical research'' (HMB).
 
 	\item \textbf{Ontology-linked:} terms whose evaluation involves consistency checks against external vocabularies or classifications, e.g.\ disease-specific research (DS), population origins or ancestry research (POA), or clinical care use (CC).
 
@@ -46,12 +46,12 @@ Table~\ref{tab:duo-categories} summarizes representative DUO terms under this cl
 		\textbf{Category}                                                         & \textbf{Example Terms} & \textbf{Description} \\
 		\midrule
 		Boolean-only                                                              &
-		NRES (DUO:0000004), GR (DUO:0000042), HMB (DUO:0000006)                   &
+		NRES (DUO:0000004), GRU (DUO:0000042), HMB (DUO:0000006)                   &
 		Direct yes/no conditions, no external validation required.                                                                \\
 		\addlinespace
 		Ontology-linked                                                           &
 		DS (DUO:0000007), POA (DUO:0000011), CC (DUO:0000043)                     &
-		Evaluated against external ontologies such as ICD-10 or MONDO.                                                            \\
+		Evaluated against external ontologies such as the International Classification of Diseases (ICD-10) or the Mondo Disease Ontology (MONDO).                                                            \\
 		\addlinespace
 		Obligation-required                                                       &
 		PUB (DUO:0000019), MOR (DUO:0000024), TS (DUO:0000025), RTN (DUO:0000029) &

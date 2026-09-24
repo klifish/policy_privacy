@@ -43,7 +43,7 @@ Issuer authorization, issuance practice, and credential revocation remain extern
 
 Ontology-linked conditions are represented extensionally rather than through in-circuit ontology reasoning.
 At encoding time, the provider expands an ontology concept into a whitelist of codes and commits the whitelist as a Merkle root among the policy's per-predicate parameters; in-circuit, the predicate check is a set-membership proof of the requested term against this root.
-A disease-specific policy scoped to diabetes, for example, whitelists the ICD-10 diabetes subtree, whereas one scoped to type-1 diabetes whitelists only the type-1 codes.
+A disease-specific policy scoped to diabetes, for example, whitelists the diabetes subtree of the International Classification of Diseases, 10th Revision (ICD-10), whereas one scoped to type-1 diabetes whitelists only the type-1 codes.
 Resolving subsumption at encoding time keeps ontology reasoning out of the circuit and preserves the policy-independent interface.
 
 Consent policies are expressed as Boolean formulas over assignment bits:
@@ -88,7 +88,7 @@ Accordingly, the prototype is an access-time consent checker for bounded Boolean
 
 \subsection{Commitment Binding and Proof Generation}
 
-To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field and computes
+To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field of BN254, the pairing-friendly elliptic curve over which the proofs are computed, and computes
 \begin{equation}
 	\begin{split}
 		q & = \mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}}), \\
@@ -146,7 +146,7 @@ The circuit reserves one fixed predicate slot for a credential carrying a fixed 
 Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use.
 Let $t_{\mathrm{from}}$ and $t_{\mathrm{until}}$ define its validity interval, and let $\gamma$ be its credential identifier.
 Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag for this credential type.
-From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, $\mathrm{NMDS}$, $\mathrm{GSO}$, $\mathrm{NPUNCU}$, $\mathrm{NPOA}$, $\mathrm{NPU}$, and $\mathrm{NCU}$.
+From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, no general methods research ($\mathrm{NMDS}$), genetic studies only ($\mathrm{GSO}$), not-for-profit, non-commercial use only ($\mathrm{NPUNCU}$), population origins or ancestry research prohibited ($\mathrm{NPOA}$), not-for-profit use only ($\mathrm{NPU}$), and non-commercial use only ($\mathrm{NCU}$).
 For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
 \begin{equation}
 	m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel

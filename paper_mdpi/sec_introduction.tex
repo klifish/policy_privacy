@@ -11,14 +11,14 @@ For example, a policy based on biomedical data-use terms may reveal whether a da
 If such policies are directly represented in smart contracts, embedded in verification logic, or reflected in public execution traces, unauthorized observers may infer information about the protected resource, the data subject's constraints, or the requester's authorization context.
 
 Existing privacy-preserving blockchain solutions mainly protect data contents, user identities, or transaction details~\cite{rondelet2019zeth, williamson2018aztec,	nadler2023tornado}.
-Encrypted data-sharing mechanisms such as attribute-based encryption and proxy re-encryption protect access to data~\cite{ibraimi2009ciphertext, ullah2023survey}, while zero-knowledge transaction systems hide asset ownership, values, or participant relationships~\cite{zhou2024leveraging}.
+Encrypted data-sharing mechanisms such as attribute-based encryption (ABE) and proxy re-encryption protect access to data~\cite{ibraimi2009ciphertext, ullah2023survey}, while zero-knowledge transaction systems hide asset ownership, values, or participant relationships~\cite{zhou2024leveraging}.
 None of these mechanisms protects the confidentiality of the policies that govern access decisions.
 Even mechanisms designed to hide policy content, such as hidden-policy attribute-based encryption~\cite{yang2024hamed,ding2026badsabe}, do not control the policy-dependent artifacts that a public chain exposes while enforcing the policy.
 In blockchain-based consent management, policy leakage may arise not only from explicit policy disclosure, but also from policy-dependent artifacts such as calldata size, public-input layout, emitted events, verifier interfaces, and gas usage.
 Therefore, policy-private consent enforcement requires more than hiding data or proving correctness in zero knowledge; it also requires controlling what the public-chain transcript reveals about the hidden policy.
 This paper studies this problem for blockchain-based healthcare data sharing under public-chain observability.
 The central challenge is to enable an on-chain verifier to check that a requester satisfies a provider-defined consent policy while ensuring that metadata-only public-chain observers learn minimal information about the governing policy and the requester's authorization evidence from the resulting verification transcript.
-We focus on Boolean-based consent policies, including policies derived from biomedical data-use conditions such as terms from the Data Use Ontology (DUO), the GA4GH standard vocabulary of consent-based data-use conditions~\cite{lawson2021data}, and disease-scope constraints~\cite{WHO_ICD10}.
+We focus on Boolean-based consent policies, including policies derived from biomedical data-use conditions such as terms from the Data Use Ontology (DUO), the Global Alliance for Genomics and Health (GA4GH) standard vocabulary of consent-based data-use conditions~\cite{lawson2021data}, and disease-scope constraints~\cite{WHO_ICD10}.
 
 We address this problem with the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
 In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
