@@ -1,4 +1,4 @@
-\section{Problem and Threat Model}
+\section{Problem Formulation}
 \label{sec:problem}
 
 \subsection{System and Trust Model}
@@ -82,9 +82,9 @@ hidden policy, such as logical structure, nesting depth, predicate count, set si
 
 \subsection{Problem Statement}
 
-Given a provider-defined consent policy $P$, requester authorization evidence,
-a globally observable public blockchain, and the stated TPS trust assumption, the problem is
-to enforce access to a protected healthcare resource while satisfying three requirements.
-First, authorization must be publicly verifiable: the ACM should be able to verify that the
-requester satisfies the committed policy without learning or executing the policy in plaintext. Second, policy-dependent information should remain hidden from public-chain observers, including policy content, policy identity, structural properties, requester evidence, and metadata-level enforcement fingerprints.
-Third, authorization outcomes should remain auditable, so that successful access decisions can be recorded and checked without exposing the hidden policy logic.
+Given a provider-defined consent policy $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption of Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
+First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester identifier, resource, and session), so that it cannot be reused for another context.
+Second, the policy must remain confidential: public-chain artifacts should not reveal its content, identity, or structure and parameters (PCH, PI, and SPP; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
+Third, authorization decisions should be auditable: each processed request, granted or denied, is recorded on-chain together with its bound context and can be checked later without exposing the policy logic.
+Fourth, one policy-independent verification interface should serve every policy in the supported class, so that policies can be added or changed without changing the on-chain verifier.
+The first, third, and fourth requirements are met by construction (Section~\ref{sec:design}); the second is evaluated empirically against the modeled public-chain adversary (Section~\ref{sec:eval}).
