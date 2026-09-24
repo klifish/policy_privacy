@@ -2,7 +2,7 @@
 %   (higher-AUC model per contrast; cross-checked against the JS report.json verdict).
 % Structure & Parameter Privacy — supervised attack, multi-seed (30 policy-disjoint seeds).
 % AUC is the higher of logistic regression / random forest per contrast (the
-% "stronger attacker" leg used for gating).
+% "stronger attacker" classifier used for gating).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05).
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
 % The nestingDepth medium/deep FAIL is analysed in

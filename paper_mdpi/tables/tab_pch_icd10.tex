@@ -1,7 +1,7 @@
 % Source of record: experiments/results/supervised/pch_supervised_verdict.json
 %   (higher-AUC model per chapter; cross-checked against the JS evaluation_report.json verdict).
 % Multi-seed (30 policy-disjoint seeds).
-% Criterion: FAIL iff AUC_mean > 0.55 AND %sig >= 50%; both legs required, else PASS.
+% Criterion: FAIL iff AUC_mean > 0.55 AND %sig >= 50%; both conditions required, else PASS.
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
 % The ch5 FAIL is analysed in experiments/results/supervised/pad_residual_diagnostic.md.
 \begin{table}[htbp]

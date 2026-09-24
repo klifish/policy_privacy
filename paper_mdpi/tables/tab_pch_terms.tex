@@ -2,7 +2,7 @@
 %   (higher-AUC model per term; cross-checked against the JS evaluation_report.json verdict).
 % Policy Content Hiding -- supervised attack, multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5
-% (perm alpha=0.05); both legs required, else PASS.
+% (perm alpha=0.05); both conditions required, else PASS.
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
 \begin{table}[htbp]
   \centering
