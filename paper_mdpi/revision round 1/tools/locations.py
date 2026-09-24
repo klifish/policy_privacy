@@ -44,7 +44,7 @@ PASSAGES = {
     'ds-cred':    ('range', 'The circuit reserves one fixed predicate slot',
                    'are constrained to these claim-derived values'),
     'ev-obs':     ('range', 'That channel is wider than the verifier',
-                   'lie outside this scope'),
+                   'a TPS that deviates from its workflow'),
     'ev-thr':     ('range', 'Operational thresholds and sensitivity',
                    'padding suppresses the modeled gas channel'),
     'ev-corpus':  ('range', 'Shared corpus. We evaluate all three objectives',
