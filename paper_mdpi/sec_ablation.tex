@@ -70,7 +70,7 @@ With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32
 With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s for a five-slot ontology-heavy policy.
 Every variant retains five public signals, so enlarging either capacity changes the prover artifacts but not the verifier interface.
 
-We deliberately do not sweep $M$: only the production configuration $N=13,M=11$ activates the implemented production slot masks, whereas other $M$ values enter a generic verifier branch and would not be a like-for-like comparison.
-Instead, Table~\ref{tab:workload-scaling} evaluates policy content within the fixed RC1 circuit ($\DEPTH=64$, eight Merkle levels).
+Table~\ref{tab:workload-scaling} evaluates policy content within the fixed RC1 circuit ($\DEPTH=64$, eight Merkle levels).
 Across simple, ontology-heavy, profile-heavy, and max-mixed policies, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s, despite the encoded programs ranging from $3$ to $61$ tokens and activating from one to all $11$ production predicate slots.
 The larger end-to-end time for profile-backed cases reflects off-circuit credential and allowlist preparation; the fixed-circuit witness/prove/verify work remains stable.
+Under load, throughput stays between $0.79$ and $0.94$ proofs/s as concurrency rises from one to four, while median latency grows from $1.2$ to $4.1$~s; Section~\ref{sec:discussion} uses the measured capacity for the daily-volume scenarios of the same table.
