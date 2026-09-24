@@ -1,8 +1,8 @@
 % Gas-padding ablation / mechanism attribution.
-\subsection{Gas-padding ablation}
+\subsection{Gas-Padding Ablation}
 \label{sec:eval-ablation}
 
-The results show that TPS-ZKPI hides content, policy identity, and structure/parameters up to the two padding-target coincidences discussed above. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
+Under the full defense configuration, the modeled attacks stay below the leakage criterion for content, policy identity, and structure and parameters, except for the two failures traced to the padding target. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
 
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
@@ -27,10 +27,10 @@ Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main pr
 \input{tables/tab_ablation_gas_padding.tex}
 
 \textbf{Padding removes otherwise-recoverable signal.}
-Under the criterion of Section~\ref{sec:eval-method}, the unpadded transcript fails $9$ of the $10$ DUO tasks, $14$ of the $21$ SPP contrasts, and the PI positive control, with mean AUCs up to $0.90$; the padded transcript of the same subset passes every task.
+Under the criterion of Section~\ref{sec:eval-method}, the unpadded transcript fails $9$ of the $10$ DUO tasks, one of the ten ICD-10 chapters (ch0), $14$ of the $21$ SPP contrasts, and the PI positive control; the padded transcript of the same subset passes every task.
 
-Figure~\ref{fig:ablation-paired} reports all $45$ supervised tasks: each point places a task at its unpadded deviation from chance $|\mathrm{AUC}_{\mathrm{B1}}-0.5|$ against its padded deviation $|\mathrm{AUC}_{\mathrm{B2}}-0.5|$, so points below the diagonal are tasks where padding moved the attacker back toward chance.
-Every one of the $21$ tasks on which B1 carries a sizable signal ($|\mathrm{AUC}_{\mathrm{B1}}-0.5|>0.15$) collapses below that line under B2; across the $45$ tasks, the median random-forest deviation drops from $0.137$ unpadded to $0.038$ padded, and the per-family median $\Delta_{\text{leak}}$ is $+0.173$ (SPP), $+0.058$ (PCH), and $-0.011$ (PI, whose gating pair types are already at chance under B1).
+Figure~\ref{fig:ablation-paired} reports all $45$ supervised tasks: each point places a task at its deviation from chance without padding (B1) against its deviation with padding (B2), the two terms of Equation~\eqref{eq:delta-leak}, so points below the diagonal are tasks where padding moved the attacker back toward chance.
+Every one of the $21$ tasks whose B1 deviation from chance exceeds $0.15$ falls below $0.15$ under B2; across the $45$ tasks, the median random-forest deviation drops from $0.137$ unpadded to $0.038$ padded, and the per-family median $\Delta_{\text{leak}}$ is $+0.173$ (SPP), $+0.058$ (PCH), and $-0.011$ (PI, whose semantic and weak pair types are already at chance under B1).
 
 \begin{figure}[htbp]
 	\centering
@@ -47,25 +47,27 @@ The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723
 
 Twelve gas is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028), and decoding the calldata of the transactions shows where the variation comes from: the requester pseudonym $\mathit{id}_{\mathrm{req}}$.
 In the evaluation, a requester who presents a profile credential is identified by a Poseidon-derived pseudonym that fills the 256-bit word, whereas a requester of an ontology-only policy carries a 128-bit random pseudonym whose upper 16 bytes are zero; the $192$-gas difference between the two encodings is exactly the gap between the two clusters of B1 gas values, and whether a policy activates the profile predicate is correlated with its DUO terms, its structure type, and its parameter bucket.
-The remaining $\pm 84$ gas come from the zero-byte counts of the proof elements, the policy and request identifiers, and the epoch, none of which depends on the policy.
+The remaining spread of $84$ gas within each cluster comes from the zero-byte counts of the proof elements, the policy and request identifiers, and the epoch, none of which depends on the policy.
 
-The unpadded leak is therefore not the policy logic but a sub-kilogas, deterministic calldata-pricing artifact of how one public transaction argument is encoded; it is a real channel for the observer nonetheless, and it is the class of channel that padding is designed to absorb, because randomizing the target by $\pm 10\%$ ($\pm 105{,}000$ gas) submerges any deterministic difference of a few hundred gas regardless of its origin.
-Encoding every pseudonym at full width would close this particular channel without padding; randomized padding remains the more general defense because it also absorbs comparable deterministic gas differences caused by other public encodings or execution effects.
+The unpadded leak is therefore not the policy logic but a sub-kilogas, deterministic calldata-pricing artifact of how one public transaction argument is encoded; it is a real channel for the observer nonetheless, and it is the class of channel that padding is designed to absorb. The padding routine counts the zero and non-zero calldata bytes of the transaction and tops its gas up to the drawn target, so this $192$-gas difference is compensated exactly; the overhead that remains after padding varies by less than $100$ gas (Section~\ref{sec:eval-pch}), and randomizing the target by $\pm 10\%$ ($\pm 105{,}000$ gas) masks it.
+Encoding every pseudonym at full width would close this particular channel without padding; randomized gas padding remains the more general defense because it also absorbs deterministic gas differences caused by other public encodings or execution effects.
 
 As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker shows the same pattern on a second, label-free attack family: the debiased NMI of the balanced PI pairs is $0.67$ higher under B1 than under B2, and the DUO-term and logic-structure clusterings lose $0.35$ and $0.10$ of NMI, each with a policy-group bootstrap interval excluding zero.
 
-The effect is conditional, and we report it as such: the $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation ($\Delta_{\text{leak}}<0$, red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
+The effect is conditional, and we report it as such: the $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
 These per-task counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker.
 
 \textbf{Cost.} Padding is not free: over the subset it raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
-The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, and the base of that band is chosen above the bare access cost measured on the target network ($748{,}000$ gas on Amoy) so that the whole band stays above real usage.
+The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, a band placed above the bare access cost on the target network (about $723{,}000$ gas on Amoy, as measured in B1) so that the whole band stays above real usage.
 At the $30$~gwei tip used throughout, one padded access transaction costs about $0.032$~POL (the native token of Polygon) and one commit about $0.009$~POL; the overhead is therefore a fixed per-transaction premium of roughly $330{,}000$ gas on access and $85{,}000$ on commit, independent of transaction volume, and it does not grow with policy complexity, because neither the bare cost nor the band depends on the policy.
 
 Table~\ref{tab:cost-profile} gives the single-point cost characterization of the evaluated prototype configuration at $\DEPTH=64$.
 The circuit compiles to a rank-1 constraint system (R1CS) of $81{,}740$ constraints; across the $1{,}773$ Polygon Amoy executions, mean witness and proving times on the two-core capture host are $763.6$ ms and $2{,}884.2$ ms, respectively.
 Gas, logs, calldata lengths, and transaction objects are taken from the same executed dataset, whose transactions use the context-bound five-signal statement.
+Within these costs, binding the program length (Section~\ref{subsec:commitment}) adds $88$ constraints and no public input, and binding the authorization context adds $605$ constraints and one public input.
+At Amoy's gas schedule, the context binding adds $64{,}022$ gas per access and recording the bound context on-chain adds $68{,}946$ gas, together $18\%$ of the mean unpadded access cost; because the unpadded cost stays below the padding band, the binding does not change the padded cost.
 
-Table~\ref{tab:cost-scaling} reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using rapidsnark.
+Table~\ref{tab:cost-scaling} reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using the rapidsnark Groth16 prover.
 With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s.
 With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s for a five-slot ontology-heavy policy.
 Every variant retains five public signals, so enlarging either capacity changes the prover artifacts but not the verifier interface.

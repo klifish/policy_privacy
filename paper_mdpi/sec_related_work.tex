@@ -23,7 +23,7 @@ In the homomorphic design, for example, the Boolean structure of the policy and 
 Moreover, many target permissioned or off-chain settings, such as that design's coalition blockchain, where enforcement artifacts are not globally visible as they are on public blockchains.
 
 Self-sovereign-identity (SSI) architectures place verifiable claims under the requester's control and raise the converse question of which verifiers the holder can trust with those claims.
-Buccafurri et al.~\cite{buccafurri2024holder} answer it with ciphertext-policy attribute-based proxy re-encryption: the holder stores encrypted claims off-chain under a self-defined attribute policy, a semi-trusted, non-colluding consensus provider re-encrypts them for verifiers whose certified attributes satisfy that policy, and a smart contract notarizes hashes of storage, policy-change, and access operations so that they can later be attributed to their parties; a trusted key-generation authority issues all attribute keys.
+Buccafurri et al.~\cite{buccafurri2024holder} answer it with ciphertext-policy attribute-based proxy re-encryption. The holder stores encrypted claims off-chain under a self-defined attribute policy, and a semi-trusted, non-colluding consensus provider re-encrypts them for verifiers whose certified attributes satisfy that policy. A smart contract notarizes hashes of storage, policy-change, and access operations so that they can later be attributed to their parties, and a trusted key-generation authority issues all attribute keys.
 Zero-knowledge credential presentations likewise let a patient authenticate anonymously on public or private chains~\cite{madine2025zero}, and surveys of zero-knowledge proofs for blockchain privacy catalogue this design space~\cite{shashidhara2024promise,zhou2024leveraging}.
 TPS-ZKPI sits on the other side of the same authorization relation: the protected object is the provider's consent policy rather than the requester's claims, and the claims enter only as private witnesses of a proof with a fixed statement.
 Two differences follow.
@@ -35,11 +35,11 @@ Privacy-preserving access-control and policy-evaluation mechanisms have been stu
 These approaches support confidential authorization computation, but they are not primarily designed for settings where policy-evaluation artifacts---calldata, public inputs, emitted events, timing, and gas usage---are permanently and globally visible on a public blockchain.
 In addition, these approaches do not directly provide compact evidence that a smart contract can verify against a committed, provider-defined policy instance.
 
-Reusable proving systems, including universal-setup succinct non-interactive arguments of knowledge (SNARKs), composable proof systems, and zkVMs~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.
+Reusable proving systems, including universal-setup succinct non-interactive arguments of knowledge (SNARKs), composable proof systems, and zero-knowledge virtual machines (zkVMs)~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.
 However, when deployed for public-chain consent enforcement, reusable proving alone does not guarantee policy privacy: policy-dependent program representations, public inputs, calldata layouts, logs, or gas profiles may still remain observable.
 This motivates TPS-ZKPI's use of a domain-specific reusable policy interpreter, which preserves proof reuse while exposing only a policy-independent public verification interface.
 
-Public-chain metadata-leakage studies show that cryptographic privacy
+Studies of metadata leakage on public chains show that cryptographic privacy
 guarantees may be weakened by observable transaction-level artifacts such as
 timing and volume patterns~\cite{beres2021blockchain}. Techniques such as batching,
 decoys, and traffic shaping can reduce some observable signals~\cite{miller2023vtbc}, but they are

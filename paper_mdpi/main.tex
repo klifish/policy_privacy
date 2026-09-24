@@ -66,6 +66,11 @@
 % only the \_ text command, not math subscripts.
 \DeclareRobustCommand{\_}{\textunderscore\discretionary{}{}{}}
 
+% A paragraph with no acceptable line break, such as one that opens with a long
+% hyphenated name, would otherwise run into the margin. Emergency stretch is used
+% only for those paragraphs; all others are typeset as before.
+\setlength{\emergencystretch}{1.5em}
+
 % --- shorthand macros (from the source manuscript) ---
 \newcommand{\negl}{\mathsf{negl}}
 \newcommand{\Com}{\mathsf{Com}}

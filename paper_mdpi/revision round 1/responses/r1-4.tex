@@ -10,10 +10,9 @@
 
 \begin{reviewresponse}{4}
 	We have made the distinction explicit and added the requested matrix.
-	Section~4.1 now separates authorization correctness, which the commitment and on-chain verification enforce regardless of the TPS, from policy confidentiality and liveness, which depend on the TPS following its workflow.
-	The new Table~3 states, for each actor or failure mode, whether each guarantee is cryptographic, TPS-dependent, external, or not provided.
-	The rows cover the public observer, the requester, an honest TPS, a compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers.
-	In short, a compromised TPS cannot break authorization correctness but can breach confidentiality and refuse service; the Discussion addresses the resulting accountability gap.
+	Section~4.1 now separates authorization correctness, which the commitment, the credential check, and on-chain verification enforce for the committed policy and signed evidence, from policy confidentiality and liveness, which depend on the TPS following its workflow.
+	The new Table~3 states, for each actor or failure mode, whether each guarantee is cryptographic, TPS-dependent, external, or not provided; its rows cover the public observer, the requester, a workflow-following TPS, a compromised or colluding TPS, forged credentials, and unauthorized or revoked issuers.
+	In short, a compromised TPS can no longer alter the committed policy, the bound authorization context, or the signed claims, but it can still substitute evidence whose origin is not independently authenticated, breach confidentiality, and refuse service; the Discussion addresses the resulting accountability gap.
 
 	\RevisionLocation{Section~4.1, third and fourth paragraphs (\Loc{tm-tps}); Table~3 (\Loc{tab3}); Section~7, paragraphs ``TPS trust and credential provenance'' (\Loc{di-tps}) and ``Future directions'' (\Loc{di-future}).}
 \end{reviewresponse}

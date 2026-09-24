@@ -85,6 +85,7 @@ Accordingly, the prototype is an access-time consent checker for bounded Boolean
 \input{tables/tab_policy_support.tex}
 
 \subsection{Commitment Binding and Proof Generation}
+\label{subsec:commitment}
 
 To bind each proof to a provider-defined hidden policy, the provider samples commitment randomness $r$ uniformly from the scalar field of BN254, the pairing-friendly elliptic curve over which the proofs are computed, and computes
 \begin{equation}
@@ -98,8 +99,8 @@ where $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell
 The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
 Accordingly, the circuit supplies the same private value $\ell$ to both the commitment verifier and the policy interpreter.
 Under the collision resistance of Poseidon, an accepting proof bound to $h$ cannot substitute a different program length and therefore cannot evaluate an alternative stack-consistent prefix of $P_{\mathrm{enc}}$.
-Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on
-high-entropy $r$ and the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
+This argument relies on the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
+Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on the high-entropy randomness $r$.
 
 For an access request, let
 \begin{equation}
@@ -139,6 +140,7 @@ The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of eac
 The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
 
 \subsection{Credential-Origin Binding}
+\label{subsec:credential}
 
 The circuit reserves one fixed predicate slot for a credential carrying a fixed set of DUO-relevant claims.
 Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use.
@@ -187,7 +189,7 @@ summarizes the mechanisms.
 		Calldata          & Fixed verification interface and fixed-size proof/public-input encoding.                             \\
 		Logs              & Fixed event structure with constant topic and payload layout.                                        \\
 		Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses.                            \\
-		Gas usage         & Policy-independent verifier logic and gas padding toward a target drawn at random from a fixed band. \\
+		Gas usage         & Policy-independent verifier logic and gas padding that counts calldata byte costs and tops each transaction up to a target drawn at random from a fixed band. \\
 		\hline
 	\end{tabular}
 \end{table}

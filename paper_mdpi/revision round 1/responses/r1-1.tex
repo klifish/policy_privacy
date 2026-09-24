@@ -9,8 +9,8 @@
 \begin{reviewresponse}{1}
 	We agree and have bound the program length in the current implementation.
 	The commitment is now $h=\mathsf{Poseidon}(\mathsf{H}_{\mathrm{pol}}(P_{\mathrm{enc}})\parallel\ell\parallel r)$, and the circuit supplies the same private $\ell$ to both the commitment check and the interpreter, so an accepting proof can no longer evaluate a shorter stack-consistent prefix of the committed program.
-	The change adds $88$ constraints (about $0.12\%$) and no public input.
+	The change adds $88$ constraints (about $0.1\%$ of the circuit) and no public input, as Section~6.9 now reports.
 	The statement that this binding was left to future work has been removed.
 
-	\RevisionLocation{Section~5.3, first paragraph (\Loc{ds-len}); Section~7, first paragraph under ``Policy and context binding'' (\Loc{di-len}).}
+	\RevisionLocation{Section~5.3, first paragraph (\Loc{ds-len}); Section~6.9, paragraph introducing Table~15 (\Loc{ab-bind}); Section~7, first paragraph under ``Policy and context binding'' (\Loc{di-len}).}
 \end{reviewresponse}

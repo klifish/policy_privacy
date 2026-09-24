@@ -2,7 +2,7 @@
 % and before tab_privacy_summary.tex. Numbers are of-record from
 % experiments/data/polygonAmoy/metadata.json, policy_definitions.json and
 % executed_dataset.json (capture of 2026-09-17, v3.0.0-rc1 artifacts).
-\subsection{Dataset and corpus generation}
+\subsection{Dataset and Corpus Generation}
 \label{sec:eval-dataset}
 
 \textbf{Shared corpus.} We evaluate all three objectives on one policy corpus, so the supervised attacks and the clustering cross-check see the same transactions.
@@ -28,8 +28,9 @@ It provides breadth, spreading distinct policies across the content labels and s
 The \emph{depth layer} runs $24$ policies $30$ times each ($720$ executions).
 It provides depth, which the PI attacks need because they compare two policies execution-by-execution, and for that each policy must have multiple executions of its own.
 This layer is what lets PI form its $127$ balanced $30$-vs-$30$ pairs and run the per-pair clustering check (Section~\ref{sec:eval-method}).
+The PCH and PI analyses use all $1{,}773$ executions; the SPP analyses, supervised and unsupervised, keep the first three executions of each depth-layer policy, so they use $1{,}125$ executions, to which the $24$ repeated policies contribute $72$ rather than $720$.
 
-\textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and the ten ICD-10 chapters, sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
+\textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and ten ICD-10 chapters (Table~\ref{tab:corpus}), sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
 Category-level labels are therefore the finest granularity at which the attack has adequate power.
 They do not directly test individual leaf terms: a signal specific to one term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
 The transcript mechanisms themselves do not depend on the policy content: the verifier work and the public interface are fixed, and the padding band is the same for every policy (Section~\ref{sec:design}).

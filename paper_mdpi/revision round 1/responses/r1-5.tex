@@ -7,10 +7,10 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{5}
-	Thanks for the comment. We have revised the Abstract, Discussion, and Conclusion to clarify that the result is empirical resistance against the modeled public-chain metadata attacks.
+	We have revised the Abstract, Discussion, and Conclusion to clarify that the result is empirical resistance against the modeled public-chain metadata attacks.
 	Section~6.1 now lists every excluded channel, including each one you named, in a single scope statement.
 	The evaluation was also re-run on the revised system ($1{,}773$ Polygon Amoy executions).
-	Of the $45$ supervised tasks, $43$ pass; we report the two failures and trace them to chance correlations between the random padding targets and the labels (subtracting the logged target returns both to PASS).
+	Of the $45$ supervised tasks, $43$ pass; we report the two failures and trace them to chance correlations between the random padding targets and the labels (subtracting the padding target returns both to PASS).
 
 	\RevisionLocation{Abstract (\Loc{abstract}); Section~6.1, third paragraph (\Loc{ev-obs}); Section~7, paragraphs under ``Privacy findings'' (\Loc{di-find}); Section~8, last sentence (\Loc{co-limits}).}
 \end{reviewresponse}

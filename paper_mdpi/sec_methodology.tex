@@ -1,17 +1,17 @@
 % Shared methodology: supervised attack pipeline + unsupervised clustering cross-check.
-\subsection{Attack methodology}
+\subsection{Attack Methodology}
 \label{sec:eval-method}
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
 The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the area under the receiver operating characteristic curve (AUC) against the chance level of $0.5$. Its outcome serves as the main privacy verdict. The supervised adversary has strictly more information than the unsupervised one, and is thus the stronger of the two. Because this adversary is harder to defeat, a PASS under the supervised test is the more conservative verdict.
 The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
 
-\textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicy}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBound}).
+\textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).
 The provider-to-TPS and requester-to-TPS exchanges are in-process calls: they use no public channel and produce no on-chain artifacts. They therefore do not affect the observables of Section~\ref{sec:eval-threat}, which are extracted from the resulting transaction receipts, calldata, and event logs.
 
 Both methods run on the same dataset of \emph{Polygon~Amoy} executions, collected under the full defense configuration (fixed circuit, commitment-only interface, randomized gas padding). The dataset, attack code, and verdict files are released as an accompanying artifact (see the Data Availability Statement).
 
-\subsubsection{Supervised attacks}
+\subsubsection{Supervised Attacks}
 Each objective is operationalized as a set of binary \emph{tasks}, each defined by one hidden label to be recovered from the observables: detecting the presence of a specific data-use term or disease chapter (PCH, Section~\ref{sec:eval-pch}), distinguishing executions of two policies (PI, Section~\ref{sec:eval-pi}), or separating two structural buckets (SPP, Section~\ref{sec:eval-spp}).
 For every task we train a linear and a non-linear classifier (logistic regression, LR; random forest, RF) and report the score that enters the verdict for that objective (defined below).
 Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} (the same $70/30$ ratio in each of PCH, PI, and SPP): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies.
@@ -20,11 +20,19 @@ Here a class is one side of the binary task (the positive or negative value of i
 
 For each seed we assess the AUC with a label-permutation test.
 The classifier is trained once and its test-set probability outputs are fixed; the test-set labels are then shuffled $R{=}500$ times, and the AUC is recomputed against the fixed probabilities on each shuffle, giving the null distribution of the AUC under no association between scores and labels.
-The empirical $p$-value is $(k+1)/(R+1)$, where $k$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; the added counts keep the $p$-value away from an exact zero. The seed is counted as significant when this $p$-value falls below $\alpha{=}0.05$.
+The empirical $p$-value is
+\begin{equation}
+	p = (k+1)/(R+1),
+	\label{eq:perm-p}
+\end{equation}
+where $k$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; the added counts keep the $p$-value away from an exact zero. The seed is counted as significant when this $p$-value falls below $\alpha{=}0.05$.
 
-For each task, the result tables report the AUC averaged over seeds ($\mathrm{AUC}_{\text{mean}}$) and the mean per-seed distance from chance, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ (reported as the AUC gap).
-Because the gap is computed before averaging, deviations above and below $0.5$ cannot cancel.
-Consequently, $\operatorname{mean}_s|\mathrm{AUC}_s-0.5|$ is always at least as large as $|\mathrm{AUC}_{\text{mean}}-0.5|$.
+For each task, the result tables report the AUC averaged over seeds ($\mathrm{AUC}_{\text{mean}}$) and the AUC gap, the mean per-seed distance from chance:
+\begin{equation}
+	\text{AUC gap} = \operatorname{mean}_s\left|\mathrm{AUC}_s-0.5\right| \;\ge\; \left|\mathrm{AUC}_{\text{mean}}-0.5\right|.
+	\label{eq:auc-gap}
+\end{equation}
+Because the gap is computed before averaging, deviations above and below $0.5$ cannot cancel, which is why it is never smaller than the distance of $\mathrm{AUC}_{\text{mean}}$ from chance.
 
 Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
 Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
@@ -60,15 +68,15 @@ Thus, the leakage criterion summarizes residual attack performance, whereas the 
 Tasks with a median test-set size below $20$ are reported as \emph{underpowered} and excluded from the verdict.
 The criterion is applied independently to LR and RF; a task fails if either classifier satisfies both conditions, and the result tables report the classifier with the higher mean AUC.
 
-The classifiers use the commit and access gas measurements, the only modeled policy-dependent channel remaining after transcript normalization.
+The classifiers receive all nine features of Section~\ref{sec:eval-threat}; only the commit and access gas measurements vary, so they carry the only modeled policy-dependent channel that remains after transcript normalization.
 
-\subsubsection{Unsupervised clustering attacks}
+\subsubsection{Unsupervised Clustering Attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.
 We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.
 Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
 PCH clusters all executions globally (no per-layer splitting), so the large-sample ARI/NMI are read directly.
-SPP is clustered the same way, once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count, and its large-sample ARI/NMI are likewise read directly.
+SPP is clustered the same way on its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}), once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count, and its large-sample ARI/NMI are likewise read directly.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 \noindent\textbf{Balanced pairs.} The clustering uses a dedicated pair set built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.

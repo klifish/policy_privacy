@@ -11,9 +11,9 @@
 	We have implemented the binding in the circuit and in the contract.
 	The proof now carries a public context digest $d_{\chi}=\mathsf{Poseidon}(\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel\nu)$, which the contract recomputes from the transaction parameters before verification.
 	A proof submitted with a fresh nonce, another resource, or another requester is therefore rejected within one deployment; our end-to-end tests confirm this.
-	As requested, we measured the cost: $605$ additional constraints and one additional public input.
+	As requested, we measured the cost, which Section~6.9 now reports: $605$ additional constraints and one additional public input.
 	At Amoy's gas schedule, the binding adds $64{,}022$ gas per access, and recording the bound context on-chain adds $68{,}946$ gas, together $18\%$ of the mean unpadded access cost.
 	The padded cost is unchanged because the unpadded access cost remains below the padding band.
 
-	\RevisionLocation{Section~4.4, first requirement (\Loc{tm-req1}); Section~5.3, second and third paragraphs (\Loc{ds-ctx}); Section~4.2, last paragraph (\Loc{tm-adv}); Section~7, second and third paragraphs under ``Policy and context binding'' (\Loc{di-ctx}); Table~15 (\Loc{tab15}).}
+	\RevisionLocation{Section~4.2, last paragraph (\Loc{tm-adv}); Section~4.4, first requirement (\Loc{tm-req1}); Section~5.3, second and third paragraphs (\Loc{ds-ctx}); Section~6.9, paragraph introducing Table~15 (\Loc{ab-bind}); Section~7, second and third paragraphs under ``Policy and context binding'' (\Loc{di-ctx}).}
 \end{reviewresponse}

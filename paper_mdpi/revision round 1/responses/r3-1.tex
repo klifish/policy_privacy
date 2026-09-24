@@ -8,7 +8,7 @@
 \begin{reviewresponse}{1}
 	We agree that this is the main architectural limitation, and the revision now states it as such.
 	Section~4.1 separates what is protected cryptographically from what is only trusted to the TPS.
-	Authorization correctness is protected: a compromised TPS cannot alter the program length, the authorization context, or the signed claims.
+	Authorization correctness is protected for the committed policy and signed evidence: a compromised TPS cannot alter the program length, the authorization context, or the signed claims, but evidence whose origin is not independently authenticated remains trusted to it.
 	Policy confidentiality and liveness are only trusted to the TPS, and the provider-operated TPS in our evaluation concentrates this trust at the provider.
 	The new Table~3 lists these guarantees for each actor and failure mode.
 	The Discussion and Conclusion describe confidentiality against the TPS as a trust assumption, and the Discussion names mechanisms that would reduce it.

@@ -3,7 +3,7 @@
 
 This paper presented TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge approach to policy-private consent enforcement on public blockchains.
 In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain, the TPS proves in zero knowledge that a requester satisfies this policy, and a smart contract verifies the proof.
-Because each policy is compiled into a fixed-length program for a reusable zero-knowledge policy interpreter, all policies share one verification interface, and randomized gas padding masks residual gas differences.
+Each policy is compiled into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface, and randomized gas padding masks the remaining gas differences.
 We evaluated TPS-ZKPI on the Polygon Amoy testnet with supervised and unsupervised attacks in which a passive public-chain observer tried to infer hidden policy properties from public-chain metadata.
 The results showed that nearly all supervised tasks stayed below our leakage criterion, that both failures traced to chance correlations with the padding, and that unsupervised clustering found no policy structure beyond the same padding effect.
 Furthermore, the gas-padding ablation showed that, without padding, the same attacks often recovered policy content and structure, which confirmed that padding protects the gas channel at a fixed gas cost per transaction.
