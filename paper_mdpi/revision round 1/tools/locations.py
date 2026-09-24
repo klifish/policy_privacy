@@ -52,7 +52,7 @@ PASSAGES = {
     'ev-issuer':  ('range', 'uses a deterministic test issuer', 'production key management'),
     'pch-sup':    ('range', 'Supervised attack. Each DUO term defines a',
                    'examine below what the classifier separates'),
-    'pch-ch5':    ('range', 'meets both conditions of the criterion: mean AUC', 'examine below what the classifier separates'),
+    'pch-ch5':    ('range', 'nervous system) meets both conditions of the criterion', 'examine below what the classifier separates'),
     'pch-diag':   ('range', 'What the ch5 classifier separates',
                    'policy contrasts, as shown in Section'),
     'pi-sup':     ('range', 'We train a logistic-regression and a random-forest',
