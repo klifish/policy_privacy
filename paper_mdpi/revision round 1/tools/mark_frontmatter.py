@@ -36,6 +36,10 @@ def sentences(s):
     return [p for p in re.split(r'(?<=[.;])\s+(?=[A-Z])', norm(s)) if p]
 
 
+# The class copies \\abstract and \\keyword into the PDF subject and keywords; hide the
+# color switch from those strings, where hyperref would print its argument as text.
+RED = '\\texorpdfstring{\\color{red}}{}'
+
 old = open(sys.argv[1]).read()
 diff_path = sys.argv[2]
 new = open(diff_path).read()
@@ -43,14 +47,14 @@ new = open(diff_path).read()
 a0, a1 = braced(old, 'abstract')
 old_abstract = set(sentences(old[a0:a1]))
 b0, b1 = braced(new, 'abstract')
-marked_abstract = ' '.join(s if s in old_abstract else '{\\color{red}' + s + '}'
+marked_abstract = ' '.join(s if s in old_abstract else '{' + RED + s + '}'
                            for s in sentences(new[b0:b1]))
 new = new[:b0] + marked_abstract + new[b1:]
 
 k0, k1 = braced(old, 'keyword')
 old_keywords = {norm(k) for k in old[k0:k1].split(';')}
 c0, c1 = braced(new, 'keyword')
-marked_keywords = '; '.join(norm(k) if norm(k) in old_keywords else '{\\color{red}' + norm(k) + '}'
+marked_keywords = '; '.join(norm(k) if norm(k) in old_keywords else '{' + RED + norm(k) + '}'
                             for k in new[c0:c1].split(';'))
 new = new[:c0] + marked_keywords + new[c1:]
 

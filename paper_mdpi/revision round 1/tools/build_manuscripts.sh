@@ -6,9 +6,12 @@
 # Both come from one latexdiff source, so page and line numbers are identical and
 # the locations cited in the response letters hold for either PDF.
 # Baseline: commit 57142fe, the version submitted on 13 July 2026.
+# Both PDFs are review copies and are anonymized (tools/anonymize.py); set ANONYMIZE=0
+# for a version with the author information.
 set -euo pipefail
 
 BASE_COMMIT=${BASE_COMMIT:-57142fe}
+ANONYMIZE=${ANONYMIZE:-1}
 HERE=$(cd "$(dirname "$0")/.." && pwd)          # paper_mdpi/revision round 1
 PAPER=$(cd "$HERE/.." && pwd)                   # paper_mdpi
 ROOT=$(git -C "$PAPER" rev-parse --show-toplevel)
@@ -31,6 +34,10 @@ latexdiff --flatten --math-markup=whole --graphics-markup=none \
 python3 "$HERE/tools/drop_deleted_parbreaks.py" "$PAPER/main_marked_tmp.tex"
 python3 "$HERE/tools/color_added_floats.py" "$PAPER/main_marked_tmp.tex"
 python3 "$HERE/tools/mark_frontmatter.py" "$WORK/old/paper_mdpi/sec_frontmatter.tex" "$PAPER/main_marked_tmp.tex"
+# The first-round review PDF withheld the author identities, so the review copies do too.
+if [ "$ANONYMIZE" = 1 ]; then
+  python3 "$HERE/tools/anonymize.py" "$PAPER/main_marked_tmp.tex"
+fi
 sed -i '' 's/^\\bibliography{reference}$/\\input{main_refs_tmp.bbl}/' "$PAPER/main_marked_tmp.tex"
 grep -q 'input{main_refs_tmp.bbl}' "$PAPER/main_marked_tmp.tex"
 sed 's/\\color{red}/\\color{black}/g' "$PAPER/main_marked_tmp.tex" > "$PAPER/main_clean_tmp.tex"
