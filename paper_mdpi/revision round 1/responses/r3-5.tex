@@ -4,12 +4,12 @@
 \end{reviewcomment}
 
 \begin{reviewresponse}{5}
-	We added a paragraph to the Related Work section that positions TPS-ZKPI against Buccafurri et~al.~[\Loc{ref-buccafurri2024holder}] on the four points raised.
-	\emph{Verifier authorization:} there the holder's claims are protected, whereas here the provider's policy is protected and any observer can verify the proof.
-	\emph{Smart-contract accountability:} the contract records the context-bound outcome rather than metering the release of claims.
-	\emph{Off-chain trust:} the TPS sees both the policy and the claims, which Table~3 makes explicit.
-	\emph{Workflow:} holder-authorized presentation could be combined with TPS-ZKPI.
+	We added a paragraph to the Related Work section and a row to Table~2 that position TPS-ZKPI against Buccafurri et~al.~[\Loc{ref-buccafurri2024holder}] on the four points raised.
+	\emph{Verifier authorization:} their design releases the holder's claims only to verifiers whose certified attributes satisfy a holder-defined policy; in TPS-ZKPI the protected object is the provider's consent policy, and the verifier is a public contract that any observer can check.
+	\emph{Smart-contract accountability:} their contract notarizes hashed operations for later attribution, whereas ours verifies the proof and records the context-bound outcome on-chain.
+	\emph{Off-chain trust:} their proxy is semi-trusted and never sees claim contents, whereas our TPS sees both the policy and the claims; the paragraph states this difference and refers to Table~3.
+	\emph{Workflow:} the designs are complementary, since a requester could use their mechanism to release claims only to an accredited TPS.
 	We also cite recent zero-knowledge authentication work~[\Loc{ref-madine2025zero}] and a survey~[\Loc{ref-shashidhara2024promise}].
 
-	\RevisionLocation{Section~3, fourth paragraph (\Loc{rw-ssi}); References.}
+	\RevisionLocation{Section~3, fourth paragraph (\Loc{rw-ssi}); Table~2 (\Loc{tab2}); References.}
 \end{reviewresponse}
