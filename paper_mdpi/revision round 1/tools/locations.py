@@ -22,7 +22,7 @@ PASSAGES = {
     'abstract':   ('between', 'Abstract', 'Keywords'),
     'keywords':   ('range', 'Keywords', 'metadata leakage'),
     'bg-access':  ('range', 'Fine-grained consent management in blockchain-based',
-                   'public chain is discussed in Section'),
+                   'attached to the ciphertext in the clear'),
     'rw-hidden':  ('range', 'Hidden-policy access-control work reduces direct policy exposure',
                    'as they are on public blockchains'),
     'rw-ssi':     ('range', 'Self-sovereign-identity (SSI) architectures place verifiable claims',

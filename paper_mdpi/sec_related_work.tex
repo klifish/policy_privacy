@@ -6,7 +6,7 @@ This line of work focuses on making consent decisions verifiable and auditable, 
 The confidentiality of the governing consent policy---and what public-chain enforcement artifacts reveal about it---is typically out of scope.
 
 Beyond the consent-management setting, existing work addresses important fragments of policy-private consent enforcement, but not their combination under public-chain observability.
-Encrypted data-sharing mechanisms, such as Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and proxy re-encryption (PRE)~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, standard CP-ABE attaches the access policy to the ciphertext in the clear, exposing the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
+Encrypted data-sharing mechanisms, such as CP-ABE and PRE~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, as noted in Section~\ref{subsec:crypto-access}, standard CP-ABE exposes the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
 Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
 
 Hidden-policy access-control work reduces direct policy exposure: CP-ABE variants hide the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}.

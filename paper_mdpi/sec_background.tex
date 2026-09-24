@@ -3,11 +3,13 @@
 This section reviews the technical foundations relevant to policy-private consent enforcement on blockchains. We first introduce the cryptographic access-control mechanisms commonly used in blockchain-based healthcare data sharing. We then review zero-knowledge proofs and the Data Use Ontology (DUO)~\cite{dyke2016consent}, which together provide the basis for the policy representation and verification mechanisms used in our approach.
 
 \subsection{Cryptographic Access Control in Blockchain Healthcare}
+\label{subsec:crypto-access}
 Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE)~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
 In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
 Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and Internet of Medical Things (IoMT) data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants hide the access policy and attributes~\cite{yang2024hamed,ding2026badsabe}, in one case also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
-These primitives establish who may obtain the data; how they relate to \emph{policy} confidentiality on a public chain is discussed in Section~\ref{sec:related-work}.
+These primitives determine who may obtain the data, but standard CP-ABE does not keep the access policy itself confidential: the policy is attached to the ciphertext in the clear.
+
 
 \subsection{Zero-Knowledge Proofs}
 Zero-knowledge proofs (ZKPs) are cryptographic protocols that allow a prover to convince a verifier that a statement is true without revealing any information beyond the validity of the statement~\cite{groth2016size}.
@@ -17,7 +19,7 @@ These properties make ZKPs a natural building block for proving that a requester
 
 \subsection{The Data Use Ontology}
 \label{subsec:duo}
-The Data Use Ontology (DUO) provides a standardized vocabulary for expressing biomedical data-sharing consent conditions, and its terms are widely adopted in genomics and biobanking to enable semantic interoperability~\cite{lawson2021data, dyke2016consent}.
+DUO provides a standardized vocabulary for expressing biomedical data-sharing consent conditions, and its terms are widely adopted in genomics and biobanking to enable semantic interoperability~\cite{lawson2021data, dyke2016consent}.
 A DUO-based policy combines permissions and modifiers---for example, general research use (GRU), disease-specific research (DS), or a requirement that ethics-committee approval be obtained (IRB)---into the condition under which access is granted.
 
 \paragraph{DUO Term Categories}
@@ -43,23 +45,23 @@ Table~\ref{tab:duo-categories} summarizes representative DUO terms under this cl
 	\label{tab:duo-categories}
 	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\raggedright\arraybackslash}p{0.42\linewidth}@{}}
 		\toprule
-		\textbf{Category}                                                         & \textbf{Example Terms} & \textbf{Description} \\
+		\textbf{Category}                                                         & \textbf{Example Terms} & \textbf{Description}                  \\
 		\midrule
 		Boolean-only                                                              &
-		NRES (DUO:0000004), GRU (DUO:0000042), HMB (DUO:0000006)                   &
-		Direct yes/no conditions, no external validation required.                                                                \\
+		NRES (DUO:0000004), GRU (DUO:0000042), HMB (DUO:0000006)                  &
+		Direct yes/no conditions, no external validation required.                                                                                 \\
 		\addlinespace
 		Ontology-linked                                                           &
 		DS (DUO:0000007), POA (DUO:0000011), CC (DUO:0000043)                     &
-		Evaluated against external ontologies such as the International Classification of Diseases (ICD-10) or the Mondo Disease Ontology (MONDO).                                                            \\
+		Evaluated against external ontologies such as the International Classification of Diseases (ICD-10) or the Mondo Disease Ontology (MONDO). \\
 		\addlinespace
 		Obligation-required                                                       &
 		PUB (DUO:0000019), MOR (DUO:0000024), TS (DUO:0000025), RTN (DUO:0000029) &
-		Impose obligations such as publication duties, time limits, or data return.                                               \\
+		Impose obligations such as publication duties, time limits, or data return.                                                                \\
 		\addlinespace
 		Credential-required                                                       &
 		COL (DUO:0000020), IRB (DUO:0000021), PS (DUO:0000027), IS (DUO:0000028)  &
-		Depend on credentials, approvals, or institutional/project-specific restrictions.                                         \\
+		Depend on credentials, approvals, or institutional/project-specific restrictions.                                                          \\
 		\bottomrule
 	\end{tabular}
 \end{table}
