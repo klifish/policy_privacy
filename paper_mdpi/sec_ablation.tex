@@ -2,7 +2,7 @@
 \subsection{Ablation: gas-normalization positive control}
 \label{sec:eval-ablation}
 
-The main results show that the full mechanism hides content, policy identity, and structure/parameters up to the two pad-target coincidences discussed above. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
+The results show that the mechanism hides content, policy identity, and structure/parameters up to the two pad-target coincidences discussed above. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
 
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
@@ -73,4 +73,4 @@ Every variant retains five public signals, so enlarging either capacity changes 
 Table~\ref{tab:workload-scaling} evaluates policy content within the fixed RC1 circuit ($\DEPTH=64$, eight Merkle levels).
 Across simple, ontology-heavy, profile-heavy, and max-mixed policies, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s, despite the encoded programs ranging from $3$ to $61$ tokens and activating from one to all $11$ production predicate slots.
 The larger end-to-end time for profile-backed cases reflects off-circuit credential and allowlist preparation; the fixed-circuit witness/prove/verify work remains stable.
-Under load, throughput stays between $0.79$ and $0.94$ proofs/s as concurrency rises from one to four, while median latency grows from $1.2$ to $4.1$~s; Section~\ref{sec:discussion} uses the measured capacity for the daily-volume scenarios of the same table.
+Under load, throughput stays between $0.79$ and $0.94$ proofs/s as concurrency rises from one to four, while median latency grows from $1.2$ to $4.1$~s; Section~\ref{sec:discussion} converts the measured capacity into requests per day.

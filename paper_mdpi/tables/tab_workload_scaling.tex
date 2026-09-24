@@ -2,8 +2,7 @@
 % Apple M1 (8 cores), rapidsnark, RC1 circuit (DEPTH=64, MERKLE_LEVELS=8).
 % (a) 30 verified proofs per policy and (b) 100 verified requests per concurrency
 % level, each after five warm-ups; timing cells are median (p95) in ms, and the
-% IQRs are in the JSON. (c) is computed by scripts/render_scalability_report.js:
-% instances = ceil(1.5 * average rate / 0.936), the best throughput in (b).
+% IQRs are in the JSON.
 \begin{table}[htbp]
   \centering
   \caption{Policy-content and workload scalability of the evaluated circuit ($\DEPTH=64$,
@@ -36,21 +35,8 @@
     \bottomrule
   \end{tabular*}
 
-  \vspace{0.8em}
-  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}rrrrr@{}}
-    \multicolumn{5}{@{}l}{\emph{(c) Scenarios: capacity $0.936$ proofs/s from (b); $1{,}056{,}674$ gas per padded access at $30$~gwei}} \\
-    \toprule
-    Accesses & Average & Prover & Access gas & Access cost \\
-    per day & requests/s & instances$^{\dagger}$ & per day (billion) & (POL/day) \\
-    \midrule
-    $1{,}000$   & $0.012$ & $1$ & $1.057$   & $31.70$ \\
-    $10{,}000$  & $0.116$ & $1$ & $10.567$  & $317.00$ \\
-    $100{,}000$ & $1.157$ & $2$ & $105.667$ & $3170.02$ \\
-    \bottomrule
-  \end{tabular*}
-
   \vspace{0.4em}
   \begin{minipage}{\linewidth}
-    \footnotesize\textit{Note:} Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation. Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests. $^{\dagger}$Identical prover instances, $\lceil 1.5\,r/0.936\rceil$ for average request rate $r$ ($50\%$ capacity headroom). One policy commit costs $304{,}098$ gas ($0.009$~POL) and is not included, because no commit/access ratio is assumed.
+    \footnotesize\textit{Note:} Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation. Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests.
   \end{minipage}
 \end{table}

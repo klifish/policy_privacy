@@ -8,8 +8,7 @@
 \begin{reviewresponse}{7}
 	We have expanded the cost analysis with new measurements.
 	On the re-run ablation, padding raises mean access gas by $46.1\%$ and mean commit gas by $38.4\%$.
-	For transaction volume, the Discussion gives the gas cost at 30~gwei ($31.70$, $317.00$, and $3{,}170.02$~POL/day for $1{,}000$, $10{,}000$, and $100{,}000$ accesses/day).
-	Based on a measured throughput of $0.936$ proofs/s on one host, these volumes require one, one, and two prover instances.
+	For transaction volume, the Discussion gives per-request figures from which any volume follows: a padded access costs about $0.032$~POL at 30~gwei, so the on-chain cost grows linearly with the number of requests, and a measured throughput of $0.936$ proofs/s lets one prover handle about $80{,}900$ requests per day on a single host.
 	For complexity, circuit sweeps (program length $32$--$128$, ontology depth $4$--$16$) and four policy classes using up to all $11$ predicate slots keep the median proving time below $0.8$~s.
 	The public interface stays the same in every configuration, so the padding strategy applies unchanged.
 

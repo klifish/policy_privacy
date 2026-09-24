@@ -10,8 +10,7 @@
 	Increasing the program length from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.41$ to $0.73$~s; increasing the ontology depth from $4$ to $16$ raises it from $0.51$ to $0.57$~s.
 	Within the deployed circuit, policies of $3$ to $61$ tokens using one to all $11$ predicate slots keep the median proving time at $0.48$--$0.55$~s.
 	All variants keep five public signals, so the verifier interface and the padding band are unchanged.
-	For workloads, we measured a throughput of $0.936$ proofs/s on one host.
-	The Discussion gives the required prover capacity and gas cost for $1{,}000$ to $100{,}000$ accesses per day.
+	For workloads, we measured a throughput of $0.936$ proofs/s on one host, about $80{,}900$ requests per day per prover; the Discussion combines this with the per-access gas cost, which grows linearly with the number of requests.
 
 	\RevisionLocation{Section~6.9, last two paragraphs (\Loc{ab-scal}); Tables~16 and~17 (\Loc{tab16}); Section~7, paragraphs under ``The cost of padding'' (\Loc{di-cost}).}
 \end{reviewresponse}
