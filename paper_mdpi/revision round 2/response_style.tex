@@ -1,0 +1,79 @@
+% Shared style for the reviewer-specific response PDFs.
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{array,booktabs,longtable}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{RevisionRed}{RGB}{178,34,34}
+\definecolor{RuleGray}{RGB}{205,210,216}
+\definecolor{NoteBackground}{RGB}{247,248,250}
+\definecolor{NoteBorder}{RGB}{185,190,198}
+
+\providecommand{\ReviewerNumber}{0}
+\newcommand{\ManuscriptTitle}{Enhancing Consent Policy Privacy in Blockchain-Based Healthcare Data Sharing}
+\providecommand{\DEPTH}{\mathsf{DEPTH}}
+\hypersetup{
+	pdftitle={Response to Reviewer \ReviewerNumber},
+	pdfauthor={},
+	pdfsubject={Revision Round 2}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.62em}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em}
+\setlist[enumerate]{leftmargin=1.9em,itemsep=0.25em,topsep=0.3em}
+\raggedbottom
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Response to Reviewer \ReviewerNumber}
+\fancyhead[R]{\small Revision Round 2}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\ResponseTitle}{%
+	\begin{center}
+		{\Large\bfseries Response to Reviewer \ReviewerNumber\par}
+		\vspace{0.7em}
+		{\large\itshape \ManuscriptTitle\par}
+	\end{center}
+	\vspace{0.6em}
+	\noindent\color{RuleGray}\rule{\textwidth}{0.7pt}\color{black}
+	\vspace{0.6em}
+}
+
+\newenvironment{reviewcomment}[1]
+{\par\vspace{0.7em}\noindent\textbf{Comments #1: }\itshape}
+{\par\normalfont}
+
+\newenvironment{reviewresponse}[1]
+{\par\vspace{0.5em}\noindent\textbf{Response #1: }}
+{\par}
+
+% Page and line references into the revised manuscript. locations.tex is generated
+% by tools/build_manuscripts.sh from the marked PDF, whose pagination equals the
+% clean PDF's; an unknown key prints in bold so it cannot pass unnoticed.
+\InputIfFileExists{locations.tex}{}{}
+\newcommand{\Loc}[1]{\ifcsname loc@#1\endcsname\csname loc@#1\endcsname\else\textbf{[?? #1]}\fi}
+
+% In red, matching the markup of the revised manuscript it points into.
+\newcommand{\RevisionLocation}[1]{%
+	\par\noindent{\color{red}\textit{Revised in:} #1\par}
+}
+
+% Opening paragraph shared by the letters.
+\newcommand{\OpeningNote}{%
+	Dear Reviewer~\ReviewerNumber,
+
+	We thank you for your review and comments, which have helped us to improve the manuscript considerably.
+	Below we provide a point-by-point response to your comments, and we have revised the manuscript accordingly.
+}

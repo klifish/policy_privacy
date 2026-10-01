@@ -1,0 +1,25 @@
+%DIF PREAMBLE: additions in red, deletions omitted
+% \leavevmode keeps a color special from opening a p{} table cell in vertical mode,
+% which would drop the cell's baseline and misalign the row.
+\RequirePackage{xcolor}
+\providecommand{\DIFadd}[1]{{\leavevmode\color{red}#1}}
+\providecommand{\DIFdel}[1]{}
+\providecommand{\DIFaddbegin}{}
+\providecommand{\DIFaddend}{}
+\providecommand{\DIFdelbegin}{}
+\providecommand{\DIFdelend}{}
+\providecommand{\DIFmodbegin}{}
+\providecommand{\DIFmodend}{}
+\providecommand{\DIFaddFL}[1]{{\leavevmode\color{red}#1}}
+\providecommand{\DIFdelFL}[1]{}
+\providecommand{\DIFaddbeginFL}{}
+\providecommand{\DIFaddendFL}{}
+\providecommand{\DIFdelbeginFL}{}
+\providecommand{\DIFdelendFL}{}
+\newcommand{\DIFscaledelfig}{0}
+\RequirePackage{listings}
+\lstdefinelanguage{DIFcode}{moredelim=[il][\color{red}]{\%DIF\ <\ },moredelim=[il][\color{red}]{\%DIF\ >\ }}
+\lstdefinestyle{DIFverbatimstyle}{language=DIFcode,basicstyle=\ttfamily,columns=fullflexible,keepspaces=true}
+\lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{}
+\lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle,showspaces=true}}{}
+%DIF END PREAMBLE
