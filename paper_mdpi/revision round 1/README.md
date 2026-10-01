@@ -13,6 +13,7 @@ This writes to `output/`:
 - `reviewer1_response.pdf`, `reviewer2_response.pdf`, `reviewer3_response.pdf`: one letter per reviewer.
 
 `make manuscript` runs `tools/build_manuscripts.sh`, and `make letters` rebuilds only the letters.
+`make source` writes `output/manuscript_revised_source.zip`, the LaTeX source for upload in the layout of the first-round submission (a top-level `paper_mdpi/` folder, only the files the manuscript uses, author information kept), and checks that the extracted archive compiles on its own.
 Run `make all` after any manuscript edit, because the letters cite page and line numbers.
 
 ## How the pieces fit
