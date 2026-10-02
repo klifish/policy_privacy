@@ -2,16 +2,14 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-\textbf{Objective.} PCH requires that the public-chain observer cannot recover the \emph{content} of a policy---its DUO data-use terms or the ICD-10 disease codes DS references---better than chance.
+This attack targets the DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO)---and disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
 
-\textbf{Scope of the labels.} The attack targets the ten DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO)---and disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}). Section~\ref{sec:eval-dataset} explains this label restriction, its statistical-power rationale, and what category-level labels do not test.
-
-\textbf{Supervised attack.} Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline of Section~\ref{sec:eval-method}.
+Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline stated in Section~\ref{sec:eval-method}.
 Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ threshold, so no DUO task meets either condition of the leakage criterion.
 
 \input{tables/tab_pch_terms.tex}
 
-The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the ICD-bearing rows only, median test $n{=}127$ per chapter; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
+The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the DS policies only, which carry the ICD-10 scope; median test $n{=}127$ per chapter; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
 Chapters ch1, ch2, and ch4 sit just above the AUC line (mean AUC $0.558$--$0.570$) but reproduce in at most $23\%$ of seeds, so they are boundary cases.
 Chapter ch5 (diseases of the nervous system) meets both conditions of the criterion: mean AUC $0.667$ with $53\%$ of seeds significant.
 We report it as a FAIL of the criterion and examine below what the classifier separates.
@@ -36,7 +34,7 @@ We therefore rerun the analysis on the residual overhead, that is, on the access
 
 Across all $20$ PCH tasks, the single-feature rank AUC of the padded access gas, computed over all executions without a classifier, coincides with that of the padding target to three decimal places, while the residual AUC lies between $0.47$ and $0.52$.
 For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $0.472$.
-The $34$ ch5 policies happened to draw targets whose mean is $33{,}000$ gas higher than that of the other $388$ ICD-bearing policies, a $3.2\sigma$ deviation for a uniform draw of that size.
+The $34$ ch5 policies happened to draw targets whose mean is $33{,}000$ gas higher than that of the other $388$ DS policies, a $3.2\sigma$ deviation for a uniform draw of that size.
 Because each coverage-layer policy is executed once, the $30$ evaluation seeds repeatedly partition the same fixed draws, causing this accidental difference to reproduce across seeds.
 
 Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ with $10\%$ significant seeds for logistic regression and $0.561$ with $17\%$ significant seeds for random forest, both yielding PASS.
