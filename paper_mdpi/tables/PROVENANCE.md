@@ -8,7 +8,7 @@ Paths are relative to the repository root. Sections are keyed by LaTeX label, no
 table number, because the numbers shift when the layout changes. Each table section records the commit at
 which its numbers were last checked against the source.
 
-Tables still to document: `tab_pch_terms`, `tab_pch_icd10`, `tab_pi_pairs`,
+Tables still to document: `tab_pch_icd10`, `tab_pi_pairs`,
 `tab_spp_contrasts`, `tab_clustering_summary`, `tab_ablation_gas_padding`,
 `tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
@@ -239,4 +239,91 @@ nestingDepth {'flat': '130/130', 'shallow': '210/413', 'medium': '335/509', 'dee
 predicateCombo {'single': '257/344', 'few': '645/1080', 'many': '175/349'}
 paramType {'none': '147/234', 'small': '232/406', 'medium': '352/584', 'large': '346/549'}
 total 1077/1773
+```
+
+---
+
+## `tab:pch-terms` (`tab_pch_terms.tex`)
+
+Last checked against the source: commit `da1bab3`, 2026-10-02. All 50 cells match.
+
+**Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
+`tasks[]` whose `key` starts with `DUO`. The pipeline is the shared supervised pipeline
+above; the driver is `pch_supervised.py` (`build_tasks`), and its input is
+`experiments/data/polygonAmoy/pch_dataset.json`, which is byte-identical to
+`executed_dataset.json`.
+
+### Task and label
+
+Each row is a one-vs-rest task over all 1,077 policies: the label is 1 if the policy contains the term.
+The label rule is `code in _duo_codes(record) or term_id in _duo_ids(record)`, with
+`term_id` from `DUO_TERM_ORDER`. Two naming details:
+
+- **`GRU` is keyed `DUO GR`** in the JSON (`DUO_TERM_ORDER` uses `GR`, and
+  `DUO_CODE_ALIASES` maps `GRU` → `GR`).
+- **The numeric IDs are consistent.** In the data, `semantics.duoTermValues` uses GRU 0, DS 1, RS 2,
+  POA 3, GS 4, CC 5, NCU 6, HMB 7, NMDS 8, GSO 9, the same numbering as `DUO_TERM_ORDER`.
+  (`attributeOrder` in each record is a different index space and is not used for labels.)
+  For every term, the positive policy set equals plain membership in `duoTermCodes`
+  (checked). Its sizes are the Policies column of `tab:corpus`.
+
+### Columns
+
+For each row, take the model (LR or RF) with the higher `aucMean`; every cell comes from that
+model's entry `models.<m>`:
+
+| Column | Field | Definition over the 30 seeds |
+|---|---|---|
+| AUC mean | `aucMean` | mean of `perSeed.auc` |
+| ± std | `aucStd` | **population** standard deviation of `perSeed.auc` (`np.std`, ddof = 0) |
+| AUC gap (mean) | `advantageMean` | mean of `|perSeed.auc − 0.5|` (Eq. `eq:auc-gap`) |
+| %sig | `sigFraction` | share of `perSeed.pval < 0.05`, a multiple of 1/30 |
+| med n | `medianTestN` (task level) | median test-set size over seeds |
+
+**med n = 323 for every DUO row.** Each seed keeps one execution per policy, and the
+holdout puts `round(0.3 × 1,077) = 323` policies in the test set, so the test set has 323
+rows in every seed. Of these, about 91 are GRU-positive and 232 negative for GRU.
+
+Selected models: LR for GRU, POA, CC, NCU, and HMB; RF for DS, RS, GS, NMDS, and GSO. All 10
+tasks pass, and no model meets either leg of the criterion (max `aucMean` 0.540, max
+`sigFraction` 7/30 = 23%, both GRU/LR).
+
+### Recompute
+
+The snippet recomputes the summary statistics from the per-seed values, independently
+of the stored `aucMean`/`aucStd`/`advantageMean`/`sigFraction`, and asserts that they agree.
+
+```bash
+python3 - <<'PY'
+import json, statistics as st
+v = json.load(open("experiments/results/supervised/pch_supervised_verdict.json"))
+for t in v["tasks"]:
+    if not t["key"].startswith("DUO"):
+        continue
+    m = max(t["models"], key=lambda k: t["models"][k]["aucMean"])
+    md = t["models"][m]
+    aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
+    mean, std = sum(aucs) / len(aucs), st.pstdev(aucs)
+    gap = sum(abs(a - 0.5) for a in aucs) / len(aucs)
+    sig = sum(p < 0.05 for p in pv) / len(pv)
+    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12
+    assert abs(gap - md["advantageMean"]) < 1e-12 and sig == md["sigFraction"]
+    name = "GRU" if t["key"] == "DUO GR" else t["key"].split()[1]
+    print(f"{name:5s} {m}  {mean:.3f} ± {std:.3f}  gap {gap:.3f}  sig {sig:.0%}  n {t['medianTestN']:.0f}")
+PY
+```
+
+Expected output:
+
+```
+GRU   lr  0.540 ± 0.026  gap 0.041  sig 23%  n 323
+DS    rf  0.514 ± 0.029  gap 0.027  sig 3%  n 323
+RS    rf  0.498 ± 0.028  gap 0.022  sig 0%  n 323
+POA   lr  0.477 ± 0.024  gap 0.027  sig 0%  n 323
+GS    rf  0.502 ± 0.027  gap 0.023  sig 0%  n 323
+CC    lr  0.515 ± 0.029  gap 0.025  sig 3%  n 323
+NCU   lr  0.528 ± 0.027  gap 0.031  sig 7%  n 323
+HMB   lr  0.509 ± 0.027  gap 0.024  sig 3%  n 323
+NMDS  rf  0.516 ± 0.030  gap 0.025  sig 3%  n 323
+GSO   rf  0.502 ± 0.031  gap 0.026  sig 3%  n 323
 ```
