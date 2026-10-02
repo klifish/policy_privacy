@@ -27,31 +27,30 @@ We consider a \textbf{PI-like} binary structure ($G=2$, $n\in\{3,10,50,100\}$), 
 For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.2074$ at $n{=}3$ ($N{=}6$) to $0.0420$ at $n{=}10$, and to $0.0072$/$0.0034$ at $n{=}50$/$100$.
 The same trend holds with more classes, at a higher level for every $n$: with five classes $\overline{\mathrm{NMI}}$ goes from $0.4152$ ($n{=}3$) to $0.0102$ ($n{=}100$), and with ten classes from $0.5346$ ($n{=}3$) to $0.0239$ ($n{=}77$).
 For the observed ICD-10 chapter sizes, averaging each trial over $20$ K-Means seeds as the evaluation does, the null NMI has mean $0.0246$ and $95$th percentile $0.0302$; the observed ICD-10 NMI of $0.0281$ is reached in $145$ of $1000$ null trials ($p=0.15$).
-Hence moderately high NMI in small-sample clustering should not be read as actionable leakage, and ARI is the more conservative indicator of practical recoverability in our unsupervised evaluation.
 
 \begin{table}[htbp]
-  \centering
-  \caption{Sample-size sensitivity of NMI and ARI under the null hypothesis where all
-    classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row; $G$ classes, $N=Gn$ samples).}
-  \label{tab:nmi-sample-size-sensitivity}
-  \begin{tabular}{lrrrrr}
-    \toprule
-    Structure & $n$ (per class) & $G$ & $N$ & $\overline{\mathrm{NMI}}$ & $\overline{\mathrm{ARI}}$ \\
-    \midrule
-    PI-like      & 3      & 2  & 6   & $0.2074$ & $0.0127$ \\
-    PI-like      & 10     & 2  & 20  & $0.0420$ & $0.0008$ \\
-    PI-like      & 50     & 2  & 100 & $0.0072$ & $-0.0003$ \\
-    PI-like      & 100    & 2  & 200 & $0.0034$ & $-0.0004$ \\
-    \midrule
-    5-class      & 3      & 5  & 15  & $0.4152$ & $-0.0034$ \\
-    5-class      & 10     & 5  & 50  & $0.1226$ & $0.0003$ \\
-    5-class      & 100    & 5  & 500 & $0.0102$ & $-0.0000$ \\
-    \midrule
-    10-class     & 3      & 10 & 30  & $0.5346$ & $-0.0009$ \\
-    10-class     & 10     & 10 & 100 & $0.2087$ & $0.0003$ \\
-    10-class     & 77     & 10 & 770 & $0.0239$ & $-0.0001$ \\
-    \midrule
-    ICD-10 sizes & 49--135 & 10 & 770 & $0.0244$ & $-0.0001$ \\
-    \bottomrule
-  \end{tabular}
+	\centering
+	\caption{Sample-size sensitivity of NMI and ARI under the null hypothesis where all
+		classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row; $G$ classes, $N=Gn$ samples).}
+	\label{tab:nmi-sample-size-sensitivity}
+	\begin{tabular}{lrrrrr}
+		\toprule
+		Structure    & $n$ (per class) & $G$ & $N$ & $\overline{\mathrm{NMI}}$ & $\overline{\mathrm{ARI}}$ \\
+		\midrule
+		PI-like      & 3               & 2   & 6   & $0.2074$                  & $0.0127$                  \\
+		PI-like      & 10              & 2   & 20  & $0.0420$                  & $0.0008$                  \\
+		PI-like      & 50              & 2   & 100 & $0.0072$                  & $-0.0003$                 \\
+		PI-like      & 100             & 2   & 200 & $0.0034$                  & $-0.0004$                 \\
+		\midrule
+		5-class      & 3               & 5   & 15  & $0.4152$                  & $-0.0034$                 \\
+		5-class      & 10              & 5   & 50  & $0.1226$                  & $0.0003$                  \\
+		5-class      & 100             & 5   & 500 & $0.0102$                  & $-0.0000$                 \\
+		\midrule
+		10-class     & 3               & 10  & 30  & $0.5346$                  & $-0.0009$                 \\
+		10-class     & 10              & 10  & 100 & $0.2087$                  & $0.0003$                  \\
+		10-class     & 77              & 10  & 770 & $0.0239$                  & $-0.0001$                 \\
+		\midrule
+		ICD-10 sizes & 49--135         & 10  & 770 & $0.0244$                  & $-0.0001$                 \\
+		\bottomrule
+	\end{tabular}
 \end{table}

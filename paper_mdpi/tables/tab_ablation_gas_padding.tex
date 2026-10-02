@@ -12,35 +12,35 @@
 % Unsupervised rows: experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.md
 %   (policy-group bootstrap NMI difference B1-B2). Gas rows: same report.
 \begin{table}[htbp]
-  \centering
-  \caption{Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed
-    randomized gas padding) on the same 1119-execution subset; supervised rows are the
-    largest-signal contrasts per experiment (random-forest AUC).}
-  \label{tab:ablation-gas-padding}
-  \begin{tabular}{lp{0.36\linewidth}cc}
-    \toprule
-    Attack & Target & B1 (unpad.) & B2 (pad.) \\
-    \midrule
-    \multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ interval)} \\
-    SPP   & \texttt{structureType trivial/and\_or\_mixed} & $0.902$ & $0.490$ \\
-          & \quad $\Delta_{\text{leak}}=0.347$ CI$[0.334,0.360]$ & & \\
-    SPP   & \texttt{predicateCombo single/few}            & $0.844$ & $0.494$ \\
-          & \quad $\Delta_{\text{leak}}=0.301$ CI$[0.287,0.314]$ & & \\
-    PCH   & DUO HMB                                        & $0.876$ & $0.495$ \\
-          & \quad $\Delta_{\text{leak}}=0.337$ CI$[0.319,0.352]$ & & \\
-    PI    & \texttt{controlled\_difference}\,$^{\dagger}$  & $0.676$ & $0.446$ \\
-          & \quad $\Delta_{\text{leak}}=0.088$ CI$[0.062,0.111]$ & & \\
-    \midrule
-    \multicolumn{4}{l}{\textbf{Unsupervised} (NMI, B1$-$B2 with policy-group bootstrap $95\%$ interval)} \\
-    PCH   & DUO terms                        & \multicolumn{2}{c}{$0.349$ $[0.316, 0.407]$} \\
-    SPP   & logic structure                  & \multicolumn{2}{c}{$0.102$ $[0.018, 0.138]$} \\
-    PI    & balanced pairs (debiased NMI)    & \multicolumn{2}{c}{$0.670$ $[0.591, 0.743]$} \\
-    \midrule
-    \multicolumn{4}{l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)} \\
-    \multicolumn{2}{l}{Commit gas} & $219{,}737$ & $304{,}098$ ($+38.4\%$) \\
-    \multicolumn{2}{l}{Access gas} & $723{,}462$ & $1{,}056{,}674$ ($+46.1\%$) \\
-    \bottomrule
-  \end{tabular}
+	\centering
+	\caption{Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed
+		randomized gas padding) on the same execution subset; supervised rows are the
+		largest-signal contrasts per experiment.}
+	\label{tab:ablation-gas-padding}
+	\begin{tabular}{lp{0.36\linewidth}cc}
+		\toprule
+		Attack                         & Target                                               & B1 (unpad.)                                  & B2 (pad.) \\
+		\midrule
+		\multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ interval)}                                                    \\
+		SPP                            & \texttt{structureType trivial/and\_or\_mixed}        & $0.902$                                      & $0.490$   \\
+		                               & \quad $\Delta_{\text{leak}}=0.347$ CI$[0.334,0.360]$ &                                              &           \\
+		SPP                            & \texttt{predicateCombo single/few}                   & $0.844$                                      & $0.494$   \\
+		                               & \quad $\Delta_{\text{leak}}=0.301$ CI$[0.287,0.314]$ &                                              &           \\
+		PCH                            & DUO HMB                                              & $0.876$                                      & $0.495$   \\
+		                               & \quad $\Delta_{\text{leak}}=0.337$ CI$[0.319,0.352]$ &                                              &           \\
+		PI                             & \texttt{controlled\_difference}\,$^{\dagger}$        & $0.676$                                      & $0.446$   \\
+		                               & \quad $\Delta_{\text{leak}}=0.088$ CI$[0.062,0.111]$ &                                              &           \\
+		\midrule
+		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI, B1$-$B2 with policy-group bootstrap $95\%$ interval)}                                             \\
+		PCH                            & DUO terms                                            & \multicolumn{2}{c}{$0.349$ $[0.316, 0.407]$}             \\
+		SPP                            & logic structure                                      & \multicolumn{2}{c}{$0.102$ $[0.018, 0.138]$}             \\
+		PI                             & balanced pairs (debiased NMI)                        & \multicolumn{2}{c}{$0.670$ $[0.591, 0.743]$}             \\
+		\midrule
+		\multicolumn{4}{l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)}                                                                        \\
+		\multicolumn{2}{l}{Commit gas} & $219{,}737$                                          & $304{,}098$ ($+38.4\%$)                                  \\
+		\multicolumn{2}{l}{Access gas} & $723{,}462$                                          & $1{,}056{,}674$ ($+46.1\%$)                              \\
+		\bottomrule
+	\end{tabular}
 
-  \noindent{\footnotesize{$^{\dagger}$ Positive control: the least similar pairs by construction, excluded from the PI verdict.}}
+	\noindent{\footnotesize{$^{\dagger}$ Positive control: the least similar pairs by construction, excluded from the PI verdict.}}
 \end{table}

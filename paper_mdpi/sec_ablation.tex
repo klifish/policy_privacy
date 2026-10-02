@@ -6,11 +6,8 @@ Under the full defense configuration, the modeled attacks stay below the leakage
 
 We compare two aligned protection profiles on the same selected policy set.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
-\textbf{B2} is the full defense configuration of the main evaluation, with randomized gas padding.
-The subset is chosen deterministically from the of-record corpus so that every content label and structural bucket keeps at least $70$ executions and $8$ independent policies and every depth-layer policy is retained: $1119$ executions of $423$ policies.
-
-B1 replays exactly these policies (same tokens, randomizers, and commitments) without padding, so B1 and B2 differ only in the padding calls; B1 was executed three days after B2, on a fresh contract deployment, which the paired analysis treats as a non-contemporaneous control.
-This is the positive control for the gas channel: calldata length, proof size, and event-log shape are already fixed.
+\textbf{B2} is the full defense configuration of the evaluation, with randomized gas padding.
+The subset is chosen deterministically from the of-record corpus so that every content label and structural bucket keeps at least $70$ executions and $8$ independent policies and every depth-layer policy is retained.
 
 The paired leakage metric is
 %
@@ -21,16 +18,17 @@ The paired leakage metric is
 	\label{eq:delta-leak}
 \end{equation}
 %
-where positive values mean padding moved the attacker closer to chance; we bound each $\Delta_{\text{leak}}$ with a $95\%$ stability interval over $30$ paired train/test splits (denoted CI in Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
-Table~\ref{tab:ablation-gas-padding} is intentionally separated from the main privacy verdicts: the main verdicts answer whether the full defense configuration is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
+where positive values mean padding moved the attacker closer to chance.
+For each task we compute $\Delta_{\text{leak}}$ on each of $30$ paired train/test splits, in which B1 and B2 share the same test policies, and report its mean with a $95\%$ percentile-bootstrap interval over the splits (labelled CI in Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
+Table~\ref{tab:ablation-gas-padding} is separated from the privacy verdicts: the verdicts answer whether the full defense configuration is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
 
 \input{tables/tab_ablation_gas_padding.tex}
 
 \textbf{Padding removes otherwise-recoverable signal.}
-Under the criterion of Section~\ref{sec:eval-method}, the unpadded transcript fails $9$ of the $10$ DUO tasks, one of the ten ICD-10 chapters (ch0), $14$ of the $21$ SPP contrasts, and the PI positive control; the padded transcript of the same subset passes every task.
-
-Figure~\ref{fig:ablation-paired} reports all $45$ supervised tasks: each point places a task at its deviation from chance without padding (B1) against its deviation with padding (B2), the two terms of Equation~\eqref{eq:delta-leak}, so points below the diagonal are tasks where padding moved the attacker back toward chance.
-Every one of the $21$ tasks whose B1 deviation from chance exceeds $0.15$ falls below $0.15$ under B2; across the $45$ tasks, the median random-forest deviation drops from $0.137$ unpadded to $0.038$ padded, and the per-family median $\Delta_{\text{leak}}$ is $+0.173$ (SPP), $+0.058$ (PCH), and $-0.011$ (PI, whose semantic and weak pair types are already at chance under B1).
+Figure~\ref{fig:ablation-paired} plots each of the $45$ supervised tasks ($20$ PCH, $4$ PI, $21$ SPP) by its random-forest deviation from chance, $|\mathrm{AUC}-0.5|$, without padding (B1, horizontal axis) and with padding (B2, vertical axis); a point below the diagonal is a task whose attacker moved closer to chance once padding was applied.
+Without padding, $21$ tasks deviate from chance by more than $0.15$; with padding, all $21$ fall below this level, and across all $45$ tasks the median deviation drops from $0.137$ to $0.038$.
+By family, the median $\Delta_{\text{leak}}$ is $+0.173$ for SPP and $+0.058$ for PCH.
+For PI it is $-0.011$, because three of its four tasks already deviate from chance by at most $0.08$ without padding; the fourth, the positive control, drops from AUC $0.68$ to $0.45$.
 
 \begin{figure}[htbp]
 	\centering
@@ -43,7 +41,7 @@ Every one of the $21$ tasks whose B1 deviation from chance exceeds $0.15$ falls 
 
 \textbf{Source of the unpadded signal.}
 The B1 result deserves a precise reading, because the fixed circuit already makes the policy logic invisible to gas: the Groth16 verifier performs the same work for every proof, and the access-control path is the same for every policy.
-The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and the ten ICD-10 chapter tasks do not separate on it.
+The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and eight of the ten ICD-10 chapter tasks stay near chance on it (random-forest AUC $0.455$--$0.536$); the exception, ch6, has only $9$ policies in the subset.
 
 Twelve gas is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028), and decoding the calldata of the transactions shows where the variation comes from: the requester pseudonym $\mathit{id}_{\mathrm{req}}$.
 In the evaluation, a requester who presents a profile credential is identified by a Poseidon-derived pseudonym that fills the 256-bit word, whereas a requester of an ontology-only policy carries a 128-bit random pseudonym whose upper 16 bytes are zero; the $192$-gas difference between the two encodings is exactly the gap between the two clusters of B1 gas values, and whether a policy activates the profile predicate is correlated with its DUO terms, its structure type, and its parameter bucket.

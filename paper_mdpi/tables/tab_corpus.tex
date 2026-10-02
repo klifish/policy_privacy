@@ -7,67 +7,64 @@
 % per-term rows overlap and their column sums exceed the corpus totals. ICD-10 rows
 % cover only the ICD-bearing subset of policies. Both are noted in the caption.
 \begin{table}[htbp]
-  \centering\footnotesize
-  \caption{Composition of the shared policy corpus (generator seed
-    \texttt{unified-decoupled-2026}). DUO terms are multi-label, so their counts
-    overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis
-    partitions the full corpus.}
-  \label{tab:corpus}
-  \begin{tabular}{llrr}
-    \toprule
-    Grouping & Category & Policies & Executions \\
-    \midrule
-    \multicolumn{4}{l}{\textit{DUO data-use term} (multi-label; counts = policies/executions containing the term)} \\
-    & GRU  & $302$ & $447$ \\
-    & DS   & $422$ & $770$ \\
-    & RS   & $412$ & $760$ \\
-    & POA  & $392$ & $624$ \\
-    & GS   & $382$ & $556$ \\
-    & CC   & $392$ & $769$ \\
-    & NCU  & $206$ & $380$ \\
-    & HMB  & $331$ & $447$ \\
-    & NMDS & $237$ & $469$ \\
-    & GSO  & $236$ & $352$ \\
-    \midrule
-    \multicolumn{4}{l}{\textit{ICD-10 chapter} (ICD-bearing policies only)} \\
-    & ch0 & $44$ & $131$ \\
-    & ch1 & $49$ & $49$  \\
-    & ch2 & $33$ & $62$  \\
-    & ch3 & $55$ & $55$  \\
-    & ch4 & $41$ & $70$  \\
-    & ch5 & $34$ & $63$  \\
-    & ch6 & $48$ & $135$ \\
-    & ch7 & $48$ & $77$  \\
-    & ch8 & $33$ & $62$  \\
-    & ch9 & $37$ & $66$  \\
-    & \textit{ICD-bearing subtotal} & $422$ & $770$ \\
-    \midrule
-    \multicolumn{4}{l}{\textit{SPP structureType}} \\
-    & trivial        & $130$ & $130$ \\
-    & and\_only      & $294$ & $526$ \\
-    & or\_only       & $303$ & $535$ \\
-    & and\_or\_mixed & $350$ & $582$ \\
-    \midrule
-    \multicolumn{4}{l}{\textit{SPP nestingDepth}} \\
-    & flat    & $130$ & $130$ \\
-    & shallow & $210$ & $413$ \\
-    & medium  & $335$ & $509$ \\
-    & deep    & $402$ & $721$ \\
-    \midrule
-    \multicolumn{4}{l}{\textit{SPP predicateCombo}} \\
-    & single & $257$ & $344$  \\
-    & few    & $645$ & $1080$ \\
-    & many   & $175$ & $349$  \\
-    \midrule
-    \multicolumn{4}{l}{\textit{SPP paramType}} \\
-    & none   & $147$ & $234$ \\
-    & small  & $232$ & $406$ \\
-    & medium & $352$ & $584$ \\
-    & large  & $346$ & $549$ \\
-    \midrule
-    \multicolumn{2}{l}{\textbf{Corpus total}} & $\mathbf{1077}$ & $\mathbf{1773}$ \\
-    \bottomrule
-  \end{tabular}
+	\centering\footnotesize
+	\caption{Composition of the shared policy corpus}
+	\label{tab:corpus}
+	\begin{tabular}{llrr}
+		\toprule
+		Grouping                                  & Category                      & Policies        & Executions       \\
+		\midrule
+		\multicolumn{4}{l}{\textit{DUO data-use term} (multi-label; counts = policies/executions containing the term)} \\
+		                                          & GRU                           & $302$           & $447$            \\
+		                                          & DS                            & $422$           & $770$            \\
+		                                          & RS                            & $412$           & $760$            \\
+		                                          & POA                           & $392$           & $624$            \\
+		                                          & GS                            & $382$           & $556$            \\
+		                                          & CC                            & $392$           & $769$            \\
+		                                          & NCU                           & $206$           & $380$            \\
+		                                          & HMB                           & $331$           & $447$            \\
+		                                          & NMDS                          & $237$           & $469$            \\
+		                                          & GSO                           & $236$           & $352$            \\
+		\midrule
+		\multicolumn{4}{l}{\textit{ICD-10 chapter} (ICD-bearing policies only)}                                        \\
+		                                          & ch0                           & $44$            & $131$            \\
+		                                          & ch1                           & $49$            & $49$             \\
+		                                          & ch2                           & $33$            & $62$             \\
+		                                          & ch3                           & $55$            & $55$             \\
+		                                          & ch4                           & $41$            & $70$             \\
+		                                          & ch5                           & $34$            & $63$             \\
+		                                          & ch6                           & $48$            & $135$            \\
+		                                          & ch7                           & $48$            & $77$             \\
+		                                          & ch8                           & $33$            & $62$             \\
+		                                          & ch9                           & $37$            & $66$             \\
+		                                          & \textit{ICD-bearing subtotal} & $422$           & $770$            \\
+		\midrule
+		\multicolumn{4}{l}{\textit{SPP structureType}}                                                                 \\
+		                                          & trivial                       & $130$           & $130$            \\
+		                                          & and\_only                     & $294$           & $526$            \\
+		                                          & or\_only                      & $303$           & $535$            \\
+		                                          & and\_or\_mixed                & $350$           & $582$            \\
+		\midrule
+		\multicolumn{4}{l}{\textit{SPP nestingDepth}}                                                                  \\
+		                                          & flat                          & $130$           & $130$            \\
+		                                          & shallow                       & $210$           & $413$            \\
+		                                          & medium                        & $335$           & $509$            \\
+		                                          & deep                          & $402$           & $721$            \\
+		\midrule
+		\multicolumn{4}{l}{\textit{SPP predicateCombo}}                                                                \\
+		                                          & single                        & $257$           & $344$            \\
+		                                          & few                           & $645$           & $1080$           \\
+		                                          & many                          & $175$           & $349$            \\
+		\midrule
+		\multicolumn{4}{l}{\textit{SPP paramType}}                                                                     \\
+		                                          & none                          & $147$           & $234$            \\
+		                                          & small                         & $232$           & $406$            \\
+		                                          & medium                        & $352$           & $584$            \\
+		                                          & large                         & $346$           & $549$            \\
+		\midrule
+		\multicolumn{2}{l}{\textbf{Corpus total}} & $\mathbf{1077}$               & $\mathbf{1773}$                    \\
+		\bottomrule
+	\end{tabular}
 
-  \noindent{\footnotesize{ICD-10 labels ch0--ch9 index the ten chapters used: A00--B99, C00--D48, D50--D89, E00--E90, F01--F99, G00--G99, I00--I99, J00--J99, K00--K93, and M00--M99.}}
+	\noindent{\footnotesize{ICD-10 labels ch0--ch9 index the ten chapters used: A00--B99, C00--D48, D50--D89, E00--E90, F01--F99, G00--G99, I00--I99, J00--J99, K00--K93, and M00--M99.}}
 \end{table}

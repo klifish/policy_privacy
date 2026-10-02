@@ -98,7 +98,8 @@ To bind each proof to a provider-defined hidden policy, the provider samples com
 where $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
 The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
 Accordingly, the circuit supplies the same private value $\ell$ to both the commitment verifier and the policy interpreter.
-Under the collision resistance of Poseidon, an accepting proof bound to $h$ cannot substitute a different program length and therefore cannot evaluate an alternative stack-consistent prefix of $P_{\mathrm{enc}}$.
+Assuming Poseidon is collision-resistant, binding the proof to $h$ prevents the prover from changing the committed program length.
+This prevents the prover from truncating $P_{\mathrm{enc}}$ to a shorter prefix that satisfies the stack constraints but skips part of the policy evaluation.
 This argument relies on the fixed-length encoding of $P_{\mathrm{enc}}$, which keeps the sponge input unambiguous.
 Hiding is an explicit commitment assumption (Section~\ref{subsec:trust-model}) that relies on the high-entropy randomness $r$.
 
