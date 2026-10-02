@@ -3,9 +3,9 @@
 
 Blockchain-based consent management for healthcare data sharing has been studied extensively, with smart contracts used to record, enforce, and audit consent across institutions~\cite{kakarlapudi2021systematic, welzel2025enabling,li2024you}.
 These works focus on making consent decisions verifiable and auditable, and the privacy mechanisms surveyed in this space mainly protect health data contents and user identities~\cite{li2025privacy}.
-The confidentiality of the governing consent policy---and what public-chain enforcement artifacts reveal about it---is typically out of scope.
+The confidentiality of the governing consent policy, and what public-chain enforcement artifacts reveal about it, is typically out of scope.
 
-Outside consent management, related work addresses individual requirements of policy-private consent enforcement---policy confidentiality, metadata-leakage control, verifiable auditability, or a stable verification interface---but none of the approaches reviewed here combines them on a public chain.
+Outside consent management, related work addresses individual requirements of policy-private consent enforcement (policy confidentiality, metadata-leakage control, verifiable auditability, or a stable verification interface), but none of the approaches reviewed here combines them on a public chain.
 Encrypted data-sharing mechanisms, such as CP-ABE and PRE~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, as noted in Section~\ref{subsec:crypto-access}, standard CP-ABE exposes the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
 Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
 
@@ -32,7 +32,7 @@ Second, off-chain trust is concentrated rather than split: their proxy never see
 The designs are complementary: the requester could release its claims only to a TPS whose certified attributes satisfy a requester-defined policy, which is the verifier-authorization problem of~\cite{buccafurri2024holder} with the TPS as verifier, and a per-request holder signature over the authorization context would further prevent a TPS from reusing observed evidence for fresh sessions (Section~\ref{sec:discussion}).
 
 Privacy-preserving access-control and policy-evaluation mechanisms have been studied in credential-based settings built on the eXtensible Access Control Markup Language (XACML) and the Security Assertion Markup Language (SAML)~\cite{ardagna2009xacml}, as well as in policy evaluation by multi-party computation (MPC) using homomorphic encryption (HE) and secure function evaluation~\cite{sheikhalishahi2019privacy}.
-These approaches support confidential authorization computation, but they are not primarily designed for settings where policy-evaluation artifacts---calldata, public inputs, emitted events, timing, and gas usage---are permanently and globally visible on a public blockchain.
+These approaches support confidential authorization computation, but they are not primarily designed for settings where policy-evaluation artifacts (calldata, public inputs, emitted events, timing, and gas usage) are permanently and globally visible on a public blockchain.
 In addition, these approaches do not directly provide compact evidence that a smart contract can verify against a committed, provider-defined policy instance.
 
 Reusable proving systems, including universal-setup succinct non-interactive arguments of knowledge (SNARKs), composable proof systems, and zero-knowledge virtual machines (zkVMs)~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.

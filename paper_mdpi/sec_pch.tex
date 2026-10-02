@@ -2,7 +2,7 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-This attack targets the DUO data-use terms of the corpus---general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO)---and disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
+This attack targets the DUO data-use terms of the corpus, namely general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO), as well as disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
 
 Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline stated in Section~\ref{sec:eval-method}.
 Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ threshold, so no DUO task meets either condition of the leakage criterion.

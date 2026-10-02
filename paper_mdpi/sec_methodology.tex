@@ -37,7 +37,7 @@ Because the gap is computed before averaging, deviations above and below $0.5$ c
 Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
 Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
 
-The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction---the fraction of seeds whose per-seed permutation test rejects at $\alpha{=}0.05$, reported as \%sig in the result tables.
+The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha{=}0.05$), reported as \%sig in the result tables.
 The verdict is:
 %
 \begin{quote}

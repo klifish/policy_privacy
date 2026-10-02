@@ -8,7 +8,7 @@ Paths are relative to the repository root. Sections are keyed by LaTeX label, no
 table number, because the numbers shift when the layout changes. Each table section records the commit at
 which its numbers were last checked against the source.
 
-Tables still to document: `tab_pch_icd10`, `tab_pi_pairs`,
+Tables still to document: `tab_pi_pairs`,
 `tab_spp_contrasts`, `tab_clustering_summary`, `tab_ablation_gas_padding`,
 `tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
@@ -327,3 +327,89 @@ HMB   lr  0.509 ± 0.027  gap 0.024  sig 3%  n 323
 NMDS  rf  0.516 ± 0.030  gap 0.025  sig 3%  n 323
 GSO   rf  0.502 ± 0.031  gap 0.026  sig 3%  n 323
 ```
+
+---
+
+## `tab:pch-icd10` (`tab_pch_icd10.tex`)
+
+Last checked against the source: commit `6f785a7` plus uncommitted text edits, 2026-10-02. All 50 cells match.
+
+**Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
+`tasks[]` whose `key` starts with `ICD`. The pipeline and the column definitions are
+identical to `tab:pch-terms`; only the task population differs.
+
+### Task and label
+
+Each row is a one-vs-rest task **within the 422 DS policies** (the policies with an ICD-10
+scope; `_icd_chapter` in `pch_supervised.py` drops every record without one). The label is
+1 if the policy's `ontologyValue` equals the chapter index. The chapter index is defined in the
+`tab:corpus` footnote, e.g. ch5 = G00–G99, diseases of the nervous system.
+
+**med n = 127 for every row** because the holdout keeps `round(0.3 × 422) = 127` policies, with one execution
+each. Most of the test set is the negative class:
+
+| Chapter | ch0 | ch1 | ch2 | ch3 | ch4 | ch5 | ch6 | ch7 | ch8 | ch9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Policies in chapter (`tab:corpus`) | 44 | 49 | 33 | 55 | 41 | 34 | 48 | 48 | 33 | 37 |
+| Positive test policies per seed (median) | 13 | 15 | 10 | 17 | 12 | 10 | 14 | 14 | 10 | 11 |
+
+(`splitDiagnostics.classes["1"].medianTestGroups`.) With only 10 to 17 positives per seed,
+a chance-level AUC has a standard deviation of roughly 0.08 to 0.10. The rows' ± values
+(0.061 to 0.078) are of the same order, which is why several chapters drift past 0.55
+without reproducing.
+
+Selected models: LR for ch0, ch5, and ch9; RF for the other seven.
+
+### Text that cites this table (all consistent)
+
+- `sec_pch.tex`: "median test $n{=}127$", "passes nine chapters and fails one".
+- `sec_pch.tex`: ch1, ch2, ch4 "mean AUC $0.558$--$0.570$", "at most $23\%$ of seeds"
+  (ch1 7/30, ch2 3/30, ch4 4/30).
+- `sec_pch.tex`: ch5 "mean AUC $0.667$ with $53\%$ of seeds significant" (LR, 16/30). The
+  RF leg for ch5 is 0.628 with 11/30, so it does not fail on its own (see `tab:privacy-summary`).
+
+### Recompute
+
+Same snippet as `tab:pch-terms`, with the filter changed to ICD tasks:
+
+```bash
+python3 - <<'PY'
+import json, statistics as st
+v = json.load(open("experiments/results/supervised/pch_supervised_verdict.json"))
+for t in v["tasks"]:
+    if not t["key"].startswith("ICD"):
+        continue
+    m = max(t["models"], key=lambda k: t["models"][k]["aucMean"])
+    md = t["models"][m]
+    aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
+    mean, std = sum(aucs) / len(aucs), st.pstdev(aucs)
+    gap = sum(abs(a - 0.5) for a in aucs) / len(aucs)
+    sig = sum(p < 0.05 for p in pv) / len(pv)
+    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12
+    assert abs(gap - md["advantageMean"]) < 1e-12 and sig == md["sigFraction"]
+    pos = t["splitDiagnostics"]["classes"]["1"]["medianTestGroups"]
+    print(f"{t['key'].split()[1]} {m}  {mean:.3f} ± {std:.3f}  gap {gap:.3f}  sig {sig:.0%}  "
+          f"n {t['medianTestN']:.0f} (pos {pos:.0f})  {'PASS' if t['passed'] else 'FAIL'}")
+PY
+```
+
+Expected output:
+
+```
+ch0 lr  0.472 ± 0.078  gap 0.064  sig 0%  n 127 (pos 13)  PASS
+ch1 rf  0.570 ± 0.066  gap 0.075  sig 23%  n 127 (pos 15)  PASS
+ch2 rf  0.565 ± 0.071  gap 0.081  sig 10%  n 127 (pos 10)  PASS
+ch3 rf  0.540 ± 0.061  gap 0.061  sig 7%  n 127 (pos 17)  PASS
+ch4 rf  0.558 ± 0.061  gap 0.070  sig 13%  n 127 (pos 12)  PASS
+ch5 lr  0.667 ± 0.069  gap 0.167  sig 53%  n 127 (pos 10)  FAIL
+ch6 rf  0.464 ± 0.077  gap 0.065  sig 0%  n 127 (pos 14)  PASS
+ch7 rf  0.525 ± 0.064  gap 0.058  sig 3%  n 127 (pos 14)  PASS
+ch8 rf  0.478 ± 0.078  gap 0.063  sig 0%  n 127 (pos 10)  PASS
+ch9 lr  0.511 ± 0.074  gap 0.062  sig 0%  n 127 (pos 11)  PASS
+```
+
+### Caveats
+
+- **The med n column hides the minority class.** Every row reads 127, but the test set
+  holds only 10 to 17 positive policies per seed, and the AUC's precision depends mainly on
+  that count. Showing it, e.g. `127 (10)`, would let a reader judge the noise directly.

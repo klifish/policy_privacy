@@ -25,7 +25,7 @@ Authorization correctness is primarily enforced by the commitment and on-chain p
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
-Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, which of the four guarantees---policy confidentiality, authorization correctness, liveness, and decision auditability---is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, which of the four guarantees (policy confidentiality, authorization correctness, liveness, and decision auditability) is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
 \input{tables/tab_threat_guarantee.tex}
 
 Attribute-origin guarantees depend on the evidence type.
@@ -55,7 +55,7 @@ exposed by the enforcement layer, such as calldata footprint, event structure, p
 In addition to the public-chain observer, we treat the requester as untrusted with respect to policy confidentiality.
 The requester initiates access requests, observes its own submitted evidence and authorization outcome, and inspects the public-chain transcript.
 However, the requester does not receive the encoded policy, commitment-opening randomness, or policy-bound proving material, which remain within the provider-to-TPS proof-generation boundary.
-This restriction matters because a requester that learned the policy could infer sensitive facts about the data subject from the consent terms themselves and, in addition, would learn the policy's full acceptance region---which attribute combinations are granted---enabling targeted evidence construction or probing beyond its own legitimate sessions.
+This restriction matters because a requester that learned the policy could infer sensitive facts about the data subject from the consent terms themselves and, in addition, would learn the policy's full acceptance region (which attribute combinations are granted), enabling targeted evidence construction or probing beyond its own legitimate sessions.
 
 The proved authorization outcome is bound to the requester pseudonym, a protected resource, and a session nonce through the context digest defined in Section~\ref{sec:design}.
 This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
@@ -72,7 +72,7 @@ PCH requires that public-chain artifacts should not reveal the semantic content 
 \textit{Policy Indistinguishability (PI).}
 PI requires that different candidate policies should not become distinguishable from their public verification artifacts when they are compiled into the same fixed public interface.
 This captures whether two policies can be told apart from commitments, proofs, public
-parameters, or metadata even when their direct representations are hidden---that is,
+parameters, or metadata even when their direct representations are hidden, that is,
 whether the identity of the governing policy can be narrowed down.
 
 \textit{Structure and Parameter Privacy (SPP).}
