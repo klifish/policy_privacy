@@ -8,8 +8,8 @@ Paths are relative to the repository root. Sections are keyed by LaTeX label, no
 table number, because the numbers shift when the layout changes. Each table section records the commit at
 which its numbers were last checked against the source.
 
-Tables still to document: `tab_pi_pairs`,
-`tab_spp_contrasts`, `tab_clustering_summary`, `tab_ablation_gas_padding`,
+Tables still to document:
+`tab_clustering_summary`, `tab_ablation_gas_padding`,
 `tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
 sources in their header comments.)
@@ -408,8 +408,226 @@ ch8 rf  0.478 ± 0.078  gap 0.063  sig 0%  n 127 (pos 10)  PASS
 ch9 lr  0.511 ± 0.074  gap 0.062  sig 0%  n 127 (pos 11)  PASS
 ```
 
+---
+
+## `tab:pi-pairs` (`tab_pi_pairs.tex`)
+
+Last checked against the source: commit `4f14316`, 2026-10-02. All 24 cells match.
+
+**Sources.**
+
+- `experiments/results/supervised/pi_supervised_verdict.json`, the 4 entries of `tasks[]`, keyed
+  `overall`, `semantic_equivalent`, `weak_equivalent`, `controlled_difference`.
+- `experiments/results/supervised/pi_pairs_generated.json`, the pair list. Its SHA-256
+  (`e2fd1bc2…7a25b`) equals `pairSource.sha256` recorded in the verdict, so it is exactly
+  the file the of-record run used. Its 832 pair executions are identical, feature by feature,
+  to the matching `(policyId, executionId)` records of
+  `experiments/data/polygonAmoy/executed_dataset.json` (checked).
+
+**Code.** The pairs come from `scripts/generate_pi_pairs.js` →
+`experiments/analysis/crosscheck/pi/pi_data_generator.js` (`determinePairType`). The verdict
+comes from `pi_supervised.py` (`build_scope_arrays`) plus the shared pipeline above.
+
+### How pairs are typed (`determinePairType`)
+
+`similarity` = `computeSemanticSimilarity` (DUO-term Jaccard combined with scope-field
+agreement; 1 for identical normalized logic). `fingerprint` = `merkleDepth:policyDepth:whitelistSize:proofType`.
+
+1. `similarity ≥ 0.999` **and fingerprints differ** → `semantic_equivalent`
+2. else `similarity ≥ 0.95` → `weak_equivalent`
+3. else → `controlled_difference`
+
+From the 579,426 candidate couples, 1,760 qualify as semantic and 71 as weak, and 577,595
+fall into controlled. The generator samples up to 100 pairs per type (`pi-experiment`
+seed), so the counts are 100 / 71 (all) / 100.
+
+### Rows and columns
+
+Each row's task gives every execution of each pair's policy 0 the label 0, and of policy 1
+the label 1. Rows are grouped by `policyId`, and the split is policy-disjoint. The
+`overall` row uses all 271 pairs, including `controlled_difference`.
+
+| Row | Pairs | Unique policies | Policies on both sides | Similarity range |
+|---|---|---|---|---|
+| overall | 271 | 379 | 61 | 0.245–1.000 |
+| semantic_equivalent | 100 | 150 | 17 | 1.000 |
+| weak_equivalent | 71 | 114 | 8 | 0.960–1.000 |
+| controlled_difference | 100 | 189 | 3 | 0.245–0.677 |
+
+- **Pairs** = number of pairs of that type in the pair file.
+- **AUC, ± std, gap, %sig** have the same definitions as in `tab:pch-terms`, taken from the higher-`aucMean` model
+  (RF for overall and controlled_difference, LR for the two equivalence types).
+- **med n** = median test-set size in **rows**. Each seed keeps one execution per
+  policy, but keeps every copy of that execution when the policy sits in several pairs.
+  The test set therefore has more rows than policies (semantic: about 50 test policies
+  give 60 rows), and its size varies by seed. The two classes are balanced per seed
+  (median test rows 81/81, 30/30, 21/21, 30/30).
+- `controlled_difference` is set `nonGating` in `run_pairs`, which gives it the † mark.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json, hashlib, statistics as st, collections as C
+src = "experiments/results/supervised/pi_pairs_generated.json"
+v = json.load(open("experiments/results/supervised/pi_supervised_verdict.json"))
+assert hashlib.sha256(open(src, "rb").read()).hexdigest() == v["pairSource"]["sha256"]
+pairs = C.Counter(p["pairType"] for p in json.load(open(src))["pairs"])
+pairs["overall"] = sum(pairs.values())
+for t in v["tasks"]:
+    m = max(t["models"], key=lambda k: t["models"][k]["aucMean"])
+    md = t["models"][m]
+    aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
+    mean, std = sum(aucs) / len(aucs), st.pstdev(aucs)
+    gap = sum(abs(a - 0.5) for a in aucs) / len(aucs)
+    sig = sum(p < 0.05 for p in pv) / len(pv)
+    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12
+    assert abs(gap - md["advantageMean"]) < 1e-12 and sig == md["sigFraction"]
+    tag = "non-gating" if t["nonGating"] else ("PASS" if t["passed"] else "FAIL")
+    print(f"{t['key']:22s} pairs {pairs[t['key']]:3d}  {m}  {mean:.3f} ± {std:.3f}  "
+          f"gap {gap:.3f}  sig {sig:.0%}  n {t['medianTestN']:.0f}  {tag}")
+PY
+```
+
+Expected output:
+
+```
+overall                pairs 271  rf  0.509 ± 0.035  gap 0.027  sig 3%  n 162  PASS
+semantic_equivalent    pairs 100  lr  0.549 ± 0.064  gap 0.070  sig 7%  n 60  PASS
+weak_equivalent        pairs  71  lr  0.544 ± 0.079  gap 0.079  sig 10%  n 42  PASS
+controlled_difference  pairs 100  rf  0.544 ± 0.064  gap 0.062  sig 13%  n 60  non-gating
+```
+
+### Text that cites this table
+
+`sec_pi.tex`: "$0.509\pm0.035$ with $3\%$", "$0.549$ ($7\%$)", "$0.544$ ($10\%$)", and
+controlled_difference "$0.544$ with $13\%$". All four agree. The "$71$
+\texttt{weak\_equivalent} pairs" also agrees.
+
 ### Caveats
 
-- **The med n column hides the minority class.** Every row reads 127, but the test set
-  holds only 10 to 17 positive policies per seed, and the AUC's precision depends mainly on
-  that count. Showing it, e.g. `127 (10)`, would let a reader judge the noise directly.
+- **How the similarity score actually behaves.** `computeSemanticSimilarity`
+  (`experiments/analysis/crosscheck/pi/data_generator.js`) returns 1 as a shortcut whenever the two
+  `logicNormalized` strings are equal. These strings name the vocabulary (`P[ICD10]`) but not the
+  scope value (which chapter, country, …). Only otherwise does it compute the weighted sum
+  (0.25 DUO Jaccard, 0.2 ICD, 0.2 OBI, 0.1 population, 0.1 geo, 0.05 clinical, 0.1 layer).
+  The weighted branch ignores the Boolean form entirely. A Python reimplementation reproduces
+  the stored `semanticSimilarity` of all 271 pairs. Breakdown:
+
+  | Type | Pairs | Via shortcut (sim = 1) | Same logic, different scope value | Same logic and scope values, different whitelist (roots) | Identical on chain except commitment randomness | Via weighted sum |
+  |---|---|---|---|---|---|---|
+  | semantic_equivalent | 100 | 100 | 85 | 11 | 4 (differ in proof type only) | 0 |
+  | weak_equivalent | 71 | 70 | 36 | 4 | 30 | 1 (sim 0.960) |
+
+  (For the "identical on chain" pairs, `tokens`, `merkleRoots`, and scope IDs are equal.)
+- **Checked over the whole candidate set.** Recomputing the score and the type for all
+  579,426 couples of the 1,077 policies reproduces the generator's `stats.distribution`
+  exactly (semantic 1,760, weak 71, controlled 577,595), and every couple at or above
+  0.999 comes through the shortcut. This supports the statement in `sec_pi.tex` that "every policy couple at
+  or above $0.999$ shares the logical form" for this corpus; the function itself does not
+  guarantee it.
+- **`weak_equivalent` is not a looser version of `semantic_equivalent`.** 70 of its 71
+  pairs have the identical normalized logic and an **identical** fingerprint. They fail rule 1
+  only because their parameters do *not* differ. 30 of them are content-identical
+  policies. The single weighted pair (`mixed_chain-726::mixed_chain-766`) has the same five DUO
+  terms and the same scopes except population, but a different Boolean form.
+  `sec_pi.tex` describes the type as "$\ge 0.95$ semantic overlap" and as "close
+  approximations", which does not match the pair file.
+- **"near-identical semantics" overstates `semantic_equivalent`.** 85 of its 100 pairs share
+  the logical form but restrict a different scope value (e.g. DS for ICD-10 chapter X vs Y),
+  so the two policies admit different data uses.
+- **Some policies sit on both sides of different pairs** (61 in `overall`, 17 in
+  semantic, 8 in weak, 3 in controlled). In a seed, all copies of the chosen execution
+  are kept, so the same feature vector can appear with label 0 and with label 1. Such
+  copies cannot be separated, and they pull the AUC toward 0.5.
+- **`overall` includes the `controlled_difference` pairs**, so it counts as a verdict
+  task (see `tab:privacy-summary`).
+
+---
+
+## `tab:spp-contrasts` (`tab_spp_contrasts.tex`)
+
+Last checked against the source: commit `4f14316` plus uncommitted text edits, 2026-10-02. All 105 cells match.
+
+**Source.** `experiments/results/supervised/spp_supervised_verdict.json`, all 21 entries of
+`tasks[]`, which appear in the same order as the table rows. The driver is `spp_supervised.py`
+(`build_tasks`), and the pipeline is the shared one above.
+
+**Input.** `experiments/data/polygonAmoy/spp_dataset.json` holds 1,125 records: the 1,053
+coverage policies once each, plus the 24 depth policies with `executionId` 0–2 only. Every
+record equals its `(policyId, executionId)` counterpart in `executed_dataset.json` in all nine features
+and all four labels (checked). Each seed keeps one execution per policy, so a seed always has 1,077
+rows. The 1,125 subset only limits which execution a depth policy can contribute.
+
+### Task and label
+
+For each axis (`structureType`, `predicateCombo`, `paramType`, `nestingDepth`), each pair of buckets
+`c0/c1` (ordered by `TARGET_CLASS_ORDER`) is one task over the policies in either bucket, with
+label `record[axis] == c1`. Bucket boundaries are defined in `sec_spp.tex`, and bucket sizes are in `tab:corpus`.
+
+### Columns
+
+AUC, ± std, gap, and %sig are defined as in `tab:pch-terms`, taken from the higher-`aucMean` model.
+**med n = `round(0.3 × policies in the two buckets)`** for every row, e.g.
+`none/small`: 147 + 232 = 379 → 114, and `medium/deep`: 335 + 402 = 737 → 221.
+
+### Text that cites this table
+
+`sec_spp.tex`:
+
+- "`none`/`small` ($0.571$, $40\%$)", "`none`/`large` ($0.568$, $33\%$)", "`flat`/`medium`
+  ($0.555$, $27\%$)", and "`medium`/`deep` (mean AUC $0.563$, $53\%$) ... FAIL" all agree
+  (12/30, 10/30, 8/30, and 16/30 significant seeds).
+- "$147$ policies form the smallest minority class of the axis" agrees (`paramType` `none`).
+- **"Most contrasts sit at chance, with mean AUC between $0.47$ and $0.54$" is slightly off.** The
+  other 17 contrasts span 0.468 (`flat/deep`) to 0.533 (`shallow/deep`), which rounds to
+  0.47–0.53.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json, statistics as st
+v = json.load(open("experiments/results/supervised/spp_supervised_verdict.json"))
+pol = {e["policyId"]: e for e in json.load(open("experiments/data/polygonAmoy/spp_dataset.json"))}
+for t in v["tasks"]:
+    m = max(t["models"], key=lambda k: t["models"][k]["aucMean"])
+    md = t["models"][m]
+    aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
+    mean, std = sum(aucs) / len(aucs), st.pstdev(aucs)
+    gap = sum(abs(a - 0.5) for a in aucs) / len(aucs)
+    sig = sum(p < 0.05 for p in pv) / len(pv)
+    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12
+    assert abs(gap - md["advantageMean"]) < 1e-12 and sig == md["sigFraction"]
+    n_pol = sum(e[t["target"]] in (t["class0"], t["class1"]) for e in pol.values())
+    assert t["medianTestN"] == round(0.3 * n_pol)
+    print(f"{t['key']:37s} {m}  {mean:.3f} ± {std:.3f}  gap {gap:.3f}  sig {sig:.0%}  "
+          f"n {t['medianTestN']:.0f}  {'PASS' if t['passed'] else 'FAIL'}")
+PY
+```
+
+Expected output:
+
+```
+structureType: trivial/or_only        lr  0.520 ± 0.048  gap 0.043  sig 0%  n 130  PASS
+structureType: trivial/and_only       lr  0.502 ± 0.040  gap 0.033  sig 3%  n 127  PASS
+structureType: trivial/and_or_mixed   lr  0.502 ± 0.042  gap 0.034  sig 0%  n 144  PASS
+structureType: or_only/and_only       rf  0.506 ± 0.034  gap 0.027  sig 0%  n 179  PASS
+structureType: or_only/and_or_mixed   rf  0.518 ± 0.035  gap 0.032  sig 10%  n 196  PASS
+structureType: and_only/and_or_mixed  rf  0.503 ± 0.040  gap 0.032  sig 7%  n 193  PASS
+predicateCombo: single/few            rf  0.523 ± 0.035  gap 0.033  sig 13%  n 271  PASS
+predicateCombo: single/many           lr  0.519 ± 0.048  gap 0.041  sig 7%  n 130  PASS
+predicateCombo: few/many              rf  0.527 ± 0.048  gap 0.045  sig 17%  n 246  PASS
+paramType: none/small                 lr  0.571 ± 0.046  gap 0.071  sig 40%  n 114  PASS
+paramType: none/medium                lr  0.525 ± 0.035  gap 0.035  sig 3%  n 150  PASS
+paramType: none/large                 lr  0.568 ± 0.038  gap 0.069  sig 33%  n 148  PASS
+paramType: small/medium               lr  0.530 ± 0.037  gap 0.037  sig 20%  n 175  PASS
+paramType: small/large                lr  0.504 ± 0.036  gap 0.028  sig 3%  n 173  PASS
+paramType: medium/large               lr  0.493 ± 0.027  gap 0.022  sig 0%  n 209  PASS
+nestingDepth: flat/shallow            lr  0.522 ± 0.038  gap 0.036  sig 3%  n 102  PASS
+nestingDepth: flat/medium             lr  0.555 ± 0.032  gap 0.055  sig 27%  n 140  PASS
+nestingDepth: flat/deep               rf  0.468 ± 0.046  gap 0.047  sig 3%  n 160  PASS
+nestingDepth: shallow/medium          rf  0.521 ± 0.041  gap 0.039  sig 7%  n 164  PASS
+nestingDepth: shallow/deep            rf  0.533 ± 0.036  gap 0.039  sig 17%  n 184  PASS
+nestingDepth: medium/deep             lr  0.563 ± 0.028  gap 0.063  sig 53%  n 221  FAIL
+```
