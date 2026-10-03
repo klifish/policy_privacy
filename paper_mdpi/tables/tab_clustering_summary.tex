@@ -9,26 +9,27 @@
 %              (raw field names logicStructure/predicateCount/setSize map to the
 %               supervised axes structureType/predicateCombo/paramType)
 % Dataset: experiments/data/polygonAmoy/ (same executions as the supervised verdicts).
-% p-values are the permutation p of the ensemble ARI (ari_p_value).
+% The permutation p of the ensemble ARI (ari_p_value) is not tabulated; the text cites it
+% for nestingDepth (0.005).
 \begin{table}[htbp]
   \centering
   \caption{Unsupervised clustering attack (K-Means, $K$ = number of classes, $K{=}2$ for
-    pairs) on the on-chain gas features, with the permutation $p$-value of ARI. PCH
-    clusters all executions globally; SPP uses its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}).}
+    pairs) on the on-chain gas features. PCH
+    clusters all executions globally; SPP uses its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}). For PI, $n$ counts balanced pairs (Section~\ref{sec:eval-method}).}
   \label{tab:clustering-summary}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}llccccc@{}}
+  \begin{tabular}{@{}llcccc@{}}
     \toprule
-    Objective & Target & $n$ & \#cls. & ARI & $p_{\mathrm{ARI}}$ & NMI \\
+    Objective & Target & $n$ & \#cls. & ARI & NMI \\
     \midrule
-    PCH & DUO terms                & $1773$ & $10$ & $0.0000$  & $0.48$  & $0.0109$ \\
-    PCH & ICD-10 chapters          & $770$  & $10$ & $0.0021$  & $0.06$  & $0.0281$ \\
-    PI  & policy pairs ($30$v$30$) & $127$  & $2$  & $0.0020$  & ---     & $0.0139$ \\
-    SPP & \texttt{structureType}  & $1125$ & $4$  & $0.0004$  & $0.33$  & $0.0034$ \\
-    SPP & \texttt{predicateCombo} & $1125$ & $3$  & $-0.0005$ & $0.58$  & $0.0015$ \\
-    SPP & \texttt{paramType}      & $1125$ & $4$  & $-0.0000$ & $0.49$  & $0.0030$ \\
-    SPP & \texttt{nestingDepth}   & $1125$ & $4$  & $0.0071$  & $0.005$ & $0.0088$ \\
+    PCH & DUO terms                & $1773$ & $10$ & $0.0000$  & $0.0109$ \\
+    PCH & ICD-10 chapters          & $770$  & $10$ & $0.0021$  & $0.0281$ \\
+    PI  & policy pairs ($30$v$30$) & $127$  & $2$  & $0.0020$  & $0.0139$ \\
+    SPP & \texttt{structureType}  & $1125$ & $4$  & $0.0004$  & $0.0034$ \\
+    SPP & \texttt{predicateCombo} & $1125$ & $3$  & $-0.0005$ & $0.0015$ \\
+    SPP & \texttt{paramType}      & $1125$ & $4$  & $-0.0000$ & $0.0030$ \\
+    SPP & \texttt{nestingDepth}   & $1125$ & $4$  & $0.0071$  & $0.0088$ \\
     \bottomrule
   \end{tabular}
 \end{table}

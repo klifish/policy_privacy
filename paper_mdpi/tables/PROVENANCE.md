@@ -9,7 +9,7 @@ table number, because the numbers shift when the layout changes. Each table sect
 which its numbers were last checked against the source.
 
 Tables still to document:
-`tab_clustering_summary`, `tab_ablation_gas_padding`,
+`tab_ablation_gas_padding`,
 `tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
 sources in their header comments.)
@@ -630,4 +630,102 @@ nestingDepth: flat/deep               rf  0.468 ± 0.046  gap 0.047  sig 3%  n 1
 nestingDepth: shallow/medium          rf  0.521 ± 0.041  gap 0.039  sig 7%  n 164  PASS
 nestingDepth: shallow/deep            rf  0.533 ± 0.036  gap 0.039  sig 17%  n 184  PASS
 nestingDepth: medium/deep             lr  0.563 ± 0.028  gap 0.063  sig 53%  n 221  FAIL
+```
+
+---
+
+## `tab:clustering-summary` (`tab_clustering_summary.tex`)
+
+Last checked against the source: commit `f93fa02`, 2026-10-02. All 28 cells match (n, #cls., ARI, NMI × 7 rows).
+The table had a $p_{\mathrm{ARI}}$ column until 2026-10-03; it was removed because PI has no ARI
+test (see the PI paragraph below). The p-values are still in the CSVs, and `sec_clustering.tex` cites
+`nestingDepth`'s 0.005.
+
+**Sources** (`experiments/results/clustering/`):
+
+| Row | File | Read as |
+|---|---|---|
+| PCH DUO | `pch/pch_global_duo_clustering.csv` (1 row) | direct |
+| PCH ICD-10 | `pch/pch_global_icd10_clustering.csv` (1 row) | direct |
+| PI | `pi/pi_balanced_debiased.csv` (127 rows, one per pair) | **mean over pairs** |
+| SPP ×4 | `spp/spp_clustering_summary.csv` (4 rows) | direct; `logicStructure` → structureType, `predicateCount` → predicateCombo, `setSize` → paramType |
+
+**Code.** `experiments/analysis/clustering/` (`run_all_clustering.py`, `npm run analysis:clustering`);
+shared statistics in `clustering_stats.py`.
+
+### Method (`ensemble_permutation_analysis`)
+
+- **Features: only `commitGasUsed` and `accessGasUsed`**, standardized. The supervised attacks
+  use all nine.
+- K-Means with K = number of classes, run with 20 seeds (`n_init = 10` each). **ARI and NMI are the means
+  over the 20 runs** (`kmeans_ari`, `kmeans_nmi`).
+- **p_ARI** (`ari_p_value`; not tabulated, cited in the text): the 20 cluster assignments are fixed, the labels are permuted 200 times, and
+  `p = (#null ≥ observed + 1) / 201`. **The smallest attainable p is 1/201 = 0.005**, so
+  `nestingDepth`'s 0.005 means that the observed value beat all 200 permutations.
+- The CSV column `n` (500) is the number of policy-bootstrap iterations behind `ariCi95`/`nmiCi95`,
+  **not** a sample size. The table's n is `n_samples`.
+
+### Rows
+
+| Row | n | Labels |
+|---|---|---|
+| PCH DUO | 1,773 executions | **primary** DUO term (`duoTerm`, single-label, 10 classes). This differs from the multi-label presence used by the supervised PCH tasks and `tab:corpus`. |
+| PCH ICD-10 | 770 executions | `semantics.icd10Scope.id` (10 chapters, DS policies only) |
+| SPP | 1,125 executions (`spp_dataset.json`) | the four axis labels |
+| PI | **127 pairs** (each 60 executions, 30 vs 30) | which policy of the pair |
+
+**PI is built differently from the supervised PI pairs.** `build_balanced_pi_pairs.py` pairs only
+policies with at least 30 executions, which are the **24 depth-layer policies**. Each side carries all 30 executions.
+The 127 pairs are 67 same-layer and 60 cross-layer pairs. The script's own types are `cross_structure` 60,
+`same_structure_diff_content` 53, and `same_content` 14, so the 127 pairs reuse the same 24 policies many times.
+(The script's docstring still says 32 such policies; that refers to an older capture.)
+Table ARI 0.0020 = mean `observed_ari`, and NMI 0.0139 = mean `observed_nmi`. The per-pair `p_value`
+tests **NMI**, not ARI. The pipeline computes the per-pair ARI p-value in
+`ensemble_permutation_analysis`, but `debias_pair` does not save it, and no pooled test over the pairs exists;
+this is why the $p_{\mathrm{ARI}}$ column was dropped.
+6 of 127 pairs (4.7%) have p < 0.05, and 0 survive BH-FDR (`significant_fdr`).
+
+### Text that cites this table (`sec_clustering.tex`)
+
+- "ARI within ±0.003 and NMI below 0.03 for every DUO, PI, and SPP target except one" agrees.
+- ICD-10 "$p=0.15$" is `matchedIcd10.empiricalP` = 0.146 in `null/nmi_null_simulation.json`;
+  "debiased NMI $0.0044$, $p=0.08$" is `debiased_nmi`/`nmi_p_value` of the ICD CSV. Both agree.
+- PI "mean ARI $0.002$, mean debiased NMI $0.001$ (0.0014), $6$ pairs ($5\%$)" agrees.
+- `nestingDepth` residual "ARI $-0.0004$ ($p=0.60$)" agrees with
+  `experiments/results/supervised/pad_residual_diagnostic.md` (clustering table).
+- **"while every other axis is unchanged" is not exact.** In the same diagnostic, `paramType` moves
+  from ARI −0.0000 (p 0.488) on gas to **0.0026 (p 0.040)** on the residual. The value is still tiny, but it is
+  nominally significant. `structureType` and `predicateCombo` stay non-significant.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import csv, statistics as st
+R = lambda p: list(csv.DictReader(open("experiments/results/clustering/" + p)))
+fmt = lambda r: f"n {r['n_samples']:>4}  k {r['n_classes']:>2}  ARI {float(r['kmeans_ari']):.4f}  p {float(r['ari_p_value']):.3f}  NMI {float(r['kmeans_nmi']):.4f}"
+print("PCH DUO            ", fmt(R("pch/pch_global_duo_clustering.csv")[0]))
+print("PCH ICD-10         ", fmt(R("pch/pch_global_icd10_clustering.csv")[0]))
+pi = R("pi/pi_balanced_debiased.csv")
+print(f"PI (mean of {len(pi)} pairs) ARI {st.mean(float(r['observed_ari']) for r in pi):.4f}  "
+      f"NMI {st.mean(float(r['observed_nmi']) for r in pi):.4f}  "
+      f"debiased NMI {st.mean(float(r['debiased_nmi']) for r in pi):.4f}  "
+      f"p<0.05: {sum(r['significant'] == 'True' for r in pi)}  FDR: {sum(r['significant_fdr'] == 'True' for r in pi)}")
+spp = {r["target"]: r for r in R("spp/spp_clustering_summary.csv")}
+for raw, name in [("logicStructure", "structureType"), ("predicateCount", "predicateCombo"),
+                  ("setSize", "paramType"), ("nestingDepth", "nestingDepth")]:
+    print(f"SPP {name:15s}", fmt(spp[raw]))
+PY
+```
+
+Expected output:
+
+```
+PCH DUO             n 1773  k 10  ARI 0.0000  p 0.483  NMI 0.0109
+PCH ICD-10          n  770  k 10  ARI 0.0021  p 0.065  NMI 0.0281
+PI (mean of 127 pairs) ARI 0.0020  NMI 0.0139  debiased NMI 0.0014  p<0.05: 6  FDR: 0
+SPP structureType   n 1125  k  4  ARI 0.0004  p 0.328  NMI 0.0034
+SPP predicateCombo  n 1125  k  3  ARI -0.0005  p 0.577  NMI 0.0015
+SPP paramType       n 1125  k  4  ARI -0.0000  p 0.488  NMI 0.0030
+SPP nestingDepth    n 1125  k  4  ARI 0.0071  p 0.005  NMI 0.0088
 ```
