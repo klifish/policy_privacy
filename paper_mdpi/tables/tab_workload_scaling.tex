@@ -4,39 +4,39 @@
 % level, each after five warm-ups; timing cells are median (p95) in ms, and the
 % IQRs are in the JSON.
 \begin{table}[htbp]
-  \centering
-  \caption{Policy-content and workload scalability of the evaluated circuit ($\DEPTH=64$,
-    eight Merkle levels) on one Apple M1 host using rapidsnark.}
-  \label{tab:workload-scaling}
-  \footnotesize
-  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
-    \multicolumn{7}{@{}l}{\emph{(a) Policy content: $30$ verified proofs per policy}} \\
-    \toprule
-    & & & \multicolumn{4}{c}{Time (ms): median (p95)} \\
-    \cmidrule{4-7}
-    Policy & Tokens & Slots & Witness & Prove & Verify & End-to-end \\
-    \midrule
-    Simple         & $3$  & $1$  & $354$ ($418$) & $545$ ($746$) & $12$ ($14$) & $925$ ($1170$) \\
-    Ontology-heavy & $19$ & $5$  & $349$ ($391$) & $506$ ($550$) & $10$ ($12$) & $880$ ($939$) \\
-    Profile-heavy  & $31$ & $1$  & $337$ ($349$) & $492$ ($522$) & $10$ ($11$) & $1479$ ($1516$) \\
-    Max-mixed      & $61$ & $11$ & $335$ ($346$) & $484$ ($537$) & $10$ ($10$) & $1468$ ($1538$) \\
-    \bottomrule
-  \end{tabular*}
+	\centering
+	\caption{Policy-content and workload scalability of the evaluated circuit ($\DEPTH=64$,
+		eight Merkle levels) on one Apple M1 host using rapidsnark.}
+	\label{tab:workload-scaling}
+	\footnotesize
+	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+		\multicolumn{7}{@{}l}{\emph{(a) Policy content}} \\
+		\toprule
+		& & & \multicolumn{4}{c}{Time (ms): median (p95)} \\
+		\cmidrule{4-7}
+		Policy & Tokens & Slots & Witness & Prove & Verify & End-to-end \\
+		\midrule
+		Simple         & $3$  & $1$  & $354$ ($418$) & $545$ ($746$) & $12$ ($14$) & $925$ ($1170$) \\
+		Ontology-heavy & $19$ & $5$  & $349$ ($391$) & $506$ ($550$) & $10$ ($12$) & $880$ ($939$) \\
+		Profile-heavy  & $31$ & $1$  & $337$ ($349$) & $492$ ($522$) & $10$ ($11$) & $1479$ ($1516$) \\
+		Max-mixed      & $61$ & $11$ & $335$ ($346$) & $484$ ($537$) & $10$ ($10$) & $1468$ ($1538$) \\
+		\bottomrule
+	\end{tabular*}
 
-  \vspace{0.8em}
-  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}ccc@{}}
-    \multicolumn{3}{@{}l}{\emph{(b) Load: $100$ verified requests per concurrency level, rotating the four policies of (a)}} \\
-    \toprule
-    Concurrency $c$ & Throughput (proofs/s) & Latency (ms): median (p95) \\
-    \midrule
-    $1$ & $0.805$ & $1230$ ($1659$) \\
-    $2$ & $0.787$ & $2492$ ($3805$) \\
-    $4$ & $0.936$ & $4113$ ($5854$) \\
-    \bottomrule
-  \end{tabular*}
+	\vspace{0.8em}
+	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}ccc@{}}
+		\multicolumn{3}{@{}l}{\emph{(b) Load}} \\
+		\toprule
+		Concurrency $c$ & Throughput (proofs/s) & Latency (ms): median (p95) \\
+		\midrule
+		$1$ & $0.805$ & $1230$ ($1659$) \\
+		$2$ & $0.787$ & $2492$ ($3805$) \\
+		$4$ & $0.936$ & $4113$ ($5854$) \\
+		\bottomrule
+	\end{tabular*}
 
-  \vspace{0.4em}
-  \begin{minipage}{\linewidth}
-    \footnotesize\textit{Note:} Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation. Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests.
-  \end{minipage}
+	\vspace{0.4em}
+	\begin{minipage}{\linewidth}
+		\footnotesize\textit{Note:} Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation, which for the profile-backed policies includes the harness's per-request issuance of a signed credential (about $0.64$~s). Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests.
+	\end{minipage}
 \end{table}

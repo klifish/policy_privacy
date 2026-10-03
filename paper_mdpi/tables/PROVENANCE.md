@@ -8,8 +8,7 @@ Paths are relative to the repository root. Sections are keyed by LaTeX label, no
 table number, because the numbers shift when the layout changes. Each table section records the commit at
 which its numbers were last checked against the source.
 
-Tables still to document:
-`tab_workload_scaling`.
+All quantitative tables are documented.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
 sources in their header comments. Four tables are defined inline in section files rather than in
 `tables/`: `tab:nmi-sample-size-sensitivity` (`sec_nmi_sensitivity.tex`, documented below), and
@@ -1049,4 +1048,86 @@ Merkle   4  73,876 / 73,052  wasm 8.6  zkey 48.3  witness 352 (415)  prove 512 (
 Merkle   8  81,740 / 80,884  wasm 8.7  zkey 52.2  witness 347 (354)  prove 499 (539)  verify 11 (16)
 Merkle  12  89,604 / 88,716  wasm 8.7  zkey 56.0  witness 358 (395)  prove 552 (632)  verify 10 (15)
 Merkle  16  97,468 / 96,548  wasm 8.7  zkey 59.9  witness 370 (456)  prove 571 (713)  verify 10 (13)
+```
+
+---
+
+## `tab:workload-scaling` (`tab_workload_scaling.tex`)
+
+Last checked against the source: commit `b889fb0`, 2026-10-03. All 49 numbers match (rounded half-up, as in
+`tab:cost-scaling`).
+
+**Source.** `experiments/results/cost/scalability_sweep.json` → `policy` (generated 2026-09-22 on an Apple M1,
+8 cores, rapidsnark; circuit DEPTH = 64, 8 Merkle levels). Generator: `scripts/policy_scalability_benchmark.js`.
+5 warm-ups (discarded) precede each measurement.
+
+### (a) Policy content: `policyScenarios[]`, 30 measured proofs each
+
+| Column | Field |
+|---|---|
+| Tokens | `tokens` (= `artifacts.numOperations`, the program length ℓ) |
+| Slots | `activePredicateSlots` (= count of `predicateTypes ≠ 4`, out of M = 11) |
+| Witness, Prove, Verify | `timings.{witnessMs,proveMs,verifyMs}` → `median` (`p95`), from `generateProof`'s internal timers |
+| End-to-end | `timings.totalMs`: wall-clock time of `proveRequest`, i.e. `evidenceFor` (off-circuit evidence) plus `generateProof` |
+
+Medians and p95s use linear interpolation, `quantile()` in the script: position (n − 1)·q. For example, Simple's
+end-to-end median is (924 + 926)/2 = 925, and its p95 is 1106 + 0.55 × (1223 − 1106) = 1170.35.
+
+**End-to-end minus (witness + prove + verify), per run (median):** Simple 13 ms, Ontology-heavy 13 ms,
+**Profile-heavy 640 ms, Max-mixed 637 ms.** The extra ~630 ms in the two profile-backed policies comes
+from `evidenceFor`. For a type-9 (profile) slot, it **issues a fresh signed profile credential for every request**:
+`signDuoProfileCredential` in `lib/prover.js` acts as the issuer, and it calls `circomlibjs.buildEddsa()` on every
+invocation. In deployment, the issuer signs a credential once and the requester presents it, so this is a
+**benchmark-harness cost, not a per-request cost of the protocol**. Allowlist (Merkle) preparation is in the
+13 ms of the other rows.
+
+### (b) Load: `load[]`, 100 measured requests per concurrency level
+
+| Column | Field |
+|---|---|
+| Throughput | `throughputPerSecond` = `requests / wallMs × 1000` (recomputed: 0.805, 0.787, 0.936) |
+| Latency | `latencyMs` → `median` (`p95`), each request's `totalMs` while up to c run at once (queueing excluded) |
+
+The four policies rotate, so about half of the requests carry the harness's ~0.64 s credential issuance.
+The throughput is therefore conservative.
+
+### Text that cites this table
+
+- `sec_ablation.tex`: witness 0.335–0.354 s, prove 0.484–0.545 s, 3–61 tokens, "one to all 11" slots,
+  throughput 0.79–0.94, latency 1.2–4.1 s. All agree.
+- `sec_discussion.tex`: 0.936 proofs/s at c = 4, 4.113 / 5.854 s, "about 80,900 requests per day"
+  (0.936 × 86,400 = 80,870), and "about 53,900" with a third held in reserve (× 2/3 = 53,914). All agree.
+- **`sec_ablation.tex`: "The larger end-to-end time for profile-backed cases reflects off-circuit credential and
+  allowlist preparation" misattributes the gap.** The gap is the harness issuing a credential per request; see above.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json
+from decimal import Decimal, ROUND_HALF_UP
+r0 = lambda x: int(Decimal(str(x)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+w = json.load(open("experiments/results/cost/scalability_sweep.json"))["policy"]
+for s in w["policyScenarios"]:
+    t = s["timings"]
+    gap = sorted(x["totalMs"] - x["witnessMs"] - x["proveMs"] - x["verifyMs"] for x in s["rawTimings"])
+    print(f"{s['label']:15s} tokens {s['tokens']:2d}  slots {s['activePredicateSlots']:2d}  " +
+          "  ".join(f"{m[:-2]} {r0(t[m]['median'])} ({r0(t[m]['p95'])})" for m in ["witnessMs", "proveMs", "verifyMs", "totalMs"]) +
+          f"  off-circuit median {gap[len(gap) // 2]}")
+for l in w["load"]:
+    print(f"c={l['concurrency']}  throughput {l['requests'] / l['wallMs'] * 1000:.3f}  "
+          f"latency {r0(l['latencyMs']['median'])} ({r0(l['latencyMs']['p95'])})")
+PY
+```
+
+Expected output:
+
+```
+Simple          tokens  3  slots  1  witness 354 (418)  prove 545 (746)  verify 12 (14)  total 925 (1170)  off-circuit median 13
+Ontology-heavy  tokens 19  slots  5  witness 349 (391)  prove 506 (550)  verify 10 (12)  total 880 (939)  off-circuit median 13
+Profile-heavy   tokens 31  slots  1  witness 337 (349)  prove 492 (522)  verify 10 (11)  total 1479 (1516)  off-circuit median 640
+Max-mixed       tokens 61  slots 11  witness 335 (346)  prove 484 (537)  verify 10 (10)  total 1468 (1538)  off-circuit median 637
+c=1  throughput 0.805  latency 1230 (1659)
+c=2  throughput 0.787  latency 2492 (3805)
+c=4  throughput 0.936  latency 4113 (5854)
 ```

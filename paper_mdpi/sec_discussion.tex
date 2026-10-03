@@ -17,7 +17,7 @@ The overhead is a fixed premium per transaction (roughly $330{,}000$ gas on acce
 
 The offline load benchmark in Table~\ref{tab:workload-scaling} rotates the four policy classes through $100$ verified requests after five warm-ups at each concurrency level.
 On the evaluated Apple M1, the best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower.
-At this throughput, one prover on this host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve.
+At this throughput, one prover on this host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve; the estimate is conservative, because half of the rotated requests include the harness's credential issuance (Section~\ref{sec:eval-ablation}).
 On-chain, each padded access costs $1{,}057{,}283$ gas on average (about $0.032$~POL at $30$~gwei; Table~\ref{tab:cost-profile}), so the access cost grows linearly with the number of requests, and each policy commit adds a one-time $304{,}167$ gas ($0.009$~POL).
 
 The band must be positioned above the bare cost on the target network, which differs between networks (the same verifier costs $243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose BN254 precompiles are priced higher); a deployment therefore calibrates the base target once per network, and the width of the band, $\pm 10\%$ here, determines how large a residual difference the random target can mask.
