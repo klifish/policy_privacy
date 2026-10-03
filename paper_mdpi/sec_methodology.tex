@@ -75,8 +75,9 @@ The clustering attacker drops the labels entirely and asks whether the gas featu
 We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.
 Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
-PCH clusters all executions globally (no per-layer splitting), so the large-sample ARI/NMI are read directly.
-SPP is clustered the same way on its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}), once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count, and its large-sample ARI/NMI are likewise read directly.
+PCH clusters all executions globally, and SPP is clustered the same way on its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}), once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count.
+At these sample sizes, ARI and NMI are read directly, each averaged over $20$ K-Means seeds.
+To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R{=}200$, so its smallest attainable value is $1/201 \approx 0.005$.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 \noindent\textbf{Balanced pairs.} The clustering uses a dedicated pair set built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.

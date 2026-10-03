@@ -26,12 +26,12 @@ We consider a \textbf{PI-like} binary structure ($G=2$, $n\in\{3,10,50,100\}$), 
 \noindent\textbf{Results.} Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}.
 For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.2074$ at $n{=}3$ ($N{=}6$) to $0.0420$ at $n{=}10$, and to $0.0072$/$0.0034$ at $n{=}50$/$100$.
 The same trend holds with more classes, at a higher level for every $n$: with five classes $\overline{\mathrm{NMI}}$ goes from $0.4152$ ($n{=}3$) to $0.0102$ ($n{=}100$), and with ten classes from $0.5346$ ($n{=}3$) to $0.0239$ ($n{=}77$).
-For the observed ICD-10 chapter sizes, averaging each trial over $20$ K-Means seeds as the evaluation does, the null NMI has mean $0.0246$ and $95$th percentile $0.0302$; the observed ICD-10 NMI of $0.0281$ is reached in $145$ of $1000$ null trials ($p=0.15$).
+For the observed ICD-10 chapter sizes, a separate null run that averages each trial over $20$ K-Means seeds, as the evaluation does, gives a null NMI with mean $0.0246$ and $95$th percentile $0.0302$; the observed ICD-10 NMI of $0.0281$ is reached in $145$ of $1000$ null trials ($p=0.15$).
 
 \begin{table}[htbp]
 	\centering
 	\caption{Sample-size sensitivity of NMI and ARI under the null hypothesis where all
-		classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row; $G$ classes, $N=Gn$ samples).}
+		classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row, one K-Means fit with ten initializations per trial; $G$ classes, $N=Gn$ samples).}
 	\label{tab:nmi-sample-size-sensitivity}
 	\begin{tabular}{lrrrrr}
 		\toprule

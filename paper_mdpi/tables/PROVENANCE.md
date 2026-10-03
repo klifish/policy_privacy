@@ -9,10 +9,12 @@ table number, because the numbers shift when the layout changes. Each table sect
 which its numbers were last checked against the source.
 
 Tables still to document:
-`tab_ablation_gas_padding`,
 `tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
-sources in their header comments.)
+sources in their header comments. Four tables are defined inline in section files rather than in
+`tables/`: `tab:nmi-sample-size-sensitivity` (`sec_nmi_sensitivity.tex`, documented below), and
+the qualitative `tab:duo-categories` (`sec_background.tex`), `tab:related-work-gap`
+(`sec_related_work.tex`), and `tab:transcript-normalization` (`sec_design.tex`).)
 
 ---
 
@@ -728,4 +730,186 @@ SPP structureType   n 1125  k  4  ARI 0.0004  p 0.328  NMI 0.0034
 SPP predicateCombo  n 1125  k  3  ARI -0.0005  p 0.577  NMI 0.0015
 SPP paramType       n 1125  k  4  ARI -0.0000  p 0.488  NMI 0.0030
 SPP nestingDepth    n 1125  k  4  ARI 0.0071  p 0.005  NMI 0.0088
+```
+
+---
+
+## `tab:nmi-sample-size-sensitivity` (inline in `sec_nmi_sensitivity.tex`)
+
+Last checked against the source: commit `1b36fc0`, 2026-10-03. All 66 cells match.
+
+**Source.** `experiments/results/clustering/null/nmi_null_simulation.json`, field `rows[]` (11 rows,
+in table order). Code: `experiments/analysis/clustering/nmi_null_simulation.py` (seed `20260923`,
+`trials` 1000, `dim` 2).
+
+### Columns
+
+- **Structure**, **G**, **n**, and **N** come from the configuration (`CONFIGS`): the row's label, `classes`, `perClass`
+  (`"49-135"` for the ICD row, i.e. min–max of `ICD10_CHAPTER_SIZES`), and `n` = sum of the class sizes.
+- **NMI-bar** and **ARI-bar** are `nmiMean` and `ariMean`, the means over 1000 trials. Each trial draws all classes from
+  N(0, I₂), standardizes them, and runs **one** K-Means fit (`n_init = 10`, `kmeans_seeds = 1`) scored
+  against the construction-order labels.
+
+### The two ICD-10 simulations
+
+The table's last row (NMI 0.0244) and the text's ICD-10 numbers come from **different runs**:
+
+| | Table row "ICD-10 sizes" | Text ("averaging each trial over 20 K-Means seeds") |
+|---|---|---|
+| JSON field | `rows[10]` | `matchedIcd10` |
+| K-Means fits per trial | 1 | 20, averaged (as in the evaluation) |
+| NMI mean | 0.0244 | 0.0246 |
+| NMI p95 | 0.0314 | 0.0302 |
+| Observed ICD NMI 0.0281 reached | n/a | 145 of 1000 trials, p = (145+1)/1001 = 0.146 → "0.15" |
+
+Since 2026-10-03 the caption states "one K-Means fit with ten initializations per trial", and the text
+calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0244 vs 0.0246)
+are no longer conflated.
+
+### Text that cites this table (all consistent)
+
+`sec_nmi_sensitivity.tex` Results: 0.2074 → 0.0420 → 0.0072/0.0034 (PI-like); 0.4152 → 0.0102
+(5-class); 0.5346 → 0.0239 (10-class); 49–135 executions per chapter, N = 770 (= `ICD10_CHAPTER_SIZES`, which
+the script asserts against the observed ICD clustering). The `published` field in some JSON rows holds
+an earlier manuscript version's values and is not used.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json
+n = json.load(open("experiments/results/clustering/null/nmi_null_simulation.json"))
+for r in n["rows"]:
+    print(f"{r['structure']:13s} n {str(r['perClass']):>6s}  G {r['classes']:2d}  N {r['n']:3d}  "
+          f"NMI {r['nmiMean']:.4f}  ARI {r['ariMean']:.4f}")
+m = n["matchedIcd10"]
+print(f"matched ICD-10 (20 K-Means seeds/trial): NMI mean {m['nmiMean']:.4f}  p95 {m['nmiP95']:.4f}  "
+      f"observed {m['observedNmi']:.4f} reached {m['trialsAtOrAboveObserved']}/{n['trials']}  p {m['empiricalP']:.2f}")
+PY
+```
+
+Expected output:
+
+```
+PI-like       n      3  G  2  N   6  NMI 0.2074  ARI 0.0127
+PI-like       n     10  G  2  N  20  NMI 0.0420  ARI 0.0008
+PI-like       n     50  G  2  N 100  NMI 0.0072  ARI -0.0003
+PI-like       n    100  G  2  N 200  NMI 0.0034  ARI -0.0004
+5-class       n      3  G  5  N  15  NMI 0.4152  ARI -0.0034
+5-class       n     10  G  5  N  50  NMI 0.1226  ARI 0.0003
+5-class       n    100  G  5  N 500  NMI 0.0102  ARI -0.0000
+10-class      n      3  G 10  N  30  NMI 0.5346  ARI -0.0009
+10-class      n     10  G 10  N 100  NMI 0.2087  ARI 0.0003
+10-class      n     77  G 10  N 770  NMI 0.0239  ARI -0.0001
+ICD-10 sizes  n 49-135  G 10  N 770  NMI 0.0244  ARI -0.0001
+matched ICD-10 (20 K-Means seeds/trial): NMI mean 0.0246  p95 0.0302  observed 0.0281 reached 145/1000  p 0.15
+```
+
+---
+
+## `tab:ablation-gas-padding` (`tab_ablation_gas_padding.tex`)
+
+Last checked against the source: commit `1b36fc0`, 2026-10-03. All 24 numbers match.
+
+**Data.** `experiments/ablation/gas_padding/polygonAmoy/{b1_unpadded,b2_padded}/executed_dataset.json`:
+1,119 executions each, aligned by `(policyId, executionId)` (checked). B1 = 2026-09-20 run without
+padding. **B2 is not a new run.** Its 1,119 records equal the corresponding of-record Amoy executions
+(gas checked), so B1 and B2 are non-contemporaneous.
+
+### Three blocks, three sources
+
+| Block | Source | Code |
+|---|---|---|
+| Supervised (4 tasks) | `experiments/results/supervised/gas_padding_supervised_deltaLeakage.csv` (45 tasks × LR/RF = 90 rows) | `experiments/analysis/supervised/run_ablation_supervised.py` |
+| Unsupervised (3 rows) | `…/comparison/ablation_report.json` → `clustering` | `experiments/ablation/gas_padding/compare.py` |
+| Gas cost (2 rows) | `…/comparison/ablation_report.json` → `gas`; equals direct means over the two datasets | `compare.py` |
+
+**Trap: `ablation_report.md` also has a "Supervised attacks" table, and its numbers differ from
+the paper.** `compare.py` builds it from the **JS** multiseed per-profile reports
+(`comparison/supervised/{b1,b2}/…`); for example, SPP `trivial/and_or_mixed` RF reads 0.856/0.456/Δ0.290 there,
+against 0.902/0.490/Δ0.347 in the CSV. The paper's supervised numbers (table, Figure `fig:ablation-paired`,
+and the medians in `sec_ablation.tex`) all come from the **CSV**, the Python paired analysis, which samples one execution per
+policy and in which B1 and B2 share the test policies of each split. Use the report only for its clustering and gas sections.
+
+### Supervised rows
+
+RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLeakage`, and `ciLow`/`ciHigh`
+(percentile interval over the 30 paired splits).
+
+- `deltaLeakage` is the **mean of the per-split Δ** (Equation `eq:delta-leak`), so it does not equal
+  |mean B1 − 0.5| − |mean B2 − 0.5|. For example, trivial/and_or_mixed gives |0.902 − 0.5| − |0.490 − 0.5| = 0.392 against
+  Δ = 0.347, because B2's per-split AUCs scatter around 0.5.
+- **Selection rule.** Among RF tasks whose interval excludes zero, the table takes the top Δ **per experiment and per SPP
+  axis**. SPP ranks trivial/and_or_mixed 0.347, trivial/or_only 0.329 (same axis, skipped), and
+  predicateCombo single/few 0.301. PCH takes DUO HMB 0.337 (then GR 0.297). PI takes controlled_difference 0.088, its only task
+  with an interval that excludes zero. The caption says "largest-signal contrasts per experiment", which does not mention the per-axis rule.
+- Counts in the header comment and the text: RF 27 reduce / 12 no effect / 6 increase; LR 25 / 16 / 4.
+
+### Unsupervised rows
+
+| Row | JSON path | Interval |
+|---|---|---|
+| PCH DUO terms 0.349 [0.316, 0.407] | `policyGroupBootstrap.pch_duo.deltaB1MinusB2.nmi` | policy-group bootstrap (2,000) |
+| SPP logic structure 0.102 [0.018, 0.138] | `policyGroupBootstrap.logicStructure.deltaB1MinusB2.nmi` | policy-group bootstrap |
+| PI balanced pairs 0.670 [0.591, 0.743] | `piBalancedPairs.debiased_nmi` | **bootstrap over the 127 pairs**, not policy-group |
+
+**The PI interval does not match the table header.** The header says "policy-group bootstrap" for all
+three rows, but the PI interval resamples pairs, which share only 24 policies. The same JSON holds the
+policy-weighted bootstrap, `piBalancedPairs.policyWeightedDebiasedNmi`: mean 0.670, **[0.442, 0.831]**. Both intervals
+exclude zero.
+
+### Gas rows
+
+Means over the 1,119 aligned executions: commit 219,737 → 304,098 (+38.4%), and access 723,462 → 1,056,674 (+46.1%).
+
+### Text that cites these sources (`sec_ablation.tex`, all consistent)
+
+- 21 tasks with B1 deviation > 0.15, all below 0.15 under B2; median deviation 0.137 → 0.038.
+- Median Δ: SPP +0.173, PCH +0.058, PI −0.011. PI's other three tasks have B1 deviations of 0.075, 0.010, and 0.040 (≤ 0.08).
+- Positive control 0.68 → 0.45.
+- B1 access gas 723,288–723,564, with a cold start at 741,276. All values are multiples of 12 apart. The two clusters are
+  723,288–723,372 and 723,480–723,564: offset 192, span 84 each.
+- Eight ICD chapters have B1 RF AUC 0.455–0.536; ch6 is 0.713, with 9 policies in the subset.
+- The six negative-Δ tasks are ICD ch5, ch7, and ch9, paramType small/medium, nestingDepth shallow/medium, and nestingDepth medium/deep.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import csv, json, statistics as st
+R = {(r["experiment"], r["target"]): r for r in csv.DictReader(open(
+    "experiments/results/supervised/gas_padding_supervised_deltaLeakage.csv")) if r["model"] == "rf"}
+for key in [("spp", "structureType: trivial/and_or_mixed"), ("spp", "predicateCombo: single/few"),
+            ("pch", "DUO HMB"), ("pi", "controlled_difference")]:
+    r = R[key]
+    print(f"{key[0]} {key[1]:37s} B1 {float(r['aucMean_b1_unpadded']):.3f}  B2 {float(r['aucMean_b2_padded']):.3f}  "
+          f"Δ {float(r['deltaLeakage']):.3f} [{float(r['ciLow']):.3f}, {float(r['ciHigh']):.3f}]")
+c = json.load(open("experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json"))["clustering"]
+for k in ["pch_duo", "logicStructure"]:
+    d = c["policyGroupBootstrap"][k]["deltaB1MinusB2"]["nmi"]
+    print(f"NMI B1-B2 {k:15s} {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  (policy-group)")
+for k, how in [("debiased_nmi", "pair bootstrap"), ("policyWeightedDebiasedNmi", "policy-weighted")]:
+    d = c["piBalancedPairs"][k]
+    print(f"NMI B1-B2 PI pairs       {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  ({how})")
+b = "experiments/ablation/gas_padding/polygonAmoy/"
+B1, B2 = (json.load(open(b + p + "/executed_dataset.json")) for p in ("b1_unpadded", "b2_padded"))
+for f in ["commitGasUsed", "accessGasUsed"]:
+    m1, m2 = (st.mean(int(e["features"][f]) for e in D) for D in (B1, B2))
+    print(f"{f:14s} B1 {m1:,.0f}  B2 {m2:,.0f}  (+{(m2 / m1 - 1) * 100:.1f}%)")
+PY
+```
+
+Expected output:
+
+```
+spp structureType: trivial/and_or_mixed   B1 0.902  B2 0.490  Δ 0.347 [0.334, 0.360]
+spp predicateCombo: single/few            B1 0.844  B2 0.494  Δ 0.301 [0.287, 0.314]
+pch DUO HMB                               B1 0.876  B2 0.495  Δ 0.337 [0.319, 0.352]
+pi controlled_difference                 B1 0.676  B2 0.446  Δ 0.088 [0.062, 0.111]
+NMI B1-B2 pch_duo         0.349 [0.316, 0.407]  (policy-group)
+NMI B1-B2 logicStructure  0.102 [0.018, 0.138]  (policy-group)
+NMI B1-B2 PI pairs       0.670 [0.591, 0.743]  (pair bootstrap)
+NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted)
+commitGasUsed  B1 219,737  B2 304,098  (+38.4%)
+accessGasUsed  B1 723,462  B2 1,056,674  (+46.1%)
 ```
