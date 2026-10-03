@@ -761,7 +761,7 @@ The table's last row (NMI 0.0244) and the text's ICD-10 numbers come from **diff
 | NMI p95 | 0.0314 | 0.0302 |
 | Observed ICD NMI 0.0281 reached | n/a | 145 of 1000 trials, p = (145+1)/1001 = 0.146 → "0.15" |
 
-Since 2026-10-03 the caption states "one K-Means fit with ten initializations per trial", and the text
+Since 2026-10-03 the table note states "one K-Means fit with ten initializations per trial", and the text
 calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0244 vs 0.0246)
 are no longer conflated.
 

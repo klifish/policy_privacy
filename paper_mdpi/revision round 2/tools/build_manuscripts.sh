@@ -32,6 +32,7 @@ latexdiff --flatten --math-markup=whole --graphics-markup=none \
   --preamble="$HERE/tools/latexdiff_preamble.tex" \
   "$WORK/old/paper_mdpi/main.tex" "$PAPER/main.tex" > "$PAPER/main_marked_tmp.tex" 2> "$WORK/latexdiff.log"
 python3 "$HERE/tools/drop_deleted_parbreaks.py" "$PAPER/main_marked_tmp.tex"
+python3 "$HERE/tools/unmark_rewrapped_notes.py" "$PAPER/main_marked_tmp.tex"
 python3 "$HERE/tools/color_added_floats.py" "$PAPER/main_marked_tmp.tex"
 python3 "$HERE/tools/mark_frontmatter.py" "$WORK/old/paper_mdpi/sec_frontmatter.tex" "$PAPER/main_marked_tmp.tex"
 # The review PDFs withhold the author identities, so the review copies do too.

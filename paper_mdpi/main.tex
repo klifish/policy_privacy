@@ -46,6 +46,11 @@
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
 
+% Table notes: legends, abbreviations, and dagger notes set below a table. Undo the
+% float's \centering so that multi-line notes are justified rather than centered.
+\newenvironment{tablenote}{\par\vspace{0.4em}\footnotesize
+  \leftskip=0pt\rightskip=0pt\parfillskip=0pt plus 1fil\parindent=0pt}{\par}
+
 % Keep consecutive tables together near the top of float-only pages instead of
 % stretching the inter-float glue across the full page.
 \makeatletter

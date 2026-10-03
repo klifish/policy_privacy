@@ -31,7 +31,7 @@ For the observed ICD-10 chapter sizes, a separate null run that averages each tr
 \begin{table}[htbp]
 	\centering
 	\caption{Sample-size sensitivity of NMI and ARI under the null hypothesis where all
-		classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$ ($T{=}1000$ trials per row, one K-Means fit with ten initializations per trial; $G$ classes, $N=Gn$ samples).}
+		classes are i.i.d.\ sampled from $\mathcal{N}(0,I_d)$.}
 	\label{tab:nmi-sample-size-sensitivity}
 	\begin{tabular}{lrrrrr}
 		\toprule
@@ -53,4 +53,9 @@ For the observed ICD-10 chapter sizes, a separate null run that averages each tr
 		ICD-10 sizes & 49--135         & 10  & 770 & $0.0244$                  & $-0.0001$                 \\
 		\bottomrule
 	\end{tabular}
+
+	\begin{tablenote}
+		$T{=}1000$ trials per row, one K-Means fit with ten initializations per trial;
+		$G$ classes, $N=Gn$ samples.
+	\end{tablenote}
 \end{table}

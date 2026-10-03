@@ -35,8 +35,7 @@
 		\bottomrule
 	\end{tabular*}
 
-	\vspace{0.4em}
-	\begin{minipage}{\linewidth}
-		\footnotesize\textit{Note:} Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation, which for the profile-backed policies includes the harness's per-request issuance of a signed credential (about $0.64$~s). Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests.
-	\end{minipage}
+	\begin{tablenote}
+		Tokens: program length $\ell$ (at most $\DEPTH=64$); slots: external-predicate slots the policy uses (of $M=11$). End-to-end time also includes off-circuit evidence preparation, which for the profile-backed policies includes the harness's per-request issuance of a signed credential (about $0.64$~s). Latency is each request's processing time while up to $c$ requests run at once; queueing is excluded. All timings follow five warm-up requests.
+	\end{tablenote}
 \end{table}

@@ -1,7 +1,9 @@
 % Threat/guarantee matrix for the trust model (reviewer request).
 % Rows: actors or failure modes. Columns: the four scoped guarantees.
-% Cell values: C = enforced cryptographically (commitment binding, Groth16 soundness/ZK,
-%   EdDSA-Poseidon unforgeability, on-chain checks); T = holds only if the TPS follows
+% Cell values: C = enforced cryptographically, subscripted with the mechanisms it rests on
+%   (zk/snd = Groth16 zero knowledge/soundness; hid/bind = hiding/binding of h and pp;
+%   sig = EdDSA-Poseidon unforgeability; ctx = on-chain recomputation of d_chi;
+%   chain = integrity of the on-chain record); T = holds only if the TPS follows
 %   the prescribed workflow; E = external/lifecycle function; -- = not provided.
 \begin{table}[htbp]
   \centering\small
@@ -18,8 +20,7 @@
     \input{tables/tab_threat_guarantee_rows.tex}
   \end{tabular}
 
-  \vspace{0.4em}
-  \begin{minipage}{0.98\linewidth}
-    \footnotesize\textit{Note:} C: cryptographic; T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
-  \end{minipage}
+  \begin{tablenote}
+    C: cryptographic, with subscripts naming the mechanisms it rests on: zk and snd, zero knowledge and soundness of Groth16; hid and bind, hiding and binding of the policy commitment $h$ and the parameter commitment $\mathit{pp}$; sig, EdDSA-Poseidon signature unforgeability; ctx, on-chain recomputation of the context digest $d_{\chi}$; chain, integrity of the on-chain record, assuming the underlying chain is secure. T: trust in the TPS following the prescribed workflow; E: external or lifecycle function; --: not provided by the prototype; n/a: not applicable. In the evaluated provider-operated deployment, the provider and TPS are co-located, so all TPS-dependent confidentiality and liveness assumptions are concentrated at the provider.
+  \end{tablenote}
 \end{table}

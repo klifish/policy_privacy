@@ -14,8 +14,7 @@
 \begin{table}[htbp]
   \centering
   \caption{Unsupervised clustering attack (K-Means, $K$ = number of classes, $K{=}2$ for
-    pairs) on the on-chain gas features. PCH
-    clusters all executions globally; SPP uses its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}). For PI, $n$ counts balanced pairs (Section~\ref{sec:eval-method}).}
+    pairs) on the on-chain gas features.}
   \label{tab:clustering-summary}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
@@ -32,4 +31,10 @@
     SPP & \texttt{nestingDepth}   & $1125$ & $4$  & $0.0071$  & $0.0088$ \\
     \bottomrule
   \end{tabular}
+
+  \begin{tablenote}
+    PCH clusters all executions globally; SPP uses its $1{,}125$-execution view
+    (Section~\ref{sec:eval-dataset}). For PI, $n$ counts balanced pairs
+    (Section~\ref{sec:eval-method}).
+  \end{tablenote}
 \end{table}

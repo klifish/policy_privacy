@@ -7,21 +7,22 @@
 % Pair budget (experiments/results/supervised/pi_pairs_generated.json): 100 semantic_equivalent,
 % 71 weak_equivalent (all available), 100 controlled_difference.
 \begin{table}[htbp]
-  \caption{Policy Indistinguishability: single-execution supervised attack over 30
-    policy-disjoint seeds, by policy-pair type (higher-mean-AUC classifier per type; med $n$: median test-set size).
-    All rows that enter the PI verdict pass.}
-  \label{tab:pi-pairs}
-  \centering\footnotesize
-  \begin{tabular}{lccccc}
-    \toprule
-    Pair type & Pairs & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
-    \midrule
-    overall (all types)   & $271$ & $0.509 \pm 0.035$ & $0.027$ & $3\%$  & $162$ \\
-    semantic\_equivalent  & $100$ & $0.549 \pm 0.064$ & $0.070$ & $7\%$  & $60$  \\
-    weak\_equivalent      & $71$  & $0.544 \pm 0.079$ & $0.079$ & $10\%$ & $42$  \\
-    controlled\_difference\,$^{\dagger}$ & $100$ & $0.544 \pm 0.064$ & $0.062$ & $13\%$ & $60$ \\
-    \bottomrule
-  \end{tabular}
+	\caption{Policy Indistinguishability: single-execution supervised attack over 30
+		policy-disjoint seeds, by policy-pair type (higher-mean-AUC classifier per type).}
+	\label{tab:pi-pairs}
+	\centering\footnotesize
+	\begin{tabular}{lccccc}
+		\toprule
+		Pair type                            & Pairs & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  & med $n$ \\
+		\midrule
+		overall (all types)                  & $271$ & $0.509 \pm 0.035$      & $0.027$        & $3\%$  & $162$   \\
+		semantic\_equivalent                 & $100$ & $0.549 \pm 0.064$      & $0.070$        & $7\%$  & $60$    \\
+		weak\_equivalent                     & $71$  & $0.544 \pm 0.079$      & $0.079$        & $10\%$ & $42$    \\
+		controlled\_difference\,$^{\dagger}$ & $100$ & $0.544 \pm 0.064$      & $0.062$        & $13\%$ & $60$    \\
+		\bottomrule
+	\end{tabular}
 
-  \noindent{\footnotesize{$^{\dagger}$ Reported for reference; excluded from the PI verdict.}}
+	\begin{tablenote}
+		$^{\dagger}$ Reported for reference; excluded from the PI verdict.
+	\end{tablenote}
 \end{table}

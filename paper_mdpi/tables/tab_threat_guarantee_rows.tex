@@ -1,7 +1,7 @@
-Passive public-chain observer & C for proof and commitment contents; empirical for modeled metadata & C & n/a & C: outcome recorded \\
-Untrusted requester & As for the observer; adaptive-query leakage not evaluated & C: cannot forge a proof or alter its bound authorization context & n/a & C: pseudonymous request context and outcome recorded on-chain \\
-Workflow-following TPS & -- against the TPS itself; T against onward disclosure & C for the committed relation; T/E for unsigned evidence provenance & T & C for submitted decisions; -- for refusal \\
-Compromised or colluding TPS & -- & C for the committed relation and signed claims; E for externally authenticated evidence; -- for unauthenticated evidence provenance & --: may refuse to prove & C for submitted decisions; -- for refusal \\
-Forged credential & n/a & C: signature verified under the policy-bound issuer key & n/a & n/a \\
-Unauthorized or revoked issuer & n/a & E: issuer authorization and revocation status are external & n/a & C for the on-chain decision record; E for determining issuer status \\
+Passive public-chain observer & C\textsubscript{zk,hid} for proof and commitment contents; empirical for modeled metadata & C\textsubscript{snd,bind} & n/a & C\textsubscript{chain}: outcome recorded \\
+Untrusted requester & As for the observer; adaptive-query leakage not evaluated & C\textsubscript{snd,ctx}: cannot forge a proof or alter its bound authorization context & n/a & C\textsubscript{chain}: pseudonymous request context and outcome recorded on-chain \\
+Workflow-following TPS & -- against the TPS itself; T against onward disclosure & C\textsubscript{snd,bind} for the committed relation; T/E for unsigned evidence provenance & T & C\textsubscript{chain} for submitted decisions; -- for refusal \\
+Compromised or colluding TPS & -- & C\textsubscript{snd,bind,sig} for the committed relation and signed claims; E for externally authenticated evidence; -- for unauthenticated evidence provenance & --: may refuse to prove & C\textsubscript{chain} for submitted decisions; -- for refusal \\
+Forged credential & n/a & C\textsubscript{snd,bind,sig}: signature verified under the policy-bound issuer key & n/a & n/a \\
+Unauthorized or revoked issuer & n/a & E: issuer authorization and revocation status are external & n/a & C\textsubscript{chain} for the on-chain decision record; E for determining issuer status \\
 \bottomrule
