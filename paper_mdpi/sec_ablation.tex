@@ -65,7 +65,7 @@ Gas, logs, calldata lengths, and transaction objects are taken from the same exe
 Within these costs, binding the program length (Section~\ref{subsec:commitment}) adds $88$ constraints and no public input, and binding the authorization context adds $605$ constraints and one public input.
 At Amoy's gas schedule, the context binding adds $64{,}022$ gas per access and recording the bound context on-chain adds $68{,}946$ gas, together $18\%$ of the mean unpadded access cost; because the unpadded cost stays below the padding band, the binding does not change the padded cost.
 
-Table~\ref{tab:cost-scaling} reports two offline capacity sweeps, each with $30$ verified proofs per configuration on an Apple M1 using the rapidsnark Groth16 prover.
+Table~\ref{tab:cost-scaling} reports two offline benchmarks of circuit capacity, each with $30$ verified proofs per configuration on an Apple M1 using the rapidsnark Groth16 prover.
 With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $\DEPTH$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s.
 With $\DEPTH=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s for a five-slot ontology-heavy policy.
 Every variant retains five public signals, so enlarging either capacity changes the prover artifacts but not the verifier interface.

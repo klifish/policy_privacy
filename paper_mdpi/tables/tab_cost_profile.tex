@@ -4,23 +4,22 @@
 % Transaction/timing source: experiments/data/polygonAmoy/executed_dataset.json
 % (1773 executions, captured 2026-09-17 with v3.0.0-rc1 artifacts).
 \begin{table}[htbp]
-  \centering
-  \caption{Single-point cost profile of the evaluated prototype configuration at $\DEPTH=64$.
-    Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$
-    revised Polygon Amoy executions.}
-  \label{tab:cost-profile}
-  \footnotesize
-  \begin{tabular}{p{0.34\linewidth}p{0.54\linewidth}}
-    \toprule
-    Metric & Value / source \\
-    \midrule
-    Circuit size & $81{,}740$ R1CS constraints; $80{,}884$ wires; $\DEPTH=64$ \\
-    Public interface & $4$ public inputs plus $1$ output \\
-    Padded on-chain gas & Commit $304{,}167$; access $1{,}057{,}283$ mean gas \\
-    Event logs & Commit: $1$ log / $180$ bytes; access: $2$ logs / $296$ bytes \\
-    Calldata length & Commit $196$ bytes; access $612$ bytes (constant across policies) \\
-    Local witness time & $763.6$ ms mean \\
-    Local prove time & $2{,}884.2$ ms mean \\
-    \bottomrule
-  \end{tabular}
+	\centering
+	\caption{Single-point cost profile of the evaluated prototype configuration at $\DEPTH=64$.
+		Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ Polygon Amoy executions.}
+	\label{tab:cost-profile}
+	\footnotesize
+	\begin{tabular}{p{0.34\linewidth}p{0.54\linewidth}}
+		\toprule
+		Metric              & Value / source                                                    \\
+		\midrule
+		Circuit size        & $81{,}740$ R1CS constraints; $80{,}884$ wires; $\DEPTH=64$        \\
+		Public interface    & $4$ public inputs plus $1$ output                                 \\
+		Padded on-chain gas & Commit $304{,}167$; access $1{,}057{,}283$ mean gas               \\
+		Event logs          & Commit: $1$ log / $180$ bytes; access: $2$ logs / $296$ bytes     \\
+		Calldata length     & Commit $196$ bytes; access $612$ bytes (constant across policies) \\
+		Local witness time  & $763.6$ ms mean                                                   \\
+		Local prove time    & $2{,}884.2$ ms mean                                               \\
+		\bottomrule
+	\end{tabular}
 \end{table}

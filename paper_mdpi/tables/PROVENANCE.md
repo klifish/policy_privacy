@@ -9,7 +9,7 @@ table number, because the numbers shift when the layout changes. Each table sect
 which its numbers were last checked against the source.
 
 Tables still to document:
-`tab_cost_scaling`, `tab_workload_scaling`.
+`tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
 sources in their header comments. Four tables are defined inline in section files rather than in
 `tables/`: `tab:nmi-sample-size-sensitivity` (`sec_nmi_sensitivity.tex`, documented below), and
@@ -984,4 +984,69 @@ accessLogsCount      values {2: 1773}
 accessLogsSize       values {296: 1773}
 commitCalldataLength values {196: 1773}
 accessCalldataLength values {612: 1773}
+```
+
+---
+
+## `tab:cost-scaling` (`tab_cost_scaling.tex`)
+
+Last checked against the source: commit `0684e01`, 2026-10-03. All 70 cells match.
+
+**Source.** `experiments/results/cost/scalability_sweep.json` → `capacity`
+(`depthSweep` with 3 entries, `merkleSweep` with 4). Generated 2026-09-22 on an Apple M1 (8 cores) with the rapidsnark backend, 30 verified proofs
+per row. `fixedParameters`: N = 13, M = 11, K = 5, RANGE_BITS = 32, 5 public signals.
+`scripts/render_scalability_report.js` renders the Markdown version (`scalability_sweep.md`).
+
+### Columns (per sweep entry)
+
+| Column | Field |
+|---|---|
+| Constraints, Wires | `r1cs.constraints`, `r1cs.wires` |
+| WASM, zkey (MB) | `wasmBytes / 1e6`, `zkeyBytes / 1e6` (decimal MB, one decimal) |
+| Witness, Prove, Verify | `witnessMs`, `proveMs`, `verifyMs` → `median` (`p95`), in ms |
+
+**Rounding is half-up**, as in JavaScript's `toFixed(0)`: medians of 30 values often end in .5 (e.g.
+witness 284.5 → 285, prove 520.5 → 521, p95 394.5 → 395). Python's `round()` rounds half to even and
+gives a last digit that differs by 1 in five cells. Use `decimal.ROUND_HALF_UP` when checking.
+
+**Policies.** The program-capacity sweep uses `(DS OR RS) AND HMB AND US AND TS`, and the ontology-capacity
+sweep uses `DS AND RS AND POA AND GS AND CC` (five ontology slots). The DEPTH = 64 / 8-level circuit therefore appears twice, with
+different policies and separate measurements: 350/521 against 347/499. Its constraint count, 81,740, equals the rc1 release.
+
+### Text that cites this table (`sec_ablation.tex`, all consistent)
+
+"$64{,}945$ to $134{,}009$ constraints", "median proving time from $0.411$ to $0.734$~s"
+(733.5 ms), "$73{,}876$ to $97{,}468$", "$0.512$ to $0.571$~s" (511.5 ms), "30 verified proofs", "Apple M1",
+and "rapidsnark".
+
+**Cross-table note.** The same configuration, the ontology-heavy policy at DEPTH = 64 with 8 levels, is also
+measured in `tab:workload-scaling` (prove median 506 ms) and here (499 ms). These are separate
+runs of the same benchmark, so they differ by a few ms of timing noise.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json
+from decimal import Decimal, ROUND_HALF_UP
+r0 = lambda x: int(Decimal(str(x)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+c = json.load(open("experiments/results/cost/scalability_sweep.json"))["capacity"]
+for kind, rows, cap in [("DEPTH", c["depthSweep"], "depth"), ("Merkle", c["merkleSweep"], "merkleLevels")]:
+    for e in rows:
+        t = "  ".join(f"{m[:-2]} {r0(e[m]['median'])} ({r0(e[m]['p95'])})" for m in ["witnessMs", "proveMs", "verifyMs"])
+        print(f"{kind:6s} {e[cap]:3d}  {e['r1cs']['constraints']:,} / {e['r1cs']['wires']:,}  "
+              f"wasm {e['wasmBytes'] / 1e6:.1f}  zkey {e['zkeyBytes'] / 1e6:.1f}  {t}")
+PY
+```
+
+Expected output:
+
+```
+DEPTH   32  64,945 / 64,441  wasm 8.6  zkey 38.7  witness 285 (343)  prove 411 (562)  verify 11 (16)
+DEPTH   64  81,740 / 80,884  wasm 8.7  zkey 52.2  witness 350 (414)  prove 521 (761)  verify 11 (22)
+DEPTH  128  134,009 / 132,449  wasm 10.1  zkey 87.5  witness 535 (682)  prove 734 (984)  verify 11 (15)
+Merkle   4  73,876 / 73,052  wasm 8.6  zkey 48.3  witness 352 (415)  prove 512 (605)  verify 11 (17)
+Merkle   8  81,740 / 80,884  wasm 8.7  zkey 52.2  witness 347 (354)  prove 499 (539)  verify 11 (16)
+Merkle  12  89,604 / 88,716  wasm 8.7  zkey 56.0  witness 358 (395)  prove 552 (632)  verify 10 (15)
+Merkle  16  97,468 / 96,548  wasm 8.7  zkey 59.9  witness 370 (456)  prove 571 (713)  verify 10 (13)
 ```

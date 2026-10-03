@@ -4,7 +4,7 @@
 % decimal MB, as in the generated Markdown report.
 \begin{table}[htbp]
   \centering
-  \caption{Offline circuit-capacity sweeps (30 verified proofs per row; every variant keeps $N=13$,
+  \caption{Offline benchmarks of circuit capacity (30 verified proofs per row; every variant keeps $N=13$,
     $M=11$, and five public signals). Timing cells report median (p95) in ms; WASM and zkey are
     the sizes of the witness generator and the proving key.}
   \label{tab:cost-scaling}
@@ -13,7 +13,7 @@
   \resizebox{\textwidth}{!}{%
   \begin{tabular}{llrrrrrrr}
     \toprule
-    Sweep & Capacity & Constraints & Wires & WASM (MB) & zkey (MB) & Witness & Prove & Verify \\
+    Parameter & Capacity & Constraints & Wires & WASM (MB) & zkey (MB) & Witness & Prove & Verify \\
     \midrule
     \multicolumn{9}{l}{\emph{Program capacity: Merkle levels fixed at 8; mixed policy}}\\
     $\DEPTH$ & $32$  & $64{,}945$  & $64{,}441$  & $8.6$ & $38.7$ & $285$ ($343$) & $411$ ($562$) & $11$ ($16$) \\

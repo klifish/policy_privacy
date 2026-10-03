@@ -20,7 +20,7 @@ In each trial we
 (i)~generate $G$ classes with $n$ i.i.d.\ samples per class from $\mathcal{N}(0,I_d)$, for $N=Gn$ samples in total, assigning each sample a class label by construction order (these labels are independent of the sample values, since all classes share one distribution),
 (ii)~standardize the pooled data and apply K-Means with $K=G$ and ten initializations, as in the evaluation, and
 (iii)~score the predicted assignments against these assigned class labels with NMI and ARI.
-We sweep $n$ while holding $G$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$.
+We vary $n$ while holding $G$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$.
 We consider a \textbf{PI-like} binary structure ($G=2$, $n\in\{3,10,50,100\}$), a five-class structure ($G=5$, $n\in\{3,10,100\}$), and a ten-class structure ($G=10$, $n\in\{3,10,77\}$) together with the observed ICD-10 chapter sizes ($49$--$135$ executions per chapter, $N=770$).
 
 \noindent\textbf{Results.} Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}.
