@@ -10,12 +10,14 @@
 % excludes zero; the full distribution is Fig. fig:ablation-paired. Full-set RF counts:
 %   27 reduce / 12 no-eff / 6 neg (n=45); LR: 25 / 16 / 4.
 % Unsupervised rows: experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.md
-%   (policy-group bootstrap NMI difference B1-B2). Gas rows: same report.
+%   (policy-group bootstrap NMI difference B1-B2 for PCH/SPP; the PI interval resamples the
+%   127 pairs, piBalancedPairs.debiased_nmi; the policy-weighted interval [0.442, 0.831] is
+%   piBalancedPairs.policyWeightedDebiasedNmi, not shown). Gas rows: same report.
 \begin{table}[htbp]
 	\centering
 	\caption{Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed
 		randomized gas padding) on the same execution subset; supervised rows are the
-		largest-signal contrasts per experiment.}
+		largest-signal contrasts per experiment (per axis for SPP).}
 	\label{tab:ablation-gas-padding}
 	\begin{tabular}{lp{0.36\linewidth}cc}
 		\toprule
@@ -31,7 +33,7 @@
 		PI                             & \texttt{controlled\_difference}\,$^{\dagger}$        & $0.676$                                      & $0.446$   \\
 		                               & \quad $\Delta_{\text{leak}}=0.088$ CI$[0.062,0.111]$ &                                              &           \\
 		\midrule
-		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI, B1$-$B2 with policy-group bootstrap $95\%$ interval)}                                             \\
+		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI, B1$-$B2 with bootstrap $95\%$ interval)}                                             \\
 		PCH                            & DUO terms                                            & \multicolumn{2}{c}{$0.349$ $[0.316, 0.407]$}             \\
 		SPP                            & logic structure                                      & \multicolumn{2}{c}{$0.102$ $[0.018, 0.138]$}             \\
 		PI                             & balanced pairs (debiased NMI)                        & \multicolumn{2}{c}{$0.670$ $[0.591, 0.743]$}             \\

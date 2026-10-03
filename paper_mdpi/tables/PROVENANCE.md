@@ -842,7 +842,7 @@ RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLe
 - **Selection rule.** Among RF tasks whose interval excludes zero, the table takes the top Δ **per experiment and per SPP
   axis**. SPP ranks trivial/and_or_mixed 0.347, trivial/or_only 0.329 (same axis, skipped), and
   predicateCombo single/few 0.301. PCH takes DUO HMB 0.337 (then GR 0.297). PI takes controlled_difference 0.088, its only task
-  with an interval that excludes zero. The caption says "largest-signal contrasts per experiment", which does not mention the per-axis rule.
+  with an interval that excludes zero. The caption now says "per experiment (per axis for SPP)".
 - Counts in the header comment and the text: RF 27 reduce / 12 no effect / 6 increase; LR 25 / 16 / 4.
 
 ### Unsupervised rows
@@ -853,10 +853,11 @@ RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLe
 | SPP logic structure 0.102 [0.018, 0.138] | `policyGroupBootstrap.logicStructure.deltaB1MinusB2.nmi` | policy-group bootstrap |
 | PI balanced pairs 0.670 [0.591, 0.743] | `piBalancedPairs.debiased_nmi` | **bootstrap over the 127 pairs**, not policy-group |
 
-**The PI interval does not match the table header.** The header says "policy-group bootstrap" for all
-three rows, but the PI interval resamples pairs, which share only 24 policies. The same JSON holds the
+**PI interval (resolved 2026-10-03, values unchanged).** The header used to say "policy-group bootstrap" for all
+three rows, but the PI interval resamples pairs, which share only 24 policies. The header now says "bootstrap" without naming the method;
+a footnote naming both methods was added and then removed at the author's request (2026-10-03). The same JSON holds the
 policy-weighted bootstrap, `piBalancedPairs.policyWeightedDebiasedNmi`: mean 0.670, **[0.442, 0.831]**. Both intervals
-exclude zero.
+exclude zero; the policy-weighted interval is not shown in the paper.
 
 ### Gas rows
 
