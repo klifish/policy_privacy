@@ -9,7 +9,7 @@ table number, because the numbers shift when the layout changes. Each table sect
 which its numbers were last checked against the source.
 
 Tables still to document:
-`tab_cost_profile`, `tab_cost_scaling`, `tab_workload_scaling`.
+`tab_cost_scaling`, `tab_workload_scaling`.
 (`tab_policy_support` and `tab_threat_guarantee` are qualitative and carry their
 sources in their header comments. Four tables are defined inline in section files rather than in
 `tables/`: `tab:nmi-sample-size-sensitivity` (`sec_nmi_sensitivity.tex`, documented below), and
@@ -913,4 +913,75 @@ NMI B1-B2 PI pairs       0.670 [0.591, 0.743]  (pair bootstrap)
 NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted)
 commitGasUsed  B1 219,737  B2 304,098  (+38.4%)
 accessGasUsed  B1 723,462  B2 1,056,674  (+46.1%)
+```
+
+---
+
+## `tab:cost-profile` (`tab_cost_profile.tex`)
+
+Last checked against the source: commit `81f4b4d`, 2026-10-03. All 17 numbers match.
+
+**Sources.**
+
+- **Circuit rows**: `protocol/releases/v3.0.0-rc1.json` → `circuit.r1cs` (constraints 81,740, wires 80,884,
+  publicInputs 4, outputs 1, privateInputs 496). The header of `build/circuits/policy_privacy_main_instance.r1cs`
+  has the same values (read directly, without snarkjs), and its SHA-256 equals `artifacts.r1cs.sha256` of the
+  release.
+- **All other rows**: `experiments/data/polygonAmoy/executed_dataset.json` (1,773 executions), field
+  `features`. The dataset was captured with the rc1 artifacts: `metadata.json` → `provenance.zkeySha256` equals the
+  release's `artifacts.provingKey.sha256`, at capture commit `faf3bb0`.
+
+| Row | Field(s) | Value |
+|---|---|---|
+| Padded on-chain gas | mean `commitGasUsed`, `accessGasUsed` | 304,167.3; 1,057,283.3 |
+| Event logs | `commit/accessLogsCount`, `…LogsSize` | constant: 1 / 180 B; 2 / 296 B |
+| Calldata length | `commit/accessCalldataLength` | constant: 196 B; 612 B (also `proofSize` constant 938 B) |
+| Witness time | mean `proofWitnessTime` | 763.6 ms (min 628, max 4,589) |
+| Prove time | mean `proofProveTime` | 2,884.2 ms (min 2,512, max 7,679) |
+
+The timings come from the two-core capture server during the Amoy run, not from the Apple M1 of
+`tab:cost-scaling`/`tab:workload-scaling`.
+
+### Text that cites this table
+
+- `sec_ablation.tex`: "$81{,}740$ constraints", "$763.6$ ms and $2{,}884.2$ ms" agree. "together $18\%$ of the mean
+  unpadded access cost": (64,022 + 68,946) / 723,462 = 18.4% agrees. The 88 / 605 constraint and 64,022 / 68,946 gas figures in
+  the same paragraph come from other sources and are not checked here.
+- **The padded means used elsewhere differ from this table.** `sec_ablation.tex` (Cost) and `sec_discussion.tex`
+  ("each padded access costs $1{,}056{,}674$ gas on average", commit "$304{,}098$") use the **1,119-execution ablation
+  subset** means, while this table gives the **full-corpus** means 1,057,283 / 304,167. In the ablation the subset is
+  correct, because it is compared with B1. The discussion's per-request estimate now uses the full-corpus means and cites this table
+  (changed 2026-10-03). The POL values do not change: 1,057,283 × 30 gwei = 0.0317 and 304,167 × 30 gwei = 0.0091.
+
+### Recompute
+
+```bash
+python3 - <<'PY'
+import json, statistics as st, collections as C
+r = json.load(open("protocol/releases/v3.0.0-rc1.json"))["circuit"]["r1cs"]
+print(f"r1cs: constraints {r['constraints']}  wires {r['wires']}  public in {r['publicInputs']}  out {r['outputs']}")
+D = json.load(open("experiments/data/polygonAmoy/executed_dataset.json"))
+f = lambda k: [float(e["features"][k]) for e in D]
+for k in ["commitGasUsed", "accessGasUsed", "proofWitnessTime", "proofProveTime"]:
+    print(f"{k:20s} mean {st.mean(f(k)):,.1f}  (n {len(D)})")
+for k in ["commitLogsCount", "commitLogsSize", "accessLogsCount", "accessLogsSize",
+          "commitCalldataLength", "accessCalldataLength"]:
+    print(f"{k:20s} values {dict(C.Counter(int(x) for x in f(k)))}")
+PY
+```
+
+Expected output:
+
+```
+r1cs: constraints 81740  wires 80884  public in 4  out 1
+commitGasUsed        mean 304,167.3  (n 1773)
+accessGasUsed        mean 1,057,283.3  (n 1773)
+proofWitnessTime     mean 763.6  (n 1773)
+proofProveTime       mean 2,884.2  (n 1773)
+commitLogsCount      values {1: 1773}
+commitLogsSize       values {180: 1773}
+accessLogsCount      values {2: 1773}
+accessLogsSize       values {296: 1773}
+commitCalldataLength values {196: 1773}
+accessCalldataLength values {612: 1773}
 ```
