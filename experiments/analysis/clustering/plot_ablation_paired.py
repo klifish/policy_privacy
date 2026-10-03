@@ -30,6 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+from experiments.analysis.clustering.paper_style import use_paper_fonts
 from experiments.analysis.paths import CLUSTERING_RESULTS_DIR, SUPERVISED_RESULTS_DIR
 
 DELTA_CSV = SUPERVISED_RESULTS_DIR / "gas_padding_supervised_deltaLeakage.csv"
@@ -38,11 +39,17 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 FAMILIES = ["spp", "pch", "pi"]
 
-# reduce / no-effect / negative  (muted palette, consistent with the clustering figure)
-CAT_COLOR = {"reduce": "#6DA86F", "noeff": "#9AA0A6", "neg": "#D26B5B"}
-CAT_LABEL = {"reduce": "reduce (CI $>$ 0)",
+# reduce / no-effect / negative is ordered by sign, so it is colored as a diverging
+# scale: blue and red poles with a neutral gray midpoint (CVD-validated on white).
+CAT_COLOR = {"reduce": "#2A78D6", "noeff": "#8F8E88", "neg": "#E34948"}
+# the y = x reference and its "padding helps" label, in a hue no category uses
+DIAG = "#4A3AA7"
+DIAG_FILL = "#F4F3FB"
+GRID = "#D9D8D2"
+AXIS = "#52514E"
+CAT_LABEL = {"reduce": "reduce (CI > 0)",
              "noeff": "no eff. (CI spans 0)",
-             "neg": "neg. (CI $<$ 0)"}
+             "neg": "neg. (CI < 0)"}
 
 
 def categorize(ci95):
@@ -76,15 +83,12 @@ def counts(points):
     return c
 
 
-def panel(ax, points, title, subtitle, hi):
-    c = counts(points)
-    n = len(points)
+def panel(ax, points, tag, hi):
     # reference diagonal y = x; the lower triangle is "padding helps"
-    ax.plot([0, hi], [0, hi], color="#555555", linewidth=1.0, linestyle="--", zorder=1)
-    ax.fill_between([0, hi], [0, 0], [0, hi], color="#F4F7F4", zorder=0)  # lower triangle
+    ax.plot([0, hi], [0, hi], color=DIAG, linewidth=1.0, linestyle="--", zorder=1)
+    ax.fill_between([0, hi], [0, 0], [0, hi], color=DIAG_FILL, zorder=0)  # lower triangle
     ax.text(hi * 0.76, hi * 0.63, "padding helps (below diagonal)", fontsize=9,
-            color="#3d3d3d", ha="center", va="center", style="italic",
-            rotation=45, rotation_mode="anchor")
+            color=DIAG, ha="center", va="center", rotation=45, rotation_mode="anchor")
 
     # plot in a stable category order so colors layer predictably
     for cat in ("noeff", "reduce", "neg"):
@@ -96,44 +100,39 @@ def panel(ax, points, title, subtitle, hi):
     ax.set_xlim(-0.01, hi)
     ax.set_ylim(-0.01, hi)
     ax.set_aspect("equal", adjustable="box")
-    ax.set_xlabel(r"$|\mathrm{AUC}_{B1}-0.5|$  (unpadded)")
-    ax.grid(True, linestyle=":", alpha=0.4, zorder=1)
+    # bars and minus as text, not mathtext, which pads "|" like a relation
+    ax.set_xlabel("|AUC$_{\\mathrm{B1}}$ \u2212 0.5|  (unpadded)")
+    ax.set_ylabel("|AUC$_{\\mathrm{B2}}$ \u2212 0.5|  (padded)")
+    ax.tick_params(labelleft=True, length=0)
+    ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    ax.spines["left"].set_color("#888888")
-    ax.spines["bottom"].set_color("#888888")
-    ax.tick_params(length=0)
-    counts_str = (f"{c['reduce']} reduce / {c['noeff']} no eff. / {c['neg']} neg."
-                  f"   (n={n})")
-    ax.set_title(f"{title}\n{counts_str}\n{subtitle}", fontsize=10, pad=8)
+    ax.spines["left"].set_color(AXIS)
+    ax.spines["bottom"].set_color(AXIS)
+    # panel tag under the x-axis label; the caption names (a) RF and (b) LR
+    ax.text(0.5, -0.2, tag, transform=ax.transAxes, ha="center", va="top", fontsize=11)
 
 
 def main():
     data = collect()
-    plt.rcParams.update({"font.size": 11, "axes.titlesize": 11})
+    use_paper_fonts(11)
     fig, (ax_rf, ax_lr) = plt.subplots(1, 2, figsize=(9.4, 4.8), sharey=True)
 
     # square axes sized to the largest deviation across both panels
     allpts = data["rf"] + data["lr"]
     hi = max(0.34, max(max(p[1], p[2]) for p in allpts) + 0.02)
 
-    panel(ax_rf, data["rf"], "Random forest (primary)",
-          "reference criterion", hi)
-    panel(ax_lr, data["lr"], "Logistic regression (robustness)",
-          "over-separates on near-constant features", hi)
-
-    ax_rf.set_ylabel(r"$|\mathrm{AUC}_{B2}-0.5|$  (padded)")
+    panel(ax_rf, data["rf"], "(a)", hi)
+    panel(ax_lr, data["lr"], "(b)", hi)
 
     handles = [Line2D([0], [0], marker="o", linestyle="", markersize=8,
                       markerfacecolor=CAT_COLOR[k], markeredgecolor="white",
                       label=CAT_LABEL[k]) for k in ("reduce", "noeff", "neg")]
-    handles.append(Line2D([0], [0], color="#555555", linestyle="--", label=r"$y=x$"))
+    handles.append(Line2D([0], [0], color=DIAG, linestyle="--", label="y = x"))
     fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
-               fontsize=9, bbox_to_anchor=(0.5, -0.02))
+               fontsize=9, bbox_to_anchor=(0.5, -0.04))
 
-    fig.suptitle("Gas-padding ablation: per-contrast deviation from chance, B1 (unpadded) "
-                 "vs B2 (padded)", fontsize=12, y=1.0)
-    fig.subplots_adjust(wspace=0.08, bottom=0.20, top=0.82)
+    fig.subplots_adjust(wspace=0.3, bottom=0.20, top=0.97)
 
     out = OUT_DIR / "ablation_paired_scatter.png"
     fig.savefig(out, dpi=220, bbox_inches="tight")
