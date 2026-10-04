@@ -8,7 +8,7 @@ Each candidate policy couple is assigned to one of three types: \texttt{semantic
 
 In this corpus, every couple at or above $0.999$ shares the logical form, so the \texttt{semantic\_equivalent} pairs differ in their parameters and possibly in their scope values. $70$ of the $71$ \texttt{weak\_equivalent} pairs share the logical form as well, and $30$ of these are content-identical policies that differ only in their commitment randomness; despite its name, this type therefore holds the closest pairs of the corpus.
 
-\textbf{Supervised attack.} Each pair is an ordered couple $(P_0, P_1)$, and the executed policy defines a binary label $b\in\{0,1\}$; the attacker's task is to predict $b$ from the on-chain features of a single execution, i.e.\ to decide which policy of the pair produced it. Indistinguishability is thus a two-class problem whose ideal outcome is a guess no better than a random guess, corresponding to a classifier AUC of $0.5$.
+\textbf{Supervised attack.} Each pair is an ordered couple $(P_0, P_1)$, and the attacker's task is to decide, from the on-chain features of a single execution, which policy of the pair produced it. Indistinguishability is thus a two-class problem whose ideal outcome is a guess no better than a random guess, corresponding to a classifier AUC of $0.5$.
 
 We train an LR and an RF classifier and, per pair type, report the one with the higher mean AUC, following the convention of Section~\ref{sec:eval-method}.
 We evaluate this single-execution attacker over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}).

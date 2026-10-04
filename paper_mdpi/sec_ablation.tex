@@ -14,14 +14,14 @@ All policies in the depth layer (Section~\ref{sec:eval-dataset}) are retained.
 The paired leakage metric is
 %
 \begin{equation}
-	\Delta_{\text{leak}} =
-	|\mathrm{AUC}_{\mathrm{B1}} - 0.5| -
-	|\mathrm{AUC}_{\mathrm{B2}} - 0.5|,
+	\Delta_{\text{leak},s} =
+	|\mathrm{AUC}_{\mathrm{B1},s} - 0.5| -
+	|\mathrm{AUC}_{\mathrm{B2},s} - 0.5|,
 	\label{eq:delta-leak}
 \end{equation}
 %
 where positive values mean padding moved the attacker closer to chance.
-For each task we compute $\Delta_{\text{leak}}$ on each of $30$ paired train/test splits, in which B1 and B2 share the same test policies, and report its mean with a $95\%$ percentile-bootstrap confidence interval (CI) over the splits (Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
+For each task we compute $\Delta_{\text{leak},s}$ on each of $30$ paired train/test splits $s$, in which B1 and B2 share the same test policies, and report its mean $\Delta_{\text{leak}}$ with a $95\%$ percentile-bootstrap confidence interval (CI) over the splits (Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
 
 \input{tables/tab_ablation_gas_padding.tex}
 

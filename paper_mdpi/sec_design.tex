@@ -29,7 +29,7 @@ The generic interpreter also evaluates NOT, but the DUO compiler does not expose
 Second, a Boolean policy class admits a fixed-length encoding evaluated by a single reusable interpreter circuit, which keeps the verification interface policy-independent, a prerequisite for the privacy objectives evaluated later.
 Let
 \begin{equation}
-	X = \{0,1\}^{N}, \qquad B = \{0,1\}^{M}
+	X = \{0,1\}^{N}, \qquad B = \{0,1\}^{M},
 \end{equation}
 denote the requester-attribute assignment space and the external-predicate assignment space, respectively.
 The full assignment space is
@@ -49,7 +49,7 @@ Consent policies are expressed as Boolean formulas over assignment bits:
 	P ::= \mathit{atom} \mid (P \land P) \mid (P \lor P) \mid \neg P,\qquad
 	\mathit{atom} ::= x_i \mid y_j .
 \end{equation}
-Here $x_i$ selects requester-attribute bit $a_i$ and $y_j$ selects external-predicate bit $b_j$.
+Here $x_i$ ($1 \le i \le N$) selects requester-attribute bit $a_i$ and $y_j$ ($1 \le j \le M$) selects external-predicate bit $b_j$.
 For example, the consent condition ``the resource may be used for disease-specific research on diabetes, or for clinical care under approved clinical terms'' is expressed as $(x_1 \land y_1) \lor (x_2 \land y_2)$, where $x_1$ and $x_2$ flag the disease-specific-research and clinical-care purposes among the requester attributes, $y_1$ attests that the requested disease code lies in the committed diabetes whitelist, and $y_2$ attests that the requested clinical term lies in the approved clinical whitelist.
 Each policy is compiled into an RPN program over operand tokens and Boolean operator tokens.
 RPN linearizes arbitrarily nested formulas into a parenthesis-free token sequence that a stack machine evaluates in a single left-to-right pass with a fixed step count, a control structure that maps directly onto a fixed-size circuit and lets one interpreter serve all policies.
@@ -57,7 +57,7 @@ To support reusable verification, each program is padded to a fixed token length
 \begin{equation}
 	P_{\mathrm{enc}}= [t_{1},\ldots,t_{L}],
 \end{equation}
-together with an explicit program length $\ell \le L$ carried as a private witness.
+where $t_1,\ldots,t_\ell$ are operand tokens ($x_i$ or $y_j$) or operator tokens ($\land$, $\lor$, $\neg$), together with an explicit program length $\ell \le L$ carried as a private witness.
 The interpreter evaluates only the first $\ell$ tokens; padding positions beyond $\ell$ are inactive and leave the output unchanged.
 The example policy above compiles to the token sequence $[x_1,\, y_1,\, \land,\, x_2,\, y_2,\, \land,\, \lor]$ with $\ell = 7$; the remaining $L-7$ positions are padding.
 The implemented circuit uses $N=13$, $M=11$, and $L=\DEPTH=64$.
@@ -71,7 +71,7 @@ Given an encoded policy, its program length, and operand values, the interpreter
 RPN program using deterministic stack semantics and enforces well-formedness constraints inside the circuit.
 The circuit outputs $1$ only if the requester evidence satisfies the encoded policy.
 Well-formedness is enforced as hard constraints: for a program that violates the stack discipline, no satisfying witness exists and no proof can be generated.
-An output of $0$ therefore indicates unsatisfied evidence for a well-formed program. The proved acceptance relation is the asserted case $C(P_{\mathrm{enc}},\ell,(a,b))=1$.
+An output of $0$ therefore indicates unsatisfied evidence for a well-formed program; the proved acceptance relation is the case in which $C$ outputs $1$.
 
 The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
 
@@ -95,7 +95,7 @@ To bind each proof to a provider-defined hidden policy, the provider samples com
 		= \mathsf{Poseidon}(q\parallel \ell\parallel r),
 	\end{split}
 \end{equation}
-where $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
+where $\parallel$ denotes concatenation of field-element inputs, $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
 The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
 Accordingly, the circuit supplies the same private value $\ell$ to both the commitment verifier and the policy interpreter.
 Assuming Poseidon is collision-resistant, binding the proof to $h$ prevents the prover from changing the committed program length.
@@ -117,13 +117,13 @@ The TPS constructs the private circuit witness
 \begin{equation}
 	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega, \chi),
 \end{equation}
-where $P_{\mathrm{enc}}$ is the encoded policy, $\ell$ is its program length, $a$ denotes requester attributes, $b$ denotes external predicate outcomes, $r$ is the commitment randomness, and $\omega$ denotes auxiliary witnesses for credential- or predicate-dependent checks.
+where $P_{\mathrm{enc}}$ is the encoded policy, $\ell$ is its program length, $a$ denotes requester attributes, $b$ denotes external predicate outcomes, each constrained to the result of its check over $\omega$, $r$ is the commitment randomness, and $\omega$ denotes auxiliary witnesses for credential- or predicate-dependent checks.
 The context tuple $\chi$ consists of private circuit inputs, while its digest $d_{\chi}$ is public.
-The current public-signal vector is
+The public-signal vector is
 \begin{equation}
-	(1,h,\mathit{pp},d_{\chi},\tau),
+	x = (o,h,\mathit{pp},d_{\chi},\tau),
 \end{equation}
-where $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters and $\tau$ is the request epoch used by the temporal checks.
+where $o$ is the authorization output of the circuit, $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters, and $\tau$ is the request epoch used by the temporal checks.
 Although the three components of $\chi$ are not separate Groth16 public inputs, the ACM receives them as transaction parameters in order to recompute $d_{\chi}$; they are therefore visible in transaction calldata.
 
 For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the common reference string as a proving key and a verification key, once for the shared circuit:
@@ -132,12 +132,19 @@ For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the co
 \end{equation}
 The TPS generates a proof
 \begin{equation}
-	\pi \leftarrow \mathsf{Prove}\bigl(\mathit{pk}, w; (1,h,\mathit{pp},d_{\chi},\tau)\bigr).
+	\pi \leftarrow \mathsf{Prove}(\mathit{pk}, x, w).
 \end{equation}
-The proof certifies the conjunction that $C(P_{\mathrm{enc}},\ell,(a,b))=1$, $h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r)$, $d_{\chi}=\mathsf{Poseidon}(\chi)$, and the selected external-predicate witnesses satisfy their policy-bound verification relations.
+An accepting proof ($o=1$) certifies
+\begin{equation}
+	\begin{gathered}
+		C(P_{\mathrm{enc}},\ell,(a,b))=1, \qquad h=\mathsf{Com}(P_{\mathrm{enc}},\ell;r), \\
+		d_{\chi}=\mathsf{Poseidon}(\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel\nu),
+	\end{gathered}
+\end{equation}
+and that the selected external-predicate witnesses satisfy their policy-bound verification relations.
 Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
 Thus, within one ACM deployment, a proof generated for one requester pseudonym, resource, and nonce cannot be accepted under a different tuple.
-The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and an asserted output of $1$; otherwise the request is recorded as a denial.
+The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and $o=1$; otherwise the request is recorded as a denial.
 The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
 
 \subsection{Credential-Origin Binding}
@@ -148,12 +155,12 @@ Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively,
 Let $t_{\mathrm{from}}$ and $t_{\mathrm{until}}$ define its validity interval, and let $\gamma$ be its credential identifier.
 Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag for this credential type.
 From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, no general methods research ($\mathrm{NMDS}$), genetic studies only ($\mathrm{GSO}$), not-for-profit, non-commercial use only ($\mathrm{NPUNCU}$), population origins or ancestry research prohibited ($\mathrm{NPOA}$), not-for-profit organization use only ($\mathrm{NPU}$), and non-commercial use only ($\mathrm{NCU}$).
-For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
+For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message, denoted as:
 \begin{equation}
 	m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel
 	\mathit{id}_{\mathrm{req}}\parallel\mathit{id}_{\mathrm{res}}\parallel
 	c_0\parallel\cdots\parallel c_6\parallel
-	t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma)
+	t_{\mathrm{from}}\parallel t_{\mathrm{until}}\parallel\gamma).
 \end{equation}
 Before proof generation, an issuer holding the corresponding private signing key $s_{\mathrm{iss}}$ issues the credential by computing
 \begin{equation}

@@ -44,9 +44,9 @@ Each policy-enforcement instance corresponds to an authorization session, in
 which a requester seeks access to a protected resource under a committed policy.
 For each such session, the adversary observes a public view
 \begin{equation}
-	\mathit{view}_{\mathsf{pub}}= (h, \pi, \mathit{pp}, d_{\chi}, \tau, \mathit{id}_{\mathrm{req}}, \mathit{id}_{\mathrm{res}}, \nu, \mathit{meta}),
+	\mathit{view}_{\mathrm{pub}}= (h, \pi, o, \mathit{pp}, d_{\chi}, \tau, \mathit{id}_{\mathrm{req}}, \mathit{id}_{\mathrm{res}}, \nu, \mathit{meta}),
 \end{equation}
-where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-knowledge proof submitted for on-chain verification, $\mathit{pp}$, $d_{\chi}$, and $\tau$ are the remaining public signals of the proof statement (a parameter commitment, a context digest, and a request epoch; Section~\ref{sec:design}), $\mathit{id}_{\mathrm{req}}$, $\mathit{id}_{\mathrm{res}}$, and $\nu$ are the requester, resource, and session-nonce values carried in the access transaction, and $\mathit{meta}$ denotes transaction-level metadata
+where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-knowledge proof submitted for on-chain verification, $o$, $\mathit{pp}$, $d_{\chi}$, and $\tau$ are the remaining public signals of the proof statement (the authorization output, a parameter commitment, a context digest, and a request epoch; Section~\ref{sec:design}), $\mathit{id}_{\mathrm{req}}$, $\mathit{id}_{\mathrm{res}}$, and $\nu$ are the requester, resource, and session-nonce values carried in the access transaction, and $\mathit{meta}$ denotes transaction-level metadata
 exposed by the enforcement layer, such as calldata footprint, event structure, public-input layout, timing, and gas usage. The adversary's goal is to infer hidden information about the committed policy or the authorization interaction from this public view.
 
 In addition to the public-chain observer, we treat the requester as untrusted with respect to policy confidentiality.

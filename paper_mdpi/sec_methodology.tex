@@ -19,25 +19,26 @@ Because the split assigns whole policies rather than individual executions, we c
 Here a class is one side of the binary task (the positive or negative value of its hidden label). By keeping each class's test share close to the target ratio, the candidate search ensures every seed's test set contains both classes, so each seed's AUC is estimated on a two-class test set.
 
 For each seed we assess the AUC with a label-permutation test.
-The classifier is trained once and its test-set probability outputs are fixed; the test-set labels are then shuffled $R{=}500$ times, and the AUC is recomputed against the fixed probabilities on each shuffle, giving the null distribution of the AUC under no association between scores and labels.
+The classifier is trained once and its test-set probability outputs are fixed; the test-set labels are then shuffled $R=500$ times, and the AUC is recomputed against the fixed probabilities on each shuffle, giving the null distribution of the AUC under no association between scores and labels.
 The empirical $p$-value is
 \begin{equation}
-	p = (k+1)/(R+1),
+	p = \frac{k+1}{R+1},
 	\label{eq:perm-p}
 \end{equation}
-where $k$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; the added counts keep the $p$-value away from an exact zero. The seed is counted as significant when this $p$-value falls below $\alpha{=}0.05$.
+where $k$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; counting the observed AUC as one of the $R+1$ equally likely labelings makes this $p$-value valid, and its smallest attainable value is $1/(R+1)$. The seed is counted as significant when this $p$-value falls below $\alpha=0.05$.
 
-For each task, the result tables report the AUC averaged over seeds ($\mathrm{AUC}_{\text{mean}}$) and the AUC gap, the mean per-seed distance from chance:
+For each task, with $\mathrm{AUC}_s$ the test AUC of seed $s$ and $S=30$ seeds, the result tables report the mean AUC and the AUC gap $G_{\mathrm{AUC}}$, the mean per-seed distance from chance:
 \begin{equation}
-	\text{AUC gap} = \operatorname{mean}_s\left|\mathrm{AUC}_s-0.5\right| \;\ge\; \left|\mathrm{AUC}_{\text{mean}}-0.5\right|.
+	\mathrm{AUC}_{\text{mean}} = \frac{1}{S}\sum_{s=1}^{S}\mathrm{AUC}_s, \qquad
+	G_{\mathrm{AUC}} = \frac{1}{S}\sum_{s=1}^{S}\left|\mathrm{AUC}_s-0.5\right|.
 	\label{eq:auc-gap}
 \end{equation}
-Because the gap is computed before averaging, deviations above and below $0.5$ cannot cancel, which is why it is never smaller than the distance of $\mathrm{AUC}_{\text{mean}}$ from chance.
+Because the distance is taken before averaging, deviations above and below $0.5$ cannot cancel, so $G_{\mathrm{AUC}} \ge |\mathrm{AUC}_{\text{mean}}-0.5|$.
 
 Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
 Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
 
-The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha{=}0.05$), reported as \%sig in the result tables.
+The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha=0.05$), reported as \%sig in the result tables.
 The verdict is:
 %
 \begin{quote}
@@ -72,17 +73,17 @@ The classifiers receive all nine features of Section~\ref{sec:eval-threat}; only
 
 \subsubsection{Unsupervised Clustering Attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.
-We run K-Means (with $K$ set to the number of classes, or $K{=}2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.
+We run K-Means (with $K$ set to the number of classes, or $K=2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.
 Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
 PCH clusters all executions globally, and SPP is clustered the same way on its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}), once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count.
 At these sample sizes, ARI and NMI are read directly, each averaged over $20$ K-Means seeds.
-To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R{=}200$, so its smallest attainable value is $1/201 \approx 0.005$.
+To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, so its smallest attainable value is $1/201 \approx 0.005$.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 \noindent\textbf{Balanced pairs.} The clustering uses a dedicated pair set built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
 The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. (The supervised attack itself is unaffected: it pools executions within a pair type rather than partitioning each pair.)
 \noindent\textbf{Permutation-debiased NMI.} Even after balancing, each side of a pair holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects alone can raise NMI above zero while ARI stays at chance, so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
-The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ is the fraction of shuffles whose NMI meets or exceeds the observed value.
+The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
 The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).

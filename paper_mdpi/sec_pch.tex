@@ -9,7 +9,7 @@ Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays be
 
 \input{tables/tab_pch_terms.tex}
 
-The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the DS policies only, which carry the ICD-10 scope; median test $n{=}127$ per chapter; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
+The same pipeline applied to the ten ICD-10 chapters (one-vs-rest over the DS policies only, which carry the ICD-10 scope; median test $n=127$ per chapter; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
 Chapters ch1, ch2, and ch4 sit just above the AUC line (mean AUC $0.558$--$0.570$) but reproduce in at most $23\%$ of seeds, so they are boundary cases.
 Chapter ch5 (diseases of the nervous system) meets both conditions of the criterion: mean AUC $0.667$ with $53\%$ of seeds significant.
 We report it as a FAIL of the criterion and examine below what the classifier separates.
