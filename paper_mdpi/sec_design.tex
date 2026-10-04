@@ -60,7 +60,7 @@ To support reusable verification, each program is padded to a fixed token length
 where $t_1,\ldots,t_\ell$ are operand tokens ($x_i$ or $y_j$) or operator tokens ($\land$, $\lor$, $\neg$), together with an explicit program length $\ell \le L$ carried as a private witness.
 The interpreter evaluates only the first $\ell$ tokens; padding positions beyond $\ell$ are inactive and leave the output unchanged.
 The example policy above compiles to the token sequence $[x_1,\, y_1,\, \land,\, x_2,\, y_2,\, \land,\, \lor]$ with $\ell = 7$; the remaining $L-7$ positions are padding.
-The implemented circuit uses $N=13$, $M=11$, and $L=\DEPTH=64$.
+The implemented circuit uses $N=13$, $M=11$, and $L=64$.
 We denote the set of length-$L$ programs by $\mathsf{Prog}_{L}$.
 
 The reusable policy interpreter is a zero-knowledge circuit

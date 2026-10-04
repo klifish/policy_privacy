@@ -17,20 +17,15 @@ We report it as a FAIL of the criterion and examine below what the classifier se
 \input{tables/tab_pch_icd10.tex}
 
 \textbf{What the ch5 classifier separates.} The two gas measurements are the only non-constant observables.
-For each padded access transaction, the recorded gas can be decomposed as
+For each padded access transaction, we decompose the recorded gas as
 \begin{equation}
-	\texttt{accessGasUsed}
-	=
-	\texttt{padTarget}
-	+
-	\texttt{residualOverhead},
+	g_{\mathrm{acc}} = g_{\mathrm{pad}} + g_{\mathrm{res}},
 	\label{eq:gas-decomp}
 \end{equation}
-where the TPS draws \texttt{padTarget} uniformly from the padding band (Section~\ref{sec:design}).
+where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}), $g_{\mathrm{pad}}$ is the padding target that the TPS draws uniformly from the padding band (Section~\ref{sec:design}), and $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the residual overhead, which is not the gas of an unpadded execution.
 On Polygon Amoy, the residual overhead ranges only from $4{,}661$ to $4{,}750$ gas across all $1{,}773$ executions, so almost all variation in the padded access gas comes from the randomized target.
 The observer sees only the total gas, whereas the capture log also records each padding target.
-We therefore rerun the analysis on the residual overhead, that is, on the access gas minus the padding target, to determine whether the ch5 separation remains after removing the randomized component.
-The residual diagnoses the padded transcript; it is not the gas of an unpadded execution.
+We therefore rerun the analysis on $g_{\mathrm{res}}$ to determine whether the ch5 separation remains after removing the randomized component.
 
 Across all $20$ PCH tasks, the single-feature rank AUC of the padded access gas, computed over all executions without a classifier, coincides with that of the padding target to three decimal places, while the residual AUC lies between $0.47$ and $0.52$.
 For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $0.472$.

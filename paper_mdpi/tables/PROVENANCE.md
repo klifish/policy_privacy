@@ -989,6 +989,8 @@ accessCalldataLength values {612: 1773}
 
 ## `tab:cost-scaling` (`tab_cost_scaling.tex`)
 
+Notation: the circuit parameter `DEPTH` in the code and in the source files is the maximum program length $L$ in the paper.
+
 Last checked against the source: commit `0684e01`, 2026-10-03. All 70 cells match.
 
 **Source.** `experiments/results/cost/scalability_sweep.json` → `capacity`
