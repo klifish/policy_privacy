@@ -7,22 +7,25 @@
 \begin{table}[htbp]
 	\centering
 	\caption{Policy Content Hiding: per-chapter ICD-10 supervised attack over 30
-		policy-disjoint seeds (higher-mean-AUC classifier per chapter; med $n$: median test-set size).}
+		policy-disjoint seeds (higher-mean-AUC classifier per chapter).}
 	\label{tab:pch-icd10}
-	\begin{tabular}{lcccc}
+	\begin{tabular}{lccc}
 		\toprule
-		Chapter & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  & med $n$ \\
+		Chapter & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  \\
 		\midrule
-		ICD-10 ch0 & $0.472 \pm 0.078$      & $0.064$        & $0\%$  & $127$   \\
-		ICD-10 ch1 & $0.570 \pm 0.066$      & $0.075$        & $23\%$ & $127$   \\
-		ICD-10 ch2 & $0.565 \pm 0.071$      & $0.081$        & $10\%$ & $127$   \\
-		ICD-10 ch3 & $0.540 \pm 0.061$      & $0.061$        & $7\%$  & $127$   \\
-		ICD-10 ch4 & $0.558 \pm 0.061$      & $0.070$        & $13\%$ & $127$   \\
-		ICD-10 ch5 & $0.667 \pm 0.069$      & $0.167$        & $53\%$ & $127$   \\
-		ICD-10 ch6 & $0.464 \pm 0.077$      & $0.065$        & $0\%$  & $127$   \\
-		ICD-10 ch7 & $0.525 \pm 0.064$      & $0.058$        & $3\%$  & $127$   \\
-		ICD-10 ch8 & $0.478 \pm 0.078$      & $0.063$        & $0\%$  & $127$   \\
-		ICD-10 ch9 & $0.511 \pm 0.074$      & $0.062$        & $0\%$  & $127$   \\
+		ICD-10 ch0 & $0.472 \pm 0.078$      & $0.064$        & $0\%$ \\
+		ICD-10 ch1 & $0.570 \pm 0.066$      & $0.075$        & $23\%$ \\
+		ICD-10 ch2 & $0.565 \pm 0.071$      & $0.081$        & $10\%$ \\
+		ICD-10 ch3 & $0.540 \pm 0.061$      & $0.061$        & $7\%$ \\
+		ICD-10 ch4 & $0.558 \pm 0.061$      & $0.070$        & $13\%$ \\
+		ICD-10 ch5 & $0.667 \pm 0.069$      & $0.167$        & $53\%$ \\
+		ICD-10 ch6 & $0.464 \pm 0.077$      & $0.065$        & $0\%$ \\
+		ICD-10 ch7 & $0.525 \pm 0.064$      & $0.058$        & $3\%$ \\
+		ICD-10 ch8 & $0.478 \pm 0.078$      & $0.063$        & $0\%$ \\
+		ICD-10 ch9 & $0.511 \pm 0.074$      & $0.062$        & $0\%$ \\
 		\bottomrule
 	\end{tabular}
+	\begin{tablenote}
+		In each seed, the test set consists of $30\%$ of the $422$ DS policies ($127$ policies), each contributing one execution. The positive class of a chapter consists of the test policies in that chapter; its median size over seeds ranges from $10$ to $17$.
+	\end{tablenote}
 \end{table}

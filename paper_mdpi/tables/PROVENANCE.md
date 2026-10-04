@@ -247,6 +247,7 @@ total 1077/1773
 ## `tab:pch-terms` (`tab_pch_terms.tex`)
 
 Last checked against the source: commit `da1bab3`, 2026-10-02. All 50 cells match.
+The test-size column was moved into the table note on 2026-10-04 (40 cells plus the note; values unchanged).
 
 **Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
 `tasks[]` whose `key` starts with `DUO`. The pipeline is the shared supervised pipeline
@@ -279,11 +280,17 @@ model's entry `models.<m>`:
 | ± std | `aucStd` | **population** standard deviation of `perSeed.auc` (`np.std`, ddof = 0) |
 | AUC gap (mean) | `advantageMean` | mean of `|perSeed.auc − 0.5|` (Eq. `eq:auc-gap`) |
 | %sig | `sigFraction` | share of `perSeed.pval < 0.05`, a multiple of 1/30 |
-| med n | `medianTestN` (task level) | median test-set size over seeds |
 
-**med n = 323 for every DUO row.** Each seed keeps one execution per policy, and the
-holdout puts `round(0.3 × 1,077) = 323` policies in the test set, so the test set has 323
-rows in every seed. Of these, about 91 are GRU-positive and 232 negative for GRU.
+**Table note (test-set size).** The table has no test-size column, because `medianTestN` = 323
+for every DUO row: each seed keeps one execution per policy, and the holdout puts
+`round(0.3 × 1,077) = 323` policies in the test set. The note states this value and the range
+of the median positive test count per task (`splitDiagnostics.classes["1"].medianTestGroups`):
+
+| Term | GRU | DS | RS | POA | GS | CC | NCU | HMB | NMDS | GSO |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Positive test executions per seed (median) | 91 | 127 | 124 | 118 | 115 | 118 | 62 | 99 | 71 | 71 |
+
+Range 62–127, as stated in the note.
 
 Selected models: LR for GRU, POA, CC, NCU, and HMB; RF for DS, RS, GS, NMDS, and GSO. All 10
 tasks pass, and no model meets either leg of the criterion (max `aucMean` 0.540, max
@@ -334,6 +341,7 @@ GSO   rf  0.502 ± 0.031  gap 0.026  sig 3%  n 323
 ## `tab:pch-icd10` (`tab_pch_icd10.tex`)
 
 Last checked against the source: commit `6f785a7` plus uncommitted text edits, 2026-10-02. All 50 cells match.
+The test-size column was moved into the table note on 2026-10-04 (40 cells plus the note; values unchanged).
 
 **Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
 `tasks[]` whose `key` starts with `ICD`. The pipeline and the column definitions are
@@ -346,8 +354,10 @@ scope; `_icd_chapter` in `pch_supervised.py` drops every record without one). Th
 1 if the policy's `ontologyValue` equals the chapter index. The chapter index is defined in the
 `tab:corpus` footnote, e.g. ch5 = G00–G99, diseases of the nervous system.
 
-**med n = 127 for every row** because the holdout keeps `round(0.3 × 422) = 127` policies, with one execution
-each. Most of the test set is the negative class:
+**Table note (test-set size).** The table has no test-size column, because `medianTestN` = 127
+for every row: the holdout keeps `round(0.3 × 422) = 127` policies, with one execution
+each. The note states this value and the range of positive test counts (10–17). Most of the
+test set is the negative class:
 
 | Chapter | ch0 | ch1 | ch2 | ch3 | ch4 | ch5 | ch6 | ch7 | ch8 | ch9 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -363,7 +373,7 @@ Selected models: LR for ch0, ch5, and ch9; RF for the other seven.
 
 ### Text that cites this table (all consistent)
 
-- `sec_pch.tex`: "median test $n{=}127$", "passes nine chapters and fails one".
+- `sec_pch.tex`: "$127$ test policies per seed", "passes nine chapters and fails one".
 - `sec_pch.tex`: ch1, ch2, ch4 "mean AUC $0.558$--$0.570$", "at most $23\%$ of seeds"
   (ch1 7/30, ch2 3/30, ch4 4/30).
 - `sec_pch.tex`: ch5 "mean AUC $0.667$ with $53\%$ of seeds significant" (LR, 16/30). The

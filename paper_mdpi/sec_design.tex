@@ -95,7 +95,7 @@ To bind each proof to a provider-defined hidden policy, the provider samples com
 		= \mathsf{Poseidon}(q\parallel \ell\parallel r),
 	\end{split}
 \end{equation}
-where $\parallel$ denotes concatenation of field-element inputs, $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain.
+where $\parallel$ denotes concatenation of field-element inputs, $q$ is the Poseidon-based digest of the fixed-length encoded policy, $\ell$ is the private program length, $r$ is the commitment randomness, and $h$ is the policy commitment stored on-chain\footnote{For example, the commitment $h=\texttt{0x13bd}\ldots\texttt{e781}$ of the first policy in the evaluation dataset is recorded in the \texttt{PolicyCommitted} event of the Amoy transaction \url{https://amoy.polygonscan.com/tx/0x7b2e8238c0edb0aca858dbd4e1dca0ce0795e1fe3ae03ff6670abec697f60d6a\#eventlog}.}.
 The semantics of an encoded policy are determined by the pair $(P_{\mathrm{enc}},\ell)$, since $\ell$ identifies the active prefix of the padded token array.
 Accordingly, the circuit supplies the same private value $\ell$ to both the commitment verifier and the policy interpreter.
 Assuming Poseidon is collision-resistant, binding the proof to $h$ prevents the prover from changing the committed program length.
