@@ -2,12 +2,14 @@
 \subsection{Gas-Padding Ablation}
 \label{sec:eval-ablation}
 
-Under the full defense configuration, the modeled attacks stay below the leakage criterion for content, policy identity, and structure and parameters, except for the two failures traced to the padding target. The ablation asks \emph{why}: how much of the residual attack surface is removed by randomized gas padding after the fixed circuit and commitment-only interface have already eliminated calldata-length, proof-size, and event-log channels.
+Under the full defense configuration, the modeled attacks stay below the leakage criterion for all three privacy objectives, except for the two failures traced to the padding target. Because calldata length, proof size, and event logs are constant across the evaluated policies by design (Section~\ref{sec:eval-threat}), any policy-dependent signal can reach the observer only through gas usage. The ablation therefore measures how much of this signal randomized gas padding removes.
 
-We compare two aligned protection profiles on the same selected policy set.
-\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile without commit/access gas padding.
-\textbf{B2} is the full defense configuration of the evaluation, with randomized gas padding.
-The subset is chosen deterministically from the of-record corpus so that every content label and structural bucket keeps at least $70$ executions and $8$ independent policies and every depth-layer policy is retained.
+We compare two protection configurations on the same selected policy set, differing only in whether randomized gas padding is enabled.
+\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile, with gas padding disabled for both policy commitment and access transactions.
+\textbf{B2} enables randomized gas padding for both transaction types, yielding the full defense configuration used in the evaluation.
+The policy subset is selected deterministically from the evaluation corpus.
+Each content label and structural bucket is represented by at least $70$ executions from at least $8$ distinct policies.
+All policies in the depth layer (Section~\ref{sec:eval-dataset}) are retained.
 
 The paired leakage metric is
 %
@@ -25,17 +27,15 @@ Table~\ref{tab:ablation-gas-padding} is separated from the privacy verdicts: the
 \input{tables/tab_ablation_gas_padding.tex}
 
 \textbf{Padding removes otherwise-recoverable signal.}
-Figure~\ref{fig:ablation-paired} plots each of the $45$ supervised tasks ($20$ PCH, $4$ PI, $21$ SPP) by its random-forest deviation from chance, $|\mathrm{AUC}-0.5|$, without padding (B1, horizontal axis) and with padding (B2, vertical axis); a point below the diagonal is a task whose attacker moved closer to chance once padding was applied.
-Without padding, $21$ tasks deviate from chance by more than $0.15$; with padding, all $21$ fall below this level, and across all $45$ tasks the median deviation drops from $0.137$ to $0.038$.
+Figure~\ref{fig:ablation-paired} plots supervised tasks by their deviation from chance, $|\mathrm{AUC}-0.5|$, without padding (B1, horizontal axis) and with padding (B2, vertical axis); a point below the diagonal is a task whose attacker moved closer to chance once padding was applied.
+Without padding, $21$ tasks deviate from chance by more than $0.15$; with padding, all $21$ fall below this level, and across all tasks the median deviation drops from $0.137$ to $0.038$.
 By family, the median $\Delta_{\text{leak}}$ is $+0.173$ for SPP and $+0.058$ for PCH.
 For PI it is $-0.011$, because three of its four tasks already deviate from chance by at most $0.08$ without padding; the fourth, the positive control, drops from AUC $0.68$ to $0.45$.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{ablation_paired_scatter.png}
-	\caption{Gas-padding ablation over supervised tasks: unpadded versus
-		padded deviation from chance, colored by the sign of the $95\%$ interval of
-		$\Delta_{\text{leak}}$: (\textbf{a}) RF; (\textbf{b}) LR.}
+	\caption{Gas-padding ablation over supervised tasks: (\textbf{a}) RF; (\textbf{b}) LR.}
 	\label{fig:ablation-paired}
 \end{figure}
 

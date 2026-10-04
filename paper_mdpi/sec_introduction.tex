@@ -48,8 +48,7 @@ This paper makes the following contributions:
 	      delimited trust assumption on the TPS, which keeps policy-bound proving
 	      material and requester authorization evidence off-chain.
 
-	\item We develop a reusable zero-knowledge policy interpreter that evaluates
-	      fixed-length Boolean RPN policy programs over a bounded token alphabet.
+	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit.
 	      Combined with policy commitments, it gives all policies the same
 	      policy-independent on-chain verification interface: one circuit serves
 	      every policy, and policies can evolve without changing the on-chain verifier.

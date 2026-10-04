@@ -63,7 +63,7 @@ This binding prevents substitution of the recorded authorization context, but it
 \subsection{Privacy Objectives}
 \label{subsec:privacy-objectives}
 
-We operationalize consent policy privacy as three measurable, attack-oriented objectives that cover the information a public-chain observer could extract about a hidden policy: its semantic content, its identity relative to other policies, and its structural form.
+We operationalize consent policy privacy as three measurable, attack-oriented objectives that cover the information a public-chain observer could extract about a hidden policy: its semantic content, which of several similar policies it is, and its structural form.
 These correspond to Policy Content Hiding, Policy Indistinguishability, and Structure and Parameter Privacy, respectively.
 
 \textit{Policy Content Hiding (PCH).}
@@ -73,7 +73,7 @@ PCH requires that public-chain artifacts should not reveal the semantic content 
 PI requires that different candidate policies should not become distinguishable from their public verification artifacts when they are compiled into the same fixed public interface.
 This captures whether two policies can be told apart from commitments, proofs, public
 parameters, or metadata even when their direct representations are hidden, that is,
-whether the identity of the governing policy can be narrowed down.
+whether an observer can tell which policy governs an execution.
 
 \textit{Structure and Parameter Privacy (SPP).}
 SPP requires that public-chain artifacts should not reveal structural or parametric properties of the
@@ -83,7 +83,7 @@ hidden policy, such as logical structure, nesting depth, predicate count, or set
 
 Given a provider-defined consent policy $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption of Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
 First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester pseudonym, resource, and session), so that it cannot be reused for another context.
-Second, the policy must remain confidential: public-chain artifacts should not reveal its content, identity, or structure and parameters (PCH, PI, and SPP; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
+Second, the policy must remain confidential: public-chain artifacts should not reveal its content or its structure and parameters, nor let it be told apart from similar policies (PCH, SPP, and PI; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
 Third, authorization decisions should be auditable: each processed request, granted or denied, is recorded on-chain together with its bound context and can be checked later without exposing the policy logic.
 Fourth, one policy-independent verification interface should serve every policy in the supported class, so that policies can be added or changed without changing the on-chain verifier.
 The first, third, and fourth requirements are met by construction (Section~\ref{sec:design}); the second is evaluated empirically against the passive public-chain observer (Section~\ref{sec:eval}).
