@@ -41,4 +41,4 @@ Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ wit
 Applying it to the padding target alone reproduces the observed FAIL ($0.686$, $63\%$).
 Moreover, in the separate unpadded ablation, ch5 is already near chance (AUC $0.468$ for logistic regression and $0.455$ for random forest).
 Thus, for ch5 specifically, we find no detectable policy-dependent gas signal without padding; the FAIL in the padded corpus is instead caused by an accidental finite-corpus correlation between the random padding targets and the ch5 labels.
-This task-specific result does not imply that padding is unnecessary: the unpadded ablation reveals substantial leakage for many other policy contrasts, as shown in Section~\ref{sec:eval-ablation}.
+The unpadded ablation reveals substantial leakage for many other policy contrasts, as shown in Section~\ref{sec:eval-ablation}.

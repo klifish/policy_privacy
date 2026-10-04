@@ -8,7 +8,7 @@
 \textbf{Shared corpus.} We evaluate all three objectives on one policy corpus, so the supervised attacks and the clustering cross-check see the same transactions.
 The corpus holds 1077 distinct policies run as 1773 on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
 The policies are produced by a deterministic generator with a fixed seed (\texttt{unified-decoupled-2026}).
-For reproducibility, this generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate; this testing key does not model issuer governance or production key management.
+For reproducibility, this generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate.
 
 For each policy the generator picks its content and its structure.
 The content is a set of DUO data-use terms drawn from ten terms: five ontology-bound terms, each checked against a code set from a biomedical vocabulary (DS against ICD-10, RS (research-specific restrictions) against the Ontology for Biomedical Investigations, OBI~\cite{bandrowski2016ontology}, POA against the Human Ancestry Ontology (HANCESTRO), GS (geographical restriction) against the ISO~3166 country codes, CC against SNOMED Clinical Terms (SNOMED~CT)), and five profile-backed terms (GRU, HMB, NMDS, GSO, NCU) that are derived from the signed claims of the requester's profile credential (Section~\ref{sec:design}).

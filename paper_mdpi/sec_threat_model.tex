@@ -2,9 +2,9 @@
 \subsection{Adversary and Observables}
 \label{sec:eval-threat}
 
-We instantiate the passive public-chain observer of Section~\ref{sec:problem}: an adversary who reads the ledger without restriction and sees every transaction and event our approach emits, but never the plaintext policy or the witness.
+We instantiate the passive public-chain observer defined in Section~\ref{sec:problem}: an adversary who reads the ledger without restriction and sees every transaction and event our approach emits, but never the plaintext policy or the witness.
 
-Under the assumptions of Section~\ref{subsec:trust-model}, the byte values in the adversary's public view carry no policy information: the proof is zero-knowledge, the commitments in the public statement are hiding, and the authorization output is identical for every execution in the corpus.
+Under the assumptions stated in Section~\ref{subsec:trust-model}, the byte values in the adversary's public view carry no policy information: the proof is zero-knowledge, the commitments in the public statement are hiding, and the authorization output is identical for every execution in the corpus.
 
 The attack therefore targets the metadata of these artifacts: for each policy execution (a commit transaction followed by an access transaction) it extracts the following features:
 %

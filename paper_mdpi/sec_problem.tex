@@ -23,7 +23,7 @@ Conceptually, the TPS is an independent proof service, distinct from the provide
 Authorization correctness is primarily enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected, largely independently of how the TPS is instantiated.
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
-Weakening the TPS trust assumption itself is orthogonal and is the role of the reduced-trust instantiations above.
+
 Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, which of the four guarantees (policy confidentiality, authorization correctness, liveness, and decision auditability) is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
 \input{tables/tab_threat_guarantee.tex}
 
@@ -55,7 +55,6 @@ However, the requester does not receive the encoded policy, commitment-opening r
 This restriction matters because a requester that learned the policy could infer sensitive facts about the data subject from the consent terms themselves and, in addition, would learn the policy's full acceptance region (which attribute combinations are granted), enabling targeted evidence construction or probing beyond its own legitimate sessions.
 
 The proved authorization outcome is bound to the requester pseudonym, a protected resource, and a session nonce through the context digest defined in Section~\ref{sec:design}.
-This binding prevents substitution of the recorded authorization context, but it should not be interpreted as proof of the requester's real-world identity.
 
 \subsection{Privacy Objectives}
 \label{subsec:privacy-objectives}
@@ -78,7 +77,7 @@ hidden policy, such as logical structure, nesting depth, predicate count, or set
 
 \subsection{Problem Statement}
 
-Given a provider-defined consent policy $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption of Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
+Given $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption stated in Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
 First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester pseudonym, resource, and session), so that it cannot be reused for another context.
 Second, the policy must remain confidential: public-chain artifacts should not reveal its content or its structure and parameters, nor let it be told apart from similar policies (PCH, SPP, and PI; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
 Third, authorization decisions should be auditable: each processed request, granted or denied, is recorded on-chain together with its bound context and can be checked later without exposing the policy logic.

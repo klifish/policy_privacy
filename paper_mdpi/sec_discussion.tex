@@ -43,7 +43,6 @@ The registry and revocation roots can occupy fixed-format public or committed pa
 \textbf{Policy and context binding.}
 As described in Section~\ref{sec:design}, the policy commitment covers both the padded encoding $P_{\mathrm{enc}}$ and its active length $\ell$.
 Because $\ell$ also determines how many tokens the interpreter evaluates, an authorizing proof for $h$ cannot be based on a shorter valid prefix.
-This integrity guarantee is separate from our privacy evaluation, which measures whether public-chain artifacts reveal information about the hidden policy.
 
 The authorization context is likewise part of the proved relation.
 The circuit constrains the public digest $d_{\chi}$ to the requester pseudonym, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
@@ -56,4 +55,4 @@ The digest does not include the transaction submitter or a chain/contract domain
 Three directions follow.
 First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
 Second, accountable proof obligations (for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms) would make proof refusals attributable.
-Third, the reduced-trust TPS instantiations of Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
+Third, the reduced-trust TPS instantiations described in Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
