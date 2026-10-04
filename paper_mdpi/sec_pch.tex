@@ -30,7 +30,7 @@ where the TPS draws \texttt{padTarget} uniformly from the padding band (Section~
 On Polygon Amoy, the residual overhead ranges only from $4{,}661$ to $4{,}750$ gas across all $1{,}773$ executions, so almost all variation in the padded access gas comes from the randomized target.
 The observer sees only the total gas, whereas the capture log also records each padding target.
 We therefore rerun the analysis on the residual overhead, that is, on the access gas minus the padding target, to determine whether the ch5 separation remains after removing the randomized component.
-\textbf{This subtraction is diagnostic of the padded transcript only: the resulting residual overhead is not the gas usage of an unpadded execution.}
+The residual diagnoses the padded transcript; it is not the gas of an unpadded execution.
 
 Across all $20$ PCH tasks, the single-feature rank AUC of the padded access gas, computed over all executions without a classifier, coincides with that of the padding target to three decimal places, while the residual AUC lies between $0.47$ and $0.52$.
 For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $0.472$.

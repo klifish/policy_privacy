@@ -2,7 +2,7 @@
 \subsection{Gas-Padding Ablation}
 \label{sec:eval-ablation}
 
-Under the full defense configuration, the modeled attacks stay below the leakage criterion for all three privacy objectives, except for the two failures traced to the padding target. Because calldata length, proof size, and event logs are constant across the evaluated policies by design (Section~\ref{sec:eval-threat}), any policy-dependent signal can reach the observer only through gas usage. The ablation therefore measures how much of this signal randomized gas padding removes.
+Because calldata length, proof size, and event logs are constant across the evaluated policies by design (Section~\ref{sec:eval-threat}), any policy-dependent signal can reach the observer only through gas usage. The ablation therefore measures how much of this signal randomized gas padding removes.
 
 We compare two protection configurations on the same selected policy set, differing only in whether randomized gas padding is enabled.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile, with gas padding disabled for both policy commitment and access transactions.
@@ -22,7 +22,6 @@ The paired leakage metric is
 %
 where positive values mean padding moved the attacker closer to chance.
 For each task we compute $\Delta_{\text{leak}}$ on each of $30$ paired train/test splits, in which B1 and B2 share the same test policies, and report its mean with a $95\%$ percentile-bootstrap confidence interval (CI) over the splits (Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
-Table~\ref{tab:ablation-gas-padding} is separated from the privacy verdicts: the verdicts answer whether the full defense configuration is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
 
 \input{tables/tab_ablation_gas_padding.tex}
 

@@ -3,7 +3,7 @@
 \label{sec:eval-method}
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
-The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the area under the receiver operating characteristic curve (AUC) against the chance level of $0.5$. Its outcome serves as the main privacy verdict. The supervised adversary has strictly more information than the unsupervised one, and is thus the stronger of the two. Because this adversary is harder to defeat, a PASS under the supervised test is the more conservative verdict.
+The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the area under the receiver operating characteristic curve (AUC) against the chance level of $0.5$. Its outcome serves as the main privacy verdict. Because the supervised adversary also sees the labels, it is the stronger of the two, so a PASS under it is the more conservative verdict.
 The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
 
 \textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).
@@ -45,7 +45,7 @@ The verdict is:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A task that does not satisfy both conditions is labeled PASS; PASS does not constitute proof of zero leakage.
+We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. PASS does not constitute proof of zero leakage.
 
 \noindent\textbf{Operational thresholds and sensitivity.}
 The two conditions guard against different errors.
@@ -59,7 +59,7 @@ The AUC floor therefore acts as a safeguard rather than as the deciding conditio
 Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
 At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none. No PI task fails under any of these threshold pairs.
 In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
-We therefore treat FAIL as a diagnostic flag and examine the two observed failures in the corresponding result sections without changing their verdicts.
+We therefore examine the two observed failures in the corresponding result sections and keep their verdicts.
 
 The effectiveness of gas padding is assessed separately by the paired gas-padding ablation (Section~\ref{sec:eval-ablation}).
 Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.

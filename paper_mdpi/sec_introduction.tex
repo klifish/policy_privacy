@@ -42,10 +42,10 @@ This paper makes the following contributions:
 
 \begin{itemize}
 	\item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach to publicly
-	      verifiable and auditable consent enforcement. On-chain proof verification
-	      and auditability hold without trusting the TPS, whereas policy
-	      confidentiality and faithful witness construction rely on an explicit,
-	      delimited trust assumption on the TPS, which keeps policy-bound proving
+	      verifiable and auditable consent enforcement. The soundness of on-chain
+	      verification and the auditability of submitted decisions hold without
+	      trusting the TPS, whereas policy confidentiality, faithful witness
+	      construction, and liveness rely on trusting the TPS, which keeps policy-bound proving
 	      material and requester authorization evidence off-chain.
 
 	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit.
