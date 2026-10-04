@@ -51,7 +51,7 @@ Consent policies are expressed as Boolean formulas over assignment bits:
 \end{equation}
 Here $x_i$ selects requester-attribute bit $a_i$ and $y_j$ selects external-predicate bit $b_j$.
 For example, the consent condition ``the resource may be used for disease-specific research on diabetes, or for clinical care under approved clinical terms'' is expressed as $(x_1 \land y_1) \lor (x_2 \land y_2)$, where $x_1$ and $x_2$ flag the disease-specific-research and clinical-care purposes among the requester attributes, $y_1$ attests that the requested disease code lies in the committed diabetes whitelist, and $y_2$ attests that the requested clinical term lies in the approved clinical whitelist.
-Each policy is compiled into a Reverse Polish Notation (RPN) program over operand tokens and Boolean operator tokens.
+Each policy is compiled into an RPN program over operand tokens and Boolean operator tokens.
 RPN linearizes arbitrarily nested formulas into a parenthesis-free token sequence that a stack machine evaluates in a single left-to-right pass with a fixed step count, a control structure that maps directly onto a fixed-size circuit and lets one interpreter serve all policies.
 To support reusable verification, each program is padded to a fixed token length $L$:
 \begin{equation}
@@ -76,7 +76,7 @@ An output of $0$ therefore indicates unsatisfied evidence for a well-formed prog
 The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
 
 \noindent\textbf{Scope of the supported policies.} The policy class is restricted, and Table~\ref{tab:policy-support} states what the prototype establishes end-to-end.
-Unrestricted use (NRES) is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
+NRES is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
 Categorical data-use terms, ontology-scoped conditions, requester allowlists, profile-backed terms, the policy validity window, and time-limited use are decided at authorization time, either inside the proved relation or by the ACM from public state; profile-backed terms establish possession of issuer-signed claims.
 Because the ACM enforces time-limited use from public state, a policy containing TS is not content-private for that term: the commit transaction emits the duration, and the first grant emits the requester's window. The evaluated corpus contains no TS policies (Section~\ref{sec:eval-dataset}).
 A publication moratorium is bound into the policy as an accepted obligation but cannot be decided at request time, and institutional or ethics approval, downstream purpose limitation, post-access duties, delegation, and credential revocation are left to external governance and the issuer lifecycle.
@@ -147,7 +147,7 @@ The circuit reserves one fixed predicate slot for a credential carrying a fixed 
 Let $c_0,\ldots,c_6$ be the private, issuer-signed claim bits for, respectively, research use, health or medical use, methods development, genetic study, ancestry, commercial use, and non-profit use.
 Let $t_{\mathrm{from}}$ and $t_{\mathrm{until}}$ define its validity interval, and let $\gamma$ be its credential identifier.
 Let $d_{\mathrm{DUO}}$ be the fixed credential schema/domain tag for this credential type.
-From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, no general methods research ($\mathrm{NMDS}$), genetic studies only ($\mathrm{GSO}$), not-for-profit, non-commercial use only ($\mathrm{NPUNCU}$), population origins or ancestry research prohibited ($\mathrm{NPOA}$), not-for-profit use only ($\mathrm{NPU}$), and non-commercial use only ($\mathrm{NCU}$).
+From these signed claims, the circuit derives the DUO terms $\mathrm{GRU}$, $\mathrm{HMB}$, no general methods research ($\mathrm{NMDS}$), genetic studies only ($\mathrm{GSO}$), not-for-profit, non-commercial use only ($\mathrm{NPUNCU}$), population origins or ancestry research prohibited ($\mathrm{NPOA}$), not-for-profit organization use only ($\mathrm{NPU}$), and non-commercial use only ($\mathrm{NCU}$).
 For issuer public key $A=(A_x,A_y)$, the circuit reconstructs the domain-separated message
 \begin{equation}
 	m_{\mathrm{cred}}=\mathsf{Poseidon}(d_{\mathrm{DUO}}\parallel h\parallel

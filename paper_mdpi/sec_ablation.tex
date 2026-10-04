@@ -21,7 +21,7 @@ The paired leakage metric is
 \end{equation}
 %
 where positive values mean padding moved the attacker closer to chance.
-For each task we compute $\Delta_{\text{leak}}$ on each of $30$ paired train/test splits, in which B1 and B2 share the same test policies, and report its mean with a $95\%$ percentile-bootstrap interval over the splits (labelled CI in Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
+For each task we compute $\Delta_{\text{leak}}$ on each of $30$ paired train/test splits, in which B1 and B2 share the same test policies, and report its mean with a $95\%$ percentile-bootstrap confidence interval (CI) over the splits (Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
 Table~\ref{tab:ablation-gas-padding} is separated from the privacy verdicts: the verdicts answer whether the full defense configuration is private; this ablation attributes that privacy to a specific defense layer and reports its gas cost.
 
 \input{tables/tab_ablation_gas_padding.tex}
@@ -41,7 +41,7 @@ For PI it is $-0.011$, because three of its four tasks already deviate from chan
 
 \textbf{Source of the unpadded signal.}
 The B1 result deserves a precise reading, because the fixed circuit already makes the policy logic invisible to gas: the Groth16 verifier performs the same work for every proof, and the access-control path is the same for every policy.
-The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and eight of the ten ICD-10 chapter tasks stay near chance on it (random-forest AUC $0.455$--$0.536$); the exception, ch6, has only $9$ policies in the subset.
+The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and eight of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6, has only $9$ policies in the subset.
 
 Twelve gas is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028), and decoding the calldata of the transactions shows where the variation comes from: the requester pseudonym $\mathit{id}_{\mathrm{req}}$.
 In the evaluation, a requester who presents a profile credential is identified by a Poseidon-derived pseudonym that fills the 256-bit word, whereas a requester of an ontology-only policy carries a 128-bit random pseudonym whose upper 16 bytes are zero; the $192$-gas difference between the two encodings is exactly the gap between the two clusters of B1 gas values, and whether a policy activates the profile predicate is correlated with its DUO terms, its structure type, and its parameter bucket.
@@ -52,7 +52,7 @@ Encoding every pseudonym at full width would close this particular channel witho
 
 As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker shows the same pattern on a second, label-free attack family: the debiased NMI of the balanced PI pairs is $0.67$ higher under B1 than under B2, and the DUO-term and logic-structure clusterings lose $0.35$ and $0.10$ of NMI, each with a policy-group bootstrap interval excluding zero.
 
-The $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
+The $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD-10 ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
 These per-task counts are descriptive, not multiplicity-corrected; the causal claim rests on the direction and magnitude of the shift where a signal is present, corroborated by the independent clustering attacker.
 
 \textbf{Cost.} Padding is not free: over the subset it raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.

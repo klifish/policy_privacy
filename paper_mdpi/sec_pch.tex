@@ -2,7 +2,7 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-This attack targets the DUO data-use terms of the corpus, namely general research use (GRU), disease-specific research (DS), research-specific restrictions (RS), population origins or ancestry research (POA), geographical restriction (GS), clinical care use (CC), non-commercial use (NCU), health or medical or biomedical research (HMB), no general methods research (NMDS), and genetic studies only (GSO), as well as disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
+This attack targets the DUO data-use terms of the corpus, namely GRU, DS, RS, POA, GS, CC, NCU, HMB, NMDS, and GSO (Section~\ref{sec:eval-dataset}), as well as disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
 
 Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline stated in Section~\ref{sec:eval-method}.
 Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ threshold, so no DUO task meets either condition of the leakage criterion.
@@ -37,8 +37,8 @@ For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $
 The $34$ ch5 policies happened to draw targets whose mean is $33{,}000$ gas higher than that of the other $388$ DS policies, a $3.2\sigma$ deviation for a uniform draw of that size.
 Because each coverage-layer policy is executed once, the $30$ evaluation seeds repeatedly partition the same fixed draws, causing this accidental difference to reproduce across seeds.
 
-Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ with $10\%$ significant seeds for logistic regression and $0.561$ with $17\%$ significant seeds for random forest, both yielding PASS.
+Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ with $10\%$ significant seeds for LR and $0.561$ with $17\%$ significant seeds for RF, both yielding PASS.
 Applying it to the padding target alone reproduces the observed FAIL ($0.686$, $63\%$).
-Moreover, in the separate unpadded ablation, ch5 is already near chance (AUC $0.468$ for logistic regression and $0.455$ for random forest).
+Moreover, in the separate unpadded ablation, ch5 is already near chance (AUC $0.468$ for LR and $0.455$ for RF).
 Thus, for ch5 specifically, we find no detectable policy-dependent gas signal without padding; the FAIL in the padded corpus is instead caused by an accidental finite-corpus correlation between the random padding targets and the ch5 labels.
 The unpadded ablation reveals substantial leakage for many other policy contrasts, as shown in Section~\ref{sec:eval-ablation}.

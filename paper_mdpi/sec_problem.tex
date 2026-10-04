@@ -28,8 +28,8 @@ Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, whi
 \input{tables/tab_threat_guarantee.tex}
 
 Attribute-origin guarantees depend on the evidence type.
-For DUO terms evaluated from the claims in an issuer-signed profile credential presented by the requester (hereafter, profile-backed terms), the prototype verifies the EdDSA-Poseidon credential under an issuer key selected by the provider and bound to the policy commitment.
-EdDSA-Poseidon denotes the Edwards-curve Digital Signature Algorithm (EdDSA)~\cite{bernstein2012high} over the Baby Jubjub curve~\cite{whitehat2020babyjubjub}, instantiated with Poseidon~\cite{grassi2021poseidon}, a hash function designed for efficient evaluation inside zero-knowledge circuits.
+For DUO terms evaluated from the claims in an issuer-signed profile credential presented by the requester (hereafter, profile-backed terms), the prototype verifies the credential's signature under an issuer key selected by the provider and bound to the policy commitment.
+The signature scheme, EdDSA-Poseidon, is the Edwards-curve Digital Signature Algorithm (EdDSA)~\cite{bernstein2012high} over the Baby Jubjub curve~\cite{whitehat2020babyjubjub}, instantiated with Poseidon~\cite{grassi2021poseidon}, a hash function designed for efficient evaluation inside zero-knowledge circuits.
 The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
 Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
 

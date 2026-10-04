@@ -1,10 +1,10 @@
 \section{Background}
 \label{sec:background}
-This section reviews the technical foundations relevant to policy-private consent enforcement on blockchains. We first introduce the cryptographic access-control mechanisms commonly used in blockchain-based healthcare data sharing. We then review zero-knowledge proofs and the Data Use Ontology (DUO)~\cite{dyke2016consent}, which together provide the basis for the policy representation and verification mechanisms used in our approach.
+This section reviews the technical foundations relevant to policy-private consent enforcement on blockchains. We first introduce the cryptographic access-control mechanisms commonly used in blockchain-based healthcare data sharing. We then review zero-knowledge proofs and DUO~\cite{dyke2016consent}, which together provide the basis for the policy representation and verification mechanisms used in our approach.
 
 \subsection{Cryptographic Access Control in Blockchain Healthcare}
 \label{subsec:crypto-access}
-Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly Ciphertext-Policy Attribute-Based Encryption (CP-ABE) and Proxy Re-Encryption (PRE)~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
+Fine-grained consent management in blockchain-based healthcare data sharing is commonly built on cryptographic access-control primitives, chiefly ciphertext-policy ABE (CP-ABE) and PRE~\cite{bethencourt2007ciphertext, ateniese2006improved,ullah2023survey}.
 In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
 Both primitives remain the building blocks of current blockchain healthcare designs: recent schemes combine PRE with on-chain records to delegate access to medical records and Internet of Medical Things (IoMT) data~\cite{pei2024proxy,zhou2024secure}, and CP-ABE variants hide the access policy and attributes~\cite{yang2024hamed,ding2026badsabe}, in one case also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
@@ -12,26 +12,26 @@ These primitives determine who may obtain the data, but standard CP-ABE does not
 
 
 \subsection{Zero-Knowledge Proofs}
-Zero-knowledge proofs (ZKPs) are cryptographic protocols that allow a prover to convince a verifier that a statement is true without revealing any information beyond the validity of the statement~\cite{groth2016size}.
-Modern ZKP systems support verifiable computation over private inputs, so that complex predicates can be proven without disclosing the underlying data.
-In blockchain settings, ZKPs are widely used to reconcile public verifiability with privacy: privacy-focused systems such as Zerocash and Tornado Cash apply them to conceal transaction details or provide transaction anonymity~\cite{sasson2014zerocash, nadler2023tornado}.
-These properties make ZKPs a natural building block for proving that a requester satisfies a hidden consent policy, which is the direction our approach develops.
+Zero-knowledge proofs are cryptographic protocols that allow a prover to convince a verifier that a statement is true without revealing any information beyond the validity of the statement~\cite{groth2016size}.
+Modern zero-knowledge proof systems support verifiable computation over private inputs, so that complex predicates can be proven without disclosing the underlying data.
+In blockchain settings, zero-knowledge proofs are widely used to reconcile public verifiability with privacy: privacy-focused systems such as Zerocash and Tornado Cash apply them to conceal transaction details or provide transaction anonymity~\cite{sasson2014zerocash, nadler2023tornado}.
+These properties make zero-knowledge proofs a natural building block for proving that a requester satisfies a hidden consent policy, which is the direction our approach develops.
 
 \subsection{The Data Use Ontology}
 \label{subsec:duo}
 DUO provides a standardized vocabulary for expressing biomedical data-sharing consent conditions, and its terms are widely adopted in genomics and biobanking to enable semantic interoperability~\cite{lawson2021data, dyke2016consent}.
-A DUO-based policy combines permissions and modifiers, such as general research use (GRU), disease-specific research (DS), or a requirement that ethics-committee approval be obtained (IRB), into the condition under which access is granted.
+A DUO-based policy combines permissions and modifiers, such as general research use, disease-specific research, or a requirement that ethics approval be obtained, into the condition under which access is granted.
 
 \paragraph{DUO Term Categories}
 Although DUO offers a rich set of permissions and modifiers, its terms are heterogeneous in how they must be evaluated for compliance.
 To structure their handling in a zero-knowledge setting, we group DUO terms into four categories:
 
 \begin{itemize}
-	\item \textbf{Boolean-only:} simple yes/no conditions that can be represented directly without external validation, e.g.\ ``no restriction'' (NRES), general research use (GRU), or ``health/medical/biomedical research'' (HMB).
+	\item \textbf{Boolean-only:} simple yes/no conditions that can be represented directly without external validation, e.g.\ ``no restriction'' (NRES), general research use (GRU), or ``health or medical or biomedical research'' (HMB).
 
-	\item \textbf{Ontology-linked:} terms whose evaluation involves consistency checks against external vocabularies or classifications, e.g.\ disease-specific research (DS), population origins or ancestry research (POA), or clinical care use (CC).
+	\item \textbf{Ontology-linked:} terms whose evaluation involves consistency checks against external vocabularies or classifications, e.g.\ disease-specific research (DS), population origins or ancestry research only (POA), or clinical care use (CC).
 
-	\item \textbf{Obligation-required:} terms that impose procedural or temporal obligations, e.g.\ ``publication required'' (PUB), ``publication moratorium'' (MOR), ``time limit on use'' (TS), or ``return to database'' (RTN).
+	\item \textbf{Obligation-required:} terms that impose procedural or temporal obligations, e.g.\ ``publication required'' (PUB), ``publication moratorium'' (MOR), ``time limit on use'' (TS), or ``return to database or resource'' (RTN).
 
 	\item \textbf{Credential-required:} terms whose evaluation relies on attested proof of requester status or approvals, e.g.\ ``collaboration required'' (COL), ``ethics approval required'' (IRB), ``project-specific restriction'' (PS), or ``institution-specific restriction'' (IS).
 \end{itemize}
