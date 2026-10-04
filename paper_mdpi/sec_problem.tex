@@ -32,8 +32,6 @@ For DUO terms evaluated from the claims in an issuer-signed profile credential p
 EdDSA-Poseidon denotes the Edwards-curve Digital Signature Algorithm (EdDSA)~\cite{bernstein2012high} over the Baby Jubjub curve~\cite{whitehat2020babyjubjub}, instantiated with Poseidon~\cite{grassi2021poseidon}, a hash function designed for efficient evaluation inside zero-knowledge circuits.
 The credential binds the policy commitment, requester pseudonym, protected resource, claims, validity interval, and credential identifier; the corresponding policy attributes are derived inside the circuit.
 Thus, subject to signature unforgeability and Poseidon collision resistance, these values cannot be modified without invalidating the proof.
-This guarantee does not establish the real-world authority of the issuer or the truthfulness of issuance.
-Ontology and requester-allowlist predicates likewise establish membership only relative to provider-committed sets.
 
 \subsection{Public-Chain Adversary}
 
