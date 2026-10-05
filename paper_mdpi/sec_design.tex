@@ -120,7 +120,7 @@ where $P_{\mathrm{enc}}$ is the encoded policy, $\ell$ is its program length, $a
 The context tuple $\chi$ consists of private circuit inputs, while its digest $d_{\chi}$ is public.
 The public-signal vector is
 \begin{equation}
-	x = (o,h,\mathit{pp},d_{\chi},\tau),
+	u = (o,h,\mathit{pp},d_{\chi},\tau),
 \end{equation}
 where $o$ is the authorization output of the circuit, $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters, and $\tau$ is the request epoch used by the temporal checks.
 Although the three components of $\chi$ are not separate Groth16 public inputs, the ACM receives them as transaction parameters in order to recompute $d_{\chi}$; they are therefore visible in transaction calldata.
@@ -131,7 +131,7 @@ For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the co
 \end{equation}
 The TPS generates a proof
 \begin{equation}
-	\pi \leftarrow \mathsf{Prove}(\mathit{pk}, x, w).
+	\pi \leftarrow \mathsf{Prove}(\mathit{pk}, u, w).
 \end{equation}
 An accepting proof ($o=1$) certifies
 \begin{equation}
