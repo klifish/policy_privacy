@@ -24,4 +24,3 @@ With that qualification, the unsupervised attacker agrees with the supervised re
 	\label{fig:clust-summary}
 \end{figure}
 
-\noindent\textbf{Removing sample-size confounds.} The PI clustering inputs are rebalanced into $30$-vs-$30$ contrasts and permutation-debiased as described in Section~\ref{sec:eval-method}. Over the $127$ balanced pairs, the mean ARI is $0.002$, the mean debiased NMI $0.001$, and $6$ pairs ($5\%$) reach nominal significance, the fraction expected under the null at $\alpha=0.05$. The conclusion matches the supervised PI result (Section~\ref{sec:eval-pi}), and the ablation (Section~\ref{sec:eval-ablation}) confirms the clustering device itself is live: on the unpadded transcript the same balanced pairs cluster with a mean debiased NMI $0.67$ higher, and the signal disappears once padding is applied.

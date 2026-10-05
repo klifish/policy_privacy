@@ -707,7 +707,8 @@ this is why the $p_{\mathrm{ARI}}$ column was dropped.
 - "ARI within ±0.003 and NMI below 0.03 for every DUO, PI, and SPP target except one" agrees.
 - ICD-10 "$p=0.15$" is `matchedIcd10.empiricalP` = 0.146 in `null/nmi_null_simulation.json`;
   "debiased NMI $0.0044$, $p=0.08$" is `debiased_nmi`/`nmi_p_value` of the ICD CSV. Both agree.
-- PI "mean ARI $0.002$, mean debiased NMI $0.001$ (0.0014), $6$ pairs ($5\%$)" agrees.
+- PI "mean debiased NMI $0.001$ (0.0014), $6$ of the $127$ pairs ($5\%$) are flagged" (tablenote; moved
+  from the removed "Removing sample-size confounds" paragraph of `sec_clustering.tex`, 2026-10-05) agrees.
 - `nestingDepth` residual "ARI $-0.0004$ ($p=0.60$)" agrees with
   `experiments/results/supervised/pad_residual_diagnostic.md` (clustering table).
 - **"while every other axis is unchanged" is not exact.** In the same diagnostic, `paramType` moves
