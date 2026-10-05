@@ -10,20 +10,23 @@
 	\caption{Supervised attack results on the Polygon Amoy dataset.}
 	\label{tab:privacy-summary}
 	% Column widths sum to <1 so that the inter-column glue fits inside the text block.
-	\begin{tabular}{p{0.16\linewidth}p{0.30\linewidth}p{0.44\linewidth}}
+	\begin{tabular}{p{0.11\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}}
 		\toprule
-		Objective & Hidden target                                              & Results \\
+		Objective & Hidden target                                              & Passing & Results (passing tasks) \\
 		\midrule
 		PCH       & DUO terms and ICD-10 chapters
-		          & AUC $0.464$--$0.570$, significant seeds median $3\%$                 \\
+		          & $19/20$ & AUC $0.464$--$0.570$, significant seeds median $3\%$ \\
 		PI        & Which policy of a related pair is executed
-		          & AUC $0.509$--$0.549$; significant seeds median $7\%$                 \\
+		          & $3/3$   & AUC $0.509$--$0.549$, significant seeds median $7\%$ \\
 		SPP       & Structure, predicate, parameter, and nesting-depth buckets
-		          & AUC $0.468$--$0.571$, significant seeds median $7\%$                 \\
+		          & $20/21$ & AUC $0.468$--$0.571$, significant seeds median $7\%$ \\
 		\bottomrule
 	\end{tabular}
 
 	\begin{tablenote}
 		AUC: area under the receiver operating characteristic curve.
+		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and the attack is significant in at least $50\%$ of $30$ seeds.
+		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, $53\%$ significant seeds) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
+		The PI positive control (\texttt{controlled\_difference}, Section~\ref{sec:eval-pi}) is excluded from the verdict.
 	\end{tablenote}
 \end{table}

@@ -74,7 +74,7 @@ FAILs, the higher-AUC model is also the one that triggers the failure (see `tab:
 
 ## `tab:privacy-summary` (`tab_privacy_summary.tex`)
 
-Last checked against the source: commit `5e6d81e`, 2026-10-02.
+Last checked against the source: commit `df7c32a`, 2026-10-05.
 
 **Sources.** `experiments/results/supervised/{pch,pi,spp}_supervised_verdict.json`,
 field `tasks[]`.
@@ -89,6 +89,12 @@ objective; see `sec_pch.tex`, `sec_pi.tex`, and `sec_spp.tex`.
 | PCH | 20: `DUO <term>` ×10 (GR, DS, RS, POA, GS, CC, NCU, HMB, NMDS, GSO), `ICD ch0`–`ch9` ×10 | Term or chapter present vs absent (one-vs-rest) |
 | PI | 4: `overall`, `semantic_equivalent`, `weak_equivalent`, `controlled_difference` | Which policy of a pair, `policy0`/`policy1`, produced the execution |
 | SPP | 21 pairwise contrasts: `structureType` 6, `predicateCombo` 3, `paramType` 6, `nestingDepth` 6 | One bucket vs the other |
+
+### Column "Passing"
+
+`passed == true` count over `nonGating == false` count: PCH 19/20, PI 3/3, SPP 20/21.
+The 42 passing tasks, the 2 FAILs, and the non-gating PI positive control
+(`controlled_difference`) make up the 45 supervised tasks cited in the text.
 
 ### Column "Results"
 
@@ -111,7 +117,7 @@ The extremes behind the ranges:
 The median is the same whether it is taken over passing tasks or over all verdict tasks
 (3% / 7% / 7%), so that choice does not change the table.
 
-**FAILs** (not shown in the current table rows):
+**FAILs** (named in the tablenote with the failing model's `aucMean` and `sigFraction`):
 
 | Task | LR `aucMean` / `sigFraction` | RF `aucMean` / `sigFraction` | Failing model |
 |---|---|---|---|
