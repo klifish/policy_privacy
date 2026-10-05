@@ -38,7 +38,7 @@ For PI it is $-0.011$, because three of its four tasks already deviate from chan
 \end{figure}
 
 The fixed circuit already makes the policy logic invisible to gas: the Groth16 verifier performs the same work for every proof, and the access-control path is the same for every policy.
-The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and eight of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6, has only $9$ policies in the subset.
+The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and nine of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6 (RF AUC $0.713$), has only $9$ policies in the subset.
 
 Decoding the calldata of the transactions traces this variation to the requester pseudonym $\mathit{id}_{\mathrm{req}}$; the $12$-gas step is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028)~\cite{akhunov2019eip2028}.
 In the evaluation, a requester who presents a profile credential is identified by a Poseidon-derived pseudonym that fills the 256-bit word, whereas a requester of an ontology-only policy carries a 128-bit random pseudonym whose upper 16 bytes are zero; the $192$-gas difference between the two encodings is exactly the gap between the two clusters of B1 gas values, and whether a policy activates the profile predicate is correlated with its DUO terms, its structure type, and its parameter bucket.

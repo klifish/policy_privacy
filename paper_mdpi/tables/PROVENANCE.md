@@ -886,7 +886,8 @@ Means over the 1,119 aligned executions: commit 219,737 → 304,098 (+38.4%), an
 - Positive control 0.68 → 0.45.
 - B1 access gas 723,288–723,564, with a cold start at 741,276. All values are multiples of 12 apart. The two clusters are
   723,288–723,372 and 723,480–723,564: offset 192, span 84 each.
-- Eight ICD chapters have B1 RF AUC 0.455–0.536; ch6 is 0.713, with 9 policies in the subset.
+- Nine ICD chapters have B1 RF AUC 0.455–0.536 (min ch5, max ch2); ch6 is 0.713, with 9 policies in the subset.
+  ch0 has only 8 policies yet stays at 0.512, so the policy count alone does not explain ch6.
 - The six negative-Δ tasks are ICD ch5, ch7, and ch9, paramType small/medium, nestingDepth shallow/medium, and nestingDepth medium/deep.
 
 ### Recompute
