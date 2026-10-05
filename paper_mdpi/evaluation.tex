@@ -6,7 +6,7 @@
 
 We evaluate PCH, PI, and SPP (Section~\ref{subsec:privacy-objectives}) against a passive public-chain observer (Section~\ref{sec:eval-threat}).
 The evidence comes from two attack families run on the same executions: a supervised attacker that tries to recover each hidden label from the on-chain observables, and an unsupervised attacker that asks whether the observables cluster along that label without seeing it.
-Across the $45$ tasks, two meet the leakage criterion (one ICD-10 chapter and one nesting-depth contrast); both trace to the randomly drawn padding target, and the unsupervised attacker finds no natural grouping by the hidden labels beyond the same padding effect.
+Across the $45$ tasks, $43$ show no leakage under the criterion, and the unsupervised attacker finds no grouping by the hidden labels; the exceptions, two supervised tasks (one ICD-10 chapter and one nesting-depth contrast) and a weak clustering signal on nesting depth, all trace to the randomly drawn padding target.
 Table~\ref{tab:privacy-summary} summarizes the headline supervised verdicts across the three privacy objectives.
 Beyond the privacy verdicts, we report the system's performance as a cost profile: per-transaction gas for commit and access (including the padding overhead), calldata sizes, circuit constraint count, and proving time, together with how circuit capacity, fixed-circuit policy complexity, and offline proof throughput scale.
 
