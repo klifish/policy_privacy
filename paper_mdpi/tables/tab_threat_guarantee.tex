@@ -1,5 +1,5 @@
 % Threat/guarantee matrix for the trust model (reviewer request).
-% Rows: actors or failure modes. Columns: the four scoped guarantees.
+% Rows: actors or failure modes. Columns: the four security properties.
 % Cell values: C = enforced cryptographically, subscripted with the mechanisms it rests on
 %   (zk/snd = Groth16 zero knowledge/soundness; hid/bind = hiding/binding of h and pp;
 %   sig = EdDSA-Poseidon unforgeability; ctx = on-chain recomputation of d_chi;
@@ -7,9 +7,9 @@
 %   the prescribed workflow; E = external/lifecycle function; \xmark = not provided.
 \begin{table}[htbp]
   \centering\small
-  \caption{Guarantees of the TPS-ZKPI prototype against each actor or failure mode, and
-    whether each rests on cryptography, on the TPS following its workflow, or on
-    external functions.}
+  \caption{Security properties of the TPS-ZKPI prototype against each actor or failure
+    mode, and what each rests on: cryptography, empirical evaluation, the TPS following
+    its workflow, or external functions.}
   \label{tab:threat-guarantee}
   \setlength{\tabcolsep}{3pt}
   \renewcommand{\arraystretch}{1.12}

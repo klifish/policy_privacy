@@ -24,7 +24,7 @@ Authorization correctness is enforced by the commitment and on-chain proof verif
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
 Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 
-Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, which of the four guarantees (policy confidentiality, authorization correctness, liveness, and decision auditability) is enforced cryptographically, which holds only under the TPS trust assumption, and which the prototype leaves to external functions or does not provide.
+Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, how each of four security properties (policy confidentiality, authorization correctness, liveness, and decision auditability) holds: whether it is enforced cryptographically, supported only empirically, dependent on the TPS trust assumption, left to external functions, or not provided by the prototype.
 \input{tables/tab_threat_guarantee.tex}
 
 Attribute-origin guarantees depend on the evidence type.
