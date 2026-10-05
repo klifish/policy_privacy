@@ -4,9 +4,9 @@
 \subsection{System and Trust Model}
 \label{subsec:trust-model}
 
-We consider a blockchain-based healthcare data-sharing system with two user roles: \textit{data providers}, who provide protected resources and govern access through consent policies, and \textit{data requesters}, who seek access to those resources subject to the applicable policies.
+We consider a blockchain-based healthcare data-sharing system with two user roles, following the consent model of Jaiman and Urovi~\cite{jaiman2020consent}: \textit{data providers}, who provide protected resources and govern access through consent policies, and \textit{data requesters}, who seek access to those resources subject to the applicable policies.
 TPS-ZKPI mediates this interaction through three components: a TPS operating off-chain, an on-chain access-control manager (ACM), and a data access layer.
-The provider defines a consent policy $P$ for a protected resource on behalf of the data subject whose consent it encodes, and registers an on-chain commitment $h$ to the encoded policy.
+The provider, which may be the data subject or an organization holding the data~\cite{jaiman2020consent}, defines a consent policy $P$ for a protected resource and registers an on-chain commitment $h$ to the encoded policy.
 The requester seeks access by submitting policy-relevant authorization evidence, such as attributes, credentials, and access context.
 The TPS constructs the private witness and generates a zero-knowledge proof
 of policy compliance.
