@@ -18,13 +18,13 @@
 % Condensed (~200 words) from the IEEEtran version in ../paper/sec_frontmatter.tex.
 \abstract{
 	Blockchain-based consent management makes healthcare data sharing auditable, but public-chain enforcement can reveal the consent policies.
-	These policies encode conditions such as disease-specific research restrictions, whose exposure can disclose sensitive information about the data subject.
+	Their conditions, such as disease-specific research restrictions, can disclose sensitive information about the data subject.
 	To address this, we propose the Trusted Proof Service (TPS)-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), in which the TPS generates zero-knowledge proofs of access decisions that a smart contract verifies against committed policies.
 	We compile each policy into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface, and mask residual gas differences with randomized gas padding.
-	We evaluate TPS-ZKPI on Polygon Amoy with supervised and unsupervised attacks in which a passive observer tries to infer hidden policy properties from public-chain metadata.
-	The results show that $43$ of $45$ supervised tasks stay below our leakage criterion, and both failures trace to chance correlations with the padding.
-	Furthermore, an ablation shows that without padding the same attacks often recover policy content and structure, while padding adds about $46\%$ gas to access and $38\%$ to policy commitment.
-	Overall, this paper shows empirically that consent enforcement on a public blockchain can resist the modeled metadata attacks, provided that the TPS follows its workflow.
+	We evaluate TPS-ZKPI on Polygon Amoy with supervised and unsupervised attacks by a passive observer inferring hidden policy properties from public-chain metadata.
+	The results show that $2$ of $45$ supervised tasks reach mean AUC above $0.55$ with significance in at least half of $30$ splits, and both trace to chance correlations with padding.
+	Furthermore, an ablation attributes the protection to randomized gas padding, without which the same attacks often recover policy content and structure.
+	Overall, this paper shows empirically that TPS-ZKPI enables auditable consent enforcement on a public blockchain that resists the modeled metadata attacks.
 }
 
 % MDPI keywords are semicolon-separated.
