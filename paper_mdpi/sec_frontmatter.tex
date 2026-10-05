@@ -22,7 +22,7 @@
 	To address this, we propose the Trusted Proof Service (TPS)-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), in which the TPS generates zero-knowledge proofs of access decisions that a smart contract verifies against committed policies.
 	We compile each policy into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface, and mask residual gas differences with randomized gas padding.
 	We evaluate TPS-ZKPI on Polygon Amoy with supervised and unsupervised attacks by a passive observer inferring hidden policy properties from public-chain metadata.
-	The results show that $2$ of $45$ supervised tasks reach mean AUC above $0.55$ with significance in at least half of $30$ splits, and both trace to chance correlations with padding.
+	The results show no leakage in $43$ of $45$ supervised tasks under a criterion requiring mean AUC above $0.55$ and significance in at least half of $30$ splits, and unsupervised clustering finds no policy structure; the few exceptions trace to chance correlations with the padding.
 	Furthermore, an ablation attributes the protection to randomized gas padding, without which the same attacks often recover policy content and structure.
 	Overall, this paper shows empirically that TPS-ZKPI enables auditable consent enforcement on a public blockchain that resists the modeled metadata attacks.
 }

@@ -35,7 +35,8 @@ Fourth, transcript normalization, including randomized gas padding, reduces the 
 We evaluate TPS-ZKPI against a passive public-chain observer who sees only the public-chain transcript.
 The evaluation expresses consent policy privacy as three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 For these objectives, supervised and unsupervised attacks test whether the public-chain metadata allow the observer to recover hidden policy content, to distinguish otherwise-equivalent policies, or to infer structural and parameter properties of a policy.
-The results show that $2$ of the $45$ supervised tasks meet our leakage criterion, which flags a task only when its mean AUC exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; both failures trace to chance correlations with the randomly drawn padding targets.
+The results show no leakage in $43$ of the $45$ supervised tasks under our leakage criterion, which flags a task only when its mean AUC exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; the other two trace to chance correlations with the randomly drawn padding targets.
+Unsupervised clustering likewise finds no policy structure beyond the same padding effect.
 Furthermore, a gas-padding ablation shows that, without padding, the same attacks recover a policy-correlated gas signal, which randomized gas padding suppresses.
 
 This paper makes the following contributions:
