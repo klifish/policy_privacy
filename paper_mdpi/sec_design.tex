@@ -42,7 +42,7 @@ The implemented relation derives these bits from their associated witnesses rath
 Ontology-linked conditions are represented extensionally rather than through in-circuit ontology reasoning.
 At encoding time, the provider expands an ontology concept into a whitelist of codes and commits the whitelist as a Merkle root among the policy's per-predicate parameters; in-circuit, the predicate check is a set-membership proof of the requested term against this root.
 A disease-specific policy scoped to diabetes, for example, whitelists the diabetes subtree of the International Classification of Diseases, 10th Revision (ICD-10), whereas one scoped to type-1 diabetes whitelists only the type-1 codes.
-Resolving subsumption at encoding time keeps ontology reasoning out of the circuit and preserves the policy-independent interface.
+Expanding the concept hierarchy at encoding time keeps ontology reasoning out of the circuit and preserves the policy-independent interface.
 
 Consent policies are expressed as Boolean formulas over assignment bits:
 \begin{equation}
