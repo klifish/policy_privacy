@@ -44,7 +44,7 @@ The verdict is:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A PASS verdict is empirical: it states that the evaluated attacks did not meet the criterion.
+We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A PASS verdict is empirical, which states that the criterion did not flag the task under the evaluated attacks.
 
 \noindent\textbf{Operational thresholds and sensitivity.}
 The two conditions guard against different errors.
@@ -64,7 +64,7 @@ Using the same policies, features, splits, and classifiers, the attacks recover 
 Thus, the leakage criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
 
 Tasks with a median test-set size below $20$ are reported as \emph{underpowered} and excluded from the verdict.
-The criterion is applied independently to LR and RF; a task fails if either classifier satisfies both conditions, and the result tables report the classifier with the higher mean AUC.
+The criterion is applied independently to LR and RF; a task fails if either classifier crosses both thresholds, and the result tables report the classifier with the higher mean AUC.
 
 The classifiers receive all nine features of Section~\ref{sec:eval-threat}; only the commit and access gas measurements vary, so they carry the only modeled policy-dependent channel that remains after transcript normalization.
 
