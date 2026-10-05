@@ -5,7 +5,7 @@
 
 As shown in Figure~\ref{fig:tps-zkpi-workflow}, the TPS-ZKPI workflow binds a provider-committed hidden policy to requester-submitted authorization evidence through TPS-side proof generation and on-chain proof verification.
 The provider registers only a policy commitment on-chain and sends policy-bound proving material to the TPS off-chain (steps 1--2 in the figure).
-For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of policy compliance, and submits a fixed-format proof statement for ACM verification (steps 3--4).
+For each access request, the TPS constructs the private witness from the hidden policy material and requester evidence, generates a zero-knowledge proof of the access decision, and submits a fixed-format proof statement for ACM verification (steps 3--4).
 The ACM records the authorization outcome in contract storage and emits it in the blockchain event log (as access-granted or access-denied events; step 5); the data access layer consults the recorded decision to serve or refuse the request (steps 6--9).
 
 This design separates confidentiality-sensitive proof generation from public verification.

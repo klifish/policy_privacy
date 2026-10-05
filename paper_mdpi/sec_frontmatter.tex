@@ -19,7 +19,7 @@
 \abstract{
 	Blockchain-based consent management makes healthcare data sharing auditable, but public-chain enforcement can reveal the consent policies.
 	These policies encode conditions such as disease-specific research restrictions, whose exposure can disclose sensitive information about the data subject.
-	To address this, we propose the Trusted Proof Service (TPS)-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), in which the TPS generates zero-knowledge proofs of compliance that a smart contract verifies against committed policies.
+	To address this, we propose the Trusted Proof Service (TPS)-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI), in which the TPS generates zero-knowledge proofs of access decisions that a smart contract verifies against committed policies.
 	We compile each policy into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface, and mask residual gas differences with randomized gas padding.
 	We evaluate TPS-ZKPI on Polygon Amoy with supervised and unsupervised attacks in which a passive observer tries to infer hidden policy properties from public-chain metadata.
 	The results show that $43$ of $45$ supervised tasks stay below our leakage criterion, and both failures trace to chance correlations with the padding.
