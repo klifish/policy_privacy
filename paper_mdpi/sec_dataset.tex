@@ -34,7 +34,7 @@ The PCH and PI analyses use all $1{,}773$ executions; the SPP analyses, supervis
 
 \textbf{Label restriction and statistical power.} We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and ten ICD-10 chapters (Table~\ref{tab:corpus}), sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
 Category-level labels are therefore the finest granularity at which the attack has adequate power.
-They do not directly test individual leaf terms: a signal specific to one term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
+A signal specific to one leaf term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
 The transcript mechanisms themselves do not depend on the policy content: the verifier work and the public interface are fixed, and the padding band is the same for every policy (Section~\ref{sec:design}).
 
 \textbf{Collection.} Executions were collected as live transactions on \emph{Polygon~Amoy} under the full defense configuration of Section~\ref{sec:eval-method} (fixed circuit, commitment-only interface, randomized gas padding); observables are extracted from the resulting receipts, calldata, and event logs.

@@ -22,7 +22,7 @@ For each padded access transaction, we decompose the recorded gas as
 	g_{\mathrm{acc}} = g_{\mathrm{pad}} + g_{\mathrm{res}},
 	\label{eq:gas-decomp}
 \end{equation}
-where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}), $g_{\mathrm{pad}}$ is the padding target that the TPS draws uniformly from the padding band (Section~\ref{sec:design}), and $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the residual overhead, which is not the gas of an unpadded execution.
+where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}), $g_{\mathrm{pad}}$ is the padding target that the TPS draws uniformly from the padding band (Section~\ref{sec:design}), and $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the residual overhead, the gas that the padded transaction consumes beyond its target.
 On Polygon Amoy, the residual overhead ranges only from $4{,}661$ to $4{,}750$ gas across all $1{,}773$ executions, so almost all variation in the padded access gas comes from the randomized target.
 The observer sees only the total gas, whereas the capture log also records each padding target.
 We therefore rerun the analysis on $g_{\mathrm{res}}$ to determine whether the ch5 separation remains after removing the randomized component.

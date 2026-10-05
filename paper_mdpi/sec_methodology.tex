@@ -44,16 +44,15 @@ The verdict is:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. PASS does not constitute proof of zero leakage.
+We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL verdict: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A PASS verdict is empirical: it states that the evaluated attacks did not meet the criterion.
 
 \noindent\textbf{Operational thresholds and sensitivity.}
 The two conditions guard against different errors.
 The AUC threshold is an effect-size floor of $0.05$ above chance: with large test sets, a permutation test can reject for a negligible AUC excess, and the floor keeps such an effect from triggering a FAIL.
 The stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
-Under the null hypothesis, each split rejects with probability $0.05$, so a majority of rejections indicates an effect that recurs across splits rather than one carried by a few favorable splits.
+Under the null hypothesis, each split rejects with probability $0.05$, so a majority of rejections indicates an effect that recurs across splits.
 Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
 In the evaluated run, the stability condition is the binding one: the AUC condition alone would flag four PCH and four SPP tasks, three of each being significant in fewer than half of the splits, whereas the stability condition alone flags the same single task per experiment as the full leakage criterion.
-The AUC floor therefore acts as a safeguard rather than as the deciding condition.
 
 Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
 At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none. No PI task fails under any of these threshold pairs.
@@ -80,7 +79,7 @@ To test whether an ARI exceeds chance, the cluster assignments are kept fixed, t
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 \noindent\textbf{Balanced pairs.} The clustering uses a dedicated pair set built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
-The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. (The supervised attack itself is unaffected: it pools executions within a pair type rather than partitioning each pair.)
+The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. The supervised attack is unaffected, because it pools the executions of each pair type.
 \noindent\textbf{Permutation-debiased NMI.} Even after balancing, each side of a pair holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects alone can raise NMI above zero while ARI stays at chance, so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
