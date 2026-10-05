@@ -21,7 +21,6 @@ The fixed circuit and the commitment-only interface make the non-gas features co
 That channel is wider than the verifier's arithmetic: because the Ethereum Virtual Machine (EVM) prices calldata per byte (four gas for a zero byte, sixteen otherwise), the gas of an access transaction also encodes the byte pattern of its public arguments, so any deterministic difference in how an argument is encoded reaches the observer through gas even when the calldata length is constant (Section~\ref{sec:eval-ablation} exhibits one such difference).
 The constant features remain in the attack pipeline but carry no variation to exploit.
 TS is the exception by design: the ACM enforces it from public state, so a TS policy discloses the term and its duration through additional events (Section~\ref{sec:design}); the evaluated corpus contains no TS policies.
-The evaluation is scoped to these observables; block timing, transaction ordering, mempool or broadcast patterns, off-chain TPS communication, adaptive or repeated requester queries, and correlations between authorization outcomes and policy classes (every evaluated request is granted) lie outside this scope, as does a TPS that deviates from its workflow (Section~\ref{subsec:trust-model}).
 
 We consider three adversary goals, one per privacy objective:
 (i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~distinguish two
