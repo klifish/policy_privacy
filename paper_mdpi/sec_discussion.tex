@@ -17,7 +17,7 @@ The overhead is a fixed premium per transaction (roughly $330{,}000$ gas on acce
 
 The offline load benchmark in Table~\ref{tab:workload-scaling} rotates the four policy classes through $100$ verified requests at each concurrency level, after five initial requests that are excluded from the measurements.
 The best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower.
-At this throughput, one prover on this host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve; the estimate is conservative, because half of the rotated requests include the harness's credential issuance (Section~\ref{sec:eval-ablation}).
+At this throughput, one prover on the benchmark host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve; the estimate is conservative, because half of the rotated requests include the harness's credential issuance (Section~\ref{sec:eval-ablation}).
 On-chain, each padded access costs $1{,}057{,}283$ gas on average (about $0.032$~POL at $30$~gwei; Table~\ref{tab:cost-profile}), so the access cost grows linearly with the number of requests, and each policy commit adds a one-time $304{,}167$ gas ($0.009$~POL).
 
 The padding band must be positioned above the unpadded access cost on the target network, which differs between networks because the verifier's cost does ($243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose BN254 precompiles are priced higher); a deployment therefore calibrates the center of the band once per network, and its width, $\pm 10\%$ here, determines how large a residual difference the random target can mask.
@@ -52,7 +52,7 @@ The guarantee is scoped to the bound tuple within one ACM deployment.
 The digest does not include the transaction submitter or a chain/contract domain, so exact-context front-running and cross-deployment reuse require separate deployment-level controls.
 
 \textbf{Future directions.}
-Three directions follow.
-First, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
-Second, accountable proof obligations (for example, on-chain commitments to serve requests together with timeout-with-evidence mechanisms) would make proof refusals attributable.
-Third, the reduced-trust TPS instantiations described in Section~\ref{sec:problem} (collaborative-SNARK or TEE-backed proving) would relax the trust concentration itself, including the attribute-origin limitation; realizing and evaluating them is left to future work.
+Based on the TPS trust assumption, its effect on accountability, and the deployment scope of context binding discussed above, we identify several directions for future work.
+For example, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.
+In addition, accountable proof obligations, such as on-chain commitments to serve requests combined with timeout-with-evidence mechanisms, would make proof refusals attributable.
+Finally, the reduced-trust TPS instantiations described in Section~\ref{sec:problem}, based on collaborative SNARKs or TEE-backed proving, would relax the trust concentration itself, including the partial delegation of attribute origin.
