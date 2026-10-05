@@ -19,6 +19,11 @@ def entries(path):
         out[key] = item
     return text, out
 
+def red(part):
+    """Wrap one \\newblock segment in a red group, keeping its trailing whitespace."""
+    text = part.rstrip()
+    return '{\\leavevmode\\color{red}' + text + '}' + part[len(text):]
+
 def norm(s):
     return ' '.join(s.split())
 
@@ -30,22 +35,23 @@ n_new = n_edit = 0
 for key, item in new.items():
     m = re.match(r'\\bibitem(?:\[.*?\])?\{[^}]*\}\s*', item, re.S)
     head, body = item[:m.end()], item[m.end():]
+    old_blocks = set() if key not in old else {norm(b) for b in re.split(r'\\newblock', old[key])}
+    # Unchanged segments stay as they are. An explicit \color{black} on them is not
+    # needed, and under XeTeX each bare \color pushes onto the color stack until the
+    # list ends; across a page break the stack underflows and drops the red of the
+    # new entries.
+    out = []
+    for part in re.split(r'(\\newblock)', body):
+        if part == '\\newblock' or not part.strip() or norm(part) in old_blocks \
+                or norm(head + part) in old_blocks:
+            out.append(part)
+        else:
+            out.append(red(part))
+    colored = head + ''.join(out)
     if key not in old:
-        colored = head + '\\color{red}' + body + '\\color{black}'
         n_new += 1
-    else:
-        old_blocks = {norm(b) for b in re.split(r'\\newblock', old[key])}
-        parts = re.split(r'(\\newblock)', body)
-        out = []
-        for part in parts:
-            if part == '\\newblock' or not part.strip():
-                out.append(part)
-            elif norm(part) in old_blocks or norm(head + part) in old_blocks:
-                out.append('\\color{black}' + part)
-            else:
-                out.append('\\color{red}' + part + '\\color{black}')
-        colored = head + ''.join(out)
-        n_edit += colored != head + ''.join('\\color{black}' + p if p.strip() and p != '\\newblock' else p for p in parts)
+    elif colored != item:
+        n_edit += 1
     marked = marked.replace(item, colored, 1)
 open(dest, 'w').write(marked)
 print(f'references: {n_new} new, {n_edit} edited, {len(new)} total')
