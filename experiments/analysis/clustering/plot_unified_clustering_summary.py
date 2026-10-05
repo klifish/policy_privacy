@@ -1,8 +1,8 @@
 """Unified cross-property clustering summary figure (PCH / PI / SPP).
 
 Replaces the three heterogeneous per-experiment plots with one publication-style figure
-in a single coordinate system: every clustering target on one axis, grouped and shaded
-by privacy property, ARI (top) and NMI (bottom), with a y=0 reference line. Values are
+in a single coordinate system: every clustering target on one axis, grouped by privacy
+property and separated by dashed lines, ARI (top) and NMI (bottom), with a y=0 reference line. Values are
 the of-record numbers behind Table `tab:clustering-summary`, read from the same CSVs:
 
   PCH-DUO   : pch/pch_global_duo_clustering.csv
@@ -31,7 +31,6 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # one hue per property (categorical slots 1-3, CVD-validated all-pairs on white)
 COLORS = {"PCH": "#2A78D6", "PI": "#EB6834", "SPP": "#1BAF7A"}
-BAND = {"PCH": "#F1F6FC", "PI": "#FEF3EE", "SPP": "#EFF9F5"}
 INK = "#333333"
 MUTED = "#52514E"
 GRID = "#D9D8D2"
@@ -101,9 +100,11 @@ def main():
     fig, (ax_a, ax_n) = plt.subplots(2, 1, figsize=(7.2, 5.0), sharex=True)
 
     for ax, vals, name in [(ax_a, ari, "ARI"), (ax_n, nmi, "NMI")]:
-        # shaded property bands behind the bars
-        for p, xs in spans.items():
-            ax.axvspan(min(xs) - 0.5, max(xs) + 0.5, color=BAND[p], zorder=0)
+        # dashed separators midway between adjacent property groups
+        groups = list(spans.values())
+        for left, right in zip(groups, groups[1:]):
+            ax.axvline((max(left) + min(right)) / 2, color=MUTED, linewidth=0.8,
+                       linestyle=(0, (4, 3)), zorder=1)
         bars = ax.bar(pos, vals, width=0.62, color=bar_colors,
                       edgecolor="white", linewidth=0.6, zorder=3)
         ax.axhline(0, color=MUTED, linewidth=0.9, zorder=2)
