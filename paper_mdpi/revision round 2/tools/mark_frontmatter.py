@@ -1,12 +1,14 @@
-"""Mark revised abstract sentences and keywords in red.
+"""Mark revised abstract words and keywords in red.
 
 MDPI declares \\abstract{} and \\keyword{} in the preamble, which latexdiff copies
 from the new version without markup. This compares them with the submitted
-front matter: an abstract sentence or a keyword is red unless it appears
+front matter: an abstract word that the submitted abstract does not have at that
+point is red, and deleted words are not shown; a keyword is red unless it appears
 verbatim (up to whitespace) in the submitted version.
 
 Usage: python3 mark_frontmatter.py OLD_FRONTMATTER_TEX DIFF_TEX
 """
+import difflib
 import re
 import sys
 
@@ -32,8 +34,38 @@ def norm(s):
     return ' '.join(re.sub(r'(?<!\\)%DIF[^\n]*', ' ', s).split())
 
 
-def sentences(s):
-    return [p for p in re.split(r'(?<=[.;])\s+(?=[A-Z])', norm(s)) if p]
+def words(s):
+    """Split on whitespace, keeping each $...$ and {...} group within one word."""
+    s, out, i = norm(s), [], 0
+    while i < len(s):
+        if s[i].isspace():
+            i += 1
+            continue
+        j = i
+        while j < len(s) and not s[j].isspace():
+            if s[j] == '$':
+                j = s.index('$', j + 1)
+            elif s[j] == '{':
+                depth = 1
+                while depth:
+                    j += 1
+                    depth += {'{': 1, '}': -1}.get(s[j], 0)
+            j += 1
+        out.append(s[i:j])
+        i = j
+    return out
+
+
+def mark_words(old, new):
+    """Return new with the words absent from old in red; deleted words are dropped."""
+    old_w, new_w = words(old), words(new)
+    out = []
+    for op, _, _, j0, j1 in difflib.SequenceMatcher(None, old_w, new_w, autojunk=False).get_opcodes():
+        if op == 'equal':
+            out += new_w[j0:j1]
+        elif j1 > j0:
+            out.append('{' + RED + ' '.join(new_w[j0:j1]) + '}')
+    return ' '.join(out)
 
 
 # The class copies \\abstract and \\keyword into the PDF subject and keywords; hide the
@@ -45,11 +77,8 @@ diff_path = sys.argv[2]
 new = open(diff_path).read()
 
 a0, a1 = braced(old, 'abstract')
-old_abstract = set(sentences(old[a0:a1]))
 b0, b1 = braced(new, 'abstract')
-marked_abstract = ' '.join(s if s in old_abstract else '{' + RED + s + '}'
-                           for s in sentences(new[b0:b1]))
-new = new[:b0] + marked_abstract + new[b1:]
+new = new[:b0] + mark_words(old[a0:a1], new[b0:b1]) + new[b1:]
 
 k0, k1 = braced(old, 'keyword')
 old_keywords = {norm(k) for k in old[k0:k1].split(';')}
