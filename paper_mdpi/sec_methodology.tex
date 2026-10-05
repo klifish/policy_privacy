@@ -11,7 +11,7 @@ The provider-to-TPS and requester-to-TPS exchanges are in-process calls: they us
 
 \subsubsection{Supervised Attacks}
 Each objective is operationalized as a set of binary \emph{tasks}, each defined by one hidden label to be recovered from the observables: detecting the presence of a specific data-use term or disease chapter (PCH, Section~\ref{sec:eval-pch}), distinguishing executions of two policies (PI, Section~\ref{sec:eval-pi}), or separating two structural buckets (SPP, Section~\ref{sec:eval-spp}).
-For every task we train a linear and a non-linear classifier, logistic regression (LR) and random forest (RF), and report the score that enters the PASS/FAIL decision (defined below).
+For every task we train a linear and a non-linear classifier, logistic regression (LR) and random forest (RF), and report the score that enters the PASS/FAIL decision.
 Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} (the same $70/30$ ratio in each of PCH, PI, and SPP): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies.
 Because the split assigns whole policies rather than individual executions, we cannot partition executions to hit the target class proportions exactly. For each seed we therefore approximate stratification by sampling many candidate splits (512 per seed in our runs) and keeping the one whose per-class test proportions are closest to $70/30$.
 Here a class is one side of the binary task (the positive or negative value of its hidden label). By keeping each class's test share close to the target ratio, the candidate search ensures every seed's test set contains both classes, so each seed's AUC is estimated on a two-class test set.
@@ -36,7 +36,7 @@ Because the distance is taken before averaging, deviations above and below $0.5$
 Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
 Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
 
-The PASS/FAIL decision, defined below, combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha=0.05$), reported as \%sig in the result tables.
+The PASS/FAIL decision combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha=0.05$), reported as \%sig in the result tables.
 The decision rule is:
 %
 \begin{quote}
@@ -62,10 +62,9 @@ The effectiveness of gas padding is assessed separately by the paired gas-paddin
 Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.
 Thus, the leakage criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
 
-Tasks with a median test-set size below $20$ are reported as \emph{underpowered} and excluded from the PASS/FAIL decision.
 The criterion is applied independently to LR and RF; a task fails if either classifier crosses both thresholds, and the result tables report the classifier with the higher mean AUC.
 
-The classifiers receive all nine features of Section~\ref{sec:eval-threat}; only the commit and access gas measurements vary, so they carry the only modeled policy-dependent channel that remains after transcript normalization.
+The classifiers receive all nine features (Section~\ref{sec:eval-threat}); only the commit and access gas measurements vary, so they carry the only modeled policy-dependent channel that remains after transcript normalization.
 
 \subsubsection{Unsupervised Clustering Attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.
