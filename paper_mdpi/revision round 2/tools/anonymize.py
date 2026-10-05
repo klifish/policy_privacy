@@ -10,6 +10,7 @@ Self-citations in the reference list stay, as they did in the first-round review
 
 Usage: python3 anonymize.py FLATTENED_TEX
 """
+import re
 import sys
 
 # Macro -> replacement for its (last) mandatory argument.
@@ -22,6 +23,10 @@ BLANK = {
     '\\funding': 'Withheld for review.',
     '\\acknowledgments': 'Withheld for review.',
 }
+
+# The archive record on Zenodo names the authors, so its link is withheld too. latexdiff
+# leaves \url outside its added-text markup, so the replacement is marked as added.
+ARCHIVE_LINK = re.compile(r'\\url\{https://doi\.org/10\.5281/zenodo\.\d+\}')
 
 
 def argument_span(text, start):
@@ -71,6 +76,9 @@ def main(path):
         text, n = blank_macro(text, macro, replacement)
         if n != 1 and macro in ('\\Author', '\\AuthorNames', '\\address', '\\corres'):
             raise SystemExit(f'anonymize.py: expected one {macro}, found {n}')
+    text, n = ARCHIVE_LINK.subn(r'\\DIFadd{[link withheld for review]}', text)
+    if n != 1:
+        raise SystemExit(f'anonymize.py: expected one Zenodo link, found {n}')
     open(path, 'w').write(text)
     print(f'anonymize.py: author information removed from {path}')
 

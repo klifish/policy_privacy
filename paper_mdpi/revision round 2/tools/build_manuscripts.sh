@@ -28,7 +28,7 @@ tectonic -X compile "$PAPER/main.tex" --outdir "$WORK/build" --keep-intermediate
 trap 'rm -f "$PAPER/main_refs_tmp.bbl" "$PAPER/main_marked_tmp.tex" "$PAPER/main_clean_tmp.tex"' EXIT
 python3 "$HERE/tools/mark_bbl.py" "$WORK/oldbuild/main.bbl" "$WORK/build/main.bbl" "$PAPER/main_refs_tmp.bbl"
 
-latexdiff --flatten --math-markup=whole --graphics-markup=none --append-safecmd=xmark,cmark \
+latexdiff --flatten --math-markup=whole --graphics-markup=none --append-safecmd=xmark,cmark --append-textcmd=dataavailability \
   --preamble="$HERE/tools/latexdiff_preamble.tex" \
   "$WORK/old/paper_mdpi/main.tex" "$PAPER/main.tex" > "$PAPER/main_marked_tmp.tex" 2> "$WORK/latexdiff.log"
 python3 "$HERE/tools/drop_deleted_parbreaks.py" "$PAPER/main_marked_tmp.tex"
