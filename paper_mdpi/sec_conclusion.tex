@@ -7,4 +7,4 @@ Each policy is compiled into a fixed-length program for a reusable zero-knowledg
 We evaluated TPS-ZKPI on the Polygon Amoy testnet with supervised and unsupervised attacks in which a passive public-chain observer tried to infer hidden policy properties from public-chain metadata.
 The results showed no leakage under our criterion in 43 of the 45 supervised tasks; the other two traced to chance correlations with the padding, and unsupervised clustering found no policy structure beyond the same padding effect.
 Furthermore, the gas-padding ablation showed that, without padding, the same attacks often recovered policy content and structure, which confirmed that padding protects the gas channel at a fixed gas cost per transaction.
-Overall, this paper showed empirically that TPS-ZKPI enables auditable consent enforcement on a public blockchain that resists the modeled metadata attacks.
+Overall, this paper showed empirically that TPS-ZKPI resists the modeled metadata attacks and provides auditable consent enforcement on a public blockchain.
