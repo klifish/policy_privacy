@@ -6,7 +6,7 @@ We evaluate each privacy objective with a primary supervised attack and a comple
 The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the AUC against the chance level of $0.5$. Its outcome provides the primary evidence for each privacy objective. Because the supervised adversary also sees the labels, it is the stronger of the two, so a PASS under it is the more conservative result.
 The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
 
-\textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).
+All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).
 The provider-to-TPS and requester-to-TPS exchanges are in-process calls: they use no public channel and produce no on-chain artifacts. They therefore do not affect the observables of Section~\ref{sec:eval-threat}, which are extracted from the resulting transaction receipts, calldata, and event logs.
 
 \subsubsection{Supervised Attacks}
@@ -46,7 +46,6 @@ The decision rule is:
 %
 We refer to this rule as the \emph{leakage criterion}. Both of its conditions are required to trigger a FAIL: the AUC threshold imposes a minimum effect size, while the significant-seed threshold requires the effect to recur across policy-disjoint splits. A PASS is an empirical statement that the criterion did not flag the task under the evaluated attacks.
 
-\noindent\textbf{Operational thresholds and sensitivity.}
 The two conditions guard against different errors.
 The AUC threshold is an effect-size floor of $0.05$ above chance: with large test sets, a permutation test can reject for a negligible AUC excess, and the floor keeps such an effect from triggering a FAIL.
 The stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
@@ -78,9 +77,9 @@ At these sample sizes, ARI and NMI are read directly, each averaged over $20$ K-
 To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, so its smallest attainable value is $1/201 \approx 0.005$.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
-\noindent\textbf{Balanced pairs.} The clustering uses a dedicated pair set built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
+First, the clustering uses a dedicated set of \emph{balanced pairs} built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
 The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. The supervised attack is unaffected, because it pools the executions of each pair type.
-\noindent\textbf{Permutation-debiased NMI.} Even after balancing, each side of a pair holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects alone can raise NMI above zero while ARI stays at chance, so ARI is read directly and NMI must be debiased.
+Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects alone can raise NMI above zero while ARI stays at chance, so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
 The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).

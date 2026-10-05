@@ -25,7 +25,6 @@ For each task we compute $\Delta_{\text{leak},s}$ on each of $30$ paired train/t
 
 \input{tables/tab_ablation_gas_padding.tex}
 
-\textbf{Padding removes otherwise-recoverable signal.}
 Figure~\ref{fig:ablation-paired} plots supervised tasks by their deviation from chance, $|\mathrm{AUC}-0.5|$, without padding (B1, horizontal axis) and with padding (B2, vertical axis); a point below the diagonal is a task whose attacker moved closer to chance once padding was applied.
 Without padding, $21$ tasks deviate from chance by more than $0.15$; with padding, all $21$ fall below this level, and across all tasks the median deviation drops from $0.137$ to $0.038$.
 By family, the median $\Delta_{\text{leak}}$ is $+0.173$ for SPP and $+0.058$ for PCH.
@@ -38,7 +37,6 @@ For PI it is $-0.011$, because three of its four tasks already deviate from chan
 	\label{fig:ablation-paired}
 \end{figure}
 
-\textbf{Source of the unpadded signal.}
 The fixed circuit already makes the policy logic invisible to gas: the Groth16 verifier performs the same work for every proof, and the access-control path is the same for every policy.
 The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and eight of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6, has only $9$ policies in the subset.
 
@@ -53,7 +51,7 @@ As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker s
 
 The $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp} (ICD-10 ch5 and \texttt{nestingDepth} \texttt{medium}/\texttt{deep} among them).
 
-\textbf{Cost.} Over the subset, padding raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
+Over the subset, padding raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
 The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, a band placed above the unpadded access cost on the target network (about $723{,}000$ gas on Amoy, as measured in B1) so that the whole band stays above real usage.
 At the $30$~gwei tip used throughout, one padded access transaction costs about $0.032$~POL (the native token of Polygon) and one commit about $0.009$~POL; the overhead is therefore a fixed per-transaction premium of roughly $330{,}000$ gas on access and $85{,}000$ on commit, independent of transaction volume, and it does not grow with policy complexity, because the unpadded cost varies by less than $300$ gas across policies and the band is fixed.
 
