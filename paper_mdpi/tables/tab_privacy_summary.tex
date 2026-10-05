@@ -15,18 +15,19 @@
 		Objective & Hidden target                                              & Passing & Results (passing tasks) \\
 		\midrule
 		PCH       & DUO terms and ICD-10 chapters
-		          & $19/20$ & AUC $0.464$--$0.570$, significant seeds median $3\%$ \\
+		          & $19/20$ & AUC $0.464$--$0.570$, median significant-seed fraction $3\%$ \\
 		PI        & Which policy of a related pair is executed
-		          & $3/3$   & AUC $0.509$--$0.549$, significant seeds median $7\%$ \\
+		          & $3/3$   & AUC $0.509$--$0.549$, median significant-seed fraction $7\%$ \\
 		SPP       & Structure, predicate, parameter, and nesting-depth buckets
-		          & $20/21$ & AUC $0.468$--$0.571$, significant seeds median $7\%$ \\
+		          & $20/21$ & AUC $0.468$--$0.571$, median significant-seed fraction $7\%$ \\
 		\bottomrule
 	\end{tabular}
 
 	\begin{tablenote}
-		AUC: area under the receiver operating characteristic curve.
-		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and the attack is significant in at least $50\%$ of $30$ seeds.
-		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, $53\%$ significant seeds) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
+		AUC: area under the receiver operating characteristic curve, averaged over $30$ policy-disjoint train/test splits (seeds).
+		Significant-seed fraction: share of seeds whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
+		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and its significant-seed fraction is at least $50\%$.
+		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, significant-seed fraction $53\%$) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
 		The PI positive control (\texttt{controlled\_difference}, Section~\ref{sec:eval-pi}) is excluded from the verdict.
 	\end{tablenote}
 \end{table}
