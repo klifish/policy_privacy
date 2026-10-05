@@ -3,7 +3,7 @@
 \label{sec:eval-method}
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
-The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the area under the receiver operating characteristic curve (AUC) against the chance level of $0.5$. Its outcome provides the primary evidence for each privacy objective. Because the supervised adversary also sees the labels, it is the stronger of the two, so a PASS under it is the more conservative result.
+The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the AUC against the chance level of $0.5$. Its outcome provides the primary evidence for each privacy objective. Because the supervised adversary also sees the labels, it is the stronger of the two, so a PASS under it is the more conservative result.
 The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
 
 \textbf{Execution setup.} All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).

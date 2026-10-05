@@ -16,11 +16,11 @@ Hidden-policy ABE~\cite{yang2024hamed,ding2026badsabe} does hide policy content,
 On a public chain, a policy can leak not only through explicit disclosure but also through metadata: the size of the calldata, the layout of the public inputs, the emitted events, the verifier interface, and the gas consumed.
 Policy-private consent enforcement therefore requires more than hiding data or proving correctness in zero knowledge: it must also control this metadata leakage, that is, what the public-chain transcript (the transaction data, events, and gas visible to any observer) reveals about the hidden policy.
 
-This paper studies this problem for blockchain-based healthcare data sharing on public blockchains.
+This paper studies policy-private consent enforcement on public blockchains for healthcare data sharing.
 The challenge is to let an on-chain verifier check that a requester satisfies a provider-defined consent policy, while ensuring that observers who see only public-chain metadata learn minimal information about the governing policy and the requester's authorization evidence.
 We focus on Boolean consent policies, including policies derived from biomedical data-use conditions such as terms from the Data Use Ontology (DUO), the Global Alliance for Genomics and Health (GA4GH) standard vocabulary of consent-based data-use conditions~\cite{lawson2021data}, and disease-scope constraints~\cite{WHO_ICD10}.
 
-To address this problem, we propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
+To verify policy satisfaction on-chain without exposing the policy in the public-chain transcript, we propose the Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter (TPS-ZKPI).
 In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain and provisions the corresponding policy-bound proving material to a Trusted Proof Service (TPS).
 A requester submits its policy-relevant authorization evidence, such as attributes, credentials, and access context, to the TPS, which constructs the private witness and generates a zero-knowledge proof that the requester satisfies the committed policy.
 A smart contract then verifies this proof against the provider's policy commitment.
@@ -35,7 +35,7 @@ Fourth, transcript normalization, including randomized gas padding, reduces the 
 We evaluate TPS-ZKPI against a passive public-chain observer who sees only the public-chain transcript.
 The evaluation expresses consent policy privacy as three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 For these objectives, supervised and unsupervised attacks test whether the public-chain metadata allow the observer to recover hidden policy content, to distinguish otherwise-equivalent policies, or to infer structural and parameter properties of a policy.
-The results show no leakage in $43$ of the $45$ supervised tasks under our leakage criterion, which flags a task only when its mean AUC exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; the other two trace to chance correlations with the randomly drawn padding targets.
+The results show no leakage in $43$ of the $45$ supervised tasks under our leakage criterion, which flags a task only when its mean area under the receiver operating characteristic curve (AUC) exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; the other two trace to chance correlations with the randomly drawn padding targets.
 Unsupervised clustering likewise finds no policy structure beyond the same padding effect.
 Furthermore, a gas-padding ablation shows that, without padding, the same attacks recover a policy-correlated gas signal, which randomized gas padding suppresses.
 
