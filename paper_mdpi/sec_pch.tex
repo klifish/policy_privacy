@@ -5,7 +5,7 @@
 This attack targets the DUO data-use terms of the corpus, namely GRU, DS, RS, POA, GS, CC, NCU, HMB, NMDS, and GSO (Section~\ref{sec:eval-dataset}), as well as disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
 
 Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline stated in Section~\ref{sec:eval-method}.
-Table~\ref{tab:pch-terms} reports the per-term verdicts: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ threshold, so no DUO task crosses either threshold of the leakage criterion.
+Table~\ref{tab:pch-terms} reports the per-term results: every DUO task stays below the $0.55$ AUC line, with mean AUC between $0.477$ and $0.540$; significant-seed fractions run up to $23\%$ (GRU), short of the $50\%$ threshold, so no DUO task crosses either threshold of the leakage criterion.
 
 \input{tables/tab_pch_terms.tex}
 

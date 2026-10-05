@@ -28,6 +28,6 @@
 		Significant-seed fraction: share of seeds whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
 		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and its significant-seed fraction is at least $50\%$.
 		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, significant-seed fraction $53\%$) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
-		The PI positive control (\texttt{controlled\_difference}, Section~\ref{sec:eval-pi}) is excluded from the verdict.
+		The PI positive control (\texttt{controlled\_difference}, Section~\ref{sec:eval-pi}) is excluded from the PASS/FAIL decision.
 	\end{tablenote}
 \end{table}
