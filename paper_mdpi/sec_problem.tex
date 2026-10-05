@@ -22,7 +22,6 @@ Conceptually, the TPS is an independent proof service, distinct from the provide
 
 Authorization correctness is enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected regardless of how the TPS is instantiated; what the TPS can still affect is the provenance of evidence that is not issuer-signed (Table~\ref{tab:threat-guarantee}).
 Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
-Our evaluation therefore assumes a TPS that follows the prescribed workflow and isolates the remaining question: what a public-chain observer can infer from the resulting public artifacts.
 
 Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, how each of four security properties (policy confidentiality, authorization correctness, liveness, and decision auditability) holds: whether it is enforced cryptographically, supported only empirically, dependent on the TPS trust assumption, left to external functions, or not provided by the prototype.
 \input{tables/tab_threat_guarantee.tex}

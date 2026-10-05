@@ -2,7 +2,7 @@
 \label{sec:related-work}
 
 Blockchain-based consent management for healthcare data sharing has been studied extensively, with smart contracts used to record, enforce, and audit consent across institutions~\cite{kakarlapudi2021systematic, welzel2025enabling,li2024you}.
-These works focus on making consent decisions verifiable and auditable, and the privacy mechanisms surveyed in this space mainly protect health data contents and user identities~\cite{li2025privacy}.
+These works focus on making consent decisions verifiable and auditable, and the privacy mechanisms surveyed in this domain mainly protect health data contents and user identities~\cite{li2025privacy}.
 The confidentiality of the governing consent policy, and what public-chain enforcement artifacts reveal about it, is typically out of scope.
 
 Beyond consent management, related work addresses individual requirements of policy-private consent enforcement (policy confidentiality, metadata-leakage control, verifiable auditability, or a stable verification interface), but none of the approaches reviewed here combines them on a public chain.
@@ -26,10 +26,6 @@ Self-sovereign-identity (SSI) architectures place verifiable claims under the re
 Buccafurri et al.~\cite{buccafurri2024holder} answer it with ciphertext-policy attribute-based proxy re-encryption. The holder stores encrypted claims off-chain under a self-defined attribute policy, and a semi-trusted, non-colluding consensus provider re-encrypts them for verifiers whose certified attributes satisfy that policy. A smart contract notarizes hashes of storage, policy-change, and access operations so that they can later be attributed to their parties, and a trusted key-generation authority issues all attribute keys.
 Zero-knowledge credential presentations likewise let a patient authenticate anonymously on public or private chains~\cite{madine2025zero}, and surveys of zero-knowledge proofs for blockchain privacy catalogue this design space~\cite{shashidhara2024promise,zhou2024leveraging}.
 TPS-ZKPI sits on the other side of the same authorization relation: the protected object is the provider's consent policy rather than the requester's claims, and the claims enter only as private witnesses of a proof with a fixed statement.
-Two differences follow.
-First, the smart contract decides rather than notarizes: it verifies the proof and records a context-bound outcome that any observer can check immediately, whereas notarization supports attribution after the fact.
-Second, off-chain trust is concentrated rather than split: their proxy never sees claim contents, whereas the TPS sees both the policy and the claims, which is why Section~\ref{sec:problem} treats the TPS as an explicit trust boundary and Table~\ref{tab:threat-guarantee} states what survives its compromise.
-The designs are complementary: the requester could release its claims only to a TPS whose certified attributes satisfy a requester-defined policy, which is the verifier-authorization problem of~\cite{buccafurri2024holder} with the TPS as verifier, and a per-request holder signature over the authorization context would further prevent a TPS from reusing observed evidence for fresh sessions (Section~\ref{sec:discussion}).
 
 Privacy-preserving access-control and policy-evaluation mechanisms have been studied in credential-based settings built on the eXtensible Access Control Markup Language (XACML) and the Security Assertion Markup Language (SAML)~\cite{ardagna2009xacml}, as well as in policy evaluation by multi-party computation (MPC) using homomorphic encryption (HE) and secure function evaluation~\cite{sheikhalishahi2019privacy}.
 These approaches support confidential authorization computation, but they are not primarily designed for settings where policy-evaluation artifacts (calldata, public inputs, emitted events, timing, and gas usage) are permanently and globally visible on a public blockchain.
