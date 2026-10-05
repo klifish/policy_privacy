@@ -12,14 +12,14 @@
 	% Column widths sum to <1 so that the inter-column glue fits inside the text block.
 	\begin{tabular}{p{0.11\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}}
 		\toprule
-		Objective & Hidden target                                              & Passing & Results (passing tasks) \\
+		Objective & Hidden target                                              & Passing                                                      & Results (passing tasks) \\
 		\midrule
 		PCH       & DUO terms and ICD-10 chapters
-		          & $19/20$ & AUC $0.464$--$0.570$, median significant-seed fraction $3\%$ \\
+		          & $19/20$                                                    & AUC $0.464$--$0.570$, median significant-seed fraction $3\%$                           \\
 		PI        & Which policy of a related pair is executed
-		          & $3/3$   & AUC $0.509$--$0.549$, median significant-seed fraction $7\%$ \\
+		          & $3/3$                                                      & AUC $0.509$--$0.549$, median significant-seed fraction $7\%$                           \\
 		SPP       & Structure, predicate, parameter, and nesting-depth buckets
-		          & $20/21$ & AUC $0.468$--$0.571$, median significant-seed fraction $7\%$ \\
+		          & $20/21$                                                    & AUC $0.468$--$0.571$, median significant-seed fraction $7\%$                           \\
 		\bottomrule
 	\end{tabular}
 
@@ -28,6 +28,5 @@
 		Significant-seed fraction: share of seeds whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
 		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and its significant-seed fraction is at least $50\%$.
 		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, significant-seed fraction $53\%$) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
-		The PI positive control (\texttt{controlled\_difference}, Section~\ref{sec:eval-pi}) is excluded from the PASS/FAIL decision.
 	\end{tablenote}
 \end{table}
