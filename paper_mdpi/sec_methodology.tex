@@ -64,7 +64,7 @@ Thus, the leakage criterion summarizes residual attack performance, whereas the 
 
 The criterion is applied independently to LR and RF; a task fails if either classifier crosses both thresholds, and the result tables report the classifier with the higher mean AUC.
 
-The classifiers receive all nine features (Section~\ref{sec:eval-threat}); only the commit and access gas measurements vary, so they carry the only modeled policy-dependent channel that remains after transcript normalization.
+The classifiers receive all nine features staged in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
 
 \subsubsection{Unsupervised Clustering Attacks}
 The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.

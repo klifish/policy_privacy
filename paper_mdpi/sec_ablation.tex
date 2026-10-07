@@ -2,7 +2,7 @@
 \subsection{Gas-Padding Ablation}
 \label{sec:eval-ablation}
 
-Because calldata length, proof size, and event logs are constant across the evaluated policies by design (Section~\ref{sec:eval-threat}), any policy-dependent signal can reach the observer only through gas usage. The ablation therefore measures how much of this signal randomized gas padding removes.
+Because gas usage is the only observable that varies across the evaluated policies (Section~\ref{sec:eval-threat}), the ablation measures how much of the policy-dependent gas signal randomized gas padding removes.
 
 We compare two protection configurations on the same selected policy set, differing only in whether randomized gas padding is enabled.
 \textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile, with gas padding disabled for both policy commitment and access transactions.
