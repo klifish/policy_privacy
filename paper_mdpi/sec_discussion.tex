@@ -41,15 +41,10 @@ A concrete deployment can add issuer governance without changing the Boolean int
 The registry and revocation roots can occupy fixed-format public or committed parameter slots, preserving the Boolean interpreter and the shape of the policy-independent public interface, although these checks require a revised circuit and new proving and verification keys. Existing healthcare credentials using Ed25519 or the Elliptic Curve Digital Signature Algorithm require either higher-cost in-circuit verification or an additional SNARK-friendly credential; TPS re-signing cannot establish issuer-origin assurance.
 
 \textbf{Policy and context binding.}
-As described in Section~\ref{sec:design}, the policy commitment covers both the padded encoding $P_{\mathrm{enc}}$ and its active length $\ell$.
-Because $\ell$ also determines how many tokens the interpreter evaluates, an authorizing proof for $h$ cannot be based on a shorter valid prefix.
-
-The authorization context is likewise part of the proved relation.
-The circuit constrains the public digest $d_{\chi}$ to the requester pseudonym, resource, and nonce used in the witness, and the ACM recomputes the same digest from the transaction parameters.
-Consequently, changing any of these values invalidates the request.
-
-The guarantee is scoped to the bound tuple within one ACM deployment.
-The digest does not include the transaction submitter or a chain/contract domain, so exact-context front-running and cross-deployment reuse require separate deployment-level controls.
+The policy commitment binds the active program length $\ell$, and the circuit ties the public digest $d_{\chi}$ to the requester pseudonym, resource, and nonce (Section~\ref{subsec:commitment}); an accepting proof therefore can neither skip part of the committed policy nor be accepted under another context.
+This context-binding guarantee applies within a single ACM deployment.
+The digest does not bind the transaction submitter, chain identifier, or contract address.
+Additional checks are therefore needed to prevent another party from copying and submitting the same request first, or reusing the proof on another chain or contract.
 
 \textbf{Future directions.}
 Based on the TPS trust assumption, its effect on accountability, and the deployment scope of context binding discussed above, we identify several directions for future work.
