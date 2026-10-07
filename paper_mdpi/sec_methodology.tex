@@ -64,10 +64,9 @@ Thus, the leakage criterion summarizes residual attack performance, whereas the 
 
 The criterion is applied independently to LR and RF; a task fails if either classifier crosses both thresholds, and the result tables report the classifier with the higher mean AUC.
 
-The classifiers receive all nine features staged in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
+The classifiers receive all nine features stated in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
 
 \subsubsection{Unsupervised Clustering Attacks}
-The clustering attacker drops the labels entirely and asks whether the gas features \emph{naturally} group along the hidden property.
 We run K-Means (with $K$ set to the number of classes, or $K=2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.
 Values near $0$ mean the clusters carry no information about the hidden label; values near $1$ mean full leakage.
 
@@ -78,7 +77,7 @@ To test whether an ARI exceeds chance, the cluster assignments are kept fixed, t
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 First, the clustering uses a dedicated set of \emph{balanced pairs} built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
 The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. The supervised attack is unaffected, because it pools the executions of each pair type.
-Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale the null simulation in Section~\ref{sec:eval-nmi-sensitivity} shows that finite-sample effects alone can raise NMI above zero while ARI stays at chance, so ARI is read directly and NMI must be debiased.
+Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is not (Section~\ref{sec:eval-nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
 The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).

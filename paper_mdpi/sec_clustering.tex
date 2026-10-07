@@ -6,15 +6,12 @@
 \subsection{Unsupervised Clustering: A Label-Free Cross-Check}
 \label{sec:eval-clustering}
 
-The supervised attacks (Sections~\ref{sec:eval-pch}--\ref{sec:eval-spp}) assume an adversary who can train on labeled executions.
-A weaker, label-free attacker asks whether the on-chain gas features \emph{cluster} along the hidden property with no supervision at all.
-
-\input{tables/tab_clustering_summary.tex}
-
-Table~\ref{tab:clustering-summary} consolidates this attack across all three objectives: K-Means recovers essentially nothing, with ARI within $\pm 0.003$ and NMI below $0.03$ for every DUO, PI, and SPP target except one.
+Table~\ref{tab:clustering-summary} applies the clustering attack stated in Section~\ref{sec:eval-method} to all three objectives: K-Means recovers essentially nothing, with ARI within $\pm 0.003$ and NMI below $0.03$ for every DUO, PI, and SPP target except one.
 NMI values are interpreted against the null simulation in Section~\ref{sec:eval-nmi-sensitivity}: the slightly higher ICD-10 NMI ($0.0281$) lies within the range of a signal-free ten-class clustering with the same chapter sizes ($p=0.15$), and permuting the chapter labels against the observed clusters gives the same reading (debiased NMI $0.0044$, $p=0.08$).
 The exception is the SPP \texttt{nestingDepth} axis, whose ARI of $0.007$ is tiny in magnitude but permutation-significant ($p_{\mathrm{ARI}}=0.005$). It mirrors the \texttt{medium}/\texttt{deep} failure reported in Section~\ref{sec:eval-spp}: clustering the same executions on the residual gas (access gas minus the padding target) returns the axis to ARI $-0.0004$ ($p=0.60$), and no other axis exceeds ARI $0.003$ on the residual (\texttt{paramType} reaches $0.0026$, $p=0.04$). The grouping therefore follows the per-policy random draws of the padding.
 With that qualification, the unsupervised attacker agrees with the supervised results as a second, label-free attack family on the same dataset (Figure~\ref{fig:clust-summary}).
+
+\input{tables/tab_clustering_summary.tex}
 
 \begin{figure}[htbp]
 	\centering
