@@ -68,12 +68,12 @@ The reusable policy interpreter is a zero-knowledge circuit
 	C : \mathsf{Prog}_{L}\times \{0,\ldots,L\} \times O \rightarrow \{0,1\}.
 \end{equation}
 Given an encoded policy, its program length, and operand values, the interpreter evaluates the
-RPN program using deterministic stack semantics and enforces well-formedness constraints inside the circuit.
+RPN program using deterministic stack semantics.
 The circuit outputs $1$ only if the requester evidence satisfies the encoded policy.
 Well-formedness is enforced by the circuit constraints: for a program that violates the stack discipline, no satisfying witness exists and no proof can be generated.
 An output of $0$ therefore indicates unsatisfied evidence for a well-formed program; the proved acceptance relation is the case in which $C$ outputs $1$.
 
-The fixed-length interpreter thus realizes the policy-independent interface motivated above, and supports policy evolution through different fixed-length policy programs.
+A new or changed policy is therefore only a different program for the same circuit, so policies can evolve without changing the on-chain verifier.
 
 \noindent\textbf{Scope of the supported policies.} The policy class is restricted, and Table~\ref{tab:policy-support} states what the prototype establishes end-to-end.
 NRES is supported only as a standalone policy; other supported terms may be combined by AND/OR in programs of at most $L$ tokens, with each term appearing at most once and MOR/TS restricted to conjunctions.
@@ -180,7 +180,7 @@ Because this credential is holder-bound, a policy that activates this slot also 
 \subsection{Transcript Normalization}
 
 Zero-knowledge proofs hide private witness values, but surrounding
-blockchain artifacts may still leak policy-dependent information. TPS-ZKPI therefore
+blockchain artifacts may still leak policy-dependent information to the passive public-chain observer (Section~\ref{sec:problem}). TPS-ZKPI therefore
 normalizes the public-chain transcript so that different policies induce fixed or tightly
 bounded observable profiles. Table~\ref{tab:transcript-normalization}
 summarizes the mechanisms.
@@ -200,5 +200,3 @@ summarizes the mechanisms.
 		\hline
 	\end{tabular}
 \end{table}
-
-These mechanisms reduce policy-dependent variation in calldata, logs, public parameters, and gas usage that could otherwise serve as a fingerprint for the passive public-chain observer defined in Section~\ref{sec:problem}.
