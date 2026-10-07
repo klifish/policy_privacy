@@ -53,7 +53,8 @@ The $12$ tasks with no detectable effect sit in the lower-left of the figure, wh
 
 Over the subset, padding raises mean commit gas from $219{,}737$ (B1) to $304{,}098$ (B2), a $38.4\%$ increase, and mean access gas from $723{,}462$ to $1{,}056{,}674$, a $46.1\%$ increase.
 The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, a band placed above the unpadded access cost on the target network (about $723{,}000$ gas on Amoy, as measured in B1) so that the whole band stays above real usage.
-At the $30$~gwei tip used throughout, one padded access transaction costs about $0.032$~POL (the native token of Polygon) and one commit about $0.009$~POL; the overhead is therefore a fixed per-transaction premium of roughly $330{,}000$ gas on access and $85{,}000$ on commit, independent of transaction volume, and it does not grow with policy complexity, because the unpadded cost varies by less than $300$ gas across policies and the band is fixed.
+On average, padding adds roughly $330{,}000$ gas per access transaction and $85{,}000$ gas per policy commitment.
+The mean access overhead is nearly independent of policy complexity, because unpadded access costs differ by less than $300$ gas across policies and all policies use the same padding band.
 
 Table~\ref{tab:cost-profile} gives the single-point cost characterization of the evaluated prototype configuration at $L=64$.
 The circuit compiles to a rank-1 constraint system (R1CS) of $81{,}740$ constraints; across the $1{,}773$ Polygon Amoy executions, mean witness and proving times on the two-core capture host are $763.6$ ms and $2{,}884.2$ ms, respectively.
