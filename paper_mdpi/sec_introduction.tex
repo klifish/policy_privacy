@@ -14,7 +14,8 @@ Existing privacy-preserving blockchain solutions do not address this problem, be
 Encrypted data-sharing mechanisms such as attribute-based encryption (ABE) and proxy re-encryption (PRE) control access to data~\cite{ibraimi2009ciphertext, ullah2023survey}, and zero-knowledge transaction systems hide asset ownership, values, or participant relationships~\cite{zhou2024leveraging}; none of them protects the confidentiality of the policies that govern access decisions.
 Hidden-policy ABE~\cite{yang2024hamed,ding2026badsabe} does hide policy content, but it does not control what a public chain exposes while it enforces the policy.
 On a public chain, a policy can leak not only through explicit disclosure but also through metadata: the size of the calldata, the layout of the public inputs, the emitted events, the verifier interface, and the gas consumed.
-Policy-private consent enforcement therefore requires more than hiding data or proving correctness in zero knowledge: it must also control this metadata leakage, that is, what the public-chain transcript (the transaction data, events, and gas visible to any observer) reveals about the hidden policy.
+Policy-private consent enforcement therefore requires more than data confidentiality and zero-knowledge proofs of correct enforcement.
+It also requires limiting what the public-chain transcript reveals about the hidden policy.
 
 This paper studies policy-private consent enforcement on public blockchains for healthcare data sharing.
 The challenge is to let an on-chain verifier check that a requester satisfies a provider-defined consent policy, while ensuring that observers who see only public-chain metadata learn minimal information about the governing policy and the requester's authorization evidence.
@@ -42,22 +43,11 @@ Furthermore, a gas-padding ablation shows that, without padding, the same attack
 This paper makes the following contributions:
 
 \begin{itemize}
-	\item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach to publicly
-	      verifiable and auditable consent enforcement. The soundness of on-chain
-	      verification and the auditability of submitted decisions hold without
-	      trusting the TPS, whereas policy confidentiality, faithful witness
-	      construction, and liveness rely on trusting the TPS.
+	\item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach to publicly verifiable and auditable consent enforcement. The soundness of on-chain verification and the auditability of submitted decisions hold without trusting the TPS, whereas policy confidentiality, faithful witness construction, and liveness rely on trusting the TPS.
 
-	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit.
-	      Combined with policy commitments, it gives all policies the same
-	      policy-independent on-chain verification interface: one circuit serves
-	      every policy, and policies can evolve without changing the on-chain verifier.
+	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit. Combined with policy commitments, this approach provides a policy-independent on-chain verification interface, allowing policies to evolve without changing the on-chain verifier.
 
-	\item We empirically evaluate how much policy information remains in the
-	      public-chain metadata on the Polygon~Amoy
-	      testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}}
-	      using supervised and unsupervised attacks, and quantify the gas overhead
-	      of the randomized gas padding that suppresses the remaining gas channel.
+	\item We empirically evaluate how much policy information remains in the public-chain metadata on the Polygon~Amoy testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}} using supervised and unsupervised attacks, and quantify the gas overhead of the randomized gas padding that suppresses the remaining gas channel.
 \end{itemize}
 
 The remainder of this paper is organized as follows.

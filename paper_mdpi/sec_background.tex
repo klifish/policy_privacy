@@ -8,13 +8,15 @@ Fine-grained consent management in blockchain-based healthcare data sharing is c
 In CP-ABE, the encrypting party embeds an attribute-based access policy into the ciphertext, so that only requesters whose credentials satisfy the policy can decrypt the protected data~\cite{ibraimi2009ciphertext}.
 PRE lets a semi-trusted intermediary transform a ciphertext encrypted for one party into one decryptable by a designated requester, delegating access without exposing the plaintext~\cite{ateniese2006improved}.
 Both primitives remain the building blocks of current blockchain healthcare designs; for example, recent schemes combine PRE with on-chain records to delegate access to medical records and Internet of Medical Things (IoMT) data~\cite{pei2024proxy,zhou2024secure}.
-These primitives determine who may obtain the data, but standard CP-ABE does not keep the access policy itself confidential: the policy is attached to the ciphertext in the clear.
+These primitives determine who may obtain the data.
+However, standard CP-ABE does not keep the access policy confidential because the policy is attached to the ciphertext in plaintext.
 
 
 \subsection{Zero-Knowledge Proofs}
 Zero-knowledge proofs are cryptographic protocols that allow a prover to convince a verifier that a statement is true without revealing any information beyond the validity of the statement~\cite{groth2016size}.
 Zero-knowledge proof systems support verifiable computation over private inputs, so that complex predicates can be proven without disclosing the underlying data.
-In blockchain settings, zero-knowledge proofs are widely used to reconcile public verifiability with privacy: privacy-focused systems such as Zerocash and Tornado Cash apply them to conceal transaction details or provide transaction anonymity~\cite{sasson2014zerocash, nadler2023tornado}.
+In blockchain settings, zero-knowledge proofs are widely used to combine public verifiability with privacy.
+For example, Zerocash and Tornado Cash use these proofs to conceal transaction details or provide transaction anonymity~\cite{sasson2014zerocash, nadler2023tornado}.
 These properties make zero-knowledge proofs a natural building block for proving that a requester satisfies a hidden consent policy, which is the direction our approach develops.
 
 \subsection{The Data Use Ontology}

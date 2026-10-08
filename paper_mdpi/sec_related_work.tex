@@ -9,15 +9,13 @@ Beyond consent management, related work addresses individual requirements of pol
 Encrypted data-sharing mechanisms, such as CP-ABE and PRE~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, as noted in Section~\ref{subsec:crypto-access}, standard CP-ABE exposes the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
 Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
 
-Hidden-policy access-control work reduces direct policy exposure: CP-ABE variants hide the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}, one of them also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
+Hidden-policy CP-ABE schemes reduce direct policy exposure by hiding the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}.
 Wu et al.~\cite{wu2023blockchain} instead realize attribute-based access control (ABAC) by encrypting policy and attribute values under an additively homomorphic cryptosystem.
-A smart contract computes their encrypted difference, one assistant node per organization decrypts it partially with a zero-knowledge proof of correct decryption, and the contract decides without seeing the values; every request therefore needs every organization online.
-Functional encryption gives a more general cryptographic abstraction for revealing function
-outputs while hiding inputs~\cite{boneh2011functional}, but it does not by itself yield publicly verifiable authorization evidence.
+In this scheme, a smart contract evaluates access conditions over encrypted values with assistance from each organization's node, which provides partial decryption results and zero-knowledge proofs of their correctness.
+Functional encryption gives a more general cryptographic abstraction for revealing function outputs while hiding inputs~\cite{boneh2011functional}, but it does not by itself yield publicly verifiable authorization evidence.
 Private-state blockchain systems, including Secret Network and Oasis/Ekiden, protect smart-contract state or execution through encrypted state and trusted execution environments (TEEs)~\cite{secretnetwork_docs, cheng2019ekiden}.
-These lines of work address adjacent forms of policy or state hiding, but TPS-ZKPI
-targets a more specific setting: hiding consent policies on a public chain while
-retaining public verifiability of each authorization decision.
+These approaches address policy or state confidentiality.
+TPS-ZKPI focuses on hiding consent policies during public-chain enforcement while preserving public verifiability of each authorization decision.
 Even where policies are hidden, existing designs may still leak policy-dependent artifacts through ciphertext structures, policy-update transactions, authorization workflows, or repeated interactions.
 In the homomorphic design, for example, the Boolean structure of the policy and its attribute names stay on the ledger, and the per-attribute match results can be recomputed from the ciphertexts and partial decryptions recorded with each decision~\cite{wu2023blockchain}.
 Moreover, many target permissioned or off-chain settings, such as that design's coalition blockchain, where enforcement artifacts are not globally visible as they are on public blockchains.
