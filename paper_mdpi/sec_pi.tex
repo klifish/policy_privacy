@@ -13,7 +13,6 @@ $70$ of the $71$ \texttt{weak\_equivalent} pairs share the logical form as well,
 Each pair is an ordered couple $(P_0, P_1)$, and the attacker's task is to decide, from the on-chain features of a single execution, which policy of the pair produced it.
 Indistinguishability is thus a two-class problem whose ideal outcome is a guess no better than a random guess, corresponding to a classifier AUC of $0.5$.
 
-We train an LR and an RF classifier and, per pair type, report the one with the higher mean AUC, following the convention of Section~\ref{sec:eval-method}.
 We evaluate this single-execution attacker over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}).
 Pooled over all pairs, the AUC is $0.509\pm0.035$ with $3\%$ of seeds significant.
 Both pair types that enter the decision stay below the $0.55$ line: \texttt{semantic\_equivalent} at $0.549$ ($7\%$ significant seeds) and \texttt{weak\_equivalent} at $0.544$ ($10\%$), so PI passes.
