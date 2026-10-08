@@ -20,7 +20,7 @@ Of these features, calldata length, proof size, and log counts/sizes are constan
 The fixed circuit and the commitment-only interface make the non-gas features constant; randomized gas padding protects the gas channel that remains.
 That channel is wider than the verifier's arithmetic: because the Ethereum Virtual Machine (EVM) prices calldata per byte (four gas for a zero byte, sixteen otherwise), the gas of an access transaction also encodes the byte pattern of its public arguments, so any deterministic difference in how an argument is encoded reaches the observer through gas even when the calldata length is constant (Section~\ref{sec:eval-ablation} exhibits one such difference).
 The constant features remain in the attack pipeline but carry no variation to exploit.
-TS is the exception by design: the ACM enforces it from public state, so a TS policy discloses the term and its duration through additional events (Section~\ref{sec:design}); the evaluated corpus contains no TS policies.
+The evaluated corpus contains no TS policies, which disclose the term through additional events by design (Section~\ref{sec:design}).
 
 We consider three adversary goals, one per privacy objective:
 (i)~recover the policy's \emph{content} (PCH, Section~\ref{sec:eval-pch}); (ii)~distinguish two
