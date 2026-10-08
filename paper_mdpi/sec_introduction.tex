@@ -46,8 +46,7 @@ This paper makes the following contributions:
 	      verifiable and auditable consent enforcement. The soundness of on-chain
 	      verification and the auditability of submitted decisions hold without
 	      trusting the TPS, whereas policy confidentiality, faithful witness
-	      construction, and liveness rely on trusting the TPS, which keeps policy-bound proving
-	      material and requester authorization evidence off-chain.
+	      construction, and liveness rely on trusting the TPS.
 
 	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit.
 	      Combined with policy commitments, it gives all policies the same
@@ -55,12 +54,10 @@ This paper makes the following contributions:
 	      every policy, and policies can evolve without changing the on-chain verifier.
 
 	\item We empirically evaluate how much policy information remains in the
-	      normalized public-chain metadata on the Polygon~Amoy
-	      testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}}, using supervised
-	      classification attacks judged by our leakage criterion and unsupervised
-	      clustering attacks. A paired gas-padding ablation further shows
-	      that randomized gas padding is responsible for suppressing the modeled
-	      gas channel and quantifies its gas overhead.
+	      public-chain metadata on the Polygon~Amoy
+	      testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}}
+	      using supervised and unsupervised attacks, and quantify the gas overhead
+	      of the randomized gas padding that suppresses the remaining gas channel.
 \end{itemize}
 
 The remainder of this paper is organized as follows.
