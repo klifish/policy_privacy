@@ -5,34 +5,34 @@
 \subsection{Dataset and Corpus Generation}
 \label{sec:eval-dataset}
 
-We evaluate all three objectives on one policy corpus, so the supervised attacks and the clustering cross-check see the same transactions.
-The corpus holds 1077 distinct policies run as 1773 on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
+All three privacy evaluations draw on a common policy dataset.
+The dataset holds 1077 distinct policies run as 1773 on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
 The policies are produced by a deterministic generator with a fixed seed (\texttt{unified-decoupled-2026}).
-For reproducibility, this generator uses a deterministic test issuer to create the private profile-credential witnesses used by policies that exercise the credential predicate.
+For reproducibility, the generator uses a deterministic test issuer to construct private credential witnesses for policies that require credential verification.
 
-For each policy the generator picks its content and its structure.
-The content is a set of DUO data-use terms drawn from ten terms.
-Five are ontology-bound terms, each checked against a code set from a biomedical vocabulary: DS against ICD-10, research-specific restrictions (RS) against the Ontology for Biomedical Investigations (OBI)~\cite{bandrowski2016ontology}, POA against the Human Ancestry Ontology (HANCESTRO), geographical restriction (GS) against the ISO~3166 country codes, and CC against SNOMED Clinical Terms (SNOMED~CT).
-The other five are profile-backed terms (GRU, HMB, NMDS, GSO, NCU) derived from the signed claims of the requester's profile credential (Section~\ref{sec:design}).
-The structure is the logical form joining the terms; whitelist sizes are drawn once per policy from a fixed set of candidate sizes, independently of the logical form, so that the four structural axes of Section~\ref{sec:eval-spp} are not functions of one another.
-For example, one generated policy permits research-specific and disease-specific use (DUO terms RS and DS) and grants access only when \emph{both} conditions hold, joined by \texttt{AND}: the study design belongs to the OBI \emph{observational and comparative designs} family, and the requested record falls in the ICD-10 \emph{diseases of the circulatory system} chapter.
-Each condition is one predicate (hence the two predicates), and each is checked against a whitelist of the codes it admits: $8$ OBI study-design codes and $8$ ICD-10 codes drawn from that chapter, the ``medium'' parameter-size bucket of Table~\ref{tab:corpus}.
+For each policy, the generator selects a set of DUO data-use terms and a logical form that combines them.
+Five terms use code whitelists drawn from external vocabularies: DS uses ICD-10, RS uses the Ontology for Biomedical Investigations (OBI)~\cite{bandrowski2016ontology}, POA uses the Human Ancestry Ontology (HANCESTRO), GS uses ISO~3166 country codes, and CC uses SNOMED Clinical Terms (SNOMED~CT).
+The other five terms (GRU, HMB, NMDS, GSO, NCU) are evaluated using signed claims from the requester's profile credential (Section~\ref{sec:design}).
+
+Whitelist sizes are sampled once per policy from a fixed set of candidate sizes, independently of the logical form.
+The recorded whitelist size is the number of codes included in the committed whitelist.
+
+For example, one generated policy combines the DUO terms RS (research-specific use) and DS (disease-specific use).
+It requires the study design to belong to the OBI \emph{observational and comparative designs} family and the requested record to fall within the ICD-10 \emph{diseases of the circulatory system} chapter.
+The two conditions are joined by \texttt{AND}, so access is granted only when both are satisfied.
+Each condition is represented by a predicate that checks membership in a whitelist.
+The RS predicate uses a whitelist of $8$ OBI study-design codes, while the DS predicate uses $8$ ICD-10 codes drawn from that chapter.
+Both whitelist sizes fall within the ``medium'' parameter-size bucket in Table~\ref{tab:corpus}.
+
+We execute the policies in two layers.
+The \emph{coverage layer} executes $1053$ distinct policies once each, spanning the content labels and structural buckets to support training and testing on disjoint policy sets.
+The \emph{depth layer} executes $24$ policies $30$ times each ($720$ executions), providing repeated observations for the per-pair PI clustering analysis (Section~\ref{sec:eval-method}).
+All $1{,}773$ executions produced the expected authorization outcomes.
+Sampling is configured to provide at least $30$ executions in the smallest content-label class.
+Table~\ref{tab:corpus} summarizes the counts for each content label and structural bucket.
 
 \input{tables/tab_corpus.tex}
 
-Every code set is a subset of its vocabulary, and the recorded whitelist size is the number of leaves actually committed.
-Table~\ref{tab:corpus} gives the resulting counts for every label and structural bucket.
-
-We run the policies in two layers that serve different needs.
-The \emph{coverage layer} runs $1053$ policies once each.
-It provides breadth, spreading distinct policies across the content labels and structural buckets, so the supervised attacks have enough different policies to train on one set and test on another.
-
-The \emph{depth layer} runs $24$ policies $30$ times each ($720$ executions).
-It provides the repeated executions that the per-pair PI clustering check needs (Section~\ref{sec:eval-method}).
-All $1{,}773$ executions completed with the outcome the generator planned.
-The PCH and PI analyses use all of them; the SPP analyses, supervised and unsupervised, keep the first three executions of each depth-layer policy, so they use $1{,}125$ executions, to which the $24$ repeated policies contribute $72$ rather than $720$.
-
-We restrict the generated content labels to those with enough support for a statistically powered attack: ten DUO data-use terms and ten ICD-10 chapters (Table~\ref{tab:corpus}), sampled so that the smallest class reaches at least $30$ executions. The complete DUO has 23 data-use terms and ICD-10 has tens of thousands of leaf codes; generating and executing enough policies for every leaf term to reach adequate power would make the on-chain experiment infeasible.
-Category-level labels are therefore the finest granularity at which the attack has adequate power.
-A signal specific to one leaf term could be diluted within its category, so a PASS at the category level does not rule out a term-specific leak.
-The transcript mechanisms themselves do not depend on the policy content: the verifier work and the public interface are fixed, and the padding band is the same for every policy (Section~\ref{sec:design}).
+The evaluated content labels cover ten DUO data-use terms and ten ICD-10 chapters (Table~\ref{tab:corpus}).
+Evaluating every DUO term and individual ICD-10 code would require a substantially larger on-chain dataset.
+We therefore evaluate DUO-term presence and ICD-10 chapter membership rather than individual ICD-10 codes.

@@ -3,59 +3,85 @@
 \label{sec:eval-method}
 
 We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
-The \emph{supervised} method asks whether a trained classifier can recover a hidden label from the observables, measured by the AUC against the chance level of $0.5$. Its outcome provides the primary evidence for each privacy objective. Because the supervised adversary also sees the labels, it is the stronger of the two, so a PASS under it is the more conservative result.
-The \emph{unsupervised} method asks whether the observables cluster along the hidden label, measured by the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI) against their chance level of $0$. This chance level is exact for ARI but only nominal for NMI, which is positively biased at small samples (Section~\ref{sec:eval-nmi-sensitivity}).
+The \emph{supervised} method trains classifiers on labeled data to predict hidden labels from the observables.
+Performance is measured by AUC, with a chance baseline of $0.5$.
+The \emph{unsupervised} method clusters the observables without using labels.
+We evaluate agreement between the resulting clusters and the true labels using the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI).
 
-All policy executions are transactions on the \emph{Polygon~Amoy} testnet: for each generated policy, we commit the encoded policy on-chain from a provider account (\texttt{commitPolicyWithGasPad}), generate the Groth16 proof locally in the role of TPS (Section~\ref{subsec:trust-model}), and submit the access transaction from a separate TPS account (\texttt{requestAccessBoundWithGasPad}).
-The provider-to-TPS and requester-to-TPS exchanges are in-process calls: they use no public channel and produce no on-chain artifacts. They therefore do not affect the observables of Section~\ref{sec:eval-threat}, which are extracted from the resulting transaction receipts, calldata, and event logs.
+We execute the generated policies on the \emph{Polygon~Amoy} testnet.
+For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
+We then generate the Groth16 proof locally, acting as the TPS (Section~\ref{subsec:trust-model}).
+A separate TPS account submits the access transaction using \texttt{requestAccessBoundWithGasPad}.
+In the prototype, provider-to-TPS and requester-to-TPS exchanges are implemented as in-process calls and generate no additional on-chain artifacts.
+We extract the observables defined in Section~\ref{sec:eval-threat} from the transaction receipts, calldata, and event logs.
 
 \subsubsection{Supervised Attacks}
-Each objective is operationalized as a set of binary \emph{tasks}, each defined by one hidden label to be recovered from the observables: detecting the presence of a specific data-use term or disease chapter (PCH, Section~\ref{sec:eval-pch}), distinguishing executions of two policies (PI, Section~\ref{sec:eval-pi}), or separating two structural buckets (SPP, Section~\ref{sec:eval-spp}).
-For every task we train a linear and a non-linear classifier, logistic regression (LR) and random forest (RF).
-Each task is evaluated over \textbf{30 random seeds} using a \textbf{policy-disjoint train/test split} (the same $70/30$ ratio in each of PCH, PI, and SPP): the policies used to train the attacker never appear in the test set, so a high test AUC reflects leakage that generalizes across policies.
-In each seed, every policy contributes one randomly chosen execution, so that repeatedly executed policies do not dominate the AUC or its permutation test.
-Because the split assigns whole policies rather than individual executions, we cannot partition executions to hit the target class proportions exactly. For each seed we therefore approximate stratification by sampling many candidate splits (512 per seed in our runs) and keeping the one whose per-class test proportions are closest to $70/30$.
-Here a class is one side of the binary task (the positive or negative value of its hidden label). By keeping each class's test share close to the target ratio, the candidate search ensures every seed's test set contains both classes, so each seed's AUC is estimated on a two-class test set.
+We evaluate each objective through binary classification \emph{tasks}, in which the attacker predicts a hidden label from the observables.
+PCH tasks predict DUO-term presence or ICD-10 chapter membership (Section~\ref{sec:eval-pch}).
+PI tasks distinguish between executions of two policies (Section~\ref{sec:eval-pi}).
+SPP tasks distinguish between two categories of a structural or parameter property (Section~\ref{sec:eval-spp}).
 
-For each seed we assess the AUC with a label-permutation test.
-The classifier is trained once and its test-set probability outputs are fixed; the test-set labels are then shuffled $R=500$ times, and the AUC is recomputed against the fixed probabilities on each shuffle, giving the null distribution of the AUC under no association between scores and labels.
+For every task, we train two classifiers: logistic regression (LR) and random forest (RF), representing linear and non-linear models, respectively.
+Each task is evaluated over \textbf{30 random seeds}, using the same protocol across PCH, PI, and SPP.
+
+For each seed, we first randomly select one execution per policy to limit the influence of repeatedly executed policies on the AUC and its permutation test.
+We then construct a \textbf{policy-disjoint $70/30$ train/test split}, ensuring that no policy appears in both sets.
+Test AUC therefore measures attack performance on policies not seen during training.
+Because policies are kept intact, exact per-class split proportions cannot always be achieved.
+For each seed, we generate $512$ candidate splits and discard those that lack either class in the training or test set.
+Among the valid candidates, we select the split that best approximates a $30\%$ test fraction within each class.
+
+For each seed and classifier, we assess test AUC using a label-permutation test.
+After training, we keep the test-set prediction scores fixed and randomly permute the test labels $R=500$ times.
+We recompute AUC for each permutation to obtain its null distribution under no association between scores and labels.
 The empirical $p$-value is
 \begin{equation}
 	p = \frac{k+1}{R+1},
 	\label{eq:perm-p}
 \end{equation}
-where $k$ is the number of shuffles whose AUC meets or exceeds the observed (unshuffled) AUC; counting the observed AUC as one of the $R+1$ equally likely labelings makes this $p$-value valid, and its smallest attainable value is $1/(R+1)$. The seed is counted as significant when this $p$-value falls below $\alpha=0.05$.
+where $k$ counts the permutations whose AUC is at least as large as the observed AUC.
+The $+1$ correction prevents a zero $p$-value, with a minimum attainable value of $1/(R+1)$.
+The result for a given seed and classifier is considered significant when $p<0.05$.
 
-For each task, with $\mathrm{AUC}_s$ the test AUC of seed $s$ and $S=30$ seeds, the result tables report the mean AUC and the AUC gap $G_{\mathrm{AUC}}$, the mean per-seed distance from chance:
+All tasks are binary, and the chance baseline for AUC is $0.5$ regardless of class balance.
+Class imbalance may affect estimation uncertainty but does not change this baseline.
+
+For each task, let $\mathrm{AUC}_s$ denote the test AUC for seed $s$, with $S=30$ seeds.
+The results report the mean AUC and the AUC gap $G_{\mathrm{AUC}}$, defined as the mean absolute deviation from $0.5$:
 \begin{equation}
 	\mathrm{AUC}_{\text{mean}} = \frac{1}{S}\sum_{s=1}^{S}\mathrm{AUC}_s, \qquad
 	G_{\mathrm{AUC}} = \frac{1}{S}\sum_{s=1}^{S}\left|\mathrm{AUC}_s-0.5\right|.
 	\label{eq:auc-gap}
 \end{equation}
-Because the distance is taken before averaging, deviations above and below $0.5$ cannot cancel, so $G_{\mathrm{AUC}} \ge |\mathrm{AUC}_{\text{mean}}-0.5|$.
+Taking absolute deviations before averaging prevents values above and below $0.5$ from canceling.
 
-Because every task is binary, its AUC has a chance level of $0.5$ regardless of class balance.
-Thus, differences in positive and negative sample counts across the generated corpus do not shift the chance baseline, although they may affect estimation uncertainty.
-
-The PASS/FAIL decision combines $\mathrm{AUC}_{\text{mean}}$ with the significant-seed fraction (the fraction of seeds whose per-seed permutation test rejects at $\alpha=0.05$), reported as \%sig in the result tables.
-The decision rule is:
+The PASS/FAIL decision uses the mean AUC and the significant-seed fraction.
+The latter is the fraction of seeds with $p<0.05$, reported as \%sig.
+We classify each task as follows:
 %
 \begin{quote}
-	\textbf{FAIL} iff $\mathrm{AUC}_{\text{mean}}>0.55$ \textbf{and} the significant-seed fraction is $\ge 0.5$ (over 30 policy-disjoint seeds);
+	\textbf{FAIL} if $\mathrm{AUC}_{\text{mean}}>0.55$ and at least $15$ of the $30$ seeds yield $p<0.05$.
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-We refer to this rule as the \emph{leakage criterion}. A PASS is an empirical statement that the criterion did not flag the task under the evaluated attacks.
+We refer to this rule as the \emph{leakage criterion}.
+A PASS means that the evaluated attacks did not meet this criterion for the task.
 
-The two conditions guard against different errors.
-The AUC threshold is an effect-size floor of $0.05$ above chance: with large test sets, a permutation test can reject for a negligible AUC excess, and the floor keeps such an effect from triggering a FAIL.
-The stability condition requires the permutation-test $p$-value to be below $0.05$ in at least $15$ of the $30$ policy-disjoint splits.
-Under the null hypothesis, each split rejects with probability $0.05$, so a majority of rejections indicates an effect that recurs across splits.
-Because the splits overlap, the significant-seed fraction is a stability measure rather than a combined $p$-value.
-In the evaluated run, the stability condition is the binding one: the AUC condition alone would flag four PCH and four SPP tasks, three of each being significant in fewer than half of the splits, whereas the stability condition alone flags the same single task per experiment as the full leakage criterion.
+The two conditions define an operational criterion based on effect size and consistency across splits.
+With large test sets, even a small AUC increase above chance may be statistically significant.
+The AUC threshold of $0.55$ prevents such small effects from triggering a FAIL solely on the basis of statistical significance.
+
+The stability condition requires statistically significant results in at least half of the $30$ splits.
+Because the splits overlap across seeds, the significant-seed fraction measures consistency across splits and is not interpreted as a combined $p$-value.
 
 Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
 At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none. No PI task fails under any of these threshold pairs.
+
+In the evaluated run, the stability condition determines which tasks are flagged.
+The AUC condition alone would flag four PCH and four SPP tasks.
+In each objective, three of these tasks are significant in fewer than half of the splits.
+The stability condition alone flags the same single task in each of PCH and SPP as the full leakage criterion.
+
 In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
 We therefore examine the two observed failures in the corresponding result sections and keep them as FAIL.
 
@@ -76,8 +102,12 @@ At these sample sizes, ARI and NMI are read directly, each averaged over $20$ K-
 To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, so its smallest attainable value is $1/201 \approx 0.005$.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
-First, the clustering uses a dedicated set of \emph{balanced pairs} built from the same executions: the policies with $\ge 30$ executions each (the depth layer of Section~\ref{sec:eval-dataset}) are paired into $127$ balanced $30$-vs-$30$ contrasts.
-The pair set of the supervised PI attack (Section~\ref{sec:eval-pi}) is unsuitable for per-pair clustering: most of its pairs hold a single execution per side, and its most imbalanced hold $1$ execution against $30$, so K-Means cannot recover a meaningful partition, and ARI/NMI $\approx 0$ would reflect the degenerate setup rather than privacy. The supervised attack is unaffected, because it pools the executions of each pair type.
+First, the PI clustering analysis uses a dedicated set of \emph{balanced policy pairs} constructed from depth-layer executions (Section~\ref{sec:eval-dataset}).
+We evaluate $127$ pairs, each containing $30$ executions per policy.
+The policy pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) are unsuitable for per-pair clustering.
+Most pairs contain only one execution per policy, while some contain $1$ execution for one policy and $30$ for the other.
+These small or highly imbalanced samples make clustering scores unreliable indicators of policy distinguishability.
+The supervised attack is unaffected, because it pools the executions of each pair type.
 Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is not (Section~\ref{sec:eval-nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
