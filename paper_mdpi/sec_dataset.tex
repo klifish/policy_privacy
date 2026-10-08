@@ -25,11 +25,10 @@ Table~\ref{tab:corpus} gives the resulting counts for every label and structural
 
 We run the policies in two layers that serve different needs.
 The \emph{coverage layer} runs $1053$ policies once each.
-It provides breadth, spreading distinct policies across the content labels and structural buckets, so the PCH and SPP attacks have enough different policies to train on one set and test on another.
+It provides breadth, spreading distinct policies across the content labels and structural buckets, so the supervised attacks have enough different policies to train on one set and test on another.
 
 The \emph{depth layer} runs $24$ policies $30$ times each ($720$ executions).
-It provides depth, which the PI attacks need because they compare two policies execution-by-execution, and for that each policy must have multiple executions of its own.
-This layer is what lets PI form its $127$ balanced $30$-vs-$30$ pairs and run the per-pair clustering check (Section~\ref{sec:eval-method}).
+It provides the repeated executions that the per-pair PI clustering check needs (Section~\ref{sec:eval-method}).
 All $1{,}773$ executions completed with the outcome the generator planned.
 The PCH and PI analyses use all of them; the SPP analyses, supervised and unsupervised, keep the first three executions of each depth-layer policy, so they use $1{,}125$ executions, to which the $24$ repeated policies contribute $72$ rather than $720$.
 
