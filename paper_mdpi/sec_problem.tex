@@ -13,15 +13,18 @@ of policy compliance.
 The ACM verifies the proof on-chain and records the authorization outcome, while the data access layer grants access according to the recorded decision.
 
 TPS-ZKPI relies on the following assumptions.
-First, policies are provider-controlled: the provider is responsible for defining the applicable consent policy and committing the corresponding policy instance on-chain.
+First, the provider defines the consent policy and commits to the corresponding policy instance on-chain.
 Second, the TPS is trusted to preserve the confidentiality of policy-bound proving material and requester-submitted authorization evidence, and to follow the prescribed proof-generation workflow.
 Third, the commitment scheme is assumed to be hiding and binding, and the zero-knowledge proof system is assumed to satisfy completeness, soundness, and zero knowledge with respect to the implemented policy-compliance relation.
 Issuer governance, credential issuance and revocation, and real-world identity verification are treated as external lifecycle functions.
 
-Conceptually, the TPS is an independent proof service, distinct from the provider; this separation is what makes relocating trust meaningful, since it prevents the provider from being the single party that holds both the policy and the requester evidence. Possible instantiations of such an independent service include a third-party proof service, a TEE-backed proof service that makes the trust assumption hardware-attested, or MPC/collaborative SNARK proof generation in which no single party sees both policy material and requester evidence. For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS). This co-location concentrates trust at the provider side: a single party now holds both the policy and the requester evidence, so a compromised provider-operated TPS could substitute inputs whose origin is not independently authenticated or withhold proof generation from legitimate requesters.
+Conceptually, the TPS is an independent proof service, distinct from the provider; this separation is what makes relocating trust meaningful, since it prevents the provider from being the single party that holds both the policy and the requester evidence. Possible instantiations of such an independent service include a third-party proof service, a TEE-backed proof service that makes the trust assumption hardware-attested, or MPC/collaborative SNARK proof generation in which no single party sees both policy material and requester evidence. For evaluation simplicity, the current evaluation co-locates the TPS with the provider (a provider-operated TPS).
+This co-location concentrates trust in the provider, which holds both the policy and the requester's authorization evidence.
+A compromised provider-operated TPS could substitute inputs if their origin is not independently authenticated, or refuse to generate proofs for legitimate requesters.
 
-Authorization correctness is enforced by the commitment and on-chain proof verification: a proof that does not satisfy the committed policy relation is rejected regardless of how the TPS is instantiated; what the TPS can still affect is the provenance of evidence that is not issuer-signed (Table~\ref{tab:threat-guarantee}).
-Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests entirely on the trust assumption stated above.
+The policy commitment and on-chain proof verification ensure that accepted proofs demonstrate satisfaction of the committed policy relation, regardless of how the TPS is instantiated.
+However, they do not guarantee the provenance of evidence that is not issuer-signed, which remains dependent on the TPS (Table~\ref{tab:threat-guarantee}).
+Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests on the trust assumption stated above.
 
 Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, how each of four security properties (policy confidentiality, authorization correctness, liveness, and decision auditability) holds: whether it is enforced cryptographically, supported only empirically, dependent on the TPS trust assumption, left to external functions, or not provided by the prototype.
 \input{tables/tab_threat_guarantee.tex}
@@ -36,7 +39,8 @@ Thus, subject to signature unforgeability and Poseidon collision resistance, the
 
 The primary adversary is a passive public-chain observer.
 The adversary can inspect smart-contract code and monitor public blockchain artifacts across multiple authorization sessions, including policy commitments, submitted proofs, public inputs, emitted events, calldata, timing, and gas usage.
-The adversary does not observe provider-to-TPS policy material, commitment-opening randomness, requester-submitted authorization evidence, credential witnesses, or TPS-side witness construction: these items are exchanged over off-chain channels or held locally by the provider and the TPS, and never appear in on-chain artifacts.
+The adversary does not observe provider-to-TPS policy material, commitment-opening randomness, requester-submitted authorization evidence, credential witnesses, or the TPS's witness construction process.
+These data and computations remain off-chain and are not exposed in the public-chain transcript.
 We assume the off-chain channels themselves are confidential (e.g., TLS-protected).
 
 Each policy-enforcement instance corresponds to an authorization session, in
@@ -75,7 +79,12 @@ hidden policy, such as logical structure, nesting depth, predicate count, or set
 \subsection{Problem Statement}
 
 Given $P$, requester authorization evidence, a globally observable public blockchain, and the TPS trust assumption stated in Section~\ref{subsec:trust-model}, the problem is to enforce access to a protected healthcare resource subject to four requirements.
-First, authorization must be publicly verifiable and bound: the ACM, and hence any observer, can check that the requester satisfies the committed policy without learning or executing it in plaintext, and an accepting proof is tied to the complete committed policy and to the authorization context of the request (requester pseudonym, resource, and session), so that it cannot be reused for another context.
-Second, the policy must remain confidential: public-chain artifacts should not reveal its content or its structure and parameters, nor let it be told apart from similar policies (PCH, SPP, and PI; Section~\ref{subsec:privacy-objectives}), except for terms whose enforcement the design deliberately makes public (Section~\ref{sec:design}); requesters should learn nothing about it beyond their own authorization outcomes; and requester evidence should not appear on-chain.
-Third, authorization decisions should be auditable: each processed request, granted or denied, is recorded on-chain together with its bound context and can be checked later without exposing the policy logic.
+First, authorization must be publicly verifiable.
+The ACM and any observer must be able to verify that the requester satisfies the committed policy without learning the policy or executing it in plaintext.
+An accepted proof must be bound to the committed policy and the request's authorization context, including the requester pseudonym, resource, and session, to prevent reuse in a different context.
+Second, the policy must remain confidential.
+Public-chain artifacts should protect policy content, structure, and parameters and preserve policy indistinguishability as defined by PCH, SPP, and PI (Section~\ref{subsec:privacy-objectives}).
+Requesters should learn no policy information beyond what their own authorization outcomes reveal, and requester evidence should remain off-chain.
+Third, authorization decisions should be auditable.
+Each processed request, whether granted or denied, should be recorded on-chain together with its bound authorization context, allowing the decision to be verified later without revealing the policy logic.
 Fourth, one policy-independent verification interface should serve every policy in the supported class, so that policies can be added or changed without changing the on-chain verifier.

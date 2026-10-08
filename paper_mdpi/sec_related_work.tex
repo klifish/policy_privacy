@@ -31,7 +31,8 @@ These approaches support confidential authorization computation, but they are no
 In addition, these approaches do not directly provide compact evidence that a smart contract can verify against a committed, provider-defined policy instance.
 
 Reusable proving systems, including universal-setup succinct non-interactive arguments of knowledge (SNARKs), composable proof systems, and zero-knowledge virtual machines (zkVMs)~\cite{gabizon2019plonk,campanelli2019legosnark,liu2025ceno}, improve maintainability by reducing the need for policy-specific circuits or verifier contracts.
-However, when deployed for public-chain consent enforcement, reusable proving alone does not guarantee policy privacy: policy-dependent program representations, public inputs, calldata layouts, logs, or gas profiles may still remain observable.
+However, reusable proving alone does not guarantee policy privacy during public-chain consent enforcement.
+Policy-dependent program representations, public inputs, calldata layouts, logs, or gas profiles may still reveal information about the hidden policy.
 This motivates TPS-ZKPI's use of a domain-specific reusable policy interpreter, which preserves proof reuse while exposing only a policy-independent public verification interface.
 
 Studies of metadata leakage on public chains show that cryptographic privacy

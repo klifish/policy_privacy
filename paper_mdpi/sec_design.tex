@@ -67,16 +67,17 @@ The reusable policy interpreter is a zero-knowledge circuit
 \begin{equation}
 	C : \mathsf{Prog}_{L}\times \{0,\ldots,L\} \times O \rightarrow \{0,1\}.
 \end{equation}
-Given an encoded policy, its program length, and operand values, the interpreter evaluates the
-RPN program using deterministic stack semantics.
-The circuit outputs $1$ only if the requester evidence satisfies the encoded policy.
-Well-formedness is enforced by the circuit constraints: for a program that violates the stack discipline, no satisfying witness exists and no proof can be generated.
-An output of $0$ therefore indicates unsatisfied evidence for a well-formed program; the proved acceptance relation is the case in which $C$ outputs $1$.
+Given an encoded policy, its program length, and operand values, the interpreter evaluates the RPN program using deterministic stack semantics.
+The circuit constraints enforce program well-formedness, so no satisfying witness exists for a program that violates the stack discipline.
+For a well-formed program, the circuit outputs $1$ if the requester's evidence satisfies the encoded policy and $0$ otherwise.
+The acceptance relation requires that $C$ output $1$.
 
 A new or changed policy is therefore only a different program for the same circuit, so policies can evolve without changing the on-chain verifier.
 
-\noindent\textbf{Scope of the supported policies.} The policy class is restricted; Table~\ref{tab:policy-support} lists, for each consent feature, how the prototype enforces it (in-circuit, on-chain, committed only, or not provided) and how it may be combined.
-One of these choices affects privacy: because the ACM enforces time-limited use (TS) from public state, a policy containing TS is not content-private for that term, since the commit transaction emits the duration and the first grant emits the requester's window.
+\noindent\textbf{Scope of the supported policies.} 
+Table~\ref{tab:policy-support} summarizes how the prototype supports each consent feature (in-circuit, on-chain, committed only, or not provided) and which combinations are supported.
+In particular, the ACM enforces time-limited use (TS) using public state.
+The commit transaction emits the duration, and the first grant emits the requester's authorization window, so policies containing TS do not provide content privacy for that term.
 
 \input{tables/tab_policy_support.tex}
 
@@ -138,9 +139,11 @@ An accepting proof ($o=1$) certifies
 	\end{gathered}
 \end{equation}
 and that the selected external-predicate witnesses satisfy their policy-bound verification relations.
-Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
-Thus, within one ACM deployment, a proof generated for one requester pseudonym, resource, and nonce cannot be accepted under a different tuple.
-The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and $o=1$; otherwise the request is recorded as a denial.
+Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, and that the nonce has not been used for the same requester--resource context.
+It also recomputes the digest from the transaction parameters and checks that it matches the public signal $d_{\chi}$.
+These checks bind the proof to the requester pseudonym, resource, and nonce within a single ACM deployment, preventing its acceptance under a different combination of these values.
+The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request.
+A request is granted only if the proof is valid and $o=1$; otherwise, it is recorded as a denial.
 
 \subsection{Credential-Origin Binding}
 \label{subsec:credential}
