@@ -9,7 +9,7 @@ Beyond consent management, related work addresses individual requirements of pol
 Encrypted data-sharing mechanisms, such as CP-ABE and PRE~\cite{bethencourt2007ciphertext,ateniese2006improved}, control access to encrypted data. However, as noted in Section~\ref{subsec:crypto-access}, standard CP-ABE exposes the policy itself, while PRE-based delegation may reveal authorization patterns that data encryption is not designed to hide.
 Transaction-privacy systems, including Zerocash-style protocols~\cite{sasson2014zerocash} and Ethereum-oriented systems such as ZETH and AZTEC~\cite{rondelet2019zeth,williamson2018aztec}, provide public verification over private transaction witnesses, but they mainly target asset ownership, values, or participant relationships rather than compliance with a provider-defined consent policy.
 
-Hidden-policy access-control work reduces direct policy exposure: CP-ABE variants hide the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}.
+Hidden-policy access-control work reduces direct policy exposure: CP-ABE variants hide the access structure in the ciphertext~\cite{yang2024hamed,ding2026badsabe}, one of them also replacing the single trusted authority with distributed key generation~\cite{ding2026badsabe}.
 Wu et al.~\cite{wu2023blockchain} instead realize attribute-based access control (ABAC) by encrypting policy and attribute values under an additively homomorphic cryptosystem.
 A smart contract computes their encrypted difference, one assistant node per organization decrypts it partially with a zero-knowledge proof of correct decryption, and the contract decides without seeing the values; every request therefore needs every organization online.
 Functional encryption gives a more general cryptographic abstraction for revealing function
@@ -44,14 +44,7 @@ settings. They do not directly provide hidden-policy compliance verification
 or auditable consent enforcement. In contrast, TPS-ZKPI treats metadata leakage as
 part of the policy-privacy objective rather than as a separate transaction-level concern.
 
-Existing approaches address verifiable consent recording, data confidentiality,
-transaction privacy, policy hiding, confidential policy evaluation, proof reuse, or
-metadata mitigation in isolation,
-whereas policy-private consent enforcement under public-chain observability requires
-the combination of policy confidentiality, metadata-leakage control, verifiable
-auditability, and a stable verification interface for evolving Boolean consent
-policies.
-Table~\ref{tab:related-work-gap} summarizes the positioning of our work.
+Table~\ref{tab:related-work-gap} summarizes the reviewed approaches by policy confidentiality, metadata-leakage mitigation, and verifiable auditability, and notes the scope and limitations of each.
 Partial indicates limited support or a need for application-specific design;
 N/A denotes a criterion that does not apply to the cited approach.
 
