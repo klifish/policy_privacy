@@ -30,9 +30,7 @@ Moving confidentiality-sensitive proof generation to the TPS keeps policy-bound 
 It also affects liveness and accountability: the TPS can refuse to produce a proof, and such a refusal may be indistinguishable from a legitimate denial at the on-chain interface.
 
 Attribute origin is only partially delegated to the TPS.
-For the profile-backed DUO terms, the circuit verifies the EdDSA-Poseidon signature described in Section~\ref{sec:design} and derives eight policy attributes from the seven signed claims.
-A compromised TPS cannot modify the signed claims, policy commitment, requester pseudonym, resource, validity interval, or credential identifier without invalidating the signature.
-The implemented relation rejects a non-committed issuer, an invalid signature under the committed key, an expired or premature credential, and substitutions of any signed field.
+For the profile-backed DUO terms, a compromised TPS cannot alter the signed claims or the fields bound with them (Sections~\ref{subsec:trust-model} and~\ref{subsec:credential}).
 However, because the TPS receives the holder secret and credential witness in the current workflow, holder binding does not protect against a malicious TPS reusing otherwise valid evidence within its signed scope.
 
 \textbf{Issuer governance and deployment path.}
