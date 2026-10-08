@@ -11,7 +11,7 @@ The ACM records the authorization outcome in contract storage and emits it in th
 This separates confidentiality-sensitive proof generation from public verification.
 Policy material and requester evidence remain off-chain (policy material within the provider--TPS boundary, requester evidence between the requester and the TPS), while the blockchain verifies only a fixed-format proof statement against the provider's policy commitment, alongside session parameters validated by the ACM.
 In a traditional requester-as-prover design, the requester generates the proof itself and must therefore receive the encoded policy and the commitment-opening randomness, so every requester learns the policy in normal operation.
-In TPS-ZKPI, this material never leaves the provider--TPS boundary: the requester receives no policy material, and the policy itself is disclosed only if the TPS violates its trust assumption.
+TPS-ZKPI keeps this material within the provider--TPS boundary, so requesters do not learn the policy (Section~\ref{subsec:trust-model}).
 
 \begin{figure}[htbp]
 	\centering
@@ -144,7 +144,6 @@ and that the selected external-predicate witnesses satisfy their policy-bound ve
 Before verifying $\pi$, the ACM checks that the resource is governed by the stated policy, that $\tau$ is current, that the nonce has not been used for the same requester--resource context, and that the digest recomputed from the transaction parameters equals the public signal $d_{\chi}$.
 Thus, within one ACM deployment, a proof generated for one requester pseudonym, resource, and nonce cannot be accepted under a different tuple.
 The ACM then verifies $\pi$ against $\mathit{vk}$ and records the outcome of each request: a positive authorization outcome requires both a valid proof and $o=1$; otherwise the request is recorded as a denial.
-The policy encoding, commitment randomness, requester attributes, credential witnesses, and auxiliary proof material are not posted on-chain.
 
 \subsection{Credential-Origin Binding}
 \label{subsec:credential}
