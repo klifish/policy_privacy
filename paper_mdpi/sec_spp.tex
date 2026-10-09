@@ -18,9 +18,9 @@ This yields $1{,}125$ executions, comprising $1053$ from the coverage layer and 
 
 Table~\ref{tab:spp-contrasts} reports the pairwise contrasts.
 Most contrasts sit at chance, with mean AUC between $0.47$ and $0.54$.
-Three contrasts exceed the AUC threshold but have significant-seed fractions below $50\%$ and are therefore classified as PASS: \texttt{paramType} \texttt{none}/\texttt{small} and \texttt{none}/\texttt{large}, and \texttt{nestingDepth} \texttt{flat}/\texttt{medium}.
-The two \texttt{paramType} contrasts both involve the \texttt{none} bucket of profile-only policies, which is the smallest category on this axis ($147$ policies).
-One contrast, \texttt{nestingDepth} \texttt{medium}/\texttt{deep}, crosses both thresholds (mean AUC $0.563$, $53\%$ significant seeds) and is reported as FAIL.
+Three contrasts have mean AUCs above $0.55$: the \texttt{paramType} contrasts \texttt{none}/\texttt{small} ($0.571$) and \texttt{none}/\texttt{large} ($0.568$), and the \texttt{nestingDepth} contrast \texttt{flat}/\texttt{medium} ($0.555$).
+Their significant-seed fractions are $40\%$, $33\%$, and $27\%$, respectively, below the $50\%$ threshold, so these contrasts are classified as PASS.
+The \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast is the only one flagged under the leakage criterion, with a mean AUC of $0.563$ and a significant-seed fraction of $53\%$.
 
 Its separability has the same origin as the PCH ch5 case (Section~\ref{sec:eval-pch}).
 The single-feature rank AUC of the access gas for this contrast equals that of the padding target alone ($0.440$ for both, i.e.\ deep policies drew lower targets) and the residual after subtracting the target scores $0.467$; over all 21 contrasts the gas and target AUCs agree to within $0.001$, and the residual AUC stays within $0.47$--$0.56$.
