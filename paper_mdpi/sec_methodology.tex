@@ -22,6 +22,7 @@ PI tasks distinguish between executions of two policies (Section~\ref{sec:eval-p
 SPP tasks distinguish between two categories of a structural or parameter property (Section~\ref{sec:eval-spp}).
 
 For every task, we train two classifiers: logistic regression (LR) and random forest (RF), representing linear and non-linear models, respectively.
+Both classifiers receive all nine features listed in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
 Each task is evaluated over \textbf{30 random seeds}, using the same protocol across PCH, PI, and SPP.
 
 For each seed, we first randomly select one execution per policy to limit the influence of repeatedly executed policies on the AUC and its permutation test.
@@ -57,6 +58,7 @@ Taking absolute deviations before averaging prevents values above and below $0.5
 
 The PASS/FAIL decision uses the mean AUC and the significant-seed fraction.
 The latter is the fraction of seeds with $p<0.05$, reported as \%sig.
+We use operational thresholds of $0.55$ for mean AUC and $0.5$ for the significant-seed fraction.
 We classify each task as follows:
 %
 \begin{quote}
@@ -64,34 +66,14 @@ We classify each task as follows:
 	\textbf{PASS} otherwise.
 \end{quote}
 %
-We refer to this rule as the \emph{leakage criterion}.
+
+We refer to this rule as the \emph{leakage criterion} and apply it independently to LR and RF.
+A task is classified as FAIL if either classifier meets both conditions.
+The result tables report the classifier with the higher mean AUC.
+Because the splits reuse the same policy dataset, the significant-seed fraction is interpreted as a consistency measure, not a combined $p$-value.
+
 A PASS means that the evaluated attacks did not meet this criterion for the task.
-
-The two conditions define an operational criterion based on effect size and consistency across splits.
-With large test sets, even a small AUC increase above chance may be statistically significant.
-The AUC threshold of $0.55$ prevents such small effects from triggering a FAIL solely on the basis of statistical significance.
-
-The stability condition requires statistically significant results in at least half of the $30$ splits.
-Because the splits overlap across seeds, the significant-seed fraction measures consistency across splits and is not interpreted as a combined $p$-value.
-
-Because these thresholds are operational choices, we reapply the criterion over AUC thresholds of $0.52$--$0.60$ and significant-seed fractions of $0.3$--$0.7$.
-At fractions of at least $0.5$, at most the two tasks discussed in the PCH and SPP result sections fail; lowering the fraction to $0.3$--$0.4$ adds at most two SPP contrasts, whereas raising it to $0.6$ yields none. No PI task fails under any of these threshold pairs.
-
-In the evaluated run, the stability condition determines which tasks are flagged.
-The AUC condition alone would flag four PCH and four SPP tasks.
-In each objective, three of these tasks are significant in fewer than half of the splits.
-The stability condition alone flags the same single task in each of PCH and SPP as the full leakage criterion.
-
-In ten null reruns with policy-independent gas features, four contain a spurious PCH failure (a $3\%$ per-task frequency), while none produces an SPP failure.
-We therefore examine the two observed failures in the corresponding result sections and keep them as FAIL.
-
-The effectiveness of gas padding is assessed separately by the paired gas-padding ablation (Section~\ref{sec:eval-ablation}).
-Using the same policies, features, splits, and classifiers, the attacks recover signal from the unpadded transcript, and that signal collapses after padding.
-Thus, the leakage criterion summarizes residual attack performance, whereas the paired reduction provides the primary empirical evidence that padding suppresses the modeled gas channel.
-
-The criterion is applied independently to LR and RF; a task fails if either classifier crosses both thresholds, and the result tables report the classifier with the higher mean AUC.
-
-The classifiers receive all nine features stated in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
+It does not establish the absence of policy leakage.
 
 \subsubsection{Unsupervised Clustering Attacks}
 We run K-Means (with $K$ set to the number of classes, or $K=2$ for policy pairs) on the on-chain gas features, and score the recovered clusters against the true labels with ARI and NMI.

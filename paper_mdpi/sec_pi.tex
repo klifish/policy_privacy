@@ -15,5 +15,7 @@ Indistinguishability is thus a two-class problem whose ideal outcome is a guess 
 
 We evaluate this single-execution attacker over 30 policy-disjoint seeds (Table~\ref{tab:pi-pairs}).
 Pooled over all pairs, the AUC is $0.509\pm0.035$ with $3\%$ of seeds significant.
-Both pair types that enter the decision stay below the $0.55$ line: \texttt{semantic\_equivalent} at $0.549$ ($7\%$ significant seeds) and \texttt{weak\_equivalent} at $0.544$ ($10\%$), so PI passes.
+The \texttt{semantic\_equivalent} task has a mean AUC of $0.549$ and a significant-seed fraction of $7\%$.
+The \texttt{weak\_equivalent} task has a mean AUC of $0.544$ and a significant-seed fraction of $10\%$.
+Both pair-type tasks included in the PI verdict are therefore classified as PASS under the leakage criterion.
 With randomized gas padding, \texttt{controlled\_difference} sits at $0.544$ with $13\%$ of seeds significant, whereas the ablation of Section~\ref{sec:eval-ablation} separates the same pair type at AUC $0.68$ once padding is removed (Table~\ref{tab:ablation-gas-padding}), which suggests that the pair construction produces a distinguishable positive control.

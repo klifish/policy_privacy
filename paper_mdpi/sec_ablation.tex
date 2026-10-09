@@ -37,7 +37,8 @@ For PI it is $-0.011$, because three of its four tasks already deviate from chan
 	\label{fig:ablation-paired}
 \end{figure}
 
-The fixed circuit already makes the policy logic invisible to gas: the Groth16 verifier performs the same work for every proof, and the access-control path is the same for every policy.
+With a fixed circuit, the Groth16 verifier performs the same operations for every proof.
+The access-control path is also the same across the evaluated policies.
 The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and nine of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6 (RF AUC $0.713$), has only $9$ policies in the subset.
 
 Decoding the calldata of the transactions traces this variation to the requester pseudonym $\mathit{id}_{\mathrm{req}}$; the $12$-gas step is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028)~\cite{akhunov2019eip2028}.
@@ -51,7 +52,8 @@ As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker s
 
 The $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}.
 
-The padded access cost is set by the padding band: the TPS draws the target uniformly from $945{,}000$--$1{,}155{,}000$ gas, a band placed above the unpadded access cost on the target network (about $723{,}000$ gas on Amoy, as measured in B1) so that the whole band stays above real usage.
+The TPS samples the gas-padding target uniformly from $945{,}000$--$1{,}155{,}000$ gas.
+The lower bound exceeds the unpadded access cost measured in B1 on Amoy (approximately $723{,}000$ gas).
 On average over the subset, padding adds roughly $330{,}000$ gas per access transaction ($+46\%$) and $85{,}000$ gas per policy commitment ($+38\%$; Table~\ref{tab:ablation-gas-padding}).
 The mean access overhead is nearly independent of policy complexity, because unpadded access costs differ by less than $300$ gas across policies and all policies use the same padding band.
 
