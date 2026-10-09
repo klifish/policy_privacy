@@ -90,7 +90,7 @@ The policy pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) ar
 Most pairs contain only one execution per policy, while some contain $1$ execution for one policy and $30$ for the other.
 These small or highly imbalanced samples make clustering scores unreliable indicators of policy distinguishability.
 The supervised attack is unaffected, because it pools the executions of each pair type.
-Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is not (Section~\ref{sec:eval-nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
+Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is not (Appendix~\ref{app:nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
 The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).
