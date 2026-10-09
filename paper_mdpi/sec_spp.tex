@@ -18,9 +18,8 @@ This yields $1{,}125$ executions, comprising $1053$ from the coverage layer and 
 
 Table~\ref{tab:spp-contrasts} reports the pairwise contrasts.
 Most contrasts sit at chance, with mean AUC between $0.47$ and $0.54$.
-Three contrasts exceed the AUC threshold but have significant-seed fractions below $50\%$ and are therefore classified as PASS.
-The \texttt{paramType} contrasts \texttt{none}/\texttt{small} and \texttt{none}/\texttt{large} involve profile-only policies in the \texttt{none} bucket.
-This bucket contains $147$ policies and is the smallest category on this axis.
+Three contrasts exceed the AUC threshold but have significant-seed fractions below $50\%$ and are therefore classified as PASS: \texttt{paramType} \texttt{none}/\texttt{small} and \texttt{none}/\texttt{large}, and \texttt{nestingDepth} \texttt{flat}/\texttt{medium}.
+The two \texttt{paramType} contrasts both involve the \texttt{none} bucket of profile-only policies, which is the smallest category on this axis ($147$ policies).
 One contrast, \texttt{nestingDepth} \texttt{medium}/\texttt{deep}, crosses both thresholds (mean AUC $0.563$, $53\%$ significant seeds) and is reported as FAIL.
 
 Its separability has the same origin as the PCH ch5 case (Section~\ref{sec:eval-pch}).
