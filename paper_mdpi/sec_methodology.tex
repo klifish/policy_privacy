@@ -8,44 +8,39 @@ Performance is measured by AUC, with a chance baseline of $0.5$.
 The \emph{unsupervised} method clusters the observables without using labels.
 We evaluate agreement between the resulting clusters and the true labels using the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI).
 
-We execute the generated policies on the \emph{Polygon~Amoy} testnet.
-For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
-We then generate the Groth16 proof locally, acting as the TPS (Section~\ref{subsec:trust-model}).
-A separate TPS account submits the access transaction using \texttt{requestAccessBoundWithGasPad}.
-In the prototype, provider-to-TPS and requester-to-TPS exchanges are implemented as in-process calls and generate no additional on-chain artifacts.
-We extract the observables defined in Section~\ref{sec:eval-threat} from the transaction receipts, calldata, and event logs.
+% We execute the generated policies on the \emph{Polygon~Amoy} testnet.
+% For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
+% We then generate the Groth16 proof locally, acting as the TPS (Section~\ref{subsec:trust-model}).
+% A separate TPS account submits the access transaction using \texttt{requestAccessBoundWithGasPad}.
+% In the prototype, provider-to-TPS and requester-to-TPS exchanges are implemented as in-process calls and generate no additional on-chain artifacts.
+% We extract the observables defined in Section~\ref{sec:eval-threat} from the transaction receipts, calldata, and event logs.
 
 \subsubsection{Supervised Attacks}
-We evaluate each objective through binary classification \emph{tasks}, in which the attacker predicts a hidden label from the observables.
+For each privacy objective, we define a set of binary classification tasks.
 PCH tasks predict DUO-term presence or ICD-10 chapter membership (Section~\ref{sec:eval-pch}).
-PI tasks distinguish between executions of two policies (Section~\ref{sec:eval-pi}).
-SPP tasks distinguish between two categories of a structural or parameter property (Section~\ref{sec:eval-spp}).
+PI tasks predict which of two policies produced an execution (Section~\ref{sec:eval-pi}).
+SPP tasks distinguish between two categories defined by policy structure or parameter size (Section~\ref{sec:eval-spp}).
 
-For every task, we train two classifiers: logistic regression (LR) and random forest (RF), representing linear and non-linear models, respectively.
-Both classifiers receive all nine features listed in Section~\ref{sec:eval-threat}, including the seven that are constant by design.
-Each task is evaluated over \textbf{30 random seeds}, using the same protocol across PCH, PI, and SPP.
+For each task, we train logistic regression (LR) and random forest (RF) classifiers to evaluate linear and non-linear attacks, respectively.
+Both classifiers use the nine features listed in Section~\ref{sec:eval-threat}.
+We repeat the evaluation with $30$ random seeds, following the same protocol for PCH, PI, and SPP.
 
-For each seed, we first randomly select one execution per policy to limit the influence of repeatedly executed policies on the AUC and its permutation test.
-We then construct a \textbf{policy-disjoint $70/30$ train/test split}, ensuring that no policy appears in both sets.
-Test AUC therefore measures attack performance on policies not seen during training.
-Because policies are kept intact, exact per-class split proportions cannot always be achieved.
-For each seed, we generate $512$ candidate splits and discard those that lack either class in the training or test set.
-Among the valid candidates, we select the split that best approximates a $30\%$ test fraction within each class.
+For each seed, we randomly select one execution from each policy.
+We generate $512$ candidate $70/30$ train/test splits using non-overlapping sets of policies and retain only those with both classes represented in each set.
+Among these candidates, we select the split that places closest to $30\%$ of each class in the test set.
+We train each classifier on the training set and evaluate its predictions on the test set using AUC, with $0.5$ indicating chance-level performance.
+The test AUC therefore measures attack performance on policies not seen during training.
 
-For each seed and classifier, we assess test AUC using a label-permutation test.
-After training, we keep the test-set prediction scores fixed and randomly permute the test labels $R=500$ times.
-We recompute AUC for each permutation to obtain its null distribution under no association between scores and labels.
+We then assess the statistical significance of the test AUC using a label-permutation test.
+For each seed and classifier, we keep the test-set prediction scores fixed and randomly permute the test labels $R=500$ times.
+We recompute AUC for each permutation to approximate its null distribution under no association between scores and labels.
 The empirical $p$-value is
 \begin{equation}
 	p = \frac{k+1}{R+1},
 	\label{eq:perm-p}
 \end{equation}
-where $k$ counts the permutations whose AUC is at least as large as the observed AUC.
-The $+1$ correction prevents a zero $p$-value, with a minimum attainable value of $1/(R+1)$.
-The result for a given seed and classifier is considered significant when $p<0.05$.
-
-All tasks are binary, and the chance baseline for AUC is $0.5$ regardless of class balance.
-Class imbalance may affect estimation uncertainty but does not change this baseline.
+where $k$ is the number of permutations whose AUC is at least as large as the observed AUC.
+The result is considered significant when $p<0.05$.
 
 For each task, let $\mathrm{AUC}_s$ denote the test AUC for seed $s$, with $S=30$ seeds.
 The results report the mean AUC and the AUC gap $G_{\mathrm{AUC}}$, defined as the mean absolute deviation from $0.5$:
