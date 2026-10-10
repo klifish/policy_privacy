@@ -2,36 +2,46 @@
 \subsection{Policy Content Hiding (PCH)}
 \label{sec:eval-pch}
 
-This attack targets the DUO data-use terms of the corpus, namely GRU, DS, RS, POA, GS, CC, NCU, HMB, NMDS, and GSO (Section~\ref{sec:eval-dataset}), as well as disease codes aggregated to ten ICD-10 chapters (Table~\ref{tab:corpus}).
+This attack predicts DUO-term presence and ICD-10 chapter membership for the ten terms and ten chapters represented in the dataset (Table~\ref{tab:corpus}).
 
-Each DUO term defines a one-vs-rest binary task, on which we run the supervised pipeline stated in Section~\ref{sec:eval-method}.
-Table~\ref{tab:pch-terms} reports the per-term results.
-Mean AUC ranges from $0.477$ to $0.540$, below the operational threshold of $0.55$.
-The highest significant-seed fraction is $23\%$ for GRU, below the $50\%$ threshold.
-All DUO tasks are therefore classified as PASS under the leakage criterion.
+For each DUO term, we distinguish policies containing that term from those without it using the supervised attack described in Section~\ref{sec:eval-method}.
+Table~\ref{tab:pch-terms} reports the results for all ten terms.
+Mean AUCs range from $0.477$ to $0.540$, all below the $0.55$ threshold.
+The significant-seed fraction is highest for GRU at $23\%$, also below the $50\%$ threshold.
+All ten tasks are therefore classified as PASS under the leakage criterion.
 
 \input{tables/tab_pch_terms.tex}
 
-The same pipeline applied to the ICD-10 chapters (one-vs-rest over the DS policies only, which carry the ICD-10 scope; $127$ test policies per seed; Table~\ref{tab:pch-icd10}) passes nine chapters and fails one.
-Chapters ch1, ch2, and ch4 sit just above the AUC line (mean AUC $0.558$--$0.570$) but reproduce in at most $23\%$ of seeds, so they are boundary cases.
-Chapter ch5 (diseases of the nervous system) crosses both thresholds and is flagged by the criterion: mean AUC $0.667$ with $53\%$ of seeds significant.
+We apply the same supervised attacks to the ten ICD-10 chapters, restricting the analysis to DS policies, which carry the ICD-10 scope.
+Each task distinguishes policies associated with a given chapter from those associated with the other chapters.
+Nine tasks are classified as PASS and one as FAIL (Table~\ref{tab:pch-icd10}).
+The tasks for ch1, ch2, and ch4 have mean AUCs of $0.558$--$0.570$, slightly above the $0.55$ threshold.
+However, their significant-seed fractions are at most $23\%$, below the $50\%$ threshold, so these tasks are classified as PASS.
+Only the task for ch5 (diseases of the nervous system) is flagged under the leakage criterion, with a mean AUC of $0.667$ and a significant-seed fraction of $53\%$.
 
 \input{tables/tab_pch_icd10.tex}
 
+To investigate the FAIL outcome for ch5, we examine the contribution of the padding target to the observed separation.
 For each padded access transaction, we decompose the recorded gas as
 \begin{equation}
 	g_{\mathrm{acc}} = g_{\mathrm{pad}} + g_{\mathrm{res}},
 	\label{eq:gas-decomp}
 \end{equation}
-where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}), $g_{\mathrm{pad}}$ is the padding target that the TPS draws uniformly from the padding band (Section~\ref{sec:design}), and $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the residual overhead, the gas that the padded transaction consumes beyond its target.
-On Polygon Amoy, the residual overhead ranges only from $4{,}661$ to $4{,}750$ gas across all $1{,}773$ executions, so almost all variation in the padded access gas comes from the randomized target.
-The observer sees only the total gas, whereas the capture log also records each padding target.
-We therefore rerun the analysis on $g_{\mathrm{res}}$ to determine whether the ch5 separation remains after removing the randomized component.
+where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}).
+The padding target $g_{\mathrm{pad}}$ is drawn uniformly by the TPS from the padding band defined in Section~\ref{sec:design}.
+The residual overhead $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the gas consumed beyond that target.
 
-Across all $20$ PCH tasks, the single-feature rank AUC of the padded access gas, computed over all executions without a classifier, coincides with that of the padding target to three decimal places, while the residual AUC lies between $0.47$ and $0.52$.
-For ch5, the gas and target AUCs are both $0.601$, whereas the residual AUC is $0.472$.
-The $34$ ch5 policies happened to draw targets whose mean is $33{,}000$ gas higher than that of the other $388$ DS policies, a $3.2\sigma$ deviation for a uniform draw of that size.
-Because each coverage-layer policy is executed once, the $30$ evaluation seeds repeatedly partition the same fixed draws, causing this accidental difference to reproduce across seeds.
+Across all $1{,}773$ executions on Polygon Amoy, the residual overhead ranges from $4{,}661$ to $4{,}750$ gas.
+Although the observer sees only the total gas, our execution logs also record the padding target for each transaction, allowing us to compute $g_{\mathrm{res}}$ for diagnostic analysis.
+We rerun the supervised attacks with $g_{\mathrm{res}}$ replacing the access-gas feature to assess whether the ch5 separation persists after subtracting the padding target.
+
+For each of the $20$ PCH tasks, we compute AUC over all executions in that task, using each gas feature directly as the prediction score without training a classifier.
+The AUCs for padded access gas and the padding target agree to three decimal places across all tasks.
+The residual AUCs range from $0.47$ to $0.52$.
+For ch5, the AUCs for padded access gas and the padding target are both $0.601$, while the residual AUC is $0.472$.
+The mean padding target for the $34$ ch5 policies is $33{,}000$ gas higher than that for the remaining $388$ DS policies.
+Because each coverage-layer policy is executed only once, the $30$ evaluation seeds reuse the same recorded padding targets under different train/test splits.
+The association between these targets and the ch5 label can therefore persist across seeds.
 
 Applying the evaluation protocol to the residual gives a mean AUC of $0.556$ with $10\%$ significant seeds for LR and $0.561$ with $17\%$ significant seeds for RF, both yielding PASS.
 Applying it to the padding target alone reproduces the observed FAIL ($0.686$, $63\%$).
