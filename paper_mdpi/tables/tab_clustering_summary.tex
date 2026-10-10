@@ -9,43 +9,33 @@
 %              (raw field names logicStructure/predicateCount/setSize map to the
 %               supervised axes structureType/predicateCombo/paramType)
 % Dataset: experiments/data/polygonAmoy/ (same executions as the supervised verdicts).
-% p_ARI is the permutation p-value of the ensemble ARI (ari_p_value).
-% Residual diagnostics in the table note:
+% p_ARI / p_NMI are the permutation p-values of the ensemble ARI / NMI (ari_p_value / nmi_p_value).
+% Residual diagnostics (cited in sec_clustering.tex, not in this table):
 %   experiments/results/supervised/pad_residual_diagnostic.json
 %   experiments.spp.clustering.{nestingDepth,paramType}.residual
 \begin{table}[htbp]
-  \centering
-  \caption{Unsupervised clustering attack (K-Means, $K$ = number of classes, $K=2$ for
-    pairs) on the on-chain gas features.}
-  \label{tab:clustering-summary}
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}llccccc@{}}
-    \toprule
-    Objective & Target & $n$ & \#cls. & ARI & $p_{\mathrm{ARI}}$ & NMI \\
-    \midrule
-    PCH & DUO terms                & $1773$ & $10$ & $0.0000$  & $0.48$ & $0.0109$ \\
-    PCH & ICD-10 chapters          & $770$  & $10$ & $0.0021$  & $0.06$ & $0.0281$ \\
-    PI  & policy pairs ($30$v$30$) & $127$  & $2$  & $0.0020$  & --- & $0.0139$ \\
-    SPP & \texttt{structureType}  & $1125$ & $4$  & $0.0004$  & $0.33$ & $0.0034$ \\
-    SPP & \texttt{predicateCombo} & $1125$ & $3$  & $-0.0005$ & $0.58$ & $0.0015$ \\
-    SPP & \texttt{paramType}      & $1125$ & $4$  & $-0.0000$ & $0.49$ & $0.0030$ \\
-    SPP & \texttt{nestingDepth}   & $1125$ & $4$  & $0.0071$  & $<0.01$ & $0.0088$ \\
-    \bottomrule
-  \end{tabular}
+	\centering
+	\caption{Unsupervised clustering attack (K-Means, $K$ = number of classes, $K=2$ for
+		pairs) on the on-chain gas features.}
+	\label{tab:clustering-summary}
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{@{}llcccccc@{}}
+		\toprule
+		Objective & Target                   & $n$    & \#cls. & ARI       & $p_{\mathrm{ARI}}$ & NMI      & $p_{\mathrm{NMI}}$ \\
+		\midrule
+		PCH       & DUO terms                & $1773$ & $10$   & $0.0000$  & $0.48$             & $0.0109$ & $0.41$             \\
+		PCH       & ICD-10 chapters          & $770$  & $10$   & $0.0021$  & $0.06$             & $0.0281$ & $0.08$             \\
+		PI        & policy pairs ($30$v$30$) & $127$  & $2$    & $0.0020$  & ---                & $0.0139$ & ---                \\
+		SPP       & \texttt{structureType}   & $1125$ & $4$    & $0.0004$  & $0.33$             & $0.0034$ & $0.34$             \\
+		SPP       & \texttt{predicateCombo}  & $1125$ & $3$    & $-0.0005$ & $0.58$             & $0.0015$ & $0.51$             \\
+		SPP       & \texttt{paramType}       & $1125$ & $4$    & $-0.0000$ & $0.49$             & $0.0030$ & $0.43$             \\
+		SPP       & \texttt{nestingDepth}    & $1125$ & $4$    & $0.0071$  & $<0.01$            & $0.0088$ & $<0.01$            \\
+		\bottomrule
+	\end{tabular}
 
-  \begin{tablenote}
-    PCH clusters all executions globally; SPP uses its $1{,}125$-execution view
-    (Section~\ref{sec:eval-dataset}). For PI, $n$ counts balanced pairs
-    (Section~\ref{sec:eval-method}), and the NMI shown is not debiased; after permutation
-    debiasing, the mean NMI is $0.001$, and $6$ of the $127$ pairs ($5\%$) are flagged, the
-    rate expected under the null at $\alpha=0.05$.
-    The $p_{\mathrm{ARI}}$ column reports label-permutation tests for PCH and SPP;
-    for PI, ARI and NMI are means across the balanced policy pairs, and significance
-    is assessed separately for each pair using the permutation-debiased NMI test.
-    The dash (---) indicates that no $p$-value was computed for the mean PI ARI.
-    Replacing access gas with the residual while retaining commit gas gives
-    ARI $-0.0004$ ($p_{\mathrm{ARI}}=0.60$) for \texttt{nestingDepth} and
-    ARI $0.0026$ ($p_{\mathrm{ARI}}=0.04$) for \texttt{paramType}.
-  \end{tablenote}
+	\begin{tablenote}
+		For PI, ARI and NMI are means across the $127$ balanced policy pairs.
+		Each pair is clustered and tested separately, so no single $p$-value applies to these means (---).
+	\end{tablenote}
 \end{table}

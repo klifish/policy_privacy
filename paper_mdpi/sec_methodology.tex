@@ -72,23 +72,22 @@ We apply K-Means~\cite{lloyd1982least} to the on-chain gas features, setting $K$
 We evaluate agreement between the resulting clusters and the true labels using ARI and NMI.
 Higher values indicate that clustering more closely recovers the hidden categories, suggesting greater privacy leakage.
 Values close to $0$ indicate limited recovery by this attack, but do not establish the absence of leakage.
+ARI is adjusted for chance~\cite{hubert1985comparing}, whereas NMI is not~\cite{vinh2010information} and can be positive even when the clusters and labels are unrelated (Appendix~\ref{app:nmi-sensitivity}); NMI must therefore be compared against a null distribution rather than against $0$.
 
 For PCH, we cluster all executions together.
 For SPP, we use a subset of $1{,}125$ executions (Section~\ref{sec:eval-dataset}) and perform clustering separately for each dimension defined in Section~\ref{sec:eval-spp}, setting $K$ to the number of categories.
 For both analyses, we report ARI and NMI averaged over $20$ K-Means seeds.
 
-To assess whether the observed ARI exceeds chance expectations, we keep the cluster assignments fixed and randomly permute the true labels $R=200$ times.
-We compute $p_{\mathrm{ARI}}$ using Equation~\eqref{eq:perm-p}, where $k$ counts the permutations whose ARI is at least as large as the observed ARI.
-The smallest attainable $p$-value is therefore $1/201 \approx 0.005$.
+To assess the statistical significance of the observed ARI and NMI, we keep the cluster assignments fixed and randomly permute the true labels $R=200$ times, recomputing both metrics for each permutation.
+For each metric, we calculate the corresponding $p$-value using Equation~\eqref{eq:perm-p}, where $k$ is the number of permutations yielding a value at least as large as the observed value.
+We denote these $p$-values by $p_{\mathrm{ARI}}$ and $p_{\mathrm{NMI}}$.
+The smallest attainable $p$-value is $1/201 \approx 0.005$.
 
-For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
-First, the PI clustering analysis uses a dedicated set of \emph{balanced policy pairs} constructed from depth-layer executions (Section~\ref{sec:eval-dataset}).
-We evaluate $127$ pairs, each containing $30$ executions per policy.
-The policy pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) are unsuitable for per-pair clustering.
-Most pairs contain only one execution per policy, while some contain $1$ execution for one policy and $30$ for the other.
-These small or highly imbalanced samples make clustering scores unreliable indicators of policy distinguishability.
-The supervised attack is unaffected, because it pools the executions of each pair type.
-Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is corrected for chance~\cite{vinh2010information} (Appendix~\ref{app:nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
-The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
-The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
-The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).
+For PI, we assess whether the executions of two policies can be distinguished, evaluating each policy pair separately.
+The pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) contain either one execution per policy or one execution for one policy and $30$ for the other.
+Such small or imbalanced samples limit the reliability of clustering-based comparisons.
+We therefore construct $127$ balanced policy pairs from the depth-layer executions (Section~\ref{sec:eval-dataset}), with $30$ executions per policy in each pair.
+
+For each pair, we apply K-Means with $K=2$ and compare the resulting clusters with the policy labels.
+We test the statistical significance of NMI using the label-permutation procedure described above and flag the pair if $p_{\mathrm{NMI}}<0.05$.
+We summarize PI using the mean ARI and NMI across pairs and the fraction of flagged pairs, interpreting the latter relative to the nominal $5\%$ significance level.

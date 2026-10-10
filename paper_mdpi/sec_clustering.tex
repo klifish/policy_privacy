@@ -9,15 +9,15 @@ The clustering attacker stated in Section~\ref{sec:eval-method} tests whether th
 Table~\ref{tab:clustering-summary} and Figure~\ref{fig:clust-summary} summarize the clustering results across the three privacy objectives.
 
 ARI stays within $\pm 0.003$ for every PCH, PI, and SPP target except the SPP \texttt{nestingDepth}, indicating little agreement between the clusters and the hidden labels.
-The PCH and SPP NMI values are below $0.03$.
-The highest, $0.0281$ for the ICD-10 chapters, lies within the range expected without signal for ten classes of these sizes (Appendix~\ref{app:nmi-sensitivity}).
+The PCH and SPP NMI values are below $0.03$, and apart from \texttt{nestingDepth} none is significant under the label-permutation test ($p_{\mathrm{NMI}}\ge 0.08$).
+For PI, $6$ of the $127$ pairs ($5\%$) have $p_{\mathrm{NMI}}<0.05$, consistent with the nominal $5\%$ level.
 
 
-For \texttt{nestingDepth}, the ARI is small but statistically significant under the label-permutation test reported in Table~\ref{tab:clustering-summary}.
+For \texttt{nestingDepth}, the ARI and NMI are small but statistically significant under the label-permutation test reported in Table~\ref{tab:clustering-summary}.
 To investigate this association, we repeat clustering on the same executions, retaining commit gas and replacing access gas with the residual defined in Equation~\eqref{eq:gas-decomp}.
-As reported in the table note, the nesting-depth ARI then falls to near zero and is no longer statistically significant.
+The nesting-depth ARI then falls to $-0.0004$, and neither ARI nor NMI remains statistically significant ($p_{\mathrm{ARI}}=0.60$, $p_{\mathrm{NMI}}=0.69$).
 Together with the diagnostic for the \texttt{medium}/\texttt{deep} contrast in Section~\ref{sec:eval-spp}, this result is consistent with a chance association between the randomly drawn padding targets and nesting depth in the evaluated dataset.
-However, the residual analysis yields a small but nominally significant association for \texttt{paramType}.
+However, the residual analysis yields a small but nominally significant ARI for \texttt{paramType} ($0.0026$, $p_{\mathrm{ARI}}=0.04$), whose NMI is not significant ($p_{\mathrm{NMI}}=0.09$).
 These findings provide complementary evidence to the supervised results on the same dataset.
 
 \input{tables/tab_clustering_summary.tex}

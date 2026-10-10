@@ -653,10 +653,11 @@ nestingDepth: medium/deep             lr  0.563 ± 0.028  gap 0.063  sig 53%  n 
 
 ## `tab:clustering-summary` (`tab_clustering_summary.tex`)
 
-Last checked against the source: commit `f93fa02`, 2026-10-02. All 28 cells match (n, #cls., ARI, NMI × 7 rows).
-The table had a $p_{\mathrm{ARI}}$ column until 2026-10-03; it was removed because PI has no ARI
-test (see the PI paragraph below). The p-values are still in the CSVs, and `sec_clustering.tex` cites
-`nestingDepth`'s 0.005.
+Last checked against the source: 2026-10-10. All 40 cells match (n, #cls., ARI, NMI × 7 rows;
+$p_{\mathrm{ARI}}$, $p_{\mathrm{NMI}}$ × 6 PCH/SPP rows).
+The $p_{\mathrm{ARI}}$ column was removed on 2026-10-03 and restored in `aadc96f` (2026-10-10);
+the $p_{\mathrm{NMI}}$ column was added on 2026-10-10. PI shows "---" in both, because no pooled
+test over the pairs exists (see the PI paragraph below).
 
 **Sources** (`experiments/results/clustering/`):
 
@@ -676,9 +677,10 @@ shared statistics in `clustering_stats.py`.
   use all nine.
 - K-Means with K = number of classes, run with 20 seeds (`n_init = 10` each). **ARI and NMI are the means
   over the 20 runs** (`kmeans_ari`, `kmeans_nmi`).
-- **p_ARI** (`ari_p_value`; not tabulated, cited in the text): the 20 cluster assignments are fixed, the labels are permuted 200 times, and
+- **p_ARI / p_NMI** (`ari_p_value` / `nmi_p_value`, tabulated to two decimals): the 20 cluster assignments
+  are fixed, the labels are permuted 200 times, both metrics are recomputed on each permutation, and
   `p = (#null ≥ observed + 1) / 201`. **The smallest attainable p is 1/201 = 0.005**, so
-  `nestingDepth`'s 0.005 means that the observed value beat all 200 permutations.
+  `nestingDepth`'s 0.005 (both metrics, shown as $<0.01$) means that the observed value beat all 200 permutations.
 - The CSV column `n` (500) is the number of policy-bootstrap iterations behind `ariCi95`/`nmiCi95`,
   **not** a sample size. The table's n is `n_samples`.
 
@@ -699,21 +701,29 @@ The 127 pairs are 67 same-layer and 60 cross-layer pairs. The script's own types
 Table ARI 0.0020 = mean `observed_ari`, and NMI 0.0139 = mean `observed_nmi`. The per-pair `p_value`
 tests **NMI**, not ARI. The pipeline computes the per-pair ARI p-value in
 `ensemble_permutation_analysis`, but `debias_pair` does not save it, and no pooled test over the pairs exists;
-this is why the $p_{\mathrm{ARI}}$ column was dropped.
+this is why the PI row shows "---" in both p columns.
 6 of 127 pairs (4.7%) have p < 0.05, and 0 survive BH-FDR (`significant_fdr`).
 
 ### Text that cites this table (`sec_clustering.tex`)
 
 - "ARI within ±0.003 and NMI below 0.03 for every DUO, PI, and SPP target except one" agrees.
-- ICD-10 "$p=0.15$" is `matchedIcd10.empiricalP` = 0.146 in `null/nmi_null_simulation.json`;
-  "debiased NMI $0.0044$, $p=0.08$" is `debiased_nmi`/`nmi_p_value` of the ICD CSV. Both agree.
-- PI "mean debiased NMI $0.001$ (0.0014), $6$ of the $127$ pairs ($5\%$) are flagged" (tablenote; moved
-  from the removed "Removing sample-size confounds" paragraph of `sec_clustering.tex`, 2026-10-05) agrees.
-- `nestingDepth` residual "ARI $-0.0004$ ($p=0.60$)" agrees with
-  `experiments/results/supervised/pad_residual_diagnostic.md` (clustering table).
-- **"while every other axis is unchanged" is not exact.** In the same diagnostic, `paramType` moves
-  from ARI −0.0000 (p 0.488) on gas to **0.0026 (p 0.040)** on the residual. The value is still tiny, but it is
-  nominally significant. `structureType` and `predicateCombo` stay non-significant.
+- "apart from `nestingDepth` none is significant ($p_{\mathrm{NMI}}\ge 0.08$)": the smallest non-`nestingDepth`
+  `nmi_p_value` is ICD-10's 0.085 → "0.08". Agrees. (Until 2026-10-10 the text instead compared the ICD-10
+  NMI with the appendix null, `matchedIcd10.empiricalP` = 0.146; that p is no longer cited, see
+  `tab:nmi-sample-size-sensitivity`.)
+- PI "$6$ of the $127$ pairs ($5\%$) have $p_{\mathrm{NMI}}<0.05$" (text, first paragraph; moved out of the
+  tablenote on 2026-10-10, which now only explains the PI dashes) agrees: the pipeline's
+  `significant` column is exactly `p_value` < 0.05 (`analyze_pi_balanced.py`), true for 6 rows. The paper's earlier
+  rule "debiased NMI positive and $p_{\mathrm{NMI}}<0.05$" added a condition the code never applied (all 6 have
+  positive debiased NMI, so the count was unaffected). Since 2026-10-10 the paper no longer uses debiased NMI;
+  the tablenote previously also cited the mean debiased NMI 0.001 (0.0014).
+- PI per-pair ARI p-values do not exist in any result file: `ensemble_permutation_analysis` computes
+  `nullAri.pValue` for every pair, but `debias_pair` does not return it, so the CSV has `observed_ari` only.
+- Residual values in the text (moved out of the tablenote on 2026-10-10) come from `pad_residual_diagnostic.json`,
+  `experiments.spp.clustering.<axis>.residual` (`ari`, `ariP`, `nmiP`): `nestingDepth` ARI −0.0004,
+  p_ARI 0.602 → "0.60", p_NMI 0.692 → "0.69"; `paramType` ARI 0.0026, p_ARI 0.040 → "0.04",
+  p_NMI 0.095 → "0.09". Agrees. The text calls the `paramType` ARI "nominally significant" and states that its
+  NMI is not; `structureType` and `predicateCombo` stay non-significant on both metrics.
 
 ### Recompute
 
@@ -721,7 +731,7 @@ this is why the $p_{\mathrm{ARI}}$ column was dropped.
 python3 - <<'PY'
 import csv, statistics as st
 R = lambda p: list(csv.DictReader(open("experiments/results/clustering/" + p)))
-fmt = lambda r: f"n {r['n_samples']:>4}  k {r['n_classes']:>2}  ARI {float(r['kmeans_ari']):.4f}  p {float(r['ari_p_value']):.3f}  NMI {float(r['kmeans_nmi']):.4f}"
+fmt = lambda r: f"n {r['n_samples']:>4}  k {r['n_classes']:>2}  ARI {float(r['kmeans_ari']):.4f}  p {float(r['ari_p_value']):.3f}  NMI {float(r['kmeans_nmi']):.4f}  p {float(r['nmi_p_value']):.3f}"
 print("PCH DUO            ", fmt(R("pch/pch_global_duo_clustering.csv")[0]))
 print("PCH ICD-10         ", fmt(R("pch/pch_global_icd10_clustering.csv")[0]))
 pi = R("pi/pi_balanced_debiased.csv")
@@ -739,13 +749,13 @@ PY
 Expected output:
 
 ```
-PCH DUO             n 1773  k 10  ARI 0.0000  p 0.483  NMI 0.0109
-PCH ICD-10          n  770  k 10  ARI 0.0021  p 0.065  NMI 0.0281
+PCH DUO             n 1773  k 10  ARI 0.0000  p 0.483  NMI 0.0109  p 0.413
+PCH ICD-10          n  770  k 10  ARI 0.0021  p 0.065  NMI 0.0281  p 0.085
 PI (mean of 127 pairs) ARI 0.0020  NMI 0.0139  debiased NMI 0.0014  p<0.05: 6  FDR: 0
-SPP structureType   n 1125  k  4  ARI 0.0004  p 0.328  NMI 0.0034
-SPP predicateCombo  n 1125  k  3  ARI -0.0005  p 0.577  NMI 0.0015
-SPP paramType       n 1125  k  4  ARI -0.0000  p 0.488  NMI 0.0030
-SPP nestingDepth    n 1125  k  4  ARI 0.0071  p 0.005  NMI 0.0088
+SPP structureType   n 1125  k  4  ARI 0.0004  p 0.328  NMI 0.0034  p 0.343
+SPP predicateCombo  n 1125  k  3  ARI -0.0005  p 0.577  NMI 0.0015  p 0.507
+SPP paramType       n 1125  k  4  ARI -0.0000  p 0.488  NMI 0.0030  p 0.433
+SPP nestingDepth    n 1125  k  4  ARI 0.0071  p 0.005  NMI 0.0088  p 0.005
 ```
 
 ---
@@ -776,7 +786,7 @@ The table's last row (NMI 0.0244) and the text's ICD-10 numbers come from **diff
 | K-Means fits per trial | 1 | 20, averaged (as in the evaluation) |
 | NMI mean | 0.0244 | 0.0246 |
 | NMI p95 | 0.0314 | 0.0302 |
-| Observed ICD NMI 0.0281 reached | n/a | 145 of 1000 trials, p = (145+1)/1001 = 0.146 → "0.15" |
+| Observed ICD NMI 0.0281 reached | n/a | 145 of 1000 trials, p = (145+1)/1001 = 0.146 (no longer cited since 2026-10-10; the paper uses the label-permutation `nmi_p_value` = 0.085 instead) |
 
 Since 2026-10-03 the table note states "one K-Means fit with ten initializations per trial", and the text
 calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0244 vs 0.0246)
@@ -867,13 +877,18 @@ RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLe
 |---|---|---|
 | PCH DUO terms 0.349 [0.316, 0.407] | `policyGroupBootstrap.pch_duo.deltaB1MinusB2.nmi` | policy-group bootstrap (2,000) |
 | SPP logic structure 0.102 [0.018, 0.138] | `policyGroupBootstrap.logicStructure.deltaB1MinusB2.nmi` | policy-group bootstrap |
-| PI balanced pairs 0.670 [0.591, 0.743] | `piBalancedPairs.debiased_nmi` | **bootstrap over the 127 pairs**, not policy-group |
+| PI balanced pairs 0.670 [0.592, 0.743] | `piBalancedPairs.observed_nmi` | **bootstrap over the 127 pairs**, not policy-group |
 
 **PI interval (resolved 2026-10-03, values unchanged).** The header used to say "policy-group bootstrap" for all
 three rows, but the PI interval resamples pairs, which share only 24 policies. The header now says "bootstrap" without naming the method;
 a footnote naming both methods was added and then removed at the author's request (2026-10-03). The same JSON holds the
 policy-weighted bootstrap, `piBalancedPairs.policyWeightedDebiasedNmi`: mean 0.670, **[0.442, 0.831]**. Both intervals
 exclude zero; the policy-weighted interval is not shown in the paper.
+
+**PI row switched to raw NMI (2026-10-10).** The row used `piBalancedPairs.debiased_nmi`, 0.670 [0.591, 0.743], until
+the paper stopped using debiased NMI. `compare_pi_clustering` bootstraps the per-pair B1−B2 difference of each metric
+over the same 127 pairs; the B1 and B2 per-pair null means are both 0.0125, so debiasing cancels in the difference and
+`observed_nmi` gives 0.670 [0.592, 0.743]. The policy-weighted interval exists only for the debiased NMI.
 
 ### Gas rows
 
@@ -906,7 +921,7 @@ c = json.load(open("experiments/ablation/gas_padding/polygonAmoy/comparison/abla
 for k in ["pch_duo", "logicStructure"]:
     d = c["policyGroupBootstrap"][k]["deltaB1MinusB2"]["nmi"]
     print(f"NMI B1-B2 {k:15s} {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  (policy-group)")
-for k, how in [("debiased_nmi", "pair bootstrap"), ("policyWeightedDebiasedNmi", "policy-weighted")]:
+for k, how in [("observed_nmi", "pair bootstrap"), ("policyWeightedDebiasedNmi", "policy-weighted, debiased; not shown")]:
     d = c["piBalancedPairs"][k]
     print(f"NMI B1-B2 PI pairs       {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  ({how})")
 b = "experiments/ablation/gas_padding/polygonAmoy/"
@@ -926,8 +941,8 @@ pch DUO HMB                               B1 0.876  B2 0.495  Δ 0.337 [0.319, 0
 pi controlled_difference                 B1 0.676  B2 0.446  Δ 0.088 [0.062, 0.111]
 NMI B1-B2 pch_duo         0.349 [0.316, 0.407]  (policy-group)
 NMI B1-B2 logicStructure  0.102 [0.018, 0.138]  (policy-group)
-NMI B1-B2 PI pairs       0.670 [0.591, 0.743]  (pair bootstrap)
-NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted)
+NMI B1-B2 PI pairs       0.670 [0.592, 0.743]  (pair bootstrap)
+NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted, debiased; not shown)
 commitGasUsed  B1 219,737  B2 304,098  (+38.4%)
 accessGasUsed  B1 723,462  B2 1,056,674  (+46.1%)
 ```
