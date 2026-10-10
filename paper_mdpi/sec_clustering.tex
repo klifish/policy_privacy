@@ -5,13 +5,21 @@
 \graphicspath{{figures/}{./}}
 \subsection{Unsupervised Clustering: A Label-Free Cross-Check}
 \label{sec:eval-clustering}
+The clustering attacker stated in Section~\ref{sec:eval-method} tests whether the on-chain observables group by a hidden label without access to that label.
+Table~\ref{tab:clustering-summary} and Figure~\ref{fig:clust-summary} summarize the clustering results across the three privacy objectives.
 
-Table~\ref{tab:clustering-summary} summarizes the clustering results for the three privacy objectives using the method described in Section~\ref{sec:eval-method}.
-ARI and NMI remain close to zero across the evaluated targets, indicating little agreement between the clusters and the hidden labels.
-The SPP \texttt{nestingDepth} axis yields a small ARI of $0.0071$, which is statistically significant under the label-permutation test ($p_{\mathrm{ARI}}=0.005$).
-It mirrors the \texttt{medium}/\texttt{deep} failure reported in Section~\ref{sec:eval-spp}: clustering the same executions on the residual gas (access gas minus the padding target) returns the axis to ARI $-0.0004$ ($p=0.60$), and no other axis exceeds ARI $0.003$ on the residual (\texttt{paramType} reaches $0.0026$, $p=0.04$). 
-The grouping therefore follows the per-policy random draws of the padding.
-With that qualification, the unsupervised attacker agrees with the supervised results as a second, label-free attack family on the same dataset (Figure~\ref{fig:clust-summary}).
+ARI stays within $\pm 0.003$ for every PCH, PI, and SPP target except the SPP \texttt{nestingDepth}, indicating little agreement between the clusters and the hidden labels.
+The PCH and SPP NMI values are below $0.03$.
+the highest, $0.0281$ for the ICD-10 chapters, lies within the range expected without signal for ten classes of these sizes (Appendix~\ref{app:nmi-sensitivity}).
+For the balanced PI pairs, the debiased NMI averages $0.001$, and $6$ of the $127$ pairs ($5\%$) are flagged, the rate expected under the null at $\alpha=0.05$.
+
+
+For \texttt{nestingDepth}, the ARI is small but statistically significant under the label-permutation test reported in Table~\ref{tab:clustering-summary}.
+To investigate this association, we repeat clustering on the same executions, retaining commit gas and replacing access gas with the residual defined in Equation~\eqref{eq:gas-decomp}.
+As reported in the table note, the nesting-depth ARI then falls to near zero and is no longer statistically significant.
+Together with the diagnostic for the \texttt{medium}/\texttt{deep} contrast in Section~\ref{sec:eval-spp}, this result is consistent with a chance association between the randomly drawn padding targets and nesting depth in the evaluated dataset.
+However, the residual analysis yields a small but nominally significant association for \texttt{paramType}.
+These findings provide complementary evidence to the supervised results on the same dataset.
 
 \input{tables/tab_clustering_summary.tex}
 

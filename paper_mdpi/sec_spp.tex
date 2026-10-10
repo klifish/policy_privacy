@@ -2,27 +2,26 @@
 \subsection{Structure and Parameter Privacy (SPP)}
 \label{sec:eval-spp}
 
-To evaluate SPP, we annotate each policy along four axes that instantiate the structural and parametric properties described in Section~\ref{subsec:privacy-objectives}, each partitioned into a few discrete buckets (categories or value ranges, listed below).
-The four axes are logical structure type (\texttt{structureType}), predicate count (\texttt{predicateCombo}), parameter size (\texttt{paramType}), and nesting depth (\texttt{nestingDepth}).
-Each pair of buckets within a structural axis defines a binary classification task.
-The attacker predicts which bucket the executed policy belongs to using the observables.
+To evaluate SPP, we annotate each policy along four dimensions that capture the structural and parametric properties described in Section~\ref{subsec:privacy-objectives}.
+The four dimensions are logical structure type (\texttt{structureType}), predicate count (\texttt{predicateCombo}), parameter size (\texttt{paramType}), and nesting depth (\texttt{nestingDepth}).
+Each dimension is divided into discrete categories or value ranges.
+Specifically, \texttt{structureType} classifies the logical form joining the DUO terms (Section~\ref{sec:eval-dataset}) into four categories: \texttt{trivial} (a single term with no Boolean connective, e.g.\ policy logic \texttt{"DS"}), \texttt{and\_only}, \texttt{or\_only}, and \texttt{and\_or\_mixed}.
+\texttt{predicateCombo} groups policies by predicate-namespace count into \texttt{single} ($1$), \texttt{few} ($2$--$3$), and \texttt{many} ($\ge 4$);
+\texttt{paramType} groups policies by whitelist size into \texttt{none} (no whitelist), \texttt{small} ($1$--$4$), \texttt{medium} ($5$--$16$), and \texttt{large} ($\ge 17$);
+\texttt{nestingDepth} groups policies by the maximum nesting depth of the normalized expression into \texttt{flat} ($\le 1$), \texttt{shallow} ($2$), \texttt{medium} ($3$), and \texttt{deep} ($\ge 4$).
+In the normalized expression, each term is joined by AND to the predicate that checks it (e.g.\ \texttt{"DS"} becomes \texttt{(DS \& P[ICD10])}).
+The policy counts for each category in the dataset are listed in Table~\ref{tab:corpus}.
 
-\texttt{structureType} classifies the logical form joining the DUO terms (Section~\ref{sec:eval-dataset}) into four buckets: \texttt{trivial} (a single term with no Boolean connective, e.g.\ policy logic \texttt{"DS"}), \texttt{and\_only}, \texttt{or\_only}, and \texttt{and\_or\_mixed}.
-\texttt{predicateCombo} buckets policies by predicate-namespace count into \texttt{single} ($1$), \texttt{few} ($2$--$3$), and \texttt{many} ($\ge 4$);
-\texttt{paramType} buckets by whitelist size into \texttt{none} (no whitelist), \texttt{small} ($1$--$4$), \texttt{medium} ($5$--$16$), and \texttt{large} ($\ge 17$);
-\texttt{nestingDepth} buckets by the maximum nesting of the normalized expression, in which each term is joined by AND to the predicate that checks it (e.g.\ \texttt{"DS"} becomes \texttt{(DS \& P[ICD10])}), into \texttt{flat} ($\le 1$), \texttt{shallow} ($2$), \texttt{medium} ($3$), and \texttt{deep} ($\ge 4$).
-The per-bucket counts of the full corpus are listed in Table~\ref{tab:corpus}.
+Each pair of categories within a dimension defines a binary classification task.
+Using the observables, the attacker predicts which of the two categories the executed policy belongs to.
 
-Both supervised and unsupervised SPP analyses retain all coverage-layer executions but only the first three executions of each depth-layer policy (Section~\ref{sec:eval-dataset}).
-This yields $1{,}125$ executions, comprising $1053$ from the coverage layer and $72$ from the depth layer.
+Table~\ref{tab:spp-contrasts} reports the results for all pairwise classification tasks.
+For most tasks, mean AUCs are close to the chance level of $0.5$, ranging from $0.47$ to $0.54$.
+The \texttt{paramType} tasks \texttt{none}/\texttt{small} and \texttt{none}/\texttt{large}, and the \texttt{nestingDepth} task \texttt{flat}/\texttt{medium}, have mean AUCs of $0.571$, $0.568$, and $0.555$, respectively.
+Although these values exceed the $0.55$ threshold, the corresponding significant-seed fractions are $40\%$, $33\%$, and $27\%$, all below the $50\%$ threshold, so these tasks are classified as PASS.
+Only the \texttt{nestingDepth} task \texttt{medium}/\texttt{deep} is flagged under the leakage criterion, with a mean AUC of $0.563$ and a significant-seed fraction of $53\%$.
 
-Table~\ref{tab:spp-contrasts} reports the pairwise contrasts.
-Most contrasts sit at chance, with mean AUC between $0.47$ and $0.54$.
-Three contrasts have mean AUCs above $0.55$: the \texttt{paramType} contrasts \texttt{none}/\texttt{small} ($0.571$) and \texttt{none}/\texttt{large} ($0.568$), and the \texttt{nestingDepth} contrast \texttt{flat}/\texttt{medium} ($0.555$).
-Their significant-seed fractions are $40\%$, $33\%$, and $27\%$, respectively, below the $50\%$ threshold, so these contrasts are classified as PASS.
-The \texttt{nestingDepth} \texttt{medium}/\texttt{deep} contrast is the only one flagged under the leakage criterion, with a mean AUC of $0.563$ and a significant-seed fraction of $53\%$.
-
-Its separability has the same origin as the PCH ch5 case (Section~\ref{sec:eval-pch}).
-The single-feature rank AUC of the access gas for this contrast equals that of the padding target alone ($0.440$ for both, i.e.\ deep policies drew lower targets) and the residual after subtracting the target scores $0.467$; over all 21 contrasts the gas and target AUCs agree to within $0.001$, and the residual AUC stays within $0.47$--$0.56$.
-Rerunning the protocol with the residual in place of the access gas returns the contrast to PASS (LR $0.530$ with $13\%$ significant seeds; RF $0.544$ with $33\%$), while the target alone reproduces the FAIL ($0.568$, $57\%$).
-The above-chance separation of this contrast therefore comes from the per-policy random draw that the padding itself introduces.
+To investigate this result, we apply the padding diagnostic used for the PCH ch5 case (Section~\ref{sec:eval-pch}).
+For the \texttt{medium}/\texttt{deep} task, access gas and the padding target have identical single-feature rank AUCs.
+Replacing access gas with the residual obtained by subtracting the padding target yields PASS for both LR and RF, whereas using the target alone yields FAIL.
+These findings are consistent with a chance association between the randomly drawn per-policy padding targets and the nesting-depth categories in the evaluated dataset.
