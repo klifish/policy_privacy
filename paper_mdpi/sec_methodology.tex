@@ -6,7 +6,7 @@ We evaluate each privacy objective with a primary supervised attack and a comple
 The \emph{supervised} method trains classifiers on labeled data to predict hidden labels from the observables.
 Performance is measured by AUC, with a chance baseline of $0.5$.
 The \emph{unsupervised} method clusters the observables without using labels.
-We evaluate agreement between the resulting clusters and the true labels using the Adjusted Rand Index (ARI) and Normalized Mutual Information (NMI).
+We evaluate agreement between the resulting clusters and the true labels using the Adjusted Rand Index (ARI)~\cite{hubert1985comparing} and Normalized Mutual Information (NMI)~\cite{vinh2010information}.
 
 % We execute the generated policies on the \emph{Polygon~Amoy} testnet.
 % For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
@@ -21,7 +21,7 @@ PCH tasks predict DUO-term presence or ICD-10 chapter membership (Section~\ref{s
 PI tasks predict which of two policies produced an execution (Section~\ref{sec:eval-pi}).
 SPP tasks distinguish between two categories defined by policy structure or parameter size (Section~\ref{sec:eval-spp}).
 
-For each task, we train logistic regression (LR) and random forest (RF) classifiers to evaluate linear and non-linear attacks, respectively.
+For each task, we train logistic regression (LR)~\cite{cox1958regression} and random forest (RF)~\cite{breiman2001random} classifiers to evaluate linear and non-linear attacks, respectively.
 Both classifiers use the nine features listed in Section~\ref{sec:eval-threat}.
 We repeat the evaluation with $30$ random seeds, following the same protocol for PCH, PI, and SPP.
 
@@ -68,7 +68,7 @@ A task is classified as FAIL if either classifier is flagged, and as PASS otherw
 A PASS indicates that neither evaluated attack is flagged under this criterion; it does not establish the absence of policy leakage.
 
 \subsubsection{Unsupervised Clustering Attacks}
-We apply K-Means to the on-chain gas features, setting $K$ to the number of classes ($K=2$ for policy pairs).
+We apply K-Means~\cite{lloyd1982least} to the on-chain gas features, setting $K$ to the number of classes ($K=2$ for policy pairs).
 We evaluate agreement between the resulting clusters and the true labels using ARI and NMI.
 Values close to $1$ indicate strong agreement, while values close to $0$ indicate little agreement.
 
@@ -83,7 +83,7 @@ The policy pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) ar
 Most pairs contain only one execution per policy, while some contain $1$ execution for one policy and $30$ for the other.
 These small or highly imbalanced samples make clustering scores unreliable indicators of policy distinguishability.
 The supervised attack is unaffected, because it pools the executions of each pair type.
-Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is not (Appendix~\ref{app:nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
+Second, NMI is \emph{permutation-debiased}. Even after balancing, each side of a pair holds only $30$ executions. At that scale NMI is inflated even without signal, whereas ARI is corrected for chance~\cite{vinh2010information} (Appendix~\ref{app:nmi-sensitivity}), so ARI is read directly and NMI must be debiased.
 The cluster assignments are computed once (K-Means does not see the labels) and the observed NMI is averaged over $20$ K-Means seeds; the pair labels are then shuffled $200$ times and the NMI recomputed against the fixed assignments on each shuffle, giving the null distribution of NMI under zero true signal.
 The debiased NMI is the observed NMI minus the mean of this null distribution, and the empirical $p$-value $p_{\mathrm{NMI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, where $k$ counts the shuffles whose NMI meets or exceeds the observed value.
 The cross-check flags a pair only if its debiased NMI is positive \emph{and} significant ($p_{\mathrm{NMI}}<0.05$).
