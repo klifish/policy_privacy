@@ -70,11 +70,16 @@ A PASS indicates that neither evaluated attack is flagged under this criterion; 
 \subsubsection{Unsupervised Clustering Attacks}
 We apply K-Means~\cite{lloyd1982least} to the on-chain gas features, setting $K$ to the number of classes ($K=2$ for policy pairs).
 We evaluate agreement between the resulting clusters and the true labels using ARI and NMI.
-Values close to $1$ indicate strong agreement, while values close to $0$ indicate little agreement.
+Higher values indicate that clustering more closely recovers the hidden categories, suggesting greater privacy leakage.
+Values close to $0$ indicate limited recovery by this attack, but do not establish the absence of leakage.
 
-PCH clusters all executions globally, and SPP is clustered the same way on its $1{,}125$-execution view (Section~\ref{sec:eval-dataset}), once per annotation axis of Section~\ref{sec:eval-spp} with $K$ equal to that axis's bucket count.
-At these sample sizes, ARI and NMI are read directly, each averaged over $20$ K-Means seeds.
-To test whether an ARI exceeds chance, the cluster assignments are kept fixed, the labels are shuffled $200$ times, and $p_{\mathrm{ARI}}$ follows Equation~\eqref{eq:perm-p} with $R=200$, so its smallest attainable value is $1/201 \approx 0.005$.
+For PCH, we cluster all executions together.
+For SPP, we use a subset of $1{,}125$ executions (Section~\ref{sec:eval-dataset}) and perform clustering separately for each dimension defined in Section~\ref{sec:eval-spp}, setting $K$ to the number of categories.
+For both analyses, we report ARI and NMI averaged over $20$ K-Means seeds.
+
+To assess whether the observed ARI exceeds chance expectations, we keep the cluster assignments fixed and randomly permute the true labels $R=200$ times.
+We compute $p_{\mathrm{ARI}}$ using Equation~\eqref{eq:perm-p}, where $k$ counts the permutations whose ARI is at least as large as the observed ARI.
+The smallest attainable $p$-value is therefore $1/201 \approx 0.005$.
 
 For PI, clustering is scored per pair, so each side of a pair must contribute enough executions; this requires two safeguards.
 First, the PI clustering analysis uses a dedicated set of \emph{balanced policy pairs} constructed from depth-layer executions (Section~\ref{sec:eval-dataset}).
