@@ -24,7 +24,6 @@
 	\end{tabular}
 
 	\begin{tablenote}
-		AUC: area under the receiver operating characteristic curve, averaged over $30$ policy-disjoint train/test splits (seeds).
 		Significant-seed fraction: share of seeds whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
 		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and its significant-seed fraction is at least $50\%$.
 		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, significant-seed fraction $53\%$) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
