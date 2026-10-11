@@ -882,7 +882,12 @@ RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLe
 | PI balanced pairs 0.670 [0.592, 0.743] | `piBalancedPairs.observed_nmi` | **bootstrap over the 127 pairs**, not policy-group |
 
 **B1/B2 NMI levels (added 2026-10-11).** The rows used to span both columns with the difference alone. They now give
-the B1 and B2 NMI in their columns, with the difference and interval on a second line, as in the supervised rows.
+the B1 and B2 NMI in their columns, as the supervised rows give the B1 and B2 AUC.
+
+**Fifth column (2026-10-11, values unchanged).** The difference and its interval moved from a second line under each
+supervised and unsupervised row into a fifth column, $\Delta$ [$95\%$ CI], and the table is set in `\footnotesize` to fit.
+Each block header defines $\Delta$ for its rows ($\Delta_{\text{leak}}$, or $\Delta_{\text{NMI}}$ = B1 − B2). The gas rows
+keep their percentage increase in the B2 column and leave the fifth column empty.
 
 | Row | B1 | B2 | Source |
 |---|---|---|---|
@@ -892,9 +897,7 @@ the B1 and B2 NMI in their columns, with the difference and interval on a second
 
 For PCH and SPP the difference equals B1 − B2 of the full-sample NMI. For PI it equals the difference of the two pair
 means. The rounded SPP values give 0.108 − 0.005 = 0.103, against 0.102 from the unrounded values, so the
-tablenote says that $\Delta_{\text{NMI}}$ is computed from unrounded values. The rows label the difference
-$\Delta_{\text{NMI}}$, defined in the block header as B1 − B2. A first draft wrote "B1−B2 = …" on the second line, but it is
-wider than $\Delta_{\text{leak}}$ and wrapped in the 0.36-linewidth Target column.
+tablenote says that $\Delta_{\text{NMI}}$ is computed from unrounded values.
 
 **PI interval (resolved 2026-10-03, values unchanged).** The header used to say "policy-group bootstrap" for all
 three rows, but the PI interval resamples pairs, which share only 24 policies. The header now says "bootstrap" without naming the method;

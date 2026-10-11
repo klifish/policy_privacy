@@ -22,31 +22,25 @@
 		randomized gas padding) on the same execution subset; supervised rows are the
 		largest-signal contrasts per experiment (per axis for SPP).}
 	\label{tab:ablation-gas-padding}
-	\begin{tabular}{lp{0.36\linewidth}cc}
+	\footnotesize
+	\begin{tabular}{@{}llccc@{}}
 		\toprule
-		Attack                         & Target                                               & B1 (unpad.)                                  & B2 (pad.) \\
+		Attack                            & Target                                        & B1 (unpad.) & B2 (pad.)                   & $\Delta$ [$95\%$ CI]    \\
 		\midrule
-		\multicolumn{4}{l}{\textbf{Supervised} (RF AUC; $\Delta_{\text{leak}}$ with $95\%$ interval)}                                                    \\
-		SPP                            & \texttt{structureType trivial/and\_or\_mixed}        & $0.902$                                      & $0.490$   \\
-		                               & \quad $\Delta_{\text{leak}}=0.347$ CI$[0.334,0.360]$ &                                              &           \\
-		SPP                            & \texttt{predicateCombo single/few}                   & $0.844$                                      & $0.494$   \\
-		                               & \quad $\Delta_{\text{leak}}=0.301$ CI$[0.287,0.314]$ &                                              &           \\
-		PCH                            & DUO HMB                                              & $0.876$                                      & $0.495$   \\
-		                               & \quad $\Delta_{\text{leak}}=0.337$ CI$[0.319,0.352]$ &                                              &           \\
-		PI                             & \texttt{controlled\_difference}\,$^{\dagger}$        & $0.676$                                      & $0.446$   \\
-		                               & \quad $\Delta_{\text{leak}}=0.088$ CI$[0.062,0.111]$ &                                              &           \\
+		\multicolumn{5}{@{}l}{\textbf{Supervised} (RF AUC; $\Delta=\Delta_{\text{leak}}$)}                                                                    \\
+		SPP                               & \texttt{structureType trivial/and\_or\_mixed} & $0.902$     & $0.490$                     & $0.347$ $[0.334,0.360]$ \\
+		SPP                               & \texttt{predicateCombo single/few}            & $0.844$     & $0.494$                     & $0.301$ $[0.287,0.314]$ \\
+		PCH                               & DUO HMB                                       & $0.876$     & $0.495$                     & $0.337$ $[0.319,0.352]$ \\
+		PI                                & \texttt{controlled\_difference}\,$^{\dagger}$ & $0.676$     & $0.446$                     & $0.088$ $[0.062,0.111]$ \\
 		\midrule
-		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI; $\Delta_{\text{NMI}}=\text{B1}-\text{B2}$ with bootstrap $95\%$ interval)}                     \\
-		PCH                            & DUO terms                                            & $0.369$                                      & $0.020$   \\
-		                               & \quad $\Delta_{\text{NMI}}=0.349$ CI$[0.316,0.407]$ &                                              &           \\
-		SPP                            & logic structure                                      & $0.108$                                      & $0.005$   \\
-		                               & \quad $\Delta_{\text{NMI}}=0.102$ CI$[0.018,0.138]$ &                                              &           \\
-		PI                             & balanced pairs                                       & $0.684$                                      & $0.014$   \\
-		                               & \quad $\Delta_{\text{NMI}}=0.670$ CI$[0.592,0.743]$ &                                              &           \\
+		\multicolumn{5}{@{}l}{\textbf{Unsupervised} (NMI; $\Delta=\Delta_{\text{NMI}}=\text{B1}-\text{B2}$ with bootstrap $95\%$ interval)}                   \\
+		PCH                               & DUO terms                                     & $0.369$     & $0.020$                     & $0.349$ $[0.316,0.407]$ \\
+		SPP                               & logic structure                               & $0.108$     & $0.005$                     & $0.102$ $[0.018,0.138]$ \\
+		PI                                & balanced pairs                                & $0.684$     & $0.014$                     & $0.670$ $[0.592,0.743]$ \\
 		\midrule
-		\multicolumn{4}{l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)}                                                                        \\
-		\multicolumn{2}{l}{Commit gas} & $219{,}737$                                          & $304{,}098$ ($+38.4\%$)                                  \\
-		\multicolumn{2}{l}{Access gas} & $723{,}462$                                          & $1{,}056{,}674$ ($+46.1\%$)                              \\
+		\multicolumn{5}{@{}l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)}                                                                          \\
+		\multicolumn{2}{@{}l}{Commit gas} & $219{,}737$                                   & $304{,}098$ ($+38.4\%$)     &                         \\
+		\multicolumn{2}{@{}l}{Access gas} & $723{,}462$                                   & $1{,}056{,}674$ ($+46.1\%$) &                         \\
 		\bottomrule
 	\end{tabular}
 
