@@ -9,10 +9,13 @@
 % The supervised rows are, per experiment, the largest-signal contrasts whose interval
 % excludes zero; the full distribution is Fig. fig:ablation-paired. Full-set RF counts:
 %   27 reduce / 12 no-eff / 6 neg (n=45); LR: 25 / 16 / 4.
-% Unsupervised rows: experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.md
+% Unsupervised rows: experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
 %   (policy-group bootstrap NMI difference B1-B2 for PCH/SPP; the PI interval resamples the
 %   127 pairs, piBalancedPairs.observed_nmi; the debiased variant piBalancedPairs.debiased_nmi
 %   gives 0.670 [0.591, 0.743], not used). Gas rows: same report.
+%   B1/B2 NMI levels: PCH/SPP from clustering.policyGroupBootstrap.<target>.{b1,b2}.nmi;
+%   PI is the mean of observed_nmi over the 127 pairs in
+%   comparison/clustering/{b1_unpadded,b2_padded}/results/pi/pi_balanced_debiased.csv.
 \begin{table}[htbp]
 	\centering
 	\caption{Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed
@@ -33,10 +36,13 @@
 		PI                             & \texttt{controlled\_difference}\,$^{\dagger}$        & $0.676$                                      & $0.446$   \\
 		                               & \quad $\Delta_{\text{leak}}=0.088$ CI$[0.062,0.111]$ &                                              &           \\
 		\midrule
-		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI, B1$-$B2 with bootstrap $95\%$ interval)}                                             \\
-		PCH                            & DUO terms                                            & \multicolumn{2}{c}{$0.349$ $[0.316, 0.407]$}             \\
-		SPP                            & logic structure                                      & \multicolumn{2}{c}{$0.102$ $[0.018, 0.138]$}             \\
-		PI                             & balanced pairs                                       & \multicolumn{2}{c}{$0.670$ $[0.592, 0.743]$}             \\
+		\multicolumn{4}{l}{\textbf{Unsupervised} (NMI; $\Delta_{\text{NMI}}=\text{B1}-\text{B2}$ with bootstrap $95\%$ interval)}                     \\
+		PCH                            & DUO terms                                            & $0.369$                                      & $0.020$   \\
+		                               & \quad $\Delta_{\text{NMI}}=0.349$ CI$[0.316,0.407]$ &                                              &           \\
+		SPP                            & logic structure                                      & $0.108$                                      & $0.005$   \\
+		                               & \quad $\Delta_{\text{NMI}}=0.102$ CI$[0.018,0.138]$ &                                              &           \\
+		PI                             & balanced pairs                                       & $0.684$                                      & $0.014$   \\
+		                               & \quad $\Delta_{\text{NMI}}=0.670$ CI$[0.592,0.743]$ &                                              &           \\
 		\midrule
 		\multicolumn{4}{l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)}                                                                        \\
 		\multicolumn{2}{l}{Commit gas} & $219{,}737$                                          & $304{,}098$ ($+38.4\%$)                                  \\
@@ -46,5 +52,6 @@
 
 	\begin{tablenote}
 		$^{\dagger}$ Positive control: the least similar pairs by construction, excluded from the PI PASS/FAIL decision.
+		$\Delta_{\text{NMI}}$ is computed from unrounded values.
 	\end{tablenote}
 \end{table}

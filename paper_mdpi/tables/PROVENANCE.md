@@ -879,6 +879,21 @@ RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLe
 | SPP logic structure 0.102 [0.018, 0.138] | `policyGroupBootstrap.logicStructure.deltaB1MinusB2.nmi` | policy-group bootstrap |
 | PI balanced pairs 0.670 [0.592, 0.743] | `piBalancedPairs.observed_nmi` | **bootstrap over the 127 pairs**, not policy-group |
 
+**B1/B2 NMI levels (added 2026-10-11).** The rows used to span both columns with the difference alone. They now give
+the B1 and B2 NMI in their columns, with the difference and interval on a second line, as in the supervised rows.
+
+| Row | B1 | B2 | Source |
+|---|---|---|---|
+| PCH DUO terms | 0.369 (0.36889) | 0.020 (0.02013) | `policyGroupBootstrap.pch_duo.{b1,b2}.nmi` |
+| SPP logic structure | 0.108 (0.10777) | 0.005 (0.00546) | `policyGroupBootstrap.logicStructure.{b1,b2}.nmi` |
+| PI balanced pairs | 0.684 (0.68355) | 0.014 (0.01387) | mean `observed_nmi` over the 127 pairs in `comparison/clustering/{b1_unpadded,b2_padded}/results/pi/pi_balanced_debiased.csv` (not stored in the JSON) |
+
+For PCH and SPP the difference equals B1 − B2 of the full-sample NMI. For PI it equals the difference of the two pair
+means. The rounded SPP values give 0.108 − 0.005 = 0.103, against 0.102 from the unrounded values, so the
+tablenote says that $\Delta_{\text{NMI}}$ is computed from unrounded values. The rows label the difference
+$\Delta_{\text{NMI}}$, defined in the block header as B1 − B2. A first draft wrote "B1−B2 = …" on the second line, but it is
+wider than $\Delta_{\text{leak}}$ and wrapped in the 0.36-linewidth Target column.
+
 **PI interval (resolved 2026-10-03, values unchanged).** The header used to say "policy-group bootstrap" for all
 three rows, but the PI interval resamples pairs, which share only 24 policies. The header now says "bootstrap" without naming the method;
 a footnote naming both methods was added and then removed at the author's request (2026-10-03). The same JSON holds the
@@ -919,12 +934,17 @@ for key in [("spp", "structureType: trivial/and_or_mixed"), ("spp", "predicateCo
           f"Δ {float(r['deltaLeakage']):.3f} [{float(r['ciLow']):.3f}, {float(r['ciHigh']):.3f}]")
 c = json.load(open("experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json"))["clustering"]
 for k in ["pch_duo", "logicStructure"]:
-    d = c["policyGroupBootstrap"][k]["deltaB1MinusB2"]["nmi"]
-    print(f"NMI B1-B2 {k:15s} {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  (policy-group)")
+    g = c["policyGroupBootstrap"][k]
+    d = g["deltaB1MinusB2"]["nmi"]
+    print(f"NMI {k:15s} B1 {g['b1']['nmi']:.3f}  B2 {g['b2']['nmi']:.3f}  "
+          f"B1-B2 {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  (policy-group)")
+b = "experiments/ablation/gas_padding/polygonAmoy/"
+p1, p2 = (st.mean(float(r["observed_nmi"]) for r in csv.DictReader(open(
+    b + "comparison/clustering/" + p + "/results/pi/pi_balanced_debiased.csv"))) for p in ("b1_unpadded", "b2_padded"))
+print(f"NMI PI pairs        B1 {p1:.3f}  B2 {p2:.3f}")
 for k, how in [("observed_nmi", "pair bootstrap"), ("policyWeightedDebiasedNmi", "policy-weighted, debiased; not shown")]:
     d = c["piBalancedPairs"][k]
     print(f"NMI B1-B2 PI pairs       {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  ({how})")
-b = "experiments/ablation/gas_padding/polygonAmoy/"
 B1, B2 = (json.load(open(b + p + "/executed_dataset.json")) for p in ("b1_unpadded", "b2_padded"))
 for f in ["commitGasUsed", "accessGasUsed"]:
     m1, m2 = (st.mean(int(e["features"][f]) for e in D) for D in (B1, B2))
@@ -939,8 +959,9 @@ spp structureType: trivial/and_or_mixed   B1 0.902  B2 0.490  Δ 0.347 [0.334, 0
 spp predicateCombo: single/few            B1 0.844  B2 0.494  Δ 0.301 [0.287, 0.314]
 pch DUO HMB                               B1 0.876  B2 0.495  Δ 0.337 [0.319, 0.352]
 pi controlled_difference                 B1 0.676  B2 0.446  Δ 0.088 [0.062, 0.111]
-NMI B1-B2 pch_duo         0.349 [0.316, 0.407]  (policy-group)
-NMI B1-B2 logicStructure  0.102 [0.018, 0.138]  (policy-group)
+NMI pch_duo         B1 0.369  B2 0.020  B1-B2 0.349 [0.316, 0.407]  (policy-group)
+NMI logicStructure  B1 0.108  B2 0.005  B1-B2 0.102 [0.018, 0.138]  (policy-group)
+NMI PI pairs        B1 0.684  B2 0.014
 NMI B1-B2 PI pairs       0.670 [0.592, 0.743]  (pair bootstrap)
 NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted, debiased; not shown)
 commitGasUsed  B1 219,737  B2 304,098  (+38.4%)

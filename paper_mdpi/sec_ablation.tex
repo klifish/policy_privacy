@@ -11,7 +11,8 @@ We evaluate both configurations on the same policy subset, selected deterministi
 B1 disables padding for both policy commitment and access transactions, whereas B2 enables it for both.
 B2 uses the same protection configuration as the PCH, PI, and SPP evaluations (Sections~\ref{sec:eval-pch}, \ref{sec:eval-pi}, and~\ref{sec:eval-spp}).
 
-The paired leakage metric is
+To quantify the effect of padding on attack performance, we compare the absolute AUC deviation from $0.5$ under B1 and B2.
+For each paired train/test split $s$, we define
 %
 \begin{equation}
 	\Delta_{\text{leak},s} =
@@ -21,52 +22,52 @@ The paired leakage metric is
 \end{equation}
 %
 where positive values mean padding moved the attacker closer to chance.
-For each task we compute $\Delta_{\text{leak},s}$ on each of $30$ paired train/test splits $s$, in which B1 and B2 share the same test policies, and report its mean $\Delta_{\text{leak}}$ with a $95\%$ percentile-bootstrap confidence interval (CI) over the splits (Table~\ref{tab:ablation-gas-padding} and Figure~\ref{fig:ablation-paired}).
+
+For each task, we compute $\Delta_{\text{leak},s}$ over $30$ paired train/test splits, one for each random seed, using the same test policies for B1 and B2 in each split.
+We report the mean $\Delta_{\text{leak}}$ with a $95\%$ percentile-bootstrap confidence interval (CI), obtained by resampling the split-level differences.
+Table~\ref{tab:ablation-gas-padding} summarizes the results, and Figure~\ref{fig:ablation-paired} visualizes the comparison between B1 and B2.
 
 \input{tables/tab_ablation_gas_padding.tex}
 
-Figure~\ref{fig:ablation-paired} plots supervised tasks by their deviation from chance, $|\mathrm{AUC}-0.5|$, without padding (B1, horizontal axis) and with padding (B2, vertical axis); a point below the diagonal is a task whose attacker moved closer to chance once padding was applied.
-Without padding, $21$ tasks deviate from chance by more than $0.15$; with padding, all $21$ fall below this level, and across all tasks the median deviation drops from $0.137$ to $0.038$.
-By family, the median $\Delta_{\text{leak}}$ is $+0.173$ for SPP and $+0.058$ for PCH.
-For PI it is $-0.011$, because three of its four tasks already deviate from chance by at most $0.08$ without padding; the fourth, the positive control, drops from AUC $0.68$ to $0.45$.
+Figure~\ref{fig:ablation-paired} shows each supervised task as one point, giving $20$ PCH, $21$ SPP, and $4$ PI tasks per panel.
+The horizontal and vertical axes give the absolute deviation from $0.5$ of the mean AUC over the $30$ splits under B1 and B2, respectively.
+A mean AUC below $0.5$ therefore also counts as a deviation.
+Points below the diagonal indicate that padding moves the mean AUC closer to chance.
+Both panels show the same pattern. Tasks with large deviations under B1 move well below the diagonal, whereas tasks near chance under B1 stay in the lower-left corner on both sides of the diagonal.
+
+For RF, $21$ tasks have mean AUCs that deviate from $0.5$ by more than $0.15$ under B1.
+Under B2, all $21$ fall below this level, and their median deviation is $0.037$, comparable to $0.041$ for the remaining $24$ tasks.
+The confidence intervals for $\Delta_{\text{leak}}$ lie entirely above zero for all $21$ tasks, supporting a reduction in deviation from chance.
+Across all tasks, the median deviation decreases from $0.137$ under B1 to $0.038$ under B2.
+LR shows a similar pattern.
+All $19$ tasks with deviations above $0.15$ under B1 fall below this level under B2, and the median deviation across all tasks decreases from $0.111$ to $0.037$.
+
+
+
+Tasks already close to chance under B1 show no consistent change after padding.
+For RF, $12$ tasks have CIs for $\Delta_{\text{leak}}$ that include zero, and their B1 deviations are at most $0.095$.
+Another $6$ tasks have CIs entirely below zero, indicating increased deviation from chance, although their B1 deviations are at most $0.045$.
+The largest increase occurs for ch5, whose mean AUC changes from $0.455$ under B1 to $0.631$ under B2.
+Such increases may reflect chance associations between the randomly drawn padding targets and the hidden labels.
+Related diagnostic analyses for ch5 and the \texttt{nestingDepth} comparison \texttt{medium}/\texttt{deep} illustrate this effect (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{ablation_paired_scatter.png}
-	\caption{Gas-padding ablation over supervised tasks: (\textbf{a}) RF; (\textbf{b}) LR.}
+	\caption{Gas-padding ablation over the $45$ supervised tasks: (\textbf{a}) RF; (\textbf{b}) LR. Each point is one task, placed by the absolute deviation of its mean AUC from $0.5$ under B1 (horizontal axis) and B2 (vertical axis). Points below the dashed line $y=x$ moved closer to chance with padding. Blue, gray, and red points have $95\%$ CIs of $\Delta_{\text{leak}}$ above zero, spanning zero, and below zero, respectively.}
 	\label{fig:ablation-paired}
 \end{figure}
 
-With a fixed circuit, the Groth16 verifier performs the same operations for every proof.
-The access-control path is also the same across the evaluated policies.
-The unpadded access gas of the $1{,}119$ executions spans only $723{,}288$--$723{,}564$ gas (one cold-start first call at $741{,}276$ aside), in steps of $12$ gas, and nine of the ten ICD-10 chapter tasks stay near chance on it (RF AUC $0.455$--$0.536$); the exception, ch6 (RF AUC $0.713$), has only $9$ policies in the subset.
+The clustering analysis provides complementary evidence.
+Under B2, NMI decreases by $0.670$ for balanced PI pairs, $0.349$ for DUO terms, and $0.102$ for logical structure, with all three bootstrap confidence intervals excluding zero (Table~\ref{tab:ablation-gas-padding}).
+With padding, NMI is at most $0.020$ for all three targets.
 
-Decoding the calldata of the transactions traces this variation to the requester pseudonym $\mathit{id}_{\mathrm{req}}$; the $12$-gas step is the price difference between a zero and a non-zero calldata byte set by Ethereum Improvement Proposal 2028 (EIP-2028)~\cite{akhunov2019eip2028}.
-In the evaluation, a requester who presents a profile credential is identified by a Poseidon-derived pseudonym that fills the 256-bit word, whereas a requester of an ontology-only policy carries a 128-bit random pseudonym whose upper 16 bytes are zero; the $192$-gas difference between the two encodings is exactly the gap between the two clusters of B1 gas values, and whether a policy activates the profile predicate is correlated with its DUO terms, its structure type, and its parameter bucket.
-The remaining spread of $84$ gas within each cluster comes from the zero-byte counts of the proof elements, the policy and request identifiers, and the epoch, none of which depends on the policy.
+We next examine the source of the gas differences under B1.
+Across the $1{,}119$ executions, unpadded access gas ranges from $723{,}288$ to $723{,}564$, excluding the first cold-start call.
+Calldata analysis identifies two main sources of label-correlated variation arising from zero- and non-zero-byte pricing~\cite{akhunov2019eip2028}.
+Different requester-pseudonym encodings produce an observed $192$-gas gap associated with profile-predicate use.
+Sequential policy and resource identifiers introduce a further $24$-gas difference correlated with logical structure because policies were committed in groups by logical form.
 
-The unpadded leak is therefore a deterministic $192$-gas calldata-pricing difference in how one public transaction argument is encoded, the class of channel that padding is designed to absorb. The padding routine counts the zero and non-zero calldata bytes of the transaction and tops its gas up to the drawn target, so this $192$-gas difference is compensated exactly; the overhead that remains after padding varies by less than $100$ gas (Section~\ref{sec:eval-pch}), and randomizing the target by $\pm 10\%$ ($\pm 105{,}000$ gas) masks it.
-Encoding every pseudonym at full width would close this particular channel without padding; randomized gas padding remains the more general defense because it also absorbs deterministic gas differences caused by other public encodings or execution effects.
-
-As summarized in Table~\ref{tab:ablation-gas-padding}, the clustering attacker shows the same pattern on a second, label-free attack family: the NMI of the balanced PI pairs is $0.67$ higher under B1 than under B2, and the DUO-term and logic-structure clusterings lose $0.35$ and $0.10$ of NMI, each with a policy-group bootstrap interval excluding zero.
-
-The $12$ tasks with no detectable effect sit in the lower-left of the figure, where B1 is already near chance, and the $6$ tasks on which padding \emph{raises} the deviation (negative $\Delta_{\text{leak}}$, shown in red) are cases where B1 is at chance and the padded transcript's remaining deviation is the per-policy padding-target draw examined in Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}.
-
-The TPS samples the gas-padding target uniformly from $945{,}000$--$1{,}155{,}000$ gas.
-The lower bound exceeds the unpadded access cost measured in B1 on Amoy (approximately $723{,}000$ gas).
-On average over the subset, padding adds roughly $330{,}000$ gas per access transaction ($+46\%$) and $85{,}000$ gas per policy commitment ($+38\%$; Table~\ref{tab:ablation-gas-padding}).
-The mean access overhead is nearly independent of policy complexity, because unpadded access costs differ by less than $300$ gas across policies and all policies use the same padding band.
-
-Table~\ref{tab:cost-profile} gives the single-point cost characterization of the evaluated prototype configuration at $L=64$; its prover timings were measured on the two-core capture host, and its transactions use the context-bound five-signal statement.
-Within these costs, binding the program length (Section~\ref{subsec:commitment}) adds $88$ constraints and no public input, and binding the authorization context adds $605$ constraints and one public input.
-At Amoy's gas schedule, the context binding adds $64{,}022$ gas per access and recording the bound context on-chain adds $68{,}946$ gas, together $18\%$ of the mean unpadded access cost; because the unpadded cost stays below the padding band, the binding does not change the padded cost.
-
-Table~\ref{tab:cost-scaling} reports two offline benchmarks of circuit capacity, each with $30$ verified proofs per configuration on an Apple M1 using the rapidsnark Groth16 prover.
-With $N=13$, $M=11$, and eight Merkle levels fixed, increasing $L$ from $32$ to $128$ raises the circuit from $64{,}945$ to $134{,}009$ constraints and the median proving time from $0.411$ to $0.734$~s.
-With $L=64$ fixed, increasing the ontology-tree depth from $4$ to $16$ raises the circuit from $73{,}876$ to $97{,}468$ constraints and the median proving time from $0.512$ to $0.571$~s for a five-slot ontology-heavy policy.
-Every variant retains five public signals, so enlarging either capacity changes the prover artifacts but not the verifier interface.
-
-Table~\ref{tab:workload-scaling} evaluates policy content within the evaluated circuit ($L=64$, eight Merkle levels).
-Across simple, ontology-heavy, profile-heavy, and max-mixed policies, median witness time is $0.335$--$0.354$~s and median proving time is $0.484$--$0.545$~s, despite the encoded programs ranging from $3$ to $61$ tokens and activating from one to all $11$ production predicate slots.
-The larger end-to-end time of the profile-backed policies (about $0.64$~s) comes from the benchmark harness, which issues and signs a fresh profile credential for every request; in deployment the issuer signs a credential once, so this cost is not incurred per request. The fixed-circuit witness, prove, and verify work remains stable.
-Under load, throughput stays between $0.79$ and $0.94$ proofs/s as concurrency rises from one to four, while median latency grows from $1.2$ to $4.1$~s.
+Padding compensates for these calldata-pricing differences by bringing transaction gas consumption to the sampled target.
+The remaining overhead varies by less than $100$ gas (Section~\ref{sec:eval-pch}), while the target varies by $\pm 105{,}000$ gas.
+This provides a mechanism-level explanation for the reduced separability observed under B2.

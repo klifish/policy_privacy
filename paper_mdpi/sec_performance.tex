@@ -1,0 +1,24 @@
+% Cost and performance evaluation.
+\subsection{Cost and Performance}
+\label{sec:eval-performance}
+
+\input{tables/tab_cost_profile.tex}
+At $L=64$ and eight Merkle levels, the prototype has $81{,}740$ constraints and mean padded gas costs of $304{,}167$ for commit and $1{,}057{,}283$ for access (Table~\ref{tab:cost-profile}).
+Across $1{,}773$ Amoy executions on the two-vCPU capture server, mean witness and proving times are $0.764$ and $2.884$~s.
+On the ablation subset, padding adds approximately $333{,}000$ gas per access ($+46\%$) and $84{,}000$ gas per commit ($+38\%$; Table~\ref{tab:ablation-gas-padding}).
+
+\input{tables/tab_cost_scaling.tex}
+To assess how circuit capacity affects proving costs, we generate $30$ verified proofs per configuration using rapidsnark on an Apple M1 (Table~\ref{tab:cost-scaling}).
+Increasing program capacity $L$ from $32$ to $128$ raises the constraint count from $64{,}945$ to $134{,}009$ and median proving time from $0.411$ to $0.734$~s.
+At $L=64$, increasing the number of Merkle levels from $4$ to $16$ raises the constraint count from $73{,}876$ to $97{,}468$, whereas median proving time rises only from $0.512$ to $0.571$~s.
+
+
+
+\input{tables/tab_workload_scaling.tex}
+Within the fixed circuit ($L=64$, eight Merkle levels), median witness and proving times vary little across the evaluated policies, ranging from $0.335$ to $0.354$~s and from $0.484$ to $0.545$~s, respectively (Table~\ref{tab:workload-scaling}).
+For profile-backed policies, the harness adds about $0.64$~s by issuing a fresh credential per request, bringing median end-to-end time to approximately $1.47$--$1.48$~s.
+Pre-issued credentials can be reused in deployment.
+
+With $100$ requests per concurrency level, offline throughput stays between $0.79$ and $0.94$ proofs/s as concurrency increases from one to four, while median latency rises from $1.2$ to $4.1$~s (Table~\ref{tab:workload-scaling}).
+These measurements include the harness's evidence preparation and credential issuance; latency excludes queueing.
+
