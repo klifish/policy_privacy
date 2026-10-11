@@ -24,28 +24,27 @@ Only the task for ch5 (diseases of the nervous system) is flagged under the leak
 To investigate the FAIL outcome for ch5, we examine the contribution of the padding target to the observed separation.
 For each padded access transaction, we decompose the recorded gas as
 \begin{equation}
-	g_{\mathrm{acc}} = g_{\mathrm{pad}} + g_{\mathrm{res}},
+	g_{\mathrm{acc}} = g_{\mathrm{tgt}} + g_{\mathrm{res}},
 	\label{eq:gas-decomp}
 \end{equation}
 where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}).
-The padding target $g_{\mathrm{pad}}$ is drawn uniformly by the TPS from a fixed band of $945{,}000$--$1{,}155{,}000$ gas (Section~\ref{sec:design}).
-The residual overhead $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{pad}}$ is the gas consumed beyond that target.
+The padding target $g_{\mathrm{tgt}}$ is drawn uniformly by the TPS from a fixed band of $945{,}000$--$1{,}155{,}000$ gas (Section~\ref{sec:design}).
+The residual overhead $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{tgt}}$ is the gas consumed beyond that target.
 
 Across all $1{,}773$ executions on Polygon Amoy, the residual overhead ranges from $4{,}661$ to $4{,}750$ gas, whereas the padding target spans $210{,}000$ gas.
 The padded access gas therefore varies almost entirely with the padding target.
 Although the observer sees only the total gas, our execution logs also record the padding target for each transaction, allowing us to compute $g_{\mathrm{res}}$ for diagnostic analysis.
 
-For each of the $20$ PCH tasks, we compute AUC over all executions in that task, using each gas feature directly as the prediction score without training a classifier.
-Because no classifier or train/test split is involved, these AUCs differ from the mean AUCs in Tables~\ref{tab:pch-terms} and~\ref{tab:pch-icd10}.
-The AUCs for padded access gas and the padding target agree to three decimal places across all tasks.
-The residual AUCs range from $0.47$ to $0.52$, close to chance.
-For ch5, the AUCs for padded access gas and the padding target are both $0.601$, while the residual AUC is $0.472$.
-The mean padding target for the $34$ ch5 policies is $33{,}000$ gas higher than that for the remaining $388$ DS policies.
-Because each coverage-layer policy is executed only once, the $30$ evaluation seeds reuse the same recorded padding targets under different train/test splits.
+For each of the $20$ PCH tasks, we separately use the recorded access gas $g_{\mathrm{acc}}$, the padding target $g_{\mathrm{tgt}}$, and the residual $g_{\mathrm{res}}$ as prediction scores to compute single-feature AUCs over all executions in that task, without training a classifier.
+In contrast, Tables~\ref{tab:pch-terms} and~\ref{tab:pch-icd10} report classifier test AUCs averaged over $30$ seeds.
+Across all tasks, the AUCs for $g_{\mathrm{acc}}$ and $g_{\mathrm{tgt}}$ agree to three decimal places, while those for $g_{\mathrm{res}}$ range from $0.47$ to $0.52$.
+
+For ch5, the mean padding target $g_{\mathrm{tgt}}$ is $33{,}000$ gas higher than for the remaining DS policies.
+Across the $30$ evaluation seeds, we vary the train/test split while reusing the same recorded padding targets for coverage-layer policies.
 The association between these targets and the ch5 label can therefore persist across seeds.
 
-Applying the evaluation protocol with $g_{\mathrm{res}}$ replacing the access-gas feature gives a mean AUC of $0.556$ with $10\%$ significant seeds for LR and $0.561$ with $17\%$ significant seeds for RF, both yielding PASS.
-Applying it to the padding target alone reproduces the observed FAIL ($0.686$, $63\%$).
-Moreover, in the separate unpadded ablation, ch5 is already near chance (AUC $0.468$ for LR and $0.455$ for RF).
-Thus, for ch5 specifically, we find no detectable policy-dependent gas signal without padding; the FAIL in the padded corpus is instead caused by an accidental finite-corpus correlation between the random padding targets and the ch5 labels.
-The unpadded ablation reveals substantial leakage for many other policy contrasts, as shown in Section~\ref{sec:eval-ablation}.
+We then rerun the supervised attacks to investigate whether the padding-target association explains the ch5 FAIL outcome.
+Replacing the access-gas feature $g_{\mathrm{acc}}$ with $g_{\mathrm{res}}$ yields mean AUCs of $0.556$ for LR and $0.561$ for RF, with significant-seed fractions of $10\%$ and $17\%$, respectively.
+Both attacks are classified as PASS because their significant-seed fractions remain below the $50\%$ threshold.
+Using $g_{\mathrm{tgt}}$ as the sole input feature yields FAIL, with a mean AUC of $0.686$ and a significant-seed fraction of $63\%$.
+These results suggest that the ch5 FAIL reflects a chance association between the random padding targets and the ch5 labels in the evaluated dataset.

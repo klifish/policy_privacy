@@ -2,14 +2,14 @@
 \subsection{Gas-Padding Ablation}
 \label{sec:eval-ablation}
 
-Because gas usage is the only observable that varies across the evaluated policies (Section~\ref{sec:eval-threat}), the ablation measures how much of the policy-dependent gas signal randomized gas padding removes.
+Only the gas measurements vary across policies within the selected feature set (Section~\ref{sec:eval-threat}).
+We therefore use the ablation to assess how randomized gas padding affects the attackers' ability to infer hidden policy information.
 
-We compare two protection configurations on the same selected policy set, differing only in whether randomized gas padding is enabled.
-\textbf{B1} uses the fixed circuit, commitment-only interface, and TPS execution profile, with gas padding disabled for both policy commitment and access transactions.
-\textbf{B2} enables randomized gas padding for both transaction types, yielding the full defense configuration used in the evaluation.
-The policy subset is selected deterministically from the evaluation corpus.
-Each content label and structural bucket is represented by at least $70$ executions from at least $8$ distinct policies.
-All policies in the depth layer (Section~\ref{sec:eval-dataset}) are retained.
+We compare two configurations, B1 and B2, that differ only in whether randomized gas padding is enabled.
+Both use the fixed circuit, commitment-only interface, and TPS execution profile.
+We evaluate both configurations on the same policy subset, selected deterministically from the evaluation corpus.
+B1 disables padding for both policy commitment and access transactions, whereas B2 enables it for both.
+B2 uses the same protection configuration as the PCH, PI, and SPP evaluations (Sections~\ref{sec:eval-pch}, \ref{sec:eval-pi}, and~\ref{sec:eval-spp}).
 
 The paired leakage metric is
 %
