@@ -13,7 +13,6 @@ The paired ablation provides empirical evidence that randomized gas padding redu
 Without padding, deterministic differences in calldata encoding yield attack AUCs of up to $0.90$ (Section~\ref{sec:eval-ablation}).
 
 \textbf{The cost of padding.} The on-chain cost of this protection is the gas overhead of randomized gas padding (Section~\ref{sec:eval-performance}).
-With fixed padding bands, the mean overhead for each transaction type is approximately constant, so total on-chain costs grow linearly with transaction volume (Section~\ref{sec:eval-ablation}).
 Within the evaluated circuit, policy complexity has little effect on on-chain costs.
 All proofs require the same verification operations and use a fixed public-input format with five signals.
 The costs of witness generation and proving for larger circuit capacities or different policy contents are incurred off-chain (Tables~\ref{tab:cost-scaling} and~\ref{tab:workload-scaling}).
