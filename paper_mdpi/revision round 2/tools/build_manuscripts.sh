@@ -33,7 +33,9 @@ python3 "$HERE/tools/mark_bbl.py" "$WORK/oldbuild/main.bbl" "$WORK/build/main.bb
 # This comes after the baseline build: the baseline preamble lacks the tablenote environment.
 cp -R "$HERE/baseline_relayout/." "$WORK/old/paper_mdpi/"
 
-latexdiff --flatten --math-markup=whole --graphics-markup=none --append-safecmd=xmark,cmark --append-textcmd=dataavailability \
+# resizebox is a text command so that changes inside a scaled table are marked cell by
+# cell; otherwise latexdiff replaces the whole box and leaves the new table unmarked.
+latexdiff --flatten --math-markup=whole --graphics-markup=none --append-safecmd=xmark,cmark --append-textcmd=dataavailability,resizebox \
   --preamble="$HERE/tools/latexdiff_preamble.tex" \
   "$WORK/old/paper_mdpi/main.tex" "$PAPER/main.tex" > "$PAPER/main_marked_tmp.tex" 2> "$WORK/latexdiff.log"
 python3 "$HERE/tools/drop_deleted_parbreaks.py" "$PAPER/main_marked_tmp.tex"
