@@ -1,0 +1,33 @@
+% Baseline (efc5237) content of tables/tab_cost_scaling.tex with the timing and size legend
+% moved from the caption into a tablenote, as in this round. Wording and values are the
+% baseline's. Used only by tools/build_manuscripts.sh; see README.md.
+\begin{table}[htbp]
+  \centering
+  \caption{Offline circuit-capacity sweeps (30 verified proofs per row; every variant keeps $N=13$,
+    $M=11$, and five public signals).}
+  \label{tab:cost-scaling}
+  \scriptsize
+  \setlength{\tabcolsep}{2.4pt}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrrrrrr}
+    \toprule
+    Sweep & Capacity & Constraints & Wires & WASM (MB) & zkey (MB) & Witness & Prove & Verify \\
+    \midrule
+    \multicolumn{9}{l}{\emph{Program capacity: Merkle levels fixed at 8; mixed policy}}\\
+    $\DEPTH$ & $32$  & $64{,}945$  & $64{,}441$  & $8.6$ & $38.7$ & $285$ ($343$) & $411$ ($562$) & $11$ ($16$) \\
+    $\DEPTH$ & $64$  & $81{,}740$  & $80{,}884$  & $8.7$ & $52.2$ & $350$ ($414$) & $521$ ($761$) & $11$ ($22$) \\
+    $\DEPTH$ & $128$ & $134{,}009$ & $132{,}449$ & $10.1$ & $87.5$ & $535$ ($682$) & $734$ ($984$) & $11$ ($15$) \\
+    \addlinespace
+    \multicolumn{9}{l}{\emph{Ontology capacity: $\DEPTH=64$; five-slot ontology-heavy policy}}\\
+    Merkle levels & $4$  & $73{,}876$ & $73{,}052$ & $8.6$ & $48.3$ & $352$ ($415$) & $512$ ($605$) & $11$ ($17$) \\
+    Merkle levels & $8$  & $81{,}740$ & $80{,}884$ & $8.7$ & $52.2$ & $347$ ($354$)  & $499$ ($539$) & $11$ ($16$) \\
+    Merkle levels & $12$ & $89{,}604$ & $88{,}716$ & $8.7$ & $56.0$ & $358$ ($395$)  & $552$ ($632$) & $10$ ($15$) \\
+    Merkle levels & $16$ & $97{,}468$ & $96{,}548$ & $8.7$ & $59.9$ & $370$ ($456$)  & $571$ ($713$) & $10$ ($13$) \\
+    \bottomrule
+  \end{tabular}}
+
+  \begin{tablenote}
+    Timing cells report median (p95) in ms; WASM and zkey are
+    the sizes of the witness generator and the proving key.
+  \end{tablenote}
+\end{table}

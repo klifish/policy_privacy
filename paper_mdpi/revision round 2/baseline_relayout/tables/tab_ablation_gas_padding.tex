@@ -1,0 +1,36 @@
+% Baseline (efc5237) content of tables/tab_ablation_gas_padding.tex in the layout of
+% this round: each difference and its interval in a fifth column (so the supervised
+% block header names the column), the note in a tablenote. Wording and values are
+% the baseline's. Used only by tools/build_manuscripts.sh; see README.md.
+\begin{table}[htbp]
+	\centering
+	\caption{Gas-padding ablation on Polygon Amoy: B1 (no padding) versus B2 (deployed
+		randomized gas padding) on the same 1119-execution subset; supervised rows are the
+		largest-signal contrasts per experiment (random-forest AUC).}
+	\label{tab:ablation-gas-padding}
+	\footnotesize
+	\begin{tabular}{@{}llccc@{}}
+		\toprule
+		Attack                            & Target                                        & B1 (unpad.) & B2 (pad.)                   & $\Delta$ [$95\%$ CI]    \\
+		\midrule
+		\multicolumn{5}{@{}l}{\textbf{Supervised} (RF AUC; $\Delta=\Delta_{\text{leak}}$)}                                                                    \\
+		SPP                               & \texttt{structureType trivial/and\_or\_mixed} & $0.902$     & $0.490$                     & $0.347$ $[0.334,0.360]$ \\
+		SPP                               & \texttt{predicateCombo single/few}            & $0.844$     & $0.494$                     & $0.301$ $[0.287,0.314]$ \\
+		PCH                               & DUO HMB                                       & $0.876$     & $0.495$                     & $0.337$ $[0.319,0.352]$ \\
+		PI                                & \texttt{controlled\_difference}\,$^{\dagger}$ & $0.676$     & $0.446$                     & $0.088$ $[0.062,0.111]$ \\
+		\midrule
+		\multicolumn{5}{@{}l}{\textbf{Unsupervised} (NMI, B1$-$B2 with policy-group bootstrap $95\%$ interval)}                                              \\
+		PCH                               & DUO terms                                     &             &                             & $0.349$ $[0.316,0.407]$ \\
+		SPP                               & logic structure                               &             &                             & $0.102$ $[0.018,0.138]$ \\
+		PI                                & balanced pairs (debiased NMI)                 &             &                             & $0.670$ $[0.591,0.743]$ \\
+		\midrule
+		\multicolumn{5}{@{}l}{\textbf{Gas cost} (mean over the subset, B1 $\to$ B2)}                                                                          \\
+		\multicolumn{2}{@{}l}{Commit gas} & $219{,}737$                                   & $304{,}098$ ($+38.4\%$)     &                         \\
+		\multicolumn{2}{@{}l}{Access gas} & $723{,}462$                                   & $1{,}056{,}674$ ($+46.1\%$) &                         \\
+		\bottomrule
+	\end{tabular}
+
+	\begin{tablenote}
+		$^{\dagger}$ Positive control: the least similar pairs by construction, excluded from the PI verdict.
+	\end{tablenote}
+\end{table}

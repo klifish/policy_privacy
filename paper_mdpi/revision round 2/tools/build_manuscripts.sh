@@ -28,6 +28,11 @@ tectonic -X compile "$PAPER/main.tex" --outdir "$WORK/build" --keep-intermediate
 trap 'rm -f "$PAPER/main_refs_tmp.bbl" "$PAPER/main_marked_tmp.tex" "$PAPER/main_clean_tmp.tex"' EXIT
 python3 "$HERE/tools/mark_bbl.py" "$WORK/oldbuild/main.bbl" "$WORK/build/main.bbl" "$PAPER/main_refs_tmp.bbl"
 
+# Tables whose layout changed in this round are compared against their baseline content
+# set in the new layout, so that only changed content is marked, not content that moved.
+# This comes after the baseline build: the baseline preamble lacks the tablenote environment.
+cp -R "$HERE/baseline_relayout/." "$WORK/old/paper_mdpi/"
+
 latexdiff --flatten --math-markup=whole --graphics-markup=none --append-safecmd=xmark,cmark --append-textcmd=dataavailability \
   --preamble="$HERE/tools/latexdiff_preamble.tex" \
   "$WORK/old/paper_mdpi/main.tex" "$PAPER/main.tex" > "$PAPER/main_marked_tmp.tex" 2> "$WORK/latexdiff.log"

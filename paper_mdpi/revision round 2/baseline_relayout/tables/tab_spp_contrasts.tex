@@ -1,0 +1,47 @@
+% Baseline (efc5237) content of tables/tab_spp_contrasts.tex with the med-n legend moved
+% from the caption into a tablenote, as in this round. Wording and values are the
+% baseline's. Used only by tools/build_manuscripts.sh; see README.md.
+\begin{table}[htbp]
+  \caption{Structure and Parameter Privacy: 21 pairwise contrasts across four annotation
+    axes over 30 policy-disjoint seeds (higher-scoring classifier per contrast).}
+  \label{tab:spp-contrasts}
+  \centering\footnotesize
+  \begin{tabular}{lccccl}
+    \toprule
+    Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ & Verdict \\
+    \midrule
+    \multicolumn{6}{l}{\textit{structureType}} \\
+    trivial / or\_only          & $0.520 \pm 0.048$ & $0.043$ & $0\%$  & $130$ & PASS \\
+    trivial / and\_only         & $0.502 \pm 0.040$ & $0.033$ & $3\%$  & $127$ & PASS \\
+    trivial / and\_or\_mixed    & $0.502 \pm 0.042$ & $0.034$ & $0\%$  & $144$ & PASS \\
+    or\_only / and\_only        & $0.506 \pm 0.034$ & $0.027$ & $0\%$  & $179$ & PASS \\
+    or\_only / and\_or\_mixed   & $0.518 \pm 0.035$ & $0.032$ & $10\%$ & $196$ & PASS \\
+    and\_only / and\_or\_mixed  & $0.503 \pm 0.040$ & $0.032$ & $7\%$  & $193$ & PASS \\
+    \midrule
+    \multicolumn{6}{l}{\textit{predicateCombo}} \\
+    single / few                & $0.523 \pm 0.035$ & $0.033$ & $13\%$ & $271$ & PASS \\
+    single / many               & $0.519 \pm 0.048$ & $0.041$ & $7\%$  & $130$ & PASS \\
+    few / many                  & $0.527 \pm 0.048$ & $0.045$ & $17\%$ & $246$ & PASS \\
+    \midrule
+    \multicolumn{6}{l}{\textit{paramType}} \\
+    none / small                & $0.571 \pm 0.046$ & $0.071$ & $40\%$ & $114$ & PASS \\
+    none / medium               & $0.525 \pm 0.035$ & $0.035$ & $3\%$  & $150$ & PASS \\
+    none / large                & $0.568 \pm 0.038$ & $0.069$ & $33\%$ & $148$ & PASS \\
+    small / medium              & $0.530 \pm 0.037$ & $0.037$ & $20\%$ & $175$ & PASS \\
+    small / large               & $0.504 \pm 0.036$ & $0.028$ & $3\%$  & $173$ & PASS \\
+    medium / large              & $0.493 \pm 0.027$ & $0.022$ & $0\%$  & $209$ & PASS \\
+    \midrule
+    \multicolumn{6}{l}{\textit{nestingDepth}} \\
+    flat / shallow              & $0.522 \pm 0.038$ & $0.036$ & $3\%$  & $102$ & PASS \\
+    flat / medium               & $0.555 \pm 0.032$ & $0.055$ & $27\%$ & $140$ & PASS \\
+    flat / deep                 & $0.468 \pm 0.046$ & $0.047$ & $3\%$  & $160$ & PASS \\
+    shallow / medium            & $0.521 \pm 0.041$ & $0.039$ & $7\%$  & $164$ & PASS \\
+    shallow / deep              & $0.533 \pm 0.036$ & $0.039$ & $17\%$ & $184$ & PASS \\
+    medium / deep               & $0.563 \pm 0.028$ & $0.063$ & $53\%$ & $221$ & FAIL \\
+    \bottomrule
+  \end{tabular}
+
+  \begin{tablenote}
+    med $n$: median test-set size.
+  \end{tablenote}
+\end{table}

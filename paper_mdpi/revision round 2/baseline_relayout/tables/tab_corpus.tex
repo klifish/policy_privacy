@@ -1,0 +1,50 @@
+% Baseline (efc5237) content of tables/tab_corpus.tex in the layout of this round:
+% groupings in pairs side by side, the note in a tablenote. Wording and values are
+% the baseline's. Used only by tools/build_manuscripts.sh; see README.md.
+\begin{table}[htbp]
+	\centering\footnotesize
+	\caption{Composition of the shared policy corpus (generator seed
+		\texttt{unified-decoupled-2026}). DUO terms are multi-label, so their counts
+		overlap; ICD-10 rows cover only the ICD-bearing policies; each SPP axis
+		partitions the full corpus.}
+	\label{tab:corpus}
+	\begin{tabular}{@{}w{l}{52pt}rr@{}w{l}{3em}@{}w{l}{52pt}rr@{}}
+		\toprule
+		Category      & Policies & Executions & & Category          & Policies & Executions \\
+		\midrule
+		\multicolumn{3}{@{}l@{}}{\textit{DUO data-use term} (multi-label; counts = policies/executions containing the term)} & & \multicolumn{3}{@{}l@{}}{\textit{ICD-10 chapter} (ICD-bearing policies only)} \\
+		\cmidrule{1-3}\cmidrule{5-7}
+		GRU           & $302$    & $447$      & & ch0               & $44$     & $131$      \\
+		DS            & $422$    & $770$      & & ch1               & $49$     & $49$       \\
+		RS            & $412$    & $760$      & & ch2               & $33$     & $62$       \\
+		POA           & $392$    & $624$      & & ch3               & $55$     & $55$       \\
+		GS            & $382$    & $556$      & & ch4               & $41$     & $70$       \\
+		CC            & $392$    & $769$      & & ch5               & $34$     & $63$       \\
+		NCU           & $206$    & $380$      & & ch6               & $48$     & $135$      \\
+		HMB           & $331$    & $447$      & & ch7               & $48$     & $77$       \\
+		NMDS          & $237$    & $469$      & & ch8               & $33$     & $62$       \\
+		GSO           & $236$    & $352$      & & ch9               & $37$     & $66$       \\
+		              &          &            & & \textit{ICD-bearing subtotal} & $422$    & $770$      \\
+		\addlinespace
+		\multicolumn{3}{@{}l@{}}{\textit{SPP structureType}} & & \multicolumn{3}{@{}l@{}}{\textit{SPP nestingDepth}} \\
+		\cmidrule{1-3}\cmidrule{5-7}
+		trivial       & $130$    & $130$      & & flat              & $130$    & $130$      \\
+		and\_only     & $294$    & $526$      & & shallow           & $210$    & $413$      \\
+		or\_only      & $303$    & $535$      & & medium            & $335$    & $509$      \\
+		and\_or\_mixed & $350$   & $582$      & & deep              & $402$    & $721$      \\
+		\addlinespace
+		\multicolumn{3}{@{}l@{}}{\textit{SPP predicateCombo}} & & \multicolumn{3}{@{}l@{}}{\textit{SPP paramType}} \\
+		\cmidrule{1-3}\cmidrule{5-7}
+		single        & $257$    & $344$      & & none              & $147$    & $234$      \\
+		few           & $645$    & $1080$     & & small             & $232$    & $406$      \\
+		many          & $175$    & $349$      & & medium            & $352$    & $584$      \\
+		              &          &            & & large             & $346$    & $549$      \\
+		\midrule
+		\textbf{Corpus total} & $\mathbf{1077}$ & $\mathbf{1773}$ & & & & \\
+		\bottomrule
+	\end{tabular}
+
+	\begin{tablenote}
+		ICD-10 labels ch0--ch9 index the ten chapters used: A00--B99, C00--D48, D50--D89, E00--E90, F01--F99, G00--G99, I00--I99, J00--J99, K00--K93, and M00--M99.
+	\end{tablenote}
+\end{table}
