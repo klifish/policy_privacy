@@ -163,8 +163,9 @@ spp 20/21 pass; AUC 0.468-0.571; median sig 7%; FAIL: ['nestingDepth: medium/dee
 ## `tab:corpus` (`tab_corpus.tex`)
 
 Last checked against the source: commit `5e6d81e`, 2026-10-02. All 39 cells match.
-The table was split into two side-by-side panels on 2026-10-11 (content labels left, SPP groupings and the corpus
-total right; values unchanged). The ICD-10 group heading was shortened to "DS policies" to fit the left panel.
+Since 2026-10-11 the groupings are set in pairs, side by side: DUO terms beside ICD-10 chapters, then the four SPP
+groupings two by two, with the corpus total as the last row (values unchanged). The ICD-10 group heading was shortened
+to "DS policies" to fit its half.
 
 **Source.** `experiments/data/polygonAmoy/executed_dataset.json`: a list of 1,773 records,
 one per executed (on-chain committed and accessed) policy instance. This is the dataset of record. Do not count from
