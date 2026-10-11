@@ -15,20 +15,6 @@ We sample every class from the \emph{same} distribution, $z_{i}\sim\mathcal{N}(0
 Since no class carries class-specific information, a clustering algorithm should not recover class membership,
 and both NMI and ARI should concentrate around $0$ as the sample size grows.
 
-For each configuration we run $T=1000$ independent trials.
-In each trial we
-(i)~generate $G$ classes with $n$ i.i.d.\ samples per class from $\mathcal{N}(0,I_d)$, for $n_{\mathrm{tot}}=Gn$ samples in total, assigning each sample a class label by construction order (these labels are independent of the sample values, since all classes share one distribution),
-(ii)~standardize the pooled data and apply K-Means with $K=G$ and ten initializations, as in the evaluation, and
-(iii)~score the predicted assignments against these assigned class labels with NMI and ARI.
-We vary $n$ while holding $G$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$.
-We consider a \textbf{PI-like} binary structure ($G=2$, $n\in\{3,10,50,100\}$), a five-class structure ($G=5$, $n\in\{3,10,100\}$), and a ten-class structure ($G=10$, $n\in\{3,10,77\}$) together with the observed ICD-10 chapter sizes ($49$--$135$ executions per chapter, $n_{\mathrm{tot}}=770$).
-
-Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}.
-For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.2074$ at $n=3$ ($n_{\mathrm{tot}}=6$) to $0.0420$ at $n=10$, and to $0.0072$/$0.0034$ at $n=50$/$100$.
-The same trend holds with more classes, at a higher level for every $n$: with five classes $\overline{\mathrm{NMI}}$ goes from $0.4152$ ($n=3$) to $0.0102$ ($n=100$), and with ten classes from $0.5346$ ($n=3$) to $0.0239$ ($n=77$).
-For the observed ICD-10 chapter sizes, a separate null run that averages each trial over $20$ K-Means seeds, as the evaluation does, gives a null NMI with mean $0.0246$ and $95$th percentile $0.0302$.
-The significance of the observed ICD-10 NMI is assessed by the label-permutation test in Table~\ref{tab:clustering-summary}.
-
 \begin{table}[htbp]
 	\centering
 	\caption{Sample-size sensitivity of NMI and ARI under the null hypothesis where all
@@ -64,3 +50,17 @@ The significance of the observed ICD-10 NMI is assessed by the label-permutation
 		For the observed ICD-10 chapter sizes, the text also reports a separate run that averages each trial over $20$ K-Means seeds, as the evaluation does.
 	\end{tablenote}
 \end{table}
+
+For each configuration we run $T=1000$ independent trials.
+In each trial we
+(i)~generate $G$ classes with $n$ i.i.d.\ samples per class from $\mathcal{N}(0,I_d)$, for $n_{\mathrm{tot}}=Gn$ samples in total, assigning each sample a class label by construction order (these labels are independent of the sample values, since all classes share one distribution),
+(ii)~standardize the pooled data and apply K-Means with $K=G$ and ten initializations, as in the evaluation, and
+(iii)~score the predicted assignments against these assigned class labels with NMI and ARI.
+We vary $n$ while holding $G$ fixed, and report the trial means $\overline{\mathrm{NMI}}$ and $\overline{\mathrm{ARI}}$.
+We consider a \textbf{PI-like} binary structure ($G=2$, $n\in\{3,10,50,100\}$), a five-class structure ($G=5$, $n\in\{3,10,100\}$), and a ten-class structure ($G=10$, $n\in\{3,10,77\}$) together with the observed ICD-10 chapter sizes ($49$--$135$ executions per chapter, $n_{\mathrm{tot}}=770$).
+
+Table~\ref{tab:nmi-sample-size-sensitivity} shows that, although all classes are indistinguishable by construction, \textbf{NMI is noticeably positive at very small $n$ but collapses toward zero as $n$ grows}, whereas \textbf{ARI stays near zero throughout}.
+For the binary structure, $\overline{\mathrm{NMI}}$ falls from $0.2074$ at $n=3$ ($n_{\mathrm{tot}}=6$) to $0.0420$ at $n=10$, and to $0.0072$/$0.0034$ at $n=50$/$100$.
+The same trend holds with more classes, at a higher level for every $n$: with five classes $\overline{\mathrm{NMI}}$ goes from $0.4152$ ($n=3$) to $0.0102$ ($n=100$), and with ten classes from $0.5346$ ($n=3$) to $0.0239$ ($n=77$).
+For the observed ICD-10 chapter sizes, a separate null run that averages each trial over $20$ K-Means seeds, as the evaluation does, gives a null NMI with mean $0.0246$ and $95$th percentile $0.0302$.
+The significance of the observed ICD-10 NMI is assessed by the label-permutation test in Table~\ref{tab:clustering-summary}.

@@ -43,6 +43,7 @@
 % --- misc ---
 \usepackage{pifont}
 \usepackage{longtable}
+\usepackage{placeins} % \FloatBarrier, used before the references
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
 
@@ -183,6 +184,10 @@ zkVM & Zero-Knowledge Virtual Machine \\
 \appendixstart
 \appendix
 \input{sec_nmi_sensitivity.tex}
+
+% Output any appendix float still pending here, so that it cannot drift into the
+% reference list; this starts a new page only if a float would otherwise move past.
+\FloatBarrier
 
 %=================================================================
 \begin{adjustwidth}{-\extralength}{0cm}
