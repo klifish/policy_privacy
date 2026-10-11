@@ -1,12 +1,8 @@
 % Cross-objective unsupervised clustering section (consolidated view + PI rebalancing).
-% Figures are tracked under figures/ (copied from experiments/results/clustering/).
-% main.tex sets \graphicspath{{figures/}{./}}; this local \graphicspath is a fallback so
-% the chapter also resolves figures when compiled on its own (e.g. via _smoke.tex).
-\graphicspath{{figures/}{./}}
 \subsection{Unsupervised Clustering: A Label-Free Cross-Check}
 \label{sec:eval-clustering}
 The clustering attacker stated in Section~\ref{sec:eval-method} tests whether the on-chain observables group by a hidden label without access to that label.
-Table~\ref{tab:clustering-summary} and Figure~\ref{fig:clust-summary} summarize the clustering results across the three privacy objectives.
+Table~\ref{tab:clustering-summary} summarizes the clustering results across the three privacy objectives.
 
 ARI stays within $\pm 0.003$ for every PCH, PI, and SPP target except the SPP \texttt{nestingDepth}, indicating little agreement between the clusters and the hidden labels.
 The PCH and SPP NMI values are below $0.03$, and apart from \texttt{nestingDepth} none is significant under the label-permutation test ($p_{\mathrm{NMI}}\ge 0.08$).
@@ -21,11 +17,3 @@ However, the residual analysis yields a small but nominally significant ARI for 
 These findings provide complementary evidence to the supervised results on the same dataset.
 
 \input{tables/tab_clustering_summary.tex}
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=\linewidth]{clustering_summary_unified.png}
-	\caption{Unsupervised K-Means clustering across three objectives: ARI (top) and
-		NMI (bottom) per target.}
-	\label{fig:clust-summary}
-\end{figure}
