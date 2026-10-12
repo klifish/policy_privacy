@@ -111,13 +111,12 @@
 % Back matter. TODO(author): every statement below is a placeholder.
 \vspace{6pt}
 
-% TODO(author): assign CRediT roles per author. See
+% CRediT roles, MDPI wording; see
 % https://img.mdpi.org/data/contributor-role-instruction.pdf
-\authorcontributions{TODO.}
+% Funding acquisition is left out until \funding below is settled.
+\authorcontributions{Conceptualization, K.L., A.L., M.D. and V.U.; methodology, K.L.; software, K.L.; validation, K.L.; formal analysis, K.L.; investigation, K.L.; data curation, K.L.; writing---original draft, K.L.; writing---review and editing, K.L., A.L., M.D. and V.U.; visualization, K.L. All authors have read and agreed to the published version of the manuscript.}
 
-% TODO(author): name the funder and grant number, or use the exact sentence
-% ``This research received no external funding''.
-\funding{TODO.}
+\funding{This work was partially funded by the following grants: the China Scholarship Council [202109650003]. The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.}
 
 % TODO(author): confirm. This is a computational study over synthetic consent
 % policies with no human or animal subjects, so ``Not applicable'' is expected.
@@ -129,54 +128,57 @@
 % The review build (revision round 2/tools/anonymize.py) withholds this link.
 \dataavailability{The source code of TPS-ZKPI (zero-knowledge circuit, smart contracts, and Trusted Proof Service), the evaluation scripts, the synthetic consent-policy corpus, and the executed dataset supporting the reported results are openly available in Zenodo at \url{https://doi.org/10.5281/zenodo.21335228}. The Polygon Amoy transactions in the executed dataset can also be checked on the public testnet.}
 
+% AI-use disclosure, following the MDPI wording for generative AI tools.
+\acknowledgments{During the preparation of this study, the authors used Claude Code (Anthropic; Claude Opus, Sonnet and Fable models, versions 4.6--5.5), ChatGPT (OpenAI; GPT-5.6 Sol, GPT-6 Sol, GPT-6.1 Sol and GPT-6 Astra models) and the GitHub Copilot coding agent to assist with software development, test and analysis-script writing, and language editing of the manuscript. The authors made all design and methodological decisions, reviewed and edited all AI-generated output, and take full responsibility for the content of this publication.}
+
 % TODO(author): confirm, or declare the competing interest.
 \conflictsofinterest{The authors declare no conflicts of interest.}
 
 %=================================================================
 % Abbreviations. MDPI renders this via \abbreviations in the back matter.
 \abbreviations{Abbreviations}{
-The following abbreviations are used in this manuscript:
+	The following abbreviations are used in this manuscript:
 
-\begin{longtable}{@{}ll@{}}
-ABAC & Attribute-Based Access Control \\
-ABE & Attribute-Based Encryption \\
-ACM & Access-Control Manager \\
-ARI & Adjusted Rand Index \\
-AUC & Area Under the Receiver Operating Characteristic Curve \\
-CI & Confidence Interval \\
-CP-ABE & Ciphertext-Policy Attribute-Based Encryption \\
-DUO & Data Use Ontology \\
-ECDSA & Elliptic Curve Digital Signature Algorithm \\
-EdDSA & Edwards-curve Digital Signature Algorithm \\
-EIP & Ethereum Improvement Proposal \\
-EVM & Ethereum Virtual Machine \\
-GA4GH & Global Alliance for Genomics and Health \\
-HANCESTRO & Human Ancestry Ontology \\
-HE & Homomorphic Encryption \\
-ICD-10 & International Classification of Diseases, 10th Revision \\
-IoMT & Internet of Medical Things \\
-LR & Logistic Regression \\
-MONDO & Mondo Disease Ontology \\
-MPC & Multi-Party Computation \\
-NMI & Normalized Mutual Information \\
-OBI & Ontology for Biomedical Investigations \\
-PCH & Policy Content Hiding \\
-PI & Policy Indistinguishability \\
-PRE & Proxy Re-Encryption \\
-RF & Random Forest \\
-RPN & Reverse Polish Notation \\
-SAML & Security Assertion Markup Language \\
-SNARK & Succinct Non-interactive Argument of Knowledge \\
-SNOMED CT & SNOMED Clinical Terms \\
-SPP & Structure and Parameter Privacy \\
-SSI & Self-Sovereign Identity \\
-TEE & Trusted Execution Environment \\
-TPS & Trusted Proof Service \\
-TPS-ZKPI & Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter \\
-WASM & WebAssembly \\
-XACML & eXtensible Access Control Markup Language \\
-zkVM & Zero-Knowledge Virtual Machine \\
-\end{longtable}
+	\begin{longtable}{@{}ll@{}}
+		ABAC      & Attribute-Based Access Control                                   \\
+		ABE       & Attribute-Based Encryption                                       \\
+		ACM       & Access-Control Manager                                           \\
+		ARI       & Adjusted Rand Index                                              \\
+		AUC       & Area Under the Receiver Operating Characteristic Curve           \\
+		CI        & Confidence Interval                                              \\
+		CP-ABE    & Ciphertext-Policy Attribute-Based Encryption                     \\
+		DUO       & Data Use Ontology                                                \\
+		ECDSA     & Elliptic Curve Digital Signature Algorithm                       \\
+		EdDSA     & Edwards-curve Digital Signature Algorithm                        \\
+		EIP       & Ethereum Improvement Proposal                                    \\
+		EVM       & Ethereum Virtual Machine                                         \\
+		GA4GH     & Global Alliance for Genomics and Health                          \\
+		HANCESTRO & Human Ancestry Ontology                                          \\
+		HE        & Homomorphic Encryption                                           \\
+		ICD-10    & International Classification of Diseases, 10th Revision          \\
+		IoMT      & Internet of Medical Things                                       \\
+		LR        & Logistic Regression                                              \\
+		MONDO     & Mondo Disease Ontology                                           \\
+		MPC       & Multi-Party Computation                                          \\
+		NMI       & Normalized Mutual Information                                    \\
+		OBI       & Ontology for Biomedical Investigations                           \\
+		PCH       & Policy Content Hiding                                            \\
+		PI        & Policy Indistinguishability                                      \\
+		PRE       & Proxy Re-Encryption                                              \\
+		RF        & Random Forest                                                    \\
+		RPN       & Reverse Polish Notation                                          \\
+		SAML      & Security Assertion Markup Language                               \\
+		SNARK     & Succinct Non-interactive Argument of Knowledge                   \\
+		SNOMED CT & SNOMED Clinical Terms                                            \\
+		SPP       & Structure and Parameter Privacy                                  \\
+		SSI       & Self-Sovereign Identity                                          \\
+		TEE       & Trusted Execution Environment                                    \\
+		TPS       & Trusted Proof Service                                            \\
+		TPS-ZKPI  & Trusted Proof Service-assisted Zero-Knowledge Policy Interpreter \\
+		WASM      & WebAssembly                                                      \\
+		XACML     & eXtensible Access Control Markup Language                        \\
+		zkVM      & Zero-Knowledge Virtual Machine                                   \\
+	\end{longtable}
 }
 
 %=================================================================
@@ -192,9 +194,9 @@ zkVM & Zero-Knowledge Virtual Machine \\
 %=================================================================
 \begin{adjustwidth}{-\extralength}{0cm}
 
-\reftitle{References}
-\bibliography{reference}
+	\reftitle{References}
+	\bibliography{reference}
 
-\PublishersNote{}
+	\PublishersNote{}
 \end{adjustwidth}
 \end{document}
