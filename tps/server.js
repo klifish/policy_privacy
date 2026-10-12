@@ -288,27 +288,27 @@ router.post('/prove', async (req, res) => {
             });
         }
 
-        // Signed scoped credentials and requester allowlist proofs are holder-bound:
-        // never trust a requesterId alongside either proof. The TPS derives
-        // it from holderSecret; type 8 then proves that pseudonym is in the
-        // provider-committed US, PS, or IS requester allowlist.
+        // The TPS derives every requester pseudonym as Poseidon(holderSecret)
+        // and never trusts a supplied requesterId: a requester-chosen
+        // pseudonym would appear in calldata with an encoding that can reveal
+        // whether the policy is holder-bound. Signed scoped credentials (type 9)
+        // and requester allowlists (type 8) also enforce the derivation in the
+        // circuit; type 8 then proves that pseudonym is in the
+        // provider-committed US, PS, or IS requester allowlist. For other
+        // policies the circuit requires a zero secret in the witness.
         const usesHolderBoundProof = material.predicateTypes.some((type) => {
             const predicateType = Number(type);
             return predicateType === 8 || predicateType === 9;
         });
-        if (usesHolderBoundProof) {
-            if (evidence.holderSecret === undefined || evidence.holderSecret === null || evidence.holderSecret === '') {
-                return res.status(400).json({ error: 'evidence.holderSecret is required for DUO_PROFILE credentials or requester allowlists' });
-            }
-            try {
-                evidence.requesterId = await calculateRequesterId(evidence.holderSecret);
-            } catch (err) {
-                return res.status(400).json({ error: err.message });
-            }
+        if (evidence.holderSecret === undefined || evidence.holderSecret === null || evidence.holderSecret === '') {
+            return res.status(400).json({ error: 'evidence.holderSecret is required (the TPS derives the requester pseudonym from it)' });
         }
-        if (evidence.requesterId === undefined || evidence.requesterId === null || evidence.requesterId === '') {
-            return res.status(400).json({ error: 'evidence.requesterId is required (bound into the proof statement)' });
+        try {
+            evidence.requesterId = await calculateRequesterId(evidence.holderSecret);
+        } catch (err) {
+            return res.status(400).json({ error: err.message });
         }
+        if (!usesHolderBoundProof) evidence.holderSecret = '0';
         if (Number(material.predicateTypes[DUO_PROFILE_SLOT]) === 9 &&
             (!Number.isInteger(Number(evidence.duoProfileClaims)) || Number(evidence.duoProfileClaims) < 0 || Number(evidence.duoProfileClaims) > 127)) {
             return res.status(400).json({ error: 'evidence.duoProfileClaims must be a 7-bit integer for DUO_PROFILE policies' });

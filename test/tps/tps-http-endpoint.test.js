@@ -9,6 +9,7 @@ const request = require('supertest');
 const tpsRouter = require('../../tps/server');
 const store = require('../../tps/store');
 const H = require('../duo/helpers/duo_v3_harness');
+const { calculateContextHash } = require('../../lib/prover');
 
 function buildTestApp(tpsContract) {
   const app = express();
@@ -61,11 +62,12 @@ describe('TPS HTTP endpoints', function () {
 
   async function validEvidence() {
     const epoch = BigInt(Math.floor(Date.now() / 3_600_000));
-    const { evidence, idReq } = await H.evidenceFor(ctx, H.BASE_REQUESTER, fixtures, {
+    const { evidence } = await H.evidenceFor(ctx, H.BASE_REQUESTER, fixtures, {
       resourceId,
       requestEpoch: epoch
     });
-    return { ...evidence, requesterId: idReq.toString() };
+    // The TPS derives the pseudonym from the holder secret for every policy.
+    return { ...evidence, holderSecret: fixtures.holders[H.BASE_REQUESTER.holder].toString() };
   }
 
   function proveBody(evidence, extra = {}) {
@@ -152,6 +154,21 @@ describe('TPS HTTP endpoints', function () {
     const replay = await request(app).post('/tps/prove').send(body);
     expect(replay.status).to.equal(409);
     expect(replay.body.error).to.include('replay rejected');
+  });
+
+  it('derives the requester pseudonym from the holder secret and ignores a supplied one', async () => {
+    const evidence = { ...(await validEvidence()), requesterId: '111' };
+    const res = await request(buildTestApp()).post('/tps/prove').send(proveBody(evidence));
+    expect(res.status).to.equal(200);
+    const expected = await calculateContextHash(
+      BigInt(fixtures.requesterIds[H.BASE_REQUESTER.holder]), BigInt(resourceId), BigInt(nonce)
+    );
+    expect(BigInt(res.body.pubSignals[3])).to.equal(expected);
+
+    const { holderSecret, ...withoutSecret } = await validEvidence();
+    const missing = await request(buildTestApp()).post('/tps/prove').send(proveBody(withoutSecret));
+    expect(missing.status).to.equal(400);
+    expect(missing.body.error).to.include('holderSecret');
   });
 
   it('requires material and complete proof context', async () => {

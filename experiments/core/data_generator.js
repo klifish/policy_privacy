@@ -1933,10 +1933,12 @@ async function buildDuoV3RequesterEvidence(policyData, { resourceId, policyCommi
     const value = BigInt('0x' + crypto.randomBytes(16).toString('hex'));
     return value === 0n ? 1n : value;
   };
-  const holderSecret = usesProfile ? randomNonZeroField() : 0n;
-  const requesterId = usesProfile
-    ? await calculateRequesterId(holderSecret)
-    : randomNonZeroField().toString();
+  // Every requester pseudonym is Poseidon(holderSecret), so its calldata
+  // encoding does not depend on whether the policy uses a profile credential.
+  // The circuit requires a zero secret for policies without a holder-bound slot.
+  const requesterSecret = randomNonZeroField();
+  const requesterId = await calculateRequesterId(requesterSecret);
+  const holderSecret = usesProfile ? requesterSecret : 0n;
   const zeroStrings = () => Array(POLICY_PREDICATE_COUNT).fill('0');
   const zeroPaths = () => Array.from(
     { length: POLICY_PREDICATE_COUNT },
@@ -2169,6 +2171,7 @@ async function executeDataset(dataset, contract, outputPath, options = {}) {
 
 module.exports = {
   DUO_TERMS,
+  buildDuoV3RequesterEvidence,
   ONTOLOGY_LINKED_TERMS,
   ONTOLOGY_NAMESPACES,
   ICD10_CHAPTERS,
