@@ -45,7 +45,7 @@ This paper makes the following contributions:
 \begin{itemize}
 	\item We propose TPS-ZKPI, a TPS-assisted zero-knowledge approach to publicly verifiable and auditable consent enforcement. The soundness of on-chain verification and the auditability of submitted decisions hold without trusting the TPS, whereas policy confidentiality, faithful witness construction, and liveness rely on trusting the TPS.
 
-	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit. Combined with policy commitments, this approach provides a policy-independent on-chain verification interface, allowing policies to evolve without changing the on-chain verifier.
+	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit. Combined with policy commitments, this approach provides a policy-independent on-chain verification interface, allowing policies to evolve without changing the verifier.
 
 	\item We empirically evaluate how much policy information remains in the public-chain metadata on the Polygon~Amoy testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}} using supervised and unsupervised attacks, and quantify the gas overhead of the randomized gas padding that suppresses the remaining gas channel.
 \end{itemize}
@@ -57,4 +57,4 @@ Section~\ref{sec:problem} defines the system and trust model, the public-chain a
 Section~\ref{sec:design} presents the TPS-ZKPI design.
 Section~\ref{sec:eval} reports the empirical evaluation.
 Section~\ref{sec:discussion} discusses limitations and future work, and
-Section~\ref{sec:conclusion} concludes the paper.
+Section~\ref{sec:conclusion} concludes.

@@ -71,3 +71,7 @@ Sequential policy and resource identifiers introduce a further $24$-gas differen
 Padding compensates for these calldata-pricing differences by bringing transaction gas consumption to the sampled target.
 The remaining overhead varies by less than $100$ gas (Section~\ref{sec:eval-pch}), while the target varies by $\pm 105{,}000$ gas.
 This provides a mechanism-level explanation for the reduced separability observed under B2.
+Padding, however, does not hide the calldata values that cause these differences.
+The evaluated implementation encoded the pseudonym as a $128$-bit random value for policies without a profile predicate and as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ otherwise, so its leading zero bytes reveal profile-predicate use even under padding; their absence rules out the five profile-backed terms of the corpus.
+The current implementation derives every pseudonym as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ (Section~\ref{subsec:commitment}); we have not repeated the evaluation with it.
+The $24$-gas identifier difference, in contrast, reflects the evaluation's commit order rather than the protocol.

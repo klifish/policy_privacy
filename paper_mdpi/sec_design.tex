@@ -108,8 +108,7 @@ For an access request, let
 	\mathit{id}_{\mathrm{res}}\parallel\nu),
 \end{equation}
 where $\nu$ is a fresh session nonce.
-Here $\mathit{id}_{\mathrm{req}}$ is the requester pseudonym.
-For policies that activate a holder-bound credential or requester-allowlist predicate, the circuit derives it as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ from a private holder secret $s_{\mathrm{holder}}$; otherwise, it may be a requester-supplied pseudonym.
+Here $\mathit{id}_{\mathrm{req}}$ is the requester pseudonym, which the TPS derives for every request as $\mathsf{Poseidon}(s_{\mathrm{holder}})$ from a private holder secret $s_{\mathrm{holder}}$, so its encoding does not depend on the policy; the circuit enforces this derivation for policies that activate a holder-bound credential or requester-allowlist predicate.
 The TPS constructs the private circuit witness
 \begin{equation}
 	w = (P_{\mathrm{enc}}, \ell, a, b, r, \omega, \chi),
@@ -181,8 +180,7 @@ Because this credential is holder-bound, a policy that activates this slot also 
 Zero-knowledge proofs hide private witness values, but surrounding
 blockchain artifacts may still leak policy-dependent information to the passive public-chain observer (Section~\ref{sec:problem}). TPS-ZKPI therefore
 normalizes the public-chain transcript so that different policies induce fixed or tightly
-bounded observable profiles. Table~\ref{tab:transcript-normalization}
-summarizes the mechanisms.
+bounded observable profiles (Table~\ref{tab:transcript-normalization}).
 
 \begin{table}[htbp]
 	\centering

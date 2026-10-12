@@ -21,7 +21,7 @@ Of these, $30$ pairs contain content-identical policies that differ only in thei
 
 We represent each policy pair as an ordered pair $(P_0, P_1)$.
 Given the on-chain observables of a single execution, the attacker predicts whether it was produced by $P_0$ or $P_1$.
-This defines a binary classification task, with an AUC of $0.5$ indicating chance-level performance.
+This defines a binary classification task, with an AUC of $0.5$ indicating chance.
 
 We apply the supervised attacks described in Section~\ref{sec:eval-method} to a pooled task combining all three pair types and to separate tasks for \texttt{semantic\_equivalent} and \texttt{weak\_equivalent} pairs.
 All three tasks are classified as PASS under the leakage criterion (Table~\ref{tab:pi-pairs}), with mean AUCs close to $0.5$ and low significant-seed fractions.

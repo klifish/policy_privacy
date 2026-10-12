@@ -24,7 +24,7 @@ A compromised provider-operated TPS could substitute inputs if their origin is n
 
 The policy commitment and on-chain proof verification ensure that accepted proofs demonstrate satisfaction of the committed policy relation, regardless of how the TPS is instantiated.
 However, they do not guarantee the provenance of evidence that is not issuer-signed, which remains dependent on the TPS (Table~\ref{tab:threat-guarantee}).
-Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests on the trust assumption stated above.
+Policy confidentiality, in contrast, is not cryptographically enforced against the TPS itself; it rests on this trust assumption.
 
 Table~\ref{tab:threat-guarantee} summarizes, for each actor or failure mode, how each of four security properties (policy confidentiality, authorization correctness, liveness, and decision auditability) holds: whether it is enforced cryptographically, supported only empirically, dependent on the TPS trust assumption, left to external functions, or not provided by the prototype.
 \input{tables/tab_threat_guarantee.tex}

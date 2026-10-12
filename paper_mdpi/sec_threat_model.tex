@@ -21,3 +21,4 @@ The features are grouped into four categories.
 The fixed circuit and commitment-only interface keep \textbf{Calldata length}, \textbf{Proof size}, and \textbf{Event logs} constant across the evaluated policies.
 We retain these features in the attack inputs, although their constant values cannot help distinguish between policies.
 Within the selected feature set, only the two gas measurements (\texttt{commitGasUsed} and \texttt{accessGasUsed}) can therefore exhibit policy-dependent variation.
+The features describe calldata size but not the values it carries, such as the requester pseudonym (Section~\ref{sec:eval-ablation}).
