@@ -46,7 +46,7 @@ python3 "$HERE/tools/mark_frontmatter.py" "$WORK/old/paper_mdpi/sec_frontmatter.
 if [ "$ANONYMIZE" = 1 ]; then
   python3 "$HERE/tools/anonymize.py" "$PAPER/main_marked_tmp.tex"
 fi
-sed -i '' 's/^\\bibliography{reference}$/\\input{main_refs_tmp.bbl}/' "$PAPER/main_marked_tmp.tex"
+sed -i '' 's/^\([[:space:]]*\)\\bibliography{reference}$/\1\\input{main_refs_tmp.bbl}/' "$PAPER/main_marked_tmp.tex"
 grep -q 'input{main_refs_tmp.bbl}' "$PAPER/main_marked_tmp.tex"
 sed 's/\\color{red}/\\color{black}/g' "$PAPER/main_marked_tmp.tex" > "$PAPER/main_clean_tmp.tex"
 
