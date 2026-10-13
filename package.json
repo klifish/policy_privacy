@@ -108,6 +108,8 @@
     "cost:context-binding": "node scripts/context_binding_gas.js",
     "analysis:criterion-sensitivity": ".venv/bin/python -m experiments.analysis.supervised.criterion_sensitivity --null-replicates 10 --jobs -1",
     "analysis:pad-residual": ".venv/bin/python -m experiments.analysis.supervised.pad_residual_diagnostic --seeds 30 --jobs -1",
+    "analysis:value-gate": ".venv/bin/python -m experiments.analysis.supervised.calldata_value_gate",
+    "analysis:value-diagnostic": ".venv/bin/python -m experiments.analysis.supervised.calldata_value_diagnostic",
     "analysis:compare:js": ".venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pch && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pi && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment spp",
     "evaluation:verify": "node scripts/verify_evaluation_provenance.js",
     "evaluation:provenance": "node scripts/verify_evaluation_provenance.js --output=.rerun_logs/evaluation_provenance.json",
