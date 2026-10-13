@@ -1,0 +1,1729 @@
+{
+  "features": [
+    "pseudonymZeroPrefix",
+    "ppMultiplicity",
+    "policyId"
+  ],
+  "weighting": "each policy (PI: each pair side) has total weight 1 across its executions",
+  "pseudonymRuleCheck": "60 sampled access transactions (10 per class per capture) decoded on Amoy; leading zero bytes >= 16 iff the DUO profile slot is unused; 0 violations",
+  "results": {
+    "main": {
+      "pch|DUO GR": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 302,
+        "pseudonymZeroPrefix": 0.2096774193548402,
+        "ppMultiplicity": 0.5718222602008102,
+        "policyId": 0.6460670796838287
+      },
+      "pch|DUO DS": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 422,
+        "pseudonymZeroPrefix": 0.6279512318657103,
+        "ppMultiplicity": 0.38625954198473694,
+        "policyId": 0.45538873412684244
+      },
+      "pch|DUO RS": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 412,
+        "pseudonymZeroPrefix": 0.637298342944743,
+        "ppMultiplicity": 0.3913643331630081,
+        "policyId": 0.47447258924009356
+      },
+      "pch|DUO POA": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 392,
+        "pseudonymZeroPrefix": 0.6568486518695099,
+        "ppMultiplicity": 0.3912408759124133,
+        "policyId": 0.4948905109489088
+      },
+      "pch|DUO GS": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 382,
+        "pseudonymZeroPrefix": 0.6468303890918701,
+        "ppMultiplicity": 0.39280575539568774,
+        "policyId": 0.4957437191608012
+      },
+      "pch|DUO CC": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 392,
+        "pseudonymZeroPrefix": 0.6267670936987961,
+        "ppMultiplicity": 0.3912408759124109,
+        "policyId": 0.4861164903917785
+      },
+      "pch|DUO NCU": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 206,
+        "pseudonymZeroPrefix": 0.24167623421354942,
+        "ppMultiplicity": 0.6279496839922832,
+        "policyId": 0.6705940053281019
+      },
+      "pch|DUO HMB": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 331,
+        "pseudonymZeroPrefix": 0.19839142091152945,
+        "ppMultiplicity": 0.6027230830289216,
+        "policyId": 0.6645108251054976
+      },
+      "pch|DUO NMDS": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 237,
+        "pseudonymZeroPrefix": 0.232142857142858,
+        "ppMultiplicity": 0.6064270644966806,
+        "policyId": 0.6965842877235273
+      },
+      "pch|DUO GSO": {
+        "nRows": 1773,
+        "nUnits": 1077,
+        "nPositiveUnits": 236,
+        "pseudonymZeroPrefix": 0.23246135552913272,
+        "ppMultiplicity": 0.6587723452709633,
+        "policyId": 0.7446139583627234
+      },
+      "pch|ICD ch0": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 44,
+        "pseudonymZeroPrefix": 0.5477994227994242,
+        "ppMultiplicity": 0.5000000000000014,
+        "policyId": 0.513287638287638
+      },
+      "pch|ICD ch1": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 49,
+        "pseudonymZeroPrefix": 0.49885101493680784,
+        "ppMultiplicity": 0.5000000000000037,
+        "policyId": 0.5378344367237522
+      },
+      "pch|ICD ch2": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.46837267274285377,
+        "ppMultiplicity": 0.5000000000000024,
+        "policyId": 0.5095427280517262
+      },
+      "pch|ICD ch3": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 55,
+        "pseudonymZeroPrefix": 0.4316324002972516,
+        "ppMultiplicity": 0.5000000000000039,
+        "policyId": 0.5230121377260353
+      },
+      "pch|ICD ch4": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.5065936879841253,
+        "ppMultiplicity": 0.5000000000000026,
+        "policyId": 0.5402983163689915
+      },
+      "pch|ICD ch5": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 34,
+        "pseudonymZeroPrefix": 0.5080351728320216,
+        "ppMultiplicity": 0.5000000000000038,
+        "policyId": 0.48870527592480323
+      },
+      "pch|ICD ch6": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 48,
+        "pseudonymZeroPrefix": 0.5643382352941205,
+        "ppMultiplicity": 0.5000000000000041,
+        "policyId": 0.459948752228165
+      },
+      "pch|ICD ch7": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 48,
+        "pseudonymZeroPrefix": 0.5055704099821768,
+        "ppMultiplicity": 0.5000000000000038,
+        "policyId": 0.4616198752228165
+      },
+      "pch|ICD ch8": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.4683726727428538,
+        "ppMultiplicity": 0.5000000000000038,
+        "policyId": 0.4705928176365197
+      },
+      "pch|ICD ch9": {
+        "nRows": 770,
+        "nUnits": 422,
+        "nPositiveUnits": 37,
+        "pseudonymZeroPrefix": 0.49677079677079883,
+        "ppMultiplicity": 0.5000000000000037,
+        "policyId": 0.4863460863460866
+      },
+      "spp|structureType: trivial/or_only": {
+        "nRows": 449,
+        "nUnits": 433,
+        "nPositiveUnits": 303,
+        "pseudonymZeroPrefix": 0.2584412287382584,
+        "ppMultiplicity": 0.49403401878649406,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_only": {
+        "nRows": 440,
+        "nUnits": 424,
+        "nPositiveUnits": 294,
+        "pseudonymZeroPrefix": 0.2639979068550497,
+        "ppMultiplicity": 0.48233908948194665,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_or_mixed": {
+        "nRows": 496,
+        "nUnits": 480,
+        "nPositiveUnits": 350,
+        "pseudonymZeroPrefix": 0.24835164835164836,
+        "ppMultiplicity": 0.4957142857142857,
+        "policyId": 1.0
+      },
+      "spp|structureType: or_only/and_only": {
+        "nRows": 629,
+        "nUnits": 597,
+        "nPositiveUnits": 294,
+        "pseudonymZeroPrefix": 0.5055566781167913,
+        "ppMultiplicity": 0.48832536314855973,
+        "policyId": 0.10809142138703666
+      },
+      "spp|structureType: or_only/and_or_mixed": {
+        "nRows": 685,
+        "nUnits": 653,
+        "nPositiveUnits": 350,
+        "pseudonymZeroPrefix": 0.48991041961338994,
+        "ppMultiplicity": 0.5016973125884017,
+        "policyId": 0.8679302215935879
+      },
+      "spp|structureType: and_only/and_or_mixed": {
+        "nRows": 676,
+        "nUnits": 644,
+        "nPositiveUnits": 350,
+        "pseudonymZeroPrefix": 0.4843537414965987,
+        "ppMultiplicity": 0.5134110787172012,
+        "policyId": 0.8917687074829932
+      },
+      "spp|predicateCombo: single/few": {
+        "nRows": 938,
+        "nUnits": 902,
+        "nPositiveUnits": 645,
+        "pseudonymZeroPrefix": 0.4565348535577473,
+        "ppMultiplicity": 0.21467137212318643,
+        "policyId": 0.5058365758754864
+      },
+      "spp|predicateCombo: single/many": {
+        "nRows": 450,
+        "nUnits": 432,
+        "nPositiveUnits": 175,
+        "pseudonymZeroPrefix": 0.6288493607559754,
+        "ppMultiplicity": 0.2140077821011673,
+        "policyId": 0.5058365758754864
+      },
+      "spp|predicateCombo: few/many": {
+        "nRows": 862,
+        "nUnits": 820,
+        "nPositiveUnits": 175,
+        "pseudonymZeroPrefix": 0.6723145071982282,
+        "ppMultiplicity": 0.49844961240310076,
+        "policyId": 0.5485714285714283
+      },
+      "spp|paramType: none/small": {
+        "nRows": 397,
+        "nUnits": 379,
+        "nPositiveUnits": 232,
+        "pseudonymZeroPrefix": 0.7284482758620688,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.12139338494018297
+      },
+      "spp|paramType: none/medium": {
+        "nRows": 521,
+        "nUnits": 499,
+        "nPositiveUnits": 352,
+        "pseudonymZeroPrefix": 0.7471590909090907,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.12020717377860235
+      },
+      "spp|paramType: none/large": {
+        "nRows": 513,
+        "nUnits": 493,
+        "nPositiveUnits": 346,
+        "pseudonymZeroPrefix": 0.745664739884393,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.11875270339349613
+      },
+      "spp|paramType: small/medium": {
+        "nRows": 612,
+        "nUnits": 584,
+        "nPositiveUnits": 352,
+        "pseudonymZeroPrefix": 0.518710815047022,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.5231436128526645
+      },
+      "spp|paramType: small/large": {
+        "nRows": 604,
+        "nUnits": 578,
+        "nPositiveUnits": 346,
+        "pseudonymZeroPrefix": 0.5172164640223241,
+        "ppMultiplicity": 0.5028901734104047,
+        "policyId": 0.48280845126569666
+      },
+      "spp|paramType: medium/large": {
+        "nRows": 728,
+        "nUnits": 698,
+        "nPositiveUnits": 346,
+        "pseudonymZeroPrefix": 0.49850564897530203,
+        "ppMultiplicity": 0.5028901734104045,
+        "policyId": 0.46083486600105095
+      },
+      "spp|nestingDepth: flat/shallow": {
+        "nRows": 354,
+        "nUnits": 340,
+        "nPositiveUnits": 210,
+        "pseudonymZeroPrefix": 0.315018315018315,
+        "ppMultiplicity": 0.5441391941391941,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: flat/medium": {
+        "nRows": 477,
+        "nUnits": 465,
+        "nPositiveUnits": 335,
+        "pseudonymZeroPrefix": 0.25602755453501724,
+        "ppMultiplicity": 0.48404133180252584,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: flat/deep": {
+        "nRows": 554,
+        "nUnits": 532,
+        "nPositiveUnits": 402,
+        "pseudonymZeroPrefix": 0.2261768082663605,
+        "ppMultiplicity": 0.4690968235744355,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: shallow/medium": {
+        "nRows": 571,
+        "nUnits": 545,
+        "nPositiveUnits": 335,
+        "pseudonymZeroPrefix": 0.4410092395167022,
+        "ppMultiplicity": 0.4396943852167734,
+        "policyId": 0.6046908315565032
+      },
+      "spp|nestingDepth: shallow/deep": {
+        "nRows": 648,
+        "nUnits": 612,
+        "nPositiveUnits": 402,
+        "pseudonymZeroPrefix": 0.4111584932480455,
+        "ppMultiplicity": 0.4248104714522626,
+        "policyId": 0.5931058990760484
+      },
+      "spp|nestingDepth: medium/deep": {
+        "nRows": 771,
+        "nUnits": 737,
+        "nPositiveUnits": 402,
+        "pseudonymZeroPrefix": 0.47014925373134336,
+        "ppMultiplicity": 0.48496324348407205,
+        "policyId": 0.4956931759114873
+      },
+      "pi|overall": {
+        "nRows": 832,
+        "nUnits": 542,
+        "nPositiveUnits": 271,
+        "pseudonymZeroPrefix": 0.46678966789668036,
+        "ppMultiplicity": 0.5113969036369326,
+        "policyId": 0.6338217072207618
+      },
+      "pi|semantic_equivalent": {
+        "nRows": 200,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.5,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.62805
+      },
+      "pi|weak_equivalent": {
+        "nRows": 200,
+        "nUnits": 142,
+        "nPositiveUnits": 71,
+        "pseudonymZeroPrefix": 0.49999999999999983,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.6032533227534215
+      },
+      "pi|controlled_difference": {
+        "nRows": 432,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.4099999999999998,
+        "ppMultiplicity": 0.5306999999999998,
+        "policyId": 0.8047499999999989
+      }
+    },
+    "b1": {
+      "pch|DUO GR": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 95,
+        "pseudonymZeroPrefix": 0.12195121951219468,
+        "ppMultiplicity": 0.501235558408215,
+        "policyId": 0.6022464698331206
+      },
+      "pch|DUO DS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 340,
+        "pseudonymZeroPrefix": 0.41502480510276435,
+        "ppMultiplicity": 0.3975903614457831,
+        "policyId": 0.8680722891566244
+      },
+      "pch|DUO RS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 175,
+        "pseudonymZeroPrefix": 0.5604262672811041,
+        "ppMultiplicity": 0.4657258064516119,
+        "policyId": 0.5810599078341007
+      },
+      "pch|DUO POA": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 150,
+        "pseudonymZeroPrefix": 0.6758974358974336,
+        "ppMultiplicity": 0.4688644688644678,
+        "policyId": 0.6122832722832712
+      },
+      "pch|DUO GS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 144,
+        "pseudonymZeroPrefix": 0.618839605734765,
+        "ppMultiplicity": 0.4695340501792104,
+        "policyId": 0.6565860215053747
+      },
+      "pch|DUO CC": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.6312656641603998,
+        "ppMultiplicity": 0.46626984126984067,
+        "policyId": 0.6813561681982724
+      },
+      "pch|DUO NCU": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.17539267015706772,
+        "ppMultiplicity": 0.5047567360490363,
+        "policyId": 0.682352190014048
+      },
+      "pch|DUO HMB": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 88,
+        "pseudonymZeroPrefix": 0.12985074626865603,
+        "ppMultiplicity": 0.5033242876526447,
+        "policyId": 0.6283242876526479
+      },
+      "pch|DUO NMDS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 50,
+        "pseudonymZeroPrefix": 0.16756032171581747,
+        "ppMultiplicity": 0.5225737265415539,
+        "policyId": 0.5031099195710458
+      },
+      "pch|DUO GSO": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 26,
+        "pseudonymZeroPrefix": 0.18765743073047803,
+        "ppMultiplicity": 0.6220209261771042,
+        "policyId": 0.5228637860879697
+      },
+      "pch|ICD ch0": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 8,
+        "pseudonymZeroPrefix": 0.6009036144578312,
+        "ppMultiplicity": 0.5000000000000032,
+        "policyId": 0.2537650602409638
+      },
+      "pch|ICD ch1": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 49,
+        "pseudonymZeroPrefix": 0.5108001963672059,
+        "ppMultiplicity": 0.4999999999999991,
+        "policyId": 0.5598569324637063
+      },
+      "pch|ICD ch2": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.47907412891126244,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.528378244990623
+      },
+      "pch|ICD ch3": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 55,
+        "pseudonymZeroPrefix": 0.44130781499202487,
+        "ppMultiplicity": 0.49999999999999917,
+        "policyId": 0.5453269537480055
+      },
+      "pch|ICD ch4": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.5184354351904717,
+        "ppMultiplicity": 0.49999999999999933,
+        "policyId": 0.559752018924871
+      },
+      "pch|ICD ch5": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 34,
+        "pseudonymZeroPrefix": 0.5196078431372549,
+        "ppMultiplicity": 0.4999999999999993,
+        "policyId": 0.5121107266435984
+      },
+      "pch|ICD ch6": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 9,
+        "pseudonymZeroPrefix": 0.672541121181605,
+        "ppMultiplicity": 0.500000000000002,
+        "policyId": 0.14165827458878807
+      },
+      "pch|ICD ch7": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.4907007096826821,
+        "ppMultiplicity": 0.4999999999999991,
+        "policyId": 0.41724447344807836
+      },
+      "pch|ICD ch8": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.47907412891126183,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.49185667752442963
+      },
+      "pch|ICD ch9": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 37,
+        "pseudonymZeroPrefix": 0.5082062260280076,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.5096779948265091
+      },
+      "spp|structureType: trivial/or_only": {
+        "nRows": 204,
+        "nUnits": 188,
+        "nPositiveUnits": 96,
+        "pseudonymZeroPrefix": 0.3365036231884058,
+        "ppMultiplicity": 0.4291213768115942,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_only": {
+        "nRows": 228,
+        "nUnits": 212,
+        "nPositiveUnits": 120,
+        "pseudonymZeroPrefix": 0.3094202898550725,
+        "ppMultiplicity": 0.4322463768115942,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_or_mixed": {
+        "nRows": 223,
+        "nUnits": 207,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.35434782608695653,
+        "ppMultiplicity": 0.42391304347826086,
+        "policyId": 1.0
+      },
+      "spp|structureType: or_only/and_only": {
+        "nRows": 248,
+        "nUnits": 216,
+        "nPositiveUnits": 120,
+        "pseudonymZeroPrefix": 0.47291666666666665,
+        "ppMultiplicity": 0.503125,
+        "policyId": 0.016579861111111108
+      },
+      "spp|structureType: or_only/and_or_mixed": {
+        "nRows": 243,
+        "nUnits": 211,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.5178442028985507,
+        "ppMultiplicity": 0.4947916666666667,
+        "policyId": 0.9895833333333334
+      },
+      "spp|structureType: and_only/and_or_mixed": {
+        "nRows": 267,
+        "nUnits": 235,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.5449275362318841,
+        "ppMultiplicity": 0.49166666666666664,
+        "policyId": 0.9833333333333333
+      },
+      "spp|predicateCombo: single/few": {
+        "nRows": 349,
+        "nUnits": 313,
+        "nPositiveUnits": 218,
+        "pseudonymZeroPrefix": 0.31424432641236116,
+        "ppMultiplicity": 0.4105263157894737,
+        "policyId": 0.9684210526315791
+      },
+      "spp|predicateCombo: single/many": {
+        "nRows": 223,
+        "nUnits": 205,
+        "nPositiveUnits": 110,
+        "pseudonymZeroPrefix": 0.4167464114832536,
+        "ppMultiplicity": 0.4105263157894737,
+        "policyId": 0.9684210526315791
+      },
+      "spp|predicateCombo: few/many": {
+        "nRows": 370,
+        "nUnits": 328,
+        "nPositiveUnits": 110,
+        "pseudonymZeroPrefix": 0.6025020850708923,
+        "ppMultiplicity": 0.5000000000000007,
+        "policyId": 0.5578815679733112
+      },
+      "spp|paramType: none/small": {
+        "nRows": 131,
+        "nUnits": 113,
+        "nPositiveUnits": 96,
+        "pseudonymZeroPrefix": 0.796875,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.6776960784313727
+      },
+      "spp|paramType: none/medium": {
+        "nRows": 210,
+        "nUnits": 188,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.7953216374269005,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.6646026831785347
+      },
+      "spp|paramType: none/large": {
+        "nRows": 176,
+        "nUnits": 156,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.8237410071942446,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.657638595006348
+      },
+      "spp|paramType: small/medium": {
+        "nRows": 295,
+        "nUnits": 267,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.4984466374269007,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.5137670565302146
+      },
+      "spp|paramType: small/large": {
+        "nRows": 261,
+        "nUnits": 235,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.5268660071942447,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.48163968824940057
+      },
+      "spp|paramType: medium/large": {
+        "nRows": 340,
+        "nUnits": 310,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.5284193697673439,
+        "ppMultiplicity": 0.49999999999999994,
+        "policyId": 0.47094955614455797
+      },
+      "spp|nestingDepth: flat/shallow": {
+        "nRows": 151,
+        "nUnits": 137,
+        "nPositiveUnits": 45,
+        "pseudonymZeroPrefix": 0.4205314009661834,
+        "ppMultiplicity": 0.44613526570048295,
+        "policyId": 0.9999999999999998
+      },
+      "spp|nestingDepth: flat/medium": {
+        "nRows": 221,
+        "nUnits": 209,
+        "nPositiveUnits": 117,
+        "pseudonymZeroPrefix": 0.36241174284652544,
+        "ppMultiplicity": 0.4281865477517651,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: flat/deep": {
+        "nRows": 283,
+        "nUnits": 261,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.28910470800102905,
+        "ppMultiplicity": 0.42391304347826086,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: shallow/medium": {
+        "nRows": 188,
+        "nUnits": 162,
+        "nPositiveUnits": 117,
+        "pseudonymZeroPrefix": 0.441880341880342,
+        "ppMultiplicity": 0.48205128205128195,
+        "policyId": 0.7160493827160495
+      },
+      "spp|nestingDepth: shallow/deep": {
+        "nRows": 250,
+        "nUnits": 214,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.36857330703484553,
+        "ppMultiplicity": 0.4777777777777778,
+        "policyId": 0.6832347140039449
+      },
+      "spp|nestingDepth: medium/deep": {
+        "nRows": 320,
+        "nUnits": 286,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.4266929651545036,
+        "ppMultiplicity": 0.4957264957264955,
+        "policyId": 0.47509229757750465
+      },
+      "pi|overall": {
+        "nRows": 1014,
+        "nUnits": 434,
+        "nPositiveUnits": 217,
+        "pseudonymZeroPrefix": 0.4447004608294931,
+        "ppMultiplicity": 0.49308755760368556,
+        "policyId": 0.7223236849370331
+      },
+      "pi|semantic_equivalent": {
+        "nRows": 229,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.5,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.7178999999999999
+      },
+      "pi|weak_equivalent": {
+        "nRows": 63,
+        "nUnits": 34,
+        "nPositiveUnits": 17,
+        "pseudonymZeroPrefix": 0.4999999999999999,
+        "ppMultiplicity": 0.4999999999999997,
+        "policyId": 0.6972318339100346
+      },
+      "pi|controlled_difference": {
+        "nRows": 722,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.3799999999999999,
+        "ppMultiplicity": 0.48499999999999827,
+        "policyId": 0.8490999999999971
+      }
+    },
+    "b2": {
+      "pch|DUO GR": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 95,
+        "pseudonymZeroPrefix": 0.12195121951219468,
+        "ppMultiplicity": 0.501235558408215,
+        "policyId": 0.6022464698331206
+      },
+      "pch|DUO DS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 340,
+        "pseudonymZeroPrefix": 0.41502480510276435,
+        "ppMultiplicity": 0.3975903614457831,
+        "policyId": 0.8680722891566244
+      },
+      "pch|DUO RS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 175,
+        "pseudonymZeroPrefix": 0.5604262672811041,
+        "ppMultiplicity": 0.4657258064516119,
+        "policyId": 0.5810599078341007
+      },
+      "pch|DUO POA": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 150,
+        "pseudonymZeroPrefix": 0.6758974358974336,
+        "ppMultiplicity": 0.4688644688644678,
+        "policyId": 0.6122832722832712
+      },
+      "pch|DUO GS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 144,
+        "pseudonymZeroPrefix": 0.618839605734765,
+        "ppMultiplicity": 0.4695340501792104,
+        "policyId": 0.6565860215053747
+      },
+      "pch|DUO CC": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.6312656641603998,
+        "ppMultiplicity": 0.46626984126984067,
+        "policyId": 0.6813561681982724
+      },
+      "pch|DUO NCU": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.17539267015706772,
+        "ppMultiplicity": 0.5047567360490363,
+        "policyId": 0.682352190014048
+      },
+      "pch|DUO HMB": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 88,
+        "pseudonymZeroPrefix": 0.12985074626865603,
+        "ppMultiplicity": 0.5033242876526447,
+        "policyId": 0.6283242876526479
+      },
+      "pch|DUO NMDS": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 50,
+        "pseudonymZeroPrefix": 0.16756032171581747,
+        "ppMultiplicity": 0.5225737265415539,
+        "policyId": 0.5031099195710458
+      },
+      "pch|DUO GSO": {
+        "nRows": 1119,
+        "nUnits": 423,
+        "nPositiveUnits": 26,
+        "pseudonymZeroPrefix": 0.18765743073047803,
+        "ppMultiplicity": 0.6220209261771042,
+        "policyId": 0.5228637860879697
+      },
+      "pch|ICD ch0": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 8,
+        "pseudonymZeroPrefix": 0.6009036144578312,
+        "ppMultiplicity": 0.5000000000000032,
+        "policyId": 0.2537650602409638
+      },
+      "pch|ICD ch1": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 49,
+        "pseudonymZeroPrefix": 0.5108001963672059,
+        "ppMultiplicity": 0.4999999999999991,
+        "policyId": 0.5598569324637063
+      },
+      "pch|ICD ch2": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.47907412891126244,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.528378244990623
+      },
+      "pch|ICD ch3": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 55,
+        "pseudonymZeroPrefix": 0.44130781499202487,
+        "ppMultiplicity": 0.49999999999999917,
+        "policyId": 0.5453269537480055
+      },
+      "pch|ICD ch4": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.5184354351904717,
+        "ppMultiplicity": 0.49999999999999933,
+        "policyId": 0.559752018924871
+      },
+      "pch|ICD ch5": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 34,
+        "pseudonymZeroPrefix": 0.5196078431372549,
+        "ppMultiplicity": 0.4999999999999993,
+        "policyId": 0.5121107266435984
+      },
+      "pch|ICD ch6": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 9,
+        "pseudonymZeroPrefix": 0.672541121181605,
+        "ppMultiplicity": 0.500000000000002,
+        "policyId": 0.14165827458878807
+      },
+      "pch|ICD ch7": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 41,
+        "pseudonymZeroPrefix": 0.4907007096826821,
+        "ppMultiplicity": 0.4999999999999991,
+        "policyId": 0.41724447344807836
+      },
+      "pch|ICD ch8": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 33,
+        "pseudonymZeroPrefix": 0.47907412891126183,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.49185667752442963
+      },
+      "pch|ICD ch9": {
+        "nRows": 688,
+        "nUnits": 340,
+        "nPositiveUnits": 37,
+        "pseudonymZeroPrefix": 0.5082062260280076,
+        "ppMultiplicity": 0.5000000000000004,
+        "policyId": 0.5096779948265091
+      },
+      "spp|structureType: trivial/or_only": {
+        "nRows": 204,
+        "nUnits": 188,
+        "nPositiveUnits": 96,
+        "pseudonymZeroPrefix": 0.3365036231884058,
+        "ppMultiplicity": 0.4291213768115942,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_only": {
+        "nRows": 228,
+        "nUnits": 212,
+        "nPositiveUnits": 120,
+        "pseudonymZeroPrefix": 0.3094202898550725,
+        "ppMultiplicity": 0.4322463768115942,
+        "policyId": 1.0
+      },
+      "spp|structureType: trivial/and_or_mixed": {
+        "nRows": 223,
+        "nUnits": 207,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.35434782608695653,
+        "ppMultiplicity": 0.42391304347826086,
+        "policyId": 1.0
+      },
+      "spp|structureType: or_only/and_only": {
+        "nRows": 248,
+        "nUnits": 216,
+        "nPositiveUnits": 120,
+        "pseudonymZeroPrefix": 0.47291666666666665,
+        "ppMultiplicity": 0.503125,
+        "policyId": 0.016579861111111108
+      },
+      "spp|structureType: or_only/and_or_mixed": {
+        "nRows": 243,
+        "nUnits": 211,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.5178442028985507,
+        "ppMultiplicity": 0.4947916666666667,
+        "policyId": 0.9895833333333334
+      },
+      "spp|structureType: and_only/and_or_mixed": {
+        "nRows": 267,
+        "nUnits": 235,
+        "nPositiveUnits": 115,
+        "pseudonymZeroPrefix": 0.5449275362318841,
+        "ppMultiplicity": 0.49166666666666664,
+        "policyId": 0.9833333333333333
+      },
+      "spp|predicateCombo: single/few": {
+        "nRows": 349,
+        "nUnits": 313,
+        "nPositiveUnits": 218,
+        "pseudonymZeroPrefix": 0.31424432641236116,
+        "ppMultiplicity": 0.4105263157894737,
+        "policyId": 0.9684210526315791
+      },
+      "spp|predicateCombo: single/many": {
+        "nRows": 223,
+        "nUnits": 205,
+        "nPositiveUnits": 110,
+        "pseudonymZeroPrefix": 0.4167464114832536,
+        "ppMultiplicity": 0.4105263157894737,
+        "policyId": 0.9684210526315791
+      },
+      "spp|predicateCombo: few/many": {
+        "nRows": 370,
+        "nUnits": 328,
+        "nPositiveUnits": 110,
+        "pseudonymZeroPrefix": 0.6025020850708923,
+        "ppMultiplicity": 0.5000000000000007,
+        "policyId": 0.5578815679733112
+      },
+      "spp|paramType: none/small": {
+        "nRows": 131,
+        "nUnits": 113,
+        "nPositiveUnits": 96,
+        "pseudonymZeroPrefix": 0.796875,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.6776960784313727
+      },
+      "spp|paramType: none/medium": {
+        "nRows": 210,
+        "nUnits": 188,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.7953216374269005,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.6646026831785347
+      },
+      "spp|paramType: none/large": {
+        "nRows": 176,
+        "nUnits": 156,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.8237410071942446,
+        "ppMultiplicity": 0.0,
+        "policyId": 0.657638595006348
+      },
+      "spp|paramType: small/medium": {
+        "nRows": 295,
+        "nUnits": 267,
+        "nPositiveUnits": 171,
+        "pseudonymZeroPrefix": 0.4984466374269007,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.5137670565302146
+      },
+      "spp|paramType: small/large": {
+        "nRows": 261,
+        "nUnits": 235,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.5268660071942447,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.48163968824940057
+      },
+      "spp|paramType: medium/large": {
+        "nRows": 340,
+        "nUnits": 310,
+        "nPositiveUnits": 139,
+        "pseudonymZeroPrefix": 0.5284193697673439,
+        "ppMultiplicity": 0.49999999999999994,
+        "policyId": 0.47094955614455797
+      },
+      "spp|nestingDepth: flat/shallow": {
+        "nRows": 151,
+        "nUnits": 137,
+        "nPositiveUnits": 45,
+        "pseudonymZeroPrefix": 0.4205314009661834,
+        "ppMultiplicity": 0.44613526570048295,
+        "policyId": 0.9999999999999998
+      },
+      "spp|nestingDepth: flat/medium": {
+        "nRows": 221,
+        "nUnits": 209,
+        "nPositiveUnits": 117,
+        "pseudonymZeroPrefix": 0.36241174284652544,
+        "ppMultiplicity": 0.4281865477517651,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: flat/deep": {
+        "nRows": 283,
+        "nUnits": 261,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.28910470800102905,
+        "ppMultiplicity": 0.42391304347826086,
+        "policyId": 1.0
+      },
+      "spp|nestingDepth: shallow/medium": {
+        "nRows": 188,
+        "nUnits": 162,
+        "nPositiveUnits": 117,
+        "pseudonymZeroPrefix": 0.441880341880342,
+        "ppMultiplicity": 0.48205128205128195,
+        "policyId": 0.7160493827160495
+      },
+      "spp|nestingDepth: shallow/deep": {
+        "nRows": 250,
+        "nUnits": 214,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.36857330703484553,
+        "ppMultiplicity": 0.4777777777777778,
+        "policyId": 0.6832347140039449
+      },
+      "spp|nestingDepth: medium/deep": {
+        "nRows": 320,
+        "nUnits": 286,
+        "nPositiveUnits": 169,
+        "pseudonymZeroPrefix": 0.4266929651545036,
+        "ppMultiplicity": 0.4957264957264955,
+        "policyId": 0.47509229757750465
+      },
+      "pi|overall": {
+        "nRows": 1014,
+        "nUnits": 434,
+        "nPositiveUnits": 217,
+        "pseudonymZeroPrefix": 0.4447004608294931,
+        "ppMultiplicity": 0.49308755760368556,
+        "policyId": 0.7223236849370331
+      },
+      "pi|semantic_equivalent": {
+        "nRows": 229,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.5,
+        "ppMultiplicity": 0.5,
+        "policyId": 0.7178999999999999
+      },
+      "pi|weak_equivalent": {
+        "nRows": 63,
+        "nUnits": 34,
+        "nPositiveUnits": 17,
+        "pseudonymZeroPrefix": 0.4999999999999999,
+        "ppMultiplicity": 0.4999999999999997,
+        "policyId": 0.6972318339100346
+      },
+      "pi|controlled_difference": {
+        "nRows": 722,
+        "nUnits": 200,
+        "nPositiveUnits": 100,
+        "pseudonymZeroPrefix": 0.3799999999999999,
+        "ppMultiplicity": 0.48499999999999827,
+        "policyId": 0.8490999999999971
+      }
+    }
+  },
+  "gasReference": {
+    "pch|DUO GR": {
+      "main": {
+        "rf": 0.4975251042061387,
+        "lr": 0.5401272577996716
+      },
+      "b1": {
+        "rf": 0.8637696457893503,
+        "lr": 0.8698627726952849
+      },
+      "b2": {
+        "rf": 0.4455137227304716,
+        "lr": 0.5281609195402299
+      }
+    },
+    "pch|DUO DS": {
+      "main": {
+        "rf": 0.513825057582088,
+        "lr": 0.5042878568750335
+      },
+      "b1": {
+        "rf": 0.7190980392156863,
+        "lr": 0.711281045751634
+      },
+      "b2": {
+        "rf": 0.5076797385620915,
+        "lr": 0.45070588235294123
+      }
+    },
+    "pch|DUO RS": {
+      "main": {
+        "rf": 0.49813516507267525,
+        "lr": 0.4796968714540444
+      },
+      "b1": {
+        "rf": 0.5655641025641026,
+        "lr": 0.5283290598290599
+      },
+      "b2": {
+        "rf": 0.47062393162393157,
+        "lr": 0.4995384615384616
+      }
+    },
+    "pch|DUO POA": {
+      "main": {
+        "rf": 0.42766087915116446,
+        "lr": 0.4773928620642139
+      },
+      "b1": {
+        "rf": 0.6778003613369469,
+        "lr": 0.6366621499548327
+      },
+      "b2": {
+        "rf": 0.4340695573622403,
+        "lr": 0.46397470641373084
+      }
+    },
+    "pch|DUO GS": {
+      "main": {
+        "rf": 0.5022582218506132,
+        "lr": 0.47898550724637684
+      },
+      "b1": {
+        "rf": 0.6403008490217791,
+        "lr": 0.564253414544112
+      },
+      "b2": {
+        "rf": 0.4949381690660761,
+        "lr": 0.4874953857511997
+      }
+    },
+    "pch|DUO CC": {
+      "main": {
+        "rf": 0.5005008956869229,
+        "lr": 0.5147622984704423
+      },
+      "b1": {
+        "rf": 0.6369324045407636,
+        "lr": 0.5728973168214654
+      },
+      "b2": {
+        "rf": 0.4875386996904024,
+        "lr": 0.5096577227382181
+      }
+    },
+    "pch|DUO NCU": {
+      "main": {
+        "rf": 0.4889908540353479,
+        "lr": 0.5282639146376632
+      },
+      "b1": {
+        "rf": 0.8537801932367148,
+        "lr": 0.8747826086956523
+      },
+      "b2": {
+        "rf": 0.445084541062802,
+        "lr": 0.4531642512077294
+      }
+    },
+    "pch|DUO HMB": {
+      "main": {
+        "rf": 0.4917726370851371,
+        "lr": 0.5086850649350649
+      },
+      "b1": {
+        "rf": 0.8757489210459506,
+        "lr": 0.8635376999238384
+      },
+      "b2": {
+        "rf": 0.49509393247017014,
+        "lr": 0.5020690530591521
+      }
+    },
+    "pch|DUO NMDS": {
+      "main": {
+        "rf": 0.5158366867873909,
+        "lr": 0.46241895819360596
+      },
+      "b1": {
+        "rf": 0.8373908730158729,
+        "lr": 0.8260218253968253
+      },
+      "b2": {
+        "rf": 0.5000099206349207,
+        "lr": 0.44160714285714275
+      }
+    },
+    "pch|DUO GSO": {
+      "main": {
+        "rf": 0.502275691184142,
+        "lr": 0.4682297488635517
+      },
+      "b1": {
+        "rf": 0.7748249299719887,
+        "lr": 0.8115896358543417
+      },
+      "b2": {
+        "rf": 0.4271183473389356,
+        "lr": 0.42703081232493
+      }
+    },
+    "pch|ICD ch0": {
+      "main": {
+        "rf": 0.4693094916779127,
+        "lr": 0.47222222222222227
+      },
+      "b1": {
+        "rf": 0.5125,
+        "lr": 0.5375
+      },
+      "b2": {
+        "rf": 0.49691666666666656,
+        "lr": 0.43483333333333335
+      }
+    },
+    "pch|ICD ch1": {
+      "main": {
+        "rf": 0.5703968253968253,
+        "lr": 0.5226190476190476
+      },
+      "b1": {
+        "rf": 0.47163473818646234,
+        "lr": 0.46722860791826304
+      },
+      "b2": {
+        "rf": 0.5583652618135377,
+        "lr": 0.48270753512132825
+      }
+    },
+    "pch|ICD ch2": {
+      "main": {
+        "rf": 0.5654273504273505,
+        "lr": 0.4190313390313391
+      },
+      "b1": {
+        "rf": 0.536286231884058,
+        "lr": 0.5217572463768116
+      },
+      "b2": {
+        "rf": 0.5570652173913043,
+        "lr": 0.4019927536231885
+      }
+    },
+    "pch|ICD ch3": {
+      "main": {
+        "rf": 0.5400802139037432,
+        "lr": 0.4870053475935829
+      },
+      "b1": {
+        "rf": 0.4636017173627317,
+        "lr": 0.559643836672836
+      },
+      "b2": {
+        "rf": 0.5738972348515329,
+        "lr": 0.5009599393793085
+      }
+    },
+    "pch|ICD ch4": {
+      "main": {
+        "rf": 0.5578140096618358,
+        "lr": 0.5063526570048309
+      },
+      "b1": {
+        "rf": 0.4909104938271605,
+        "lr": 0.482608024691358
+      },
+      "b2": {
+        "rf": 0.5487191358024692,
+        "lr": 0.5195370370370369
+      }
+    },
+    "pch|ICD ch5": {
+      "main": {
+        "rf": 0.6278062678062678,
+        "lr": 0.6673219373219376
+      },
+      "b1": {
+        "rf": 0.4550905797101449,
+        "lr": 0.46793478260869564
+      },
+      "b2": {
+        "rf": 0.6305072463768115,
+        "lr": 0.6606884057971014
+      }
+    },
+    "pch|ICD ch6": {
+      "main": {
+        "rf": 0.4640960809102402,
+        "lr": 0.4540244416350611
+      },
+      "b1": {
+        "rf": 0.7131313131313132,
+        "lr": 0.7919191919191919
+      },
+      "b2": {
+        "rf": 0.4435465768799102,
+        "lr": 0.457351290684624
+      }
+    },
+    "pch|ICD ch7": {
+      "main": {
+        "rf": 0.5246839443742098,
+        "lr": 0.44622840286557097
+      },
+      "b1": {
+        "rf": 0.4763117283950617,
+        "lr": 0.4513734567901235
+      },
+      "b2": {
+        "rf": 0.575925925925926,
+        "lr": 0.4729320987654322
+      }
+    },
+    "pch|ICD ch8": {
+      "main": {
+        "rf": 0.47764957264957264,
+        "lr": 0.4480911680911682
+      },
+      "b1": {
+        "rf": 0.5138224637681159,
+        "lr": 0.43844202898550727
+      },
+      "b2": {
+        "rf": 0.5145652173913043,
+        "lr": 0.4469565217391305
+      }
+    },
+    "pch|ICD ch9": {
+      "main": {
+        "rf": 0.4987068965517241,
+        "lr": 0.5110762800417973
+      },
+      "b1": {
+        "rf": 0.4865301365301365,
+        "lr": 0.44706959706959715
+      },
+      "b2": {
+        "rf": 0.48912753912753915,
+        "lr": 0.4766233766233767
+      }
+    },
+    "spp|structureType: trivial/or_only": {
+      "main": {
+        "rf": 0.4916971916971917,
+        "lr": 0.5202874049027896
+      },
+      "b1": {
+        "rf": 0.8773520647083866,
+        "lr": 0.8309280544912726
+      },
+      "b2": {
+        "rf": 0.5274797786292039,
+        "lr": 0.46223925074499783
+      }
+    },
+    "spp|structureType: trivial/and_only": {
+      "main": {
+        "rf": 0.47016317016317016,
+        "lr": 0.5022435897435898
+      },
+      "b1": {
+        "rf": 0.7640873015873015,
+        "lr": 0.7866898148148146
+      },
+      "b2": {
+        "rf": 0.4855489417989418,
+        "lr": 0.45274470899470903
+      }
+    },
+    "spp|structureType: trivial/and_or_mixed": {
+      "main": {
+        "rf": 0.46242979242979243,
+        "lr": 0.5015059015059015
+      },
+      "b1": {
+        "rf": 0.9020133053221289,
+        "lr": 0.8660364145658264
+      },
+      "b2": {
+        "rf": 0.49000350140056015,
+        "lr": 0.4349089635854341
+      }
+    },
+    "spp|structureType: or_only/and_only": {
+      "main": {
+        "rf": 0.5058816183816184,
+        "lr": 0.47244838494838504
+      },
+      "b1": {
+        "rf": 0.6117337164750958,
+        "lr": 0.4600095785440612
+      },
+      "b2": {
+        "rf": 0.4713761174968072,
+        "lr": 0.4558429118773946
+      }
+    },
+    "spp|structureType: or_only/and_or_mixed": {
+      "main": {
+        "rf": 0.5176155590441305,
+        "lr": 0.5041618698761556
+      },
+      "b1": {
+        "rf": 0.5826910074374577,
+        "lr": 0.4900608519269778
+      },
+      "b2": {
+        "rf": 0.5600405679513185,
+        "lr": 0.4320486815415822
+      }
+    },
+    "spp|structureType: and_only/and_or_mixed": {
+      "main": {
+        "rf": 0.5027543290043291,
+        "lr": 0.4671284271284271
+      },
+      "b1": {
+        "rf": 0.6747412854030502,
+        "lr": 0.502124183006536
+      },
+      "b2": {
+        "rf": 0.4626225490196079,
+        "lr": 0.43630174291939006
+      }
+    },
+    "spp|predicateCombo: single/few": {
+      "main": {
+        "rf": 0.5230753782300173,
+        "lr": 0.45740616771544607
+      },
+      "b1": {
+        "rf": 0.844102564102564,
+        "lr": 0.8216887709991157
+      },
+      "b2": {
+        "rf": 0.4940848806366048,
+        "lr": 0.49763041556145005
+      }
+    },
+    "spp|predicateCombo: single/many": {
+      "main": {
+        "rf": 0.46923139753328436,
+        "lr": 0.5188760924609981
+      },
+      "b1": {
+        "rf": 0.7697318007662837,
+        "lr": 0.7416057122953675
+      },
+      "b2": {
+        "rf": 0.5088645071403692,
+        "lr": 0.4576802507836991
+      }
+    },
+    "spp|predicateCombo: few/many": {
+      "main": {
+        "rf": 0.5274666270155962,
+        "lr": 0.5184377478191912
+      },
+      "b1": {
+        "rf": 0.5731546231546233,
+        "lr": 0.5996658896658896
+      },
+      "b2": {
+        "rf": 0.5082828282828282,
+        "lr": 0.508003108003108
+      }
+    },
+    "spp|paramType: none/small": {
+      "main": {
+        "rf": 0.5073376623376623,
+        "lr": 0.5706277056277056
+      },
+      "b1": {
+        "rf": 0.8620689655172414,
+        "lr": 0.734712643678161
+      },
+      "b2": {
+        "rf": 0.41390804597701153,
+        "lr": 0.43977011494252877
+      }
+    },
+    "spp|paramType: none/medium": {
+      "main": {
+        "rf": 0.48131074899942833,
+        "lr": 0.5253573470554602
+      },
+      "b1": {
+        "rf": 0.8487581699346404,
+        "lr": 0.6817647058823528
+      },
+      "b2": {
+        "rf": 0.3974509803921569,
+        "lr": 0.5366013071895425
+      }
+    },
+    "spp|paramType: none/large": {
+      "main": {
+        "rf": 0.4902826340326341,
+        "lr": 0.5677811771561773
+      },
+      "b1": {
+        "rf": 0.8212698412698413,
+        "lr": 0.7634126984126983
+      },
+      "b2": {
+        "rf": 0.36095238095238097,
+        "lr": 0.5142857142857143
+      }
+    },
+    "spp|paramType: small/medium": {
+      "main": {
+        "rf": 0.46536734693877546,
+        "lr": 0.5297006802721088
+      },
+      "b1": {
+        "rf": 0.5127000225377507,
+        "lr": 0.5360491322965968
+      },
+      "b2": {
+        "rf": 0.5433175569078206,
+        "lr": 0.4783862970475546
+      }
+    },
+    "spp|paramType: small/large": {
+      "main": {
+        "rf": 0.4435991678224687,
+        "lr": 0.5039620896902449
+      },
+      "b1": {
+        "rf": 0.5007989907485282,
+        "lr": 0.5060975609756098
+      },
+      "b2": {
+        "rf": 0.5237594617325483,
+        "lr": 0.47863751051303627
+      }
+    },
+    "spp|paramType: medium/large": {
+      "main": {
+        "rf": 0.45326923076923076,
+        "lr": 0.4934096459096458
+      },
+      "b1": {
+        "rf": 0.4256769374416433,
+        "lr": 0.5580143168378462
+      },
+      "b2": {
+        "rf": 0.4922813569872393,
+        "lr": 0.4634920634920635
+      }
+    },
+    "spp|nestingDepth: flat/shallow": {
+      "main": {
+        "rf": 0.49628951295617957,
+        "lr": 0.5219780219780219
+      },
+      "b1": {
+        "rf": 0.7739010989010987,
+        "lr": 0.7021520146520146
+      },
+      "b2": {
+        "rf": 0.5837454212454212,
+        "lr": 0.4453296703296703
+      }
+    },
+    "spp|nestingDepth: flat/medium": {
+      "main": {
+        "rf": 0.5388931200812389,
+        "lr": 0.5547262418549547
+      },
+      "b1": {
+        "rf": 0.8371428571428573,
+        "lr": 0.8090136054421768
+      },
+      "b2": {
+        "rf": 0.5172448979591837,
+        "lr": 0.5248979591836734
+      }
+    },
+    "spp|nestingDepth: flat/deep": {
+      "main": {
+        "rf": 0.467860422405877,
+        "lr": 0.4549410185773823
+      },
+      "b1": {
+        "rf": 0.8466666666666669,
+        "lr": 0.8560357142857142
+      },
+      "b2": {
+        "rf": 0.502904761904762,
+        "lr": 0.5017142857142858
+      }
+    },
+    "spp|nestingDepth: shallow/medium": {
+      "main": {
+        "rf": 0.520899470899471,
+        "lr": 0.4803394625176803
+      },
+      "b1": {
+        "rf": 0.5164965986394557,
+        "lr": 0.5174829931972789
+      },
+      "b2": {
+        "rf": 0.5970748299319728,
+        "lr": 0.557891156462585
+      }
+    },
+    "spp|nestingDepth: shallow/deep": {
+      "main": {
+        "rf": 0.5326621190257553,
+        "lr": 0.5207661025842844
+      },
+      "b1": {
+        "rf": 0.5946204122674711,
+        "lr": 0.6451734539969834
+      },
+      "b2": {
+        "rf": 0.5382604323780795,
+        "lr": 0.47043740573152343
+      }
+    },
+    "spp|nestingDepth: medium/deep": {
+      "main": {
+        "rf": 0.5577878787878788,
+        "lr": 0.5631763085399449
+      },
+      "b1": {
+        "rf": 0.4683846872082167,
+        "lr": 0.5639495798319328
+      },
+      "b2": {
+        "rf": 0.5682259570494865,
+        "lr": 0.5638468720821662
+      }
+    },
+    "pi|overall": {
+      "main": {
+        "rf": 0.5092458454305622,
+        "lr": 0.460762723310818
+      },
+      "b1": {
+        "rf": 0.5752137331717752,
+        "lr": 0.6153681398891189
+      },
+      "b2": {
+        "rf": 0.3967387638261764,
+        "lr": 0.44642738755675815
+      }
+    },
+    "pi|semantic_equivalent": {
+      "main": {
+        "rf": 0.4924444444444445,
+        "lr": 0.5490925925925926
+      },
+      "b1": {
+        "rf": 0.5104629629629629,
+        "lr": 0.47274074074074074
+      },
+      "b2": {
+        "rf": 0.4517962962962963,
+        "lr": 0.4864444444444444
+      }
+    },
+    "pi|weak_equivalent": {
+      "main": {
+        "rf": 0.38718820861678005,
+        "lr": 0.5441421012849583
+      },
+      "b1": {
+        "rf": 0.5400000000000001,
+        "lr": 0.38866666666666666
+      },
+      "b2": {
+        "rf": 0.5373333333333333,
+        "lr": 0.454
+      }
+    },
+    "pi|controlled_difference": {
+      "main": {
+        "rf": 0.5442962962962963,
+        "lr": 0.43031481481481476
+      },
+      "b1": {
+        "rf": 0.6764444444444442,
+        "lr": 0.6809074074074073
+      },
+      "b2": {
+        "rf": 0.44599999999999995,
+        "lr": 0.4834444444444444
+      }
+    }
+  }
+}
