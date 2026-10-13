@@ -38,7 +38,7 @@ Thus, subject to signature unforgeability and Poseidon collision resistance, the
 \subsection{Public-Chain Adversary}
 
 The primary adversary is a passive public-chain observer.
-The adversary can inspect smart-contract code and monitor public blockchain artifacts across multiple authorization sessions, including policy commitments, submitted proofs, public inputs, emitted events, calldata, timing, and gas usage.
+The adversary can inspect smart-contract code and monitor public blockchain artifacts across multiple authorization sessions, including policy commitments, submitted proofs, public inputs, emitted events, calldata, and gas usage.
 The adversary does not observe provider-to-TPS policy material, commitment-opening randomness, requester-submitted authorization evidence, credential witnesses, or the TPS's witness construction process.
 These data and computations remain off-chain and are not exposed in the public-chain transcript.
 We assume the off-chain channels themselves are confidential (e.g., TLS-protected).
@@ -50,7 +50,7 @@ For each such session, the adversary observes a public view
 	\mathit{view}_{\mathrm{pub}}= (h, \pi, o, \mathit{pp}, d_{\chi}, \tau, \mathit{id}_{\mathrm{req}}, \mathit{id}_{\mathrm{res}}, \nu, \mathit{meta}),
 \end{equation}
 where $h$ is the on-chain commitment to the hidden policy, $\pi$ is the zero-knowledge proof submitted for on-chain verification, $o$, $\mathit{pp}$, $d_{\chi}$, and $\tau$ are the remaining public signals of the proof statement (the authorization output, a parameter commitment, a context digest, and a request epoch; Section~\ref{sec:design}), $\mathit{id}_{\mathrm{req}}$, $\mathit{id}_{\mathrm{res}}$, and $\nu$ are the requester, resource, and session-nonce values carried in the access transaction, and $\mathit{meta}$ denotes transaction-level metadata
-exposed by the enforcement layer, such as calldata footprint, event structure, public-input layout, timing, and gas usage. The adversary's goal is to infer hidden information about the committed policy or the authorization interaction from this public view.
+exposed by the enforcement layer, such as calldata footprint, event structure, public-input layout, and gas usage. The adversary's goal is to infer hidden information about the committed policy or the authorization interaction from this public view.
 
 In addition to the public-chain observer, we consider the requester as untrusted with respect to policy confidentiality.
 The requester initiates access requests, observes its own submitted evidence and authorization outcome, and inspects the public-chain transcript.
