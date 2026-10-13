@@ -472,7 +472,9 @@ function serializeTransactionResponse(tx) {
     value: formatNumberLike(tx.value),
     type: tx.type ?? null,
     chainId: typeof tx.chainId === 'number' ? tx.chainId : null,
-    dataLength: calldataBytes(tx.data)
+    dataLength: calldataBytes(tx.data),
+    // Raw input, so calldata values (not only sizes) can be audited offline.
+    data: typeof tx.data === 'string' ? tx.data : null
   };
 }
 
@@ -2068,7 +2070,7 @@ async function executePolicy(policyData, contract, options = {}) {
   });
   const accessResult = await requesterRequestAccess(policyData, commitResult);
 
-  const { commitReceipt, commitTx, resourceReceipt, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
+  const { commitReceipt, commitTx, resourceReceipt, resourceTx, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
   const { accessTx, proof, proofGenerationTime, proofTimings, chainResult } = accessResult;
 
   const commitEventLogs = commitReceipt.logs.filter(
@@ -2135,6 +2137,10 @@ async function executePolicy(policyData, contract, options = {}) {
       commit: {
         tx: serializeTransactionResponse(commitTx),
         receipt: serializeReceipt(commitReceipt)
+      },
+      resource: {
+        tx: serializeTransactionResponse(resourceTx),
+        receipt: serializeReceipt(resourceReceipt)
       },
       access: {
         tx: serializeTransactionResponse(accessTxRecord),
