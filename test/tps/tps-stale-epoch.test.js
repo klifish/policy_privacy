@@ -6,7 +6,7 @@
 // from the failed tx itself (tps/server.js failedSubmissionEpoch).
 
 const { expect } = require('chai');
-const { failedSubmissionEpoch, isStaleEpochFailure } = require('../../tps/server');
+const { failedSubmissionEpoch, isStaleEpochFailure, pendingEpoch } = require('../../tps/server');
 
 const TX_HASH = '0x218dfea09d5995e37a33d90cac6532dc1c6f8c891964b043bd768c94baaf11a6';
 const HOUR = 497746;
@@ -52,6 +52,17 @@ describe('TPS stale-epoch recovery', function () {
     const provider = fakeProvider();
     const error = { code: 'CALL_EXCEPTION', receipt: { status: 0, blockNumber: 1547 } };
     expect(await failedSubmissionEpoch(provider, error)).to.equal(HOUR);
+  });
+
+  it('reads the hour of the pending block when no tx was mined', async function () {
+    const provider = {
+      async send(method, params) {
+        return method === 'eth_getBlockByNumber' && params[0] === 'pending'
+          ? { timestamp: '0x' + (HOUR * 3600 + 1).toString(16) } : null;
+      }
+    };
+    expect(await pendingEpoch(provider)).to.equal(HOUR);
+    expect(await pendingEpoch({ async send() { throw new Error('unsupported'); } })).to.equal(null);
   });
 
   it('returns null when the error names no transaction', async function () {

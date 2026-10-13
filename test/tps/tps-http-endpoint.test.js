@@ -111,6 +111,9 @@ describe('TPS HTTP endpoints', function () {
     expect(res.body.chainResult.isGranted).to.equal(true);
     const tx = await ethers.provider.getTransaction(res.body.chainResult.transactionHash);
     expect(tx.from.toLowerCase()).to.equal(stack.tpsSigner.address.toLowerCase());
+    // Unpadded submissions carry a fixed gasLimit rather than an estimate, so
+    // the public gasLimit does not copy the access gas.
+    expect(tx.gasLimit).to.equal(980000n);
   });
 
   it('re-proves when the hour boundary is crossed between the pre-check and mining', async () => {

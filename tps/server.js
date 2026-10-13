@@ -93,6 +93,11 @@ async function failedSubmissionEpoch(provider, error) {
     return block ? Math.floor(Number(BigInt(block.timestamp)) / 3600) : null;
 }
 
+async function pendingEpoch(provider) {
+    const block = await provider.send('eth_getBlockByNumber', ['pending', false]).catch(() => null);
+    return block && block.timestamp ? Math.floor(Number(BigInt(block.timestamp)) / 3600) : null;
+}
+
 function randomizedAccessGasTarget(base) {
     if (base <= 0n) return 0n;
     const b = Number(base);
@@ -450,9 +455,10 @@ router.post('/prove', async (req, res) => {
                 (accessGasPadTarget > ACCESS_WORK_GAS_CEILING
                     ? accessGasPadTarget
                     : ACCESS_WORK_GAS_CEILING) + 80000n;
-            const padOverrides = accessGasPadTarget > 0n
-                ? { ...overrides, gasLimit: padGasLimit }
-                : overrides;
+            // Unpadded submissions also carry a fixed gasLimit: an estimateGas
+            // round trip would copy the access gas into the public gasLimit,
+            // and a simulation that crosses the hour fails before any tx exists.
+            const padOverrides = { ...overrides, gasLimit: padGasLimit };
             const submitAccess = async () => {
                 try {
                     const tx = await retryRpc(
@@ -475,7 +481,7 @@ router.post('/prove', async (req, res) => {
                                 BigInt(evidence.requesterId),
                                 BigInt(requestEpoch),
                                 pA, pB, pC, pubSignals,
-                                overrides
+                                padOverrides
                             ),
                         { initialDelayMs: 5000, maxAttempts: 8 }
                     );
@@ -508,7 +514,12 @@ router.post('/prove', async (req, res) => {
                 if (!isStaleEpochFailure(error)) {
                     throw error;
                 }
-                const epochNow = Math.max(await currentEpoch(), (await failedSubmissionEpoch(provider, error)) ?? 0);
+                // The authoritative hour is that of the block that executed the
+                // failed tx; without one, the pending block's, then the latest
+                // block's or the wall clock's.
+                let epochNow = await failedSubmissionEpoch(provider, error);
+                if (epochNow === null || epochNow === requestEpoch) epochNow = await pendingEpoch(provider);
+                if (epochNow === null || epochNow === requestEpoch) epochNow = await currentEpoch();
                 if (epochNow === requestEpoch) {
                     throw error;
                 }
@@ -564,3 +575,4 @@ router.get('/health', (req, res) => res.json({
 module.exports = router;
 module.exports.failedSubmissionEpoch = failedSubmissionEpoch;
 module.exports.isStaleEpochFailure = isStaleEpochFailure;
+module.exports.pendingEpoch = pendingEpoch;
