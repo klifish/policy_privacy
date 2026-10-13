@@ -33,6 +33,12 @@ const {
 } = require('./artifacts');
 
 const { executeDatasetWithProgress } = require('../core/execution');
+const {
+  DEFAULT_EXECUTION_ORDER_SEED,
+  shuffleExecutionOrder,
+  restoreCanonicalOrder,
+  assertCheckpointOrder
+} = require('./execution_order');
 
 const {
   ensureSufficientBalance,
@@ -172,6 +178,8 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.depthExecutions = parseInt(arg.split('=')[1], 10);
     } else if (arg.startsWith('--depth-per-structure=')) {
       options.depthSubsetPerStructure = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--execution-order-seed=')) {
+      options.executionOrderSeed = arg.slice('--execution-order-seed='.length);
     }
   });
 
@@ -189,6 +197,7 @@ function printUsage() {
   console.log('  --coverage-executions=<n>  Two-layer: executions for coverage-layer policies (default from config)');
   console.log('  --depth-executions=<n>     Two-layer: executions for depth-layer subset; enables two-layer mode');
   console.log('  --depth-per-structure=<n>  Two-layer: depth-subset policies per logicStructure (default: 8)');
+  console.log(`  --execution-order-seed=<s> Seed of the on-chain execution order (default: ${DEFAULT_EXECUTION_ORDER_SEED})`);
   console.log('  --help                     Show this message');
 }
 
@@ -220,6 +229,8 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
       config[key] = cliOptions[key];
     }
   });
+  options.executionOrderSeed = cliOptions.executionOrderSeed || process.env.EXECUTION_ORDER_SEED ||
+    config.executionOrderSeed || DEFAULT_EXECUTION_ORDER_SEED;
 
   console.log('='.repeat(70));
   console.log('Unified Dataset Pipeline (TPS Workflow)');
@@ -272,7 +283,8 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   effectiveConfig = {
     ...effectiveConfig,
     protectionProfile: options.protectionProfile,
-    sourceDatasetPath: options.datasetPath
+    sourceDatasetPath: options.datasetPath,
+    executionOrderSeed: options.executionOrderSeed
   };
   const { paths } = writeDatasetArtifacts({
     dataset: annotatedDataset,
@@ -382,12 +394,21 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     TPS_GAS_PRICE_GWEI: tpsGasPriceGwei,
     TPS_ACCESS_GAS_PAD_TARGET: accessGasPadTarget
   });
+  // Executions reach the chain in a seeded order that is independent of every
+  // label (see execution_order.js); results return to canonical order below.
+  const executionOrder = shuffleExecutionOrder(annotatedDataset, options.executionOrderSeed);
+  if (fs.existsSync(checkpointPath)) {
+    const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+    assertCheckpointOrder(checkpoint?.data?.dataset, executionOrder);
+  }
+  console.log(`Execution order seed: ${options.executionOrderSeed}`);
+
   let executionResults;
   try {
     console.log(`Executing ${annotatedDataset.length} policy instances via TPS...`);
     console.log(`(Checkpoint: ${checkpointPath} — safe to Ctrl+C and resume with: npm run unified or npm run unified:testnet)`);
     executionResults = await executeDatasetWithProgress(
-      annotatedDataset,
+      executionOrder,
       policyPrivacy,
       paths.executedDataset,
       {
@@ -403,7 +424,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   }
 
   writeExecutionArtifacts({
-    executions: executionResults,
+    executions: restoreCanonicalOrder(executionResults, annotatedDataset),
     artifactDir: paths.dir,
     sppExecutionsPerPolicy: options.sppExecutionsPerPolicy
   });
