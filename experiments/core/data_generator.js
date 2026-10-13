@@ -1935,10 +1935,10 @@ async function buildDuoV3RequesterEvidence(policyData, { resourceId, policyCommi
   };
   // Every requester pseudonym is Poseidon(holderSecret), so its calldata
   // encoding does not depend on whether the policy uses a profile credential.
-  // The circuit requires a zero secret for policies without a holder-bound slot.
-  const requesterSecret = randomNonZeroField();
-  const requesterId = await calculateRequesterId(requesterSecret);
-  const holderSecret = usesProfile ? requesterSecret : 0n;
+  // The TPS derives the pseudonym from this secret for every request and
+  // zeroes the secret in the witness of policies without a holder-bound slot.
+  const holderSecret = randomNonZeroField();
+  const requesterId = await calculateRequesterId(holderSecret);
   const zeroStrings = () => Array(POLICY_PREDICATE_COUNT).fill('0');
   const zeroPaths = () => Array.from(
     { length: POLICY_PREDICATE_COUNT },

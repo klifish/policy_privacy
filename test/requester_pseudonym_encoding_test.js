@@ -10,6 +10,7 @@ const { expect } = require('chai');
 
 const { buildDuoV3RequesterEvidence } = require('../experiments/core/data_generator');
 const { DUO_V3_M, DUO_V3_PROFILE_SLOT } = require('../lib/duo_v3');
+const { calculateRequesterId } = require('../lib/prover');
 
 const SAMPLES = 16;
 
@@ -49,8 +50,14 @@ describe('Requester pseudonym encoding', function () {
     }
   });
 
-  it('passes a holder secret to the circuit only for profile policies', async () => {
-    for (const evidence of await pseudonyms(false)) expect(evidence.holderSecret).to.equal('0');
-    for (const evidence of await pseudonyms(true)) expect(evidence.holderSecret).to.not.equal('0');
+  it('sends the TPS the secret the pseudonym is derived from, for every policy', async () => {
+    // The TPS rejects a zero secret and derives the pseudonym itself; it zeroes
+    // the witness secret for policies without a holder-bound slot.
+    for (const usesProfile of [false, true]) {
+      for (const evidence of await pseudonyms(usesProfile)) {
+        expect(evidence.holderSecret).to.not.equal('0');
+        expect(await calculateRequesterId(evidence.holderSecret)).to.equal(evidence.requesterId);
+      }
+    }
   });
 });
