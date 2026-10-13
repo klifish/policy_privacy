@@ -28,6 +28,7 @@ const {
 const {
   DEFAULT_ARTIFACT_DIR,
   annotateDatasetForSPP,
+  getArtifactPaths,
   writeDatasetArtifacts,
   writeExecutionArtifacts
 } = require('./artifacts');
@@ -247,6 +248,21 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   }
   console.log();
 
+  // Resuming: the generator draws fresh commitment randomizers, so regenerating
+  // would execute the remaining policies from different definitions than the
+  // completed ones. Reuse the definitions saved at the start of the run.
+  const savedPaths = getArtifactPaths(options.artifactDir);
+  let savedConfig = null;
+  if (!options.datasetPath && fs.existsSync(path.join(options.artifactDir, 'execution_checkpoint.json'))) {
+    if (!fs.existsSync(savedPaths.policyDefinitions) || !fs.existsSync(savedPaths.config)) {
+      throw new Error(`checkpoint found but no saved definitions/config in ${options.artifactDir}`);
+    }
+    options.datasetPath = savedPaths.policyDefinitions;
+    savedConfig = JSON.parse(fs.readFileSync(savedPaths.config, 'utf8'));
+    if (savedConfig.executionOrderSeed) options.executionOrderSeed = savedConfig.executionOrderSeed;
+    console.log(`Resuming from checkpoint: reusing saved definitions ${savedPaths.policyDefinitions}`);
+  }
+
   let sourceDataset;
   let effectiveConfig = config;
   if (options.datasetPath) {
@@ -264,6 +280,8 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
       executionsPerPolicy: null,
       reusedDataset: true
     };
+    // A resumed run keeps the configuration it was started with.
+    if (savedConfig) effectiveConfig = savedConfig;
     console.log(`Reusing exact policy definitions: ${options.datasetPath}`);
   } else {
     const validationResult = await validateUnifiedDataset(config, {
@@ -283,7 +301,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   effectiveConfig = {
     ...effectiveConfig,
     protectionProfile: options.protectionProfile,
-    sourceDatasetPath: options.datasetPath,
+    sourceDatasetPath: savedConfig ? savedConfig.sourceDatasetPath : options.datasetPath,
     executionOrderSeed: options.executionOrderSeed
   };
   const { paths } = writeDatasetArtifacts({
