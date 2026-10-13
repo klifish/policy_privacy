@@ -371,7 +371,7 @@ async function main() {
   );
   console.log('\nRun B1 with:');
   console.log(
-    'PROTOCOL_CIRCUITS_DIR=$PWD/build/protocol/v3.0.0-rc1/circuits ' +
+    'PROTOCOL_CIRCUITS_DIR=$PWD/build/protocol/v3.0.0-rc2/circuits ' +
     `UNIFIED_DATASET_PATH=${path.join(options.outputDir, 'shared/policy_definitions.json')} ` +
     `UNIFIED_CONFIG_PATH=${path.join(options.outputDir, 'shared/source_config.json')} ` +
     `UNIFIED_ARTIFACT_DIR=${path.join(options.outputDir, 'b1_unpadded')} ` +

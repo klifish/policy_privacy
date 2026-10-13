@@ -101,7 +101,7 @@ router.post('/register-resource', async (req, res, next) => {
             moratoriumUntilEpoch: bindObligation('moratoriumUntilEpoch'),
             timeLimitEpochs: bindObligation('timeLimitEpochs')
         };
-        const paramsCommitment = await calculateParamsCommitment(v2Params);
+        const paramsCommitment = await calculateParamsCommitment({ ...v2Params, randomizer });
 
         // Policy commitment: h = Com(penc, numOperations; r) — hex string from compiler
         const commitment = artifacts.policyCommitment;

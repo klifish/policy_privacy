@@ -43,8 +43,9 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     var DEFAULT_ONTOLOGY_CODE = 0;
     var DEFAULT_ONTOLOGY_POLICY_ID = 0;
     var DEFAULT_ONTOLOGY_EPOCH = 0;
-    // DUO V3 adds fixed semantic slots and a signed DUO profile credential.
-    var PARAM_DOMAIN_SEPARATOR = 6;
+    // DUO V3 adds fixed semantic slots and a signed DUO profile credential;
+    // layout 7 blinds the parameter commitment with the commitment randomizer.
+    var PARAM_DOMAIN_SEPARATOR = 7;
     
     // Policy P: RPN token sequence
     signal input policy[DEPTH];
@@ -171,7 +172,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     component ontologyEpochHashers[M];
     component scopeKindHashers[M];
     component approvedScopeIdHashers[M];
-    component paramsDigestHashers[15];
+    component paramsDigestHashers[16];
     signal disabledFlags[M];
     signal scopedFlags[M];
     signal predicateTypeHashChain[M + 1];
@@ -184,7 +185,7 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     signal ontologyEpochHashChain[M + 1];
     signal scopeKindHashChain[M + 1];
     signal approvedScopeIdHashChain[M + 1];
-    signal paramsDigestChain[16];
+    signal paramsDigestChain[17];
     component finalAnd;
     component contextHasher;
     component policyValidityVerifier;
@@ -496,12 +497,19 @@ template PolicyPrivacyMain(N, M, DEPTH, K, MERKLE_LEVELS, RANGE_BITS) {
     paramsDigestHashers[13].inputs[1] <== timeLimitEpochs;
     paramsDigestChain[14] <== paramsDigestHashers[13].out;
 
+    // The commitment randomizer blinds the public parameter commitment, so
+    // equal parameter sets do not yield equal or offline-computable values.
     paramsDigestHashers[14] = Poseidon(2);
     paramsDigestHashers[14].inputs[0] <== paramsDigestChain[14];
-    paramsDigestHashers[14].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestHashers[14].inputs[1] <== randomizer;
     paramsDigestChain[15] <== paramsDigestHashers[14].out;
 
-    paramsCommitment === paramsDigestChain[15];
+    paramsDigestHashers[15] = Poseidon(2);
+    paramsDigestHashers[15].inputs[0] <== paramsDigestChain[15];
+    paramsDigestHashers[15].inputs[1] <== PARAM_DOMAIN_SEPARATOR;
+    paramsDigestChain[16] <== paramsDigestHashers[15].out;
+
+    paramsCommitment === paramsDigestChain[16];
 
     // Holder-bound DUO profile credentials (type 9) and requester allowlists
     // (type 8) identify their holder as Poseidon(holderSecret).

@@ -125,7 +125,8 @@ describe('Program-length binding in the policy commitment', function () {
       policyValidFromEpoch: input.policyValidFromEpoch,
       policyValidUntilEpoch: input.policyValidUntilEpoch,
       moratoriumUntilEpoch: input.moratoriumUntilEpoch,
-      timeLimitEpochs: input.timeLimitEpochs
+      timeLimitEpochs: input.timeLimitEpochs,
+      randomizer: input.randomizer
     });
     return input;
   }

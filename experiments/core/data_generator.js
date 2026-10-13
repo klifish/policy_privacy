@@ -1795,9 +1795,12 @@ async function buildDuoV3PolicyMaterial(policyData) {
   const policyValidUntilEpoch = String(POLICY_VALID_UNTIL_EPOCH);
   const moratoriumUntilEpoch = String(parameters.moratoriumUntilEpoch ?? 0);
   const timeLimitEpochs = String(parameters.timeLimitEpochs ?? 0);
-  const randomizer = policyData.randomizer !== undefined
-    ? BigInt(policyData.randomizer)
-    : BigInt(Math.floor(Math.random() * 1000000));
+  // r blinds both the policy commitment and pp, so it must come from the
+  // compiler's CSPRNG output; a low-entropy fallback would make both guessable.
+  if (policyData.randomizer === undefined || policyData.randomizer === null) {
+    throw new Error(`policy ${policyData.policyId} has no commitment randomizer`);
+  }
+  const randomizer = BigInt(policyData.randomizer);
   const effectiveNumOperations = numOperations || policy.filter((token) => token !== 0).length;
   const policyCommitment = await calculatePolicyCommitment(policy, randomizer, effectiveNumOperations);
   const parameterInputs = {
@@ -1816,7 +1819,7 @@ async function buildDuoV3PolicyMaterial(policyData) {
     moratoriumUntilEpoch,
     timeLimitEpochs
   };
-  const paramsCommitment = await calculateParamsCommitment(parameterInputs);
+  const paramsCommitment = await calculateParamsCommitment({ ...parameterInputs, randomizer });
   const material = {
     penc: policy.slice(),
     randomizer: randomizer.toString(),

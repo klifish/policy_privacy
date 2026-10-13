@@ -1,12 +1,13 @@
 # DUO V3 Protocol Release
 
 The normative machine-readable release record is
-`protocol/releases/v3.0.0-rc1.json`. Historical API and workflow documents are
+`protocol/releases/v3.0.0-rc2.json`. Historical API and workflow documents are
 not protocol specifications.
 
 ## Frozen interface
 
-- Version: `v3.0.0-rc1` (local-validation release candidate).
+- Version: `v3.0.0-rc2` (local-validation release candidate; supersedes
+  `v3.0.0-rc1`, see below).
 - Proof system: Groth16 over BN254/bn128.
 - Circuit: `PolicyPrivacyMain(13, 11, 64, 5, 8, 32)`, compiled with Circom
   `--O2`.
@@ -24,6 +25,15 @@ For the 64-token policy, the commitment is calculated exactly as follows:
 1. `chunk[i] = Poseidon16(P[16i..16i+15])` for `i = 0..3`.
 2. `policyHash = Poseidon4(chunk[0], chunk[1], chunk[2], chunk[3])`.
 3. `policyCommitment = Poseidon3(policyHash, programLength, randomizer)`.
+
+The parameter commitment `paramsCommitment` chains `Poseidon(chain, value)`
+over the per-field digests of the predicate parameters, then the same
+`randomizer`, then the domain separator `7`. The randomizer blinds the
+commitment: in `v3.0.0-rc1` (domain separator `6`) it was a deterministic
+function of the parameters, so policies with equal parameter sets published
+equal values, and known candidate parameter sets could be hashed and compared
+offline. `rc2` changes only this chain (one more `Poseidon(2)`, 240
+constraints); the public-signal layout and contract interface are unchanged.
 
 ## Build and validation
 

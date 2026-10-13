@@ -43,7 +43,8 @@ async function buildObligationInput({ requestEpoch = 500 } = {}) {
     policyValidFromEpoch: 0,
     policyValidUntilEpoch: 4294967295,
     moratoriumUntilEpoch: parameters.moratoriumUntilEpoch,
-    timeLimitEpochs: parameters.timeLimitEpochs
+    timeLimitEpochs: parameters.timeLimitEpochs,
+    randomizer: artifacts.randomizer
   });
   const input = createCircuitInput(artifacts.policyCommitment, {
     policy: artifacts.policy,
@@ -88,7 +89,7 @@ describe('MOR / TS access-time obligations', function () {
 
   describe('compiler and circuit', function () {
     it('compiles MOR and TS into private parameter-bound slots', async function () {
-      const { artifacts, parameters } = await buildObligationInput();
+      const { artifacts, parameters, paramsCommitment } = await buildObligationInput();
       expect(artifacts.predicates.obligationToSlot).to.deep.equal({ MOR: 8, TS: 9 });
       expect(parameters.predicateTypes).to.deep.equal([4, 4, 4, 4, 4, 4, 4, 4, 6, 7, 4]);
       expect(parameters.predicateSchemaTags.slice(8, 10)).to.deep.equal([2003, 2004]);
@@ -111,9 +112,10 @@ describe('MOR / TS access-time obligations', function () {
         policyValidFromEpoch: 0,
         policyValidUntilEpoch: 4294967295,
         moratoriumUntilEpoch: 101,
-        timeLimitEpochs: parameters.timeLimitEpochs
+        timeLimitEpochs: parameters.timeLimitEpochs,
+        // Same randomizer, so only the altered deadline can change pp.
+        randomizer: artifacts.randomizer
       });
-      const { paramsCommitment } = await buildObligationInput();
       expect(alteredDeadlineCommitment).to.not.equal(paramsCommitment);
 
       const verificationKeyPath = VKEY_PATH;
@@ -192,7 +194,8 @@ describe('MOR / TS access-time obligations', function () {
         policyValidFromEpoch: 0,
         policyValidUntilEpoch: 4294967295,
         moratoriumUntilEpoch: 0,
-        timeLimitEpochs: 2
+        timeLimitEpochs: 2,
+        randomizer: 12345
       }));
       verifier = await (await ethers.getContractFactory('MockVerifier')).deploy();
       const hasher = await deployPoseidon3(ethers);

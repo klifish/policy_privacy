@@ -310,7 +310,7 @@ async function materialFromArtifacts(artifacts, { policyValidFromEpoch = 0, poli
     randomizer: BigInt(artifacts.randomizer).toString(),
     numOperations: artifacts.numOperations,
     ...parameterInputs,
-    paramsCommitment: await calculateParamsCommitment(parameterInputs)
+    paramsCommitment: await calculateParamsCommitment({ ...parameterInputs, randomizer: artifacts.randomizer })
   };
 }
 
@@ -457,7 +457,8 @@ async function recomputeParamsCommitment(input) {
     policyValidFromEpoch: input.policyValidFromEpoch,
     policyValidUntilEpoch: input.policyValidUntilEpoch,
     moratoriumUntilEpoch: input.moratoriumUntilEpoch,
-    timeLimitEpochs: input.timeLimitEpochs
+    timeLimitEpochs: input.timeLimitEpochs,
+    randomizer: input.randomizer
   });
   return input;
 }

@@ -11,6 +11,8 @@ const fs = require('fs');
 const { DUO_V3_DEPTH } = require('../../lib/duo_v3');
 
 describe('SDK - Prover Module', function() {
+  // pp is blinded by the policy commitment randomizer.
+  const R = '12345';
   this.timeout(60000);
 
   describe('initPoseidon()', function() {
@@ -125,8 +127,32 @@ describe('SDK - Prover Module', function() {
   });
 
   describe('calculateParamsCommitment()', function() {
+    it('should reject a call without the commitment randomizer', async function() {
+      let error = null;
+      try {
+        await calculateParamsCommitment({ merkleRoots: ['123'] });
+      } catch (err) {
+        error = err;
+      }
+      expect(error).to.be.an('error');
+      expect(error.message).to.match(/randomizer/);
+    });
+
+    it('should give equal parameters different commitments under different randomizers', async function() {
+      const params = { merkleRoots: ['123'], credPublicKeys: ['0x123abc'] };
+      const first = await calculateParamsCommitment({ ...params, randomizer: '1' });
+      const second = await calculateParamsCommitment({ ...params, randomizer: '2' });
+      expect(first).to.not.equal(second);
+    });
+
+    it('should be deterministic for equal parameters and randomizer', async function() {
+      const params = { merkleRoots: ['123'], credPublicKeys: ['0x123abc'] };
+      expect(await calculateParamsCommitment({ ...params, randomizer: R }))
+        .to.equal(await calculateParamsCommitment({ ...params, randomizer: R }));
+    });
+
     it('should calculate commitment with default empty parameters', async function() {
-      const commitment = await calculateParamsCommitment();
+      const commitment = await calculateParamsCommitment({ randomizer: R });
 
       // Commitment should be a string representing a number
       expect(commitment).to.be.a('string');
@@ -144,7 +170,7 @@ describe('SDK - Prover Module', function() {
         ontologyEpochs: []
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
 
@@ -158,7 +184,7 @@ describe('SDK - Prover Module', function() {
         ontologyEpochs: ['1000', '2000']
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       // Commitment should be a string representing a number
       expect(commitment).to.be.a('string');
       const bn = BigInt(commitment);
@@ -169,8 +195,8 @@ describe('SDK - Prover Module', function() {
       const params1 = { merkleRoots: ['123'] };
       const params2 = { merkleRoots: ['456'] };
 
-      const commitment1 = await calculateParamsCommitment(params1);
-      const commitment2 = await calculateParamsCommitment(params2);
+      const commitment1 = await calculateParamsCommitment({ ...params1, randomizer: R });
+      const commitment2 = await calculateParamsCommitment({ ...params2, randomizer: R });
 
       expect(commitment1).to.not.equal(commitment2);
     });
@@ -181,7 +207,7 @@ describe('SDK - Prover Module', function() {
         credPublicKeys: ['0xfedcba0987654321']
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
 
@@ -192,7 +218,7 @@ describe('SDK - Prover Module', function() {
         rangeMax: [BigInt('100')]
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
 
@@ -202,7 +228,7 @@ describe('SDK - Prover Module', function() {
         rangeMin: [0, '10', BigInt('20')]
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
   });
@@ -362,6 +388,7 @@ describe('SDK - Prover Module', function() {
 
       // Step 2: Calculate params commitment
       const paramsCommitment = await calculateParamsCommitment({
+        randomizer,
         merkleRoots: ['100', '0', '0', '0', '0']
       });
       expect(paramsCommitment).to.be.a('string');
@@ -390,6 +417,7 @@ describe('SDK - Prover Module', function() {
       // the program length, so both must agree.
       const policyCommitment = await calculatePolicyCommitment(policy, randomizer, 3);
       const paramsCommitment = await calculateParamsCommitment({
+        randomizer,
         merkleRoots: ['0x123abc', '0x456def', '0', '0', '0'],
         ontologyPolicyIds: ['1', '2', '0', '0', '0'],
         ontologyEpochs: ['1000', '2000', '0', '0', '0']
@@ -424,7 +452,7 @@ describe('SDK - Prover Module', function() {
         ]
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
 
@@ -441,6 +469,7 @@ describe('SDK - Prover Module', function() {
   describe('Edge Cases and Boundary Conditions', function() {
     it('should handle zero values in all parameters', async function() {
       const commitment = await calculateParamsCommitment({
+        randomizer: R,
         merkleRoots: ['0', '0', '0', '0', '0'],
         credPublicKeys: ['0', '0', '0', '0', '0'],
         rangeMin: ['0', '0', '0', '0', '0'],
@@ -460,7 +489,7 @@ describe('SDK - Prover Module', function() {
         merkleRoots: [largeValue]
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
 
@@ -470,7 +499,7 @@ describe('SDK - Prover Module', function() {
         credPublicKeys: ['', '', '']
       };
 
-      const commitment = await calculateParamsCommitment(params);
+      const commitment = await calculateParamsCommitment({ ...params, randomizer: R });
       expect(commitment).to.be.a('string');
     });
   });

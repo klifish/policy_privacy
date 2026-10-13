@@ -262,7 +262,8 @@ async function generateProof(policyMaterial, evidence, publicInputs) {
         policyValidFromEpoch: witness.policyValidFromEpoch,
         policyValidUntilEpoch: witness.policyValidUntilEpoch,
         moratoriumUntilEpoch: witness.moratoriumUntilEpoch,
-        timeLimitEpochs: witness.timeLimitEpochs
+        timeLimitEpochs: witness.timeLimitEpochs,
+        randomizer: witness.randomizer
     });
 
     if (policyMaterial.paramsCommitment && String(policyMaterial.paramsCommitment) !== witness.paramsCommitment) {

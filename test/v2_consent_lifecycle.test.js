@@ -43,7 +43,8 @@ describe('PolicyPrivacy V2 restricted access-time consent', function () {
       predicateTypes: [4, 4, 4, 4, 4],
       predicateSchemaTags: [0, 0, 0, 0, 0],
       policyValidFromEpoch: 0,
-      policyValidUntilEpoch: 4294967295
+      policyValidUntilEpoch: 4294967295,
+      randomizer: 12345
     }));
     const verifier = await (await ethers.getContractFactory('MockVerifier')).deploy();
     const hasher = await deployPoseidon3(ethers);

@@ -73,7 +73,7 @@ npm run data:generate:amoy
 ```
 
 Both commands pin `PROTOCOL_CIRCUITS_DIR` to the frozen release under
-`build/protocol/v3.0.0-rc1/circuits`, which is the zkey the checked-in
+`build/protocol/v3.0.0-rc2/circuits`, which is the zkey the checked-in
 `PolicyPrivacyMainVerifier.sol` was exported from. `build/circuits` is a
 working build directory and may hold a different phase-2 setup; a proof made
 with a mismatched zkey is rejected on-chain (every access is denied) without any
