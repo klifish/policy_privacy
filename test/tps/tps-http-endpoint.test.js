@@ -147,6 +147,37 @@ describe('TPS HTTP endpoints', function () {
     expect(BigInt(res.body.pubSignals[4])).to.equal(BigInt(res.body.requestEpoch));
   });
 
+  it('re-proves when the failed access tx itself is the first block of the next hour', async () => {
+    // The pre-check sees the last block of an hour; the access tx is then
+    // mined as the first block of the next hour and reverts. The server must
+    // take the new hour from the block that mined the failed tx, since the
+    // latest-block read can still report the old hour.
+    const real = stack.contract.connect(stack.tpsSigner);
+    const sends = [];
+    const contract = new Proxy(real, {
+      get(target, prop, receiver) {
+        if (prop === 'requestAccessBound' || prop === 'requestAccessBoundWithGasPad') {
+          return async (...args) => {
+            sends.push(args[4]);   // requestEpoch argument
+            if (sends.length === 1) {
+              const nextHour = (Number(args[4]) + 1) * 3600;
+              await ethers.provider.send('evm_setNextBlockTimestamp', [nextHour]);
+            }
+            return target[prop](...args);
+          };
+        }
+        return Reflect.get(target, prop, receiver);
+      }
+    });
+    const res = await request(buildTestApp(contract))
+      .post('/tps/prove')
+      .send(proveBody(await validEvidence(), { submitOnChain: true }));
+    expect(res.status, JSON.stringify(res.body).slice(0, 300)).to.equal(200);
+    expect(res.body.chainResult.isGranted).to.equal(true);
+    expect(sends).to.have.length(2);
+    expect(BigInt(sends[1])).to.equal(BigInt(sends[0]) + 1n);
+  });
+
   it('rejects a replay before generating another proof', async () => {
     const app = buildTestApp();
     const body = proveBody(await validEvidence());

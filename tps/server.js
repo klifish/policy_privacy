@@ -77,6 +77,22 @@ function isStaleEpochFailure(error) {
     return error && error.code === 'CALL_EXCEPTION' && !!receipt && Number(receipt.status) === 0;
 }
 
+// Hour of the block that mined a failed access submission: from the receipt
+// (public chains) or from the tx hash an automine node reports with the revert.
+async function failedSubmissionEpoch(provider, error) {
+    let blockNumber = error && error.receipt ? error.receipt.blockNumber : null;
+    if (blockNumber === null || blockNumber === undefined) {
+        const text = [error && error.message, JSON.stringify(error && error.error ? error.error : null)].join(' ');
+        const match = /"txHash":\s*"(0x[0-9a-fA-F]{64})"/.exec(text);
+        if (!match) return null;
+        const receipt = await provider.getTransactionReceipt(match[1]).catch(() => null);
+        if (!receipt) return null;
+        blockNumber = receipt.blockNumber;
+    }
+    const block = await provider.send('eth_getBlockByNumber', ['0x' + BigInt(blockNumber).toString(16), false]);
+    return block ? Math.floor(Number(BigInt(block.timestamp)) / 3600) : null;
+}
+
 function randomizedAccessGasTarget(base) {
     if (base <= 0n) return 0n;
     const b = Number(base);
@@ -372,10 +388,13 @@ router.post('/prove', async (req, res) => {
             // previous hour until the next tx, and on a public chain the wall
             // clock runs a few seconds ahead of the latest block.
             const provider = tpsContract.runner.provider;
+            // A raw request: ethers caches identical provider calls for 250 ms,
+            // so getBlock('latest') right after a revert on an automine chain
+            // can return the block before the one that mined the reverted tx.
             const currentEpoch = async () => {
-                const latestBlock = await provider.getBlock('latest');
+                const latestBlock = await provider.send('eth_getBlockByNumber', ['latest', false]);
                 return Math.max(
-                    Math.floor(Number(latestBlock.timestamp) / 3600),
+                    Math.floor(Number(BigInt(latestBlock.timestamp)) / 3600),
                     Math.floor(Date.now() / 3_600_000)
                 );
             };
@@ -486,8 +505,11 @@ router.post('/prove', async (req, res) => {
                 // automine chain, a status-0 receipt on a public one). The
                 // nonce is still unconsumed on-chain, so re-prove once for the
                 // hour the chain is now in and resubmit.
-                const epochNow = await currentEpoch();
-                if (epochNow === requestEpoch || !isStaleEpochFailure(error)) {
+                if (!isStaleEpochFailure(error)) {
+                    throw error;
+                }
+                const epochNow = Math.max(await currentEpoch(), (await failedSubmissionEpoch(provider, error)) ?? 0);
+                if (epochNow === requestEpoch) {
                     throw error;
                 }
                 console.warn(`[TPS] requestAccessBound for policyId=${policyId} hit the hour boundary ` +
@@ -540,3 +562,5 @@ router.get('/health', (req, res) => res.json({
 }));
 
 module.exports = router;
+module.exports.failedSubmissionEpoch = failedSubmissionEpoch;
+module.exports.isStaleEpochFailure = isStaleEpochFailure;

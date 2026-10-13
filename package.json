@@ -57,7 +57,7 @@
     "protocol:validate:ci:full": "PROTOCOL_CIRCUITS_DIR=$PWD/build/ci/protocol/circuits node scripts/protocol_release.js verify-ci && PROTOCOL_CIRCUITS_DIR=$PWD/build/ci/protocol/circuits PROTOCOL_VERIFIER_PATH=$PWD/build/ci/protocol/contracts/PolicyPrivacyMainVerifier.sol HARDHAT_SOURCES=$PWD/build/ci/protocol/contracts HARDHAT_ARTIFACTS=$PWD/build/ci/protocol/hardhat-artifacts HARDHAT_CACHE=$PWD/build/ci/protocol/hardhat-cache PROTOCOL_HARDHAT_ARTIFACTS=$PWD/build/ci/protocol/hardhat-artifacts npm run verify:artifacts && PROTOCOL_CIRCUITS_DIR=$PWD/build/ci/protocol/circuits PROTOCOL_HARDHAT_ARTIFACTS=$PWD/build/ci/protocol/hardhat-artifacts HARDHAT_SOURCES=$PWD/build/ci/protocol/contracts HARDHAT_ARTIFACTS=$PWD/build/ci/protocol/hardhat-artifacts HARDHAT_CACHE=$PWD/build/ci/protocol/hardhat-cache PROTOCOL_FORBID_PENDING=1 npm run protocol:test:base:full",
     "tps:start": "node tps/index.js",
     "tps:dev": "nodemon tps/index.js",
-    "test:tps": "npx hardhat test test/tps/tps-protocol-stages.test.js test/tps/tps-http-endpoint.test.js",
+    "test:tps": "npx hardhat test test/tps/tps-protocol-stages.test.js test/tps/tps-http-endpoint.test.js test/tps/tps-stale-epoch.test.js",
     "test:duo": "npx hardhat test test/duo/duo_v3_compiler_rejections.test.js test/duo/duo_profile_credential.test.js test/duo/mor_ts_obligations.test.js test/duo/duo_v3_tamper.test.js test/duo/duo_v3_singles_e2e.test.js test/duo/duo_v3_pairwise_e2e.test.js test/duo/duo_v3_complex_e2e.test.js",
     "test:duo:fast": "DUO_E2E_WITNESS_ONLY=1 npm run test:duo",
     "test:duo:full": "DUO_E2E_FULL=1 DUO_E2E_LOG_TIMINGS=1 npm run test:duo",
