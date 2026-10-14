@@ -12,6 +12,17 @@
  *   UNIFIED_ARTIFACT_DIR=experiments/data/<network> \
  *   PROTECTION_PROFILE=b2_padded \
  *   npx hardhat run experiments/capture/run.js --network <network>
+ *
+ * Sharded capture (see experiments/capture/run_shards.sh):
+ *   CAPTURE_PREPARE_ONLY=1     write the definitions, deploy the contracts, write
+ *                              contract.json and stop before executing
+ *   CAPTURE_SHARD=i/N          execute only the positions p of the seeded order
+ *                              with p % N == i (needs UNIFIED_DATASET_PATH and
+ *                              CAPTURE_CONTRACT_ADDRESS)
+ *   CAPTURE_CONTRACT_ADDRESS   attach to a PolicyPrivacy deployed beforehand
+ *   CAPTURE_DEPLOYER_KEY / CAPTURE_TPS_KEY
+ *                              this process's deployer and TPS keys, so that
+ *                              concurrent shards never share a nonce sequence
  */
 
 const path = require('path');
@@ -150,6 +161,17 @@ function stopTpsServer(tps) {
   }
 }
 
+// "i/N" -> { index: i, count: N }; null when unset.
+function parseShard(value) {
+  if (!value) return null;
+  const match = /^(\d+)\/(\d+)$/.exec(String(value).trim());
+  if (!match) throw new Error(`CAPTURE_SHARD must look like i/N, got "${value}"`);
+  const index = Number(match[1]);
+  const count = Number(match[2]);
+  if (count < 1 || index >= count) throw new Error(`CAPTURE_SHARD ${value} is out of range`);
+  return { index, count };
+}
+
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     artifactDir: null,
@@ -215,8 +237,17 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     protectionProfile: normalizeProtectionProfile(
       cliOptions.protectionProfile || process.env.PROTECTION_PROFILE || PROTECTION_PROFILES.B2_PADDED
     ),
-    sppExecutionsPerPolicy: cliOptions.sppExecutionsPerPolicy ?? 3
+    sppExecutionsPerPolicy: cliOptions.sppExecutionsPerPolicy ?? 3,
+    shard: parseShard(process.env.CAPTURE_SHARD),
+    contractAddress: process.env.CAPTURE_CONTRACT_ADDRESS || null,
+    prepareOnly: process.env.CAPTURE_PREPARE_ONLY === '1'
   };
+  if (options.shard && (!options.datasetPath || !options.contractAddress)) {
+    throw new Error('a capture shard needs UNIFIED_DATASET_PATH (the shared definitions) and CAPTURE_CONTRACT_ADDRESS');
+  }
+  if (options.shard && options.prepareOnly) {
+    throw new Error('CAPTURE_PREPARE_ONLY and CAPTURE_SHARD are separate steps');
+  }
 
   let config = { ...UNIFIED_CONFIG };
   if (options.configPath) {
@@ -326,9 +357,9 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   // hardhat account #1 (a .env TPS_PRIVATE_KEY for a testnet has no local
   // funds); public networks require an explicit, funded TPS_PRIVATE_KEY.
   const isLocalNetwork = network.name === 'localhost' || network.name === 'hardhat';
-  const tpsPrivateKey = isLocalNetwork
+  const tpsPrivateKey = process.env.CAPTURE_TPS_KEY || (isLocalNetwork
     ? '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
-    : process.env.TPS_PRIVATE_KEY;
+    : process.env.TPS_PRIVATE_KEY);
   if (!tpsPrivateKey) {
     throw new Error(`TPS_PRIVATE_KEY must be set to a funded account for network "${network.name}".`);
   }
@@ -337,6 +368,38 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
   const artifactDir = path.dirname(paths.executedDataset);
   const checkpointPath = path.join(artifactDir, 'execution_checkpoint.json');
   const contractCachePath = path.join(artifactDir, 'contract_cache.json');
+
+  if (options.prepareOnly) {
+    // One deployment for all shards of the capture.
+    const deployed = await deployPolicyPrivacyContracts();
+    const contractInfo = {
+      policyPrivacyAddress: await deployed.getAddress(),
+      network: network.name,
+      deployer: await signer.getAddress(),
+      deployedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(path.join(artifactDir, 'contract.json'), JSON.stringify(contractInfo, null, 2));
+    console.log(`Prepared ${annotatedDataset.length} executions; contracts at ${contractInfo.policyPrivacyAddress}`);
+    return;
+  }
+
+  // Executions reach the chain in a seeded order that is independent of every
+  // label (see execution_order.js); a shard takes every N-th position of it.
+  const fullOrder = shuffleExecutionOrder(annotatedDataset, options.executionOrderSeed);
+  const executionOrder = options.shard
+    ? fullOrder.filter((_, position) => position % options.shard.count === options.shard.index)
+    : fullOrder;
+  if (options.shard) {
+    console.log(`Shard ${options.shard.index}/${options.shard.count}: ${executionOrder.length} of ${fullOrder.length} executions`);
+    fs.writeFileSync(path.join(artifactDir, 'shard.json'), JSON.stringify({
+      ...options.shard,
+      executions: executionOrder.length,
+      totalExecutions: fullOrder.length,
+      contract: options.contractAddress,
+      deployer: await signer.getAddress(),
+      tps: tpsAddress
+    }, null, 2));
+  }
 
   // On a resume only the executions still to run cost gas; a preflight
   // over the full dataset would refuse a wallet that is ample for the rest.
@@ -348,20 +411,29 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     } catch (_) { /* unreadable checkpoint: preflight the whole dataset */ }
   }
   if (completedExecutions > 0) {
-    console.log(`Balance preflight covers the ${annotatedDataset.length - completedExecutions} executions after checkpoint index ${completedExecutions - 1}.`);
+    console.log(`Balance preflight covers the ${executionOrder.length - completedExecutions} executions after checkpoint index ${completedExecutions - 1}.`);
   }
+  const hasCheckpoint = fs.existsSync(checkpointPath);
+  const hasContractCache = fs.existsSync(contractCachePath);
   await ensureSufficientBalance({
     provider,
     signer,
-    executionCount: Math.max(annotatedDataset.length - completedExecutions, 0),
-    tpsAddress
+    executionCount: Math.max(executionOrder.length - completedExecutions, 0),
+    tpsAddress,
+    padded: options.protectionProfile === PROTECTION_PROFILES.B2_PADDED,
+    includeDeployment: !options.contractAddress && !(hasCheckpoint && hasContractCache)
   });
 
   // Reuse previously deployed contract if a checkpoint + contract cache both exist.
   let policyPrivacy;
-  const hasCheckpoint = fs.existsSync(checkpointPath);
-  const hasContractCache = fs.existsSync(contractCachePath);
-  if (hasCheckpoint && hasContractCache) {
+  if (options.contractAddress) {
+    if ((await provider.getCode(options.contractAddress)) === '0x') {
+      throw new Error(`no contract at CAPTURE_CONTRACT_ADDRESS ${options.contractAddress}`);
+    }
+    console.log(`Attaching to PolicyPrivacy at ${options.contractAddress}`);
+    const PolicyPrivacy = await ethers.getContractFactory('PolicyPrivacy');
+    policyPrivacy = PolicyPrivacy.attach(options.contractAddress);
+  } else if (hasCheckpoint && hasContractCache) {
     const { policyPrivacyAddress, verifierAddress } = JSON.parse(fs.readFileSync(contractCachePath, 'utf8'));
     console.log(`Resuming — reusing contracts from previous run:`);
     console.log(`  Verifier:      ${verifierAddress}`);
@@ -412,9 +484,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
     TPS_GAS_PRICE_GWEI: tpsGasPriceGwei,
     TPS_ACCESS_GAS_PAD_TARGET: accessGasPadTarget
   });
-  // Executions reach the chain in a seeded order that is independent of every
-  // label (see execution_order.js); results return to canonical order below.
-  const executionOrder = shuffleExecutionOrder(annotatedDataset, options.executionOrderSeed);
+  // Results return to canonical order below.
   if (fs.existsSync(checkpointPath)) {
     const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
     assertCheckpointOrder(checkpoint?.data?.dataset, executionOrder);
@@ -423,7 +493,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
 
   let executionResults;
   try {
-    console.log(`Executing ${annotatedDataset.length} policy instances via TPS...`);
+    console.log(`Executing ${executionOrder.length} policy instances via TPS...`);
     console.log(`(Checkpoint: ${checkpointPath} — safe to Ctrl+C and resume with: npm run unified or npm run unified:testnet)`);
     executionResults = await executeDatasetWithProgress(
       executionOrder,
@@ -436,7 +506,7 @@ async function runUnifiedDatasetWorkflow(cliOptions = {}) {
         executionOptions: { protectionProfile: options.protectionProfile }
       }
     );
-    fs.unlinkSync(contractCachePath);
+    if (fs.existsSync(contractCachePath)) fs.unlinkSync(contractCachePath);
   } finally {
     stopTpsServer(tpsProcess);
   }
@@ -478,5 +548,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  runUnifiedDatasetWorkflow
+  runUnifiedDatasetWorkflow,
+  parseShard
 };

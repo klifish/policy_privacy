@@ -20,58 +20,24 @@ const NATIVE_TOKEN_SYMBOL_BY_CHAIN = Object.freeze({
   80002: 'MATIC'
 });
 
-// Calibrated against measured usage (commit avg ~305k max ~329k;
-// registerResource ~80k; padded access on Amoy ~945k–1.155M after the
-// 2026-09-17 re-measurement, see experiments/capture/run.js) with headroom.
-const GAS_ESTIMATES = Object.freeze({
-  deployment: 4_500_000n,
-  commit: 350_000n,
-  registration: 100_000n,
-  access: 1_050_000n,
-  bufferPercent: 25n
-});
+const {
+  GAS_ESTIMATES,
+  UNPADDED_GAS_ESTIMATES,
+  estimateTotalGas,
+  estimateDeployerGas,
+  estimateTpsGas
+} = require('./gas_estimates');
 
 function getNativeTokenSymbol(chainId) {
   return NATIVE_TOKEN_SYMBOL_BY_CHAIN[Number(chainId)] || 'ETH';
 }
 
-function withBuffer(gasUnits) {
-  return gasUnits + (gasUnits * GAS_ESTIMATES.bufferPercent) / 100n;
-}
-
-function estimateTotalGas(executionCount) {
-  const count = BigInt(executionCount);
-  if (count === 0n) {
-    return 0n;
-  }
-
-  const base = GAS_ESTIMATES.deployment +
-    count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.registration + GAS_ESTIMATES.access);
-  return withBuffer(base);
-}
-
-// TPS workflow role split: the deployer pays for contract deployment and
-// commitPolicy txs; the TPS signer pays for requestAccessBound txs.
-function estimateDeployerGas(executionCount) {
-  const count = BigInt(executionCount);
-  if (count === 0n) {
-    return 0n;
-  }
-  return withBuffer(
-    GAS_ESTIMATES.deployment +
-    count * (GAS_ESTIMATES.commit + GAS_ESTIMATES.registration)
-  );
-}
-
-function estimateTpsGas(executionCount) {
-  const count = BigInt(executionCount);
-  if (count === 0n) {
-    return 0n;
-  }
-  return withBuffer(count * GAS_ESTIMATES.access);
-}
-
-async function ensureSufficientBalance({ provider, signer, executionCount, tpsAddress }) {
+// `padded` selects the gas estimates of the protection profile, and
+// `includeDeployment` is false for a capture shard that attaches to contracts
+// deployed beforehand.
+async function ensureSufficientBalance({
+  provider, signer, executionCount, tpsAddress, padded = true, includeDeployment = true
+}) {
   if (executionCount <= 0) {
     return;
   }
@@ -97,13 +63,15 @@ async function ensureSufficientBalance({ provider, signer, executionCount, tpsAd
   const checks = [{
     role: 'Deployer (deployment + commitPolicy)',
     address: await signer.getAddress(),
-    gasUnits: tpsAddress ? estimateDeployerGas(executionCount) : estimateTotalGas(executionCount)
+    gasUnits: tpsAddress
+      ? estimateDeployerGas(executionCount, { padded, includeDeployment })
+      : estimateTotalGas(executionCount)
   }];
   if (tpsAddress) {
     checks.push({
       role: 'TPS (requestAccessBound)',
       address: tpsAddress,
-      gasUnits: estimateTpsGas(executionCount)
+      gasUnits: estimateTpsGas(executionCount, { padded })
     });
   }
 
@@ -141,6 +109,11 @@ async function ensureSufficientBalance({ provider, signer, executionCount, tpsAd
 }
 
 async function getExperimentSigner(provider = ethers.provider) {
+  // A capture shard runs under its own deployer key (any network), so that
+  // concurrent shards never share a nonce sequence.
+  if (process.env.CAPTURE_DEPLOYER_KEY) {
+    return new ethers.Wallet(process.env.CAPTURE_DEPLOYER_KEY, provider);
+  }
   const isLocalNetwork = network.name === 'localhost' || network.name === 'hardhat';
   if (!isLocalNetwork && process.env.AMOY_PRIVATE_KEY) {
     return new ethers.Wallet(process.env.AMOY_PRIVATE_KEY, provider);
@@ -182,6 +155,7 @@ async function deployPolicyPrivacyContracts() {
 module.exports = {
   NATIVE_TOKEN_SYMBOL_BY_CHAIN,
   GAS_ESTIMATES,
+  UNPADDED_GAS_ESTIMATES,
   getNativeTokenSymbol,
   estimateTotalGas,
   estimateDeployerGas,
