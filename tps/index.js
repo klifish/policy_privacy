@@ -49,12 +49,18 @@ app.use('/tps', tpsRouter);
     const { ethers } = require('ethers');
     const abi = JSON.parse(fs.readFileSync(artifactPath, 'utf8')).abi;
     const provider = new ethers.JsonRpcProvider(nodeUrl);
+    // tx.wait() learns of the receipt at the next poll (ethers default 4 s).
+    // On an automine local node the tx is mined at once, so a 4 s poll is
+    // pure waiting; TPS_POLLING_INTERVAL_MS overrides the interval anywhere.
+    const isLocalNode = /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(nodeUrl);
+    const pollingMs = parseInt(process.env.TPS_POLLING_INTERVAL_MS || (isLocalNode ? '250' : ''), 10);
+    if (Number.isFinite(pollingMs) && pollingMs > 0) provider.pollingInterval = pollingMs;
     const tpsSigner = new ethers.Wallet(privateKey, provider);
     app.locals.tpsContract = new ethers.Contract(contractAddress, abi, tpsSigner);
     app.locals.tpsSignerAddress = tpsSigner.address;
     app.locals.contractAddress = contractAddress;
     app.locals.nodeUrl = nodeUrl;
-    console.log(`[TPS] Chain signer initialised: ${tpsSigner.address} → ${contractAddress}`);
+    console.log(`[TPS] Chain signer initialised: ${tpsSigner.address} → ${contractAddress} (polling ${provider.pollingInterval} ms)`);
 })();
 
 app.listen(PORT, () => {
