@@ -29,7 +29,8 @@ const {
 // Import generators and analyzers
 const {
   generateDataset: generatePCHDataset,
-  DUO_TERMS
+  DUO_TERMS,
+  PI_PAIR_TYPES
 } = require('../core/data_generator');
 
 const {
@@ -484,6 +485,132 @@ function validatePIRequirements(dataset, config) {
   }
 }
 
+/**
+ * Check the designed PI layer: the configured number of pairs of each type,
+ * every pair member with executionsPerOutcome granted and denied requests,
+ * pair types that hold on the generated policies, and both outcomes for every
+ * other policy that runs twice or more.
+ */
+function validatePILayer(dataset, config) {
+  console.log('\n' + '='.repeat(80));
+  console.log('PI (Policy Indistinguishability) Layer Validation');
+  console.log('='.repeat(80));
+
+  const { pairsPerType, executionsPerOutcome, types = PI_PAIR_TYPES } = config.piLayer;
+  const issues = [];
+  const byPolicy = new Map();
+  dataset.forEach((row) => {
+    if (!byPolicy.has(row.policyId)) byPolicy.set(row.policyId, []);
+    byPolicy.get(row.policyId).push(row);
+  });
+  const pairs = new Map();
+  dataset.forEach((row) => {
+    if (!row.piPair) return;
+    const { pairId, pairType, side } = row.piPair;
+    if (!pairs.has(pairId)) pairs.set(pairId, { pairType, members: [null, null] });
+    const pair = pairs.get(pairId);
+    if (pair.members[side] && pair.members[side] !== row.policyId) {
+      issues.push(`pair ${pairId} side ${side} has two policies`);
+    }
+    pair.members[side] = row.policyId;
+  });
+
+  const counts = {};
+  const distances = {};
+  const shapeOf = (rows) => {
+    const annotated = annotatePolicy({ semantics: rows[0].semantics, structure: rows[0].structure });
+    return ['logicStructure', 'nestingDepth', 'predicateCount', 'setSize'].map((axis) => annotated[axis]);
+  };
+  const termsOf = (row) => [...row.duoTermCodes].sort().join('+');
+  pairs.forEach((pair, pairId) => {
+    counts[pair.pairType] = (counts[pair.pairType] || 0) + 1;
+    const [a, b] = pair.members;
+    if (!a || !b || a === b) {
+      issues.push(`pair ${pairId} does not have two distinct policies`);
+      return;
+    }
+    const rowsA = byPolicy.get(a);
+    const rowsB = byPolicy.get(b);
+    [rowsA, rowsB].forEach((rows) => {
+      const granted = rows.filter((row) => row.satisfy).length;
+      const denied = rows.length - granted;
+      if (granted !== executionsPerOutcome || denied !== executionsPerOutcome) {
+        issues.push(`pair ${pairId} policy ${rows[0].policyId}: ${granted} granted / ${denied} denied, ` +
+          `expected ${executionsPerOutcome} each`);
+      }
+    });
+    const formA = rowsA[0].semantics.logicNormalized;
+    const formB = rowsB[0].semantics.logicNormalized;
+    const sameParameters = JSON.stringify(rowsA[0].predicateParameters) === JSON.stringify(rowsB[0].predicateParameters);
+    const sameTerms = termsOf(rowsA[0]) === termsOf(rowsB[0]);
+    const holds = {
+      semantic_equivalent: formA === formB && !sameParameters,
+      weak_equivalent: sameTerms && formA !== formB,
+      controlled_difference: !sameTerms
+    }[pair.pairType];
+    if (!holds) issues.push(`pair ${pairId} does not satisfy its type ${pair.pairType}`);
+    const shapeA = shapeOf(rowsA);
+    const shapeB = shapeOf(rowsB);
+    const distance = shapeA.filter((value, i) => value !== shapeB[i]).length;
+    if (pair.pairType === 'controlled_difference') distances[distance] = (distances[distance] || 0) + 1;
+  });
+  types.forEach((type) => {
+    if ((counts[type] || 0) !== pairsPerType) {
+      issues.push(`${counts[type] || 0} ${type} pairs, expected ${pairsPerType}`);
+    }
+  });
+
+  let singleOutcome = 0;
+  byPolicy.forEach((rows) => {
+    if (rows[0].piPair || rows.length < 2) return;
+    const granted = rows.filter((row) => row.satisfy).length;
+    if (granted === 0 || granted === rows.length) singleOutcome += 1;
+  });
+  if (singleOutcome > 0 && config.satisfyRatio > 0 && config.satisfyRatio < 1) {
+    issues.push(`${singleOutcome} coverage policies lack a granted or a denied execution`);
+  }
+
+  // Single-execution coverage: the granted share overall and per DUO term,
+  // which must stay near the configured ratio for o to be independent of the
+  // PCH labels.
+  const single = [...byPolicy.values()].filter((rows) => !rows[0].piPair && rows.length === 1).map((rows) => rows[0]);
+  let outcomeBalance = null;
+  if (single.length > 0) {
+    const share = (rows) => rows.filter((row) => row.satisfy).length / rows.length;
+    const perTerm = {};
+    single.forEach((row) => row.duoTermCodes.forEach((code) => {
+      if (!perTerm[code]) perTerm[code] = [];
+      perTerm[code].push(row);
+    }));
+    outcomeBalance = {
+      policies: single.length,
+      grantedShare: share(single),
+      grantedShareByDuoTerm: Object.fromEntries(Object.entries(perTerm).map(([code, rows]) => [code, share(rows)]))
+    };
+    const worst = Math.max(...Object.values(outcomeBalance.grantedShareByDuoTerm).map((v) => Math.abs(v - config.satisfyRatio)));
+    console.log(`\n📊 Single-execution coverage: ${single.length} policies, granted share ${outcomeBalance.grantedShare.toFixed(3)}, ` +
+      `largest per-DUO-term deviation ${worst.toFixed(3)}`);
+    // Rounding within groups leaves at most one policy off the configured split.
+    const granted = single.filter((row) => row.satisfy).length;
+    if (Math.abs(granted - single.length * config.satisfyRatio) > 1) {
+      issues.push(`${granted}/${single.length} coverage policies are granted, not the configured ${config.satisfyRatio}`);
+    }
+  }
+
+  console.log('\n📊 PI pairs by type:');
+  Object.entries(counts).forEach(([type, count]) => console.log(`  ${type.padEnd(22)}: ${count}`));
+  console.log(`  controlled_difference by number of differing SPP axes: ${JSON.stringify(distances)}`);
+  console.log(`  executions per outcome per paired policy: ${executionsPerOutcome}`);
+
+  if (issues.length === 0) {
+    console.log('\n✅ PI Layer: PASSED');
+  } else {
+    console.log('\n❌ PI Layer: FAILED');
+    issues.forEach((issue) => console.log(`  ⚠️  ${issue}`));
+  }
+  return { passed: issues.length === 0, issues, pairTypes: counts, controlledShapeDistances: distances, outcomeBalance };
+}
+
 // ============================================================================
 // MAIN VALIDATION WORKFLOW
 // ============================================================================
@@ -534,6 +661,7 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
     depthExecutions: normalizedConfig.depthExecutions ?? null,
     depthSubsetPerStructure: normalizedConfig.depthSubsetPerStructure ?? 8,
     depthStructures: normalizedConfig.depthStructures,
+    piLayer: normalizedConfig.piLayer ?? null,
     satisfyRatio: normalizedConfig.satisfyRatio,
     seed: normalizedConfig.seed,
     semanticLayers: normalizedConfig.semanticLayers,
@@ -556,7 +684,9 @@ async function validateUnifiedDataset(config = UNIFIED_CONFIG, options = {}) {
   const results = {
     pch: validatePCHRequirements(dataset, normalizedConfig),
     spp: validateSPPRequirements(dataset, normalizedConfig),
-    pi: validatePIRequirements(dataset, normalizedConfig)
+    pi: normalizedConfig.piLayer
+      ? validatePILayer(dataset, normalizedConfig)
+      : validatePIRequirements(dataset, normalizedConfig)
   };
 
   // Step 5: Overall summary
@@ -681,5 +811,6 @@ module.exports = {
   validatePCHRequirements,
   validateSPPRequirements,
   validatePIRequirements,
+  validatePILayer,
   UNIFIED_CONFIG
 };

@@ -220,6 +220,8 @@ function writeDatasetArtifacts({
   return { paths, metadata };
 }
 
+// Keeps the first `perPolicy` executions of each policy and outcome, so the
+// slice holds granted and denied executions of every policy that has both.
 function sliceExecutionsForSPP(executions, perPolicy = 3) {
   if (!Number.isInteger(perPolicy) || perPolicy <= 0) {
     return executions;
@@ -229,15 +231,26 @@ function sliceExecutionsForSPP(executions, perPolicy = 3) {
   const subset = [];
 
   executions.forEach((record) => {
-    const current = seen.get(record.policyId) || 0;
+    const key = `${record.policyId}|${Boolean(record.satisfy)}`;
+    const current = seen.get(key) || 0;
     if (current >= perPolicy) {
       return;
     }
     subset.push(record);
-    seen.set(record.policyId, current + 1);
+    seen.set(key, current + 1);
   });
 
   return subset;
+}
+
+// The PI slice is the designed pairs when the capture has a PI layer.
+function buildExperimentSlices(executions, sppExecutionsPerPolicy) {
+  const paired = executions.filter((record) => record.piPair);
+  return {
+    pch: executions,
+    spp: sliceExecutionsForSPP(executions, sppExecutionsPerPolicy),
+    pi: paired.length > 0 ? paired : executions
+  };
 }
 
 function writeExecutionArtifacts({
@@ -249,11 +262,10 @@ function writeExecutionArtifacts({
   ensureDir(paths.dir);
 
   writeJson(paths.executedDataset, executions);
-  writeJson(paths.pchDataset, executions);
-
-  const sppExecutions = sliceExecutionsForSPP(executions, sppExecutionsPerPolicy);
-  writeJson(paths.sppDataset, sppExecutions);
-  writeJson(paths.piDataset, executions);
+  const slices = buildExperimentSlices(executions, sppExecutionsPerPolicy);
+  writeJson(paths.pchDataset, slices.pch);
+  writeJson(paths.sppDataset, slices.spp);
+  writeJson(paths.piDataset, slices.pi);
 
   return paths;
 }
@@ -265,6 +277,7 @@ module.exports = {
   getArtifactPaths,
   writeDatasetArtifacts,
   writeExecutionArtifacts,
+  buildExperimentSlices,
   sliceExecutionsForSPP,
   buildProvenance
 };

@@ -1319,7 +1319,12 @@ async function buildPolicyBlueprints(config, rng) {
 }
 
 function buildSatisfactionPlan(executionsPerPolicy, satisfyRatio, rng) {
-  const satisfyCount = Math.round(executionsPerPolicy * satisfyRatio);
+  let satisfyCount = Math.round(executionsPerPolicy * satisfyRatio);
+  // A policy with two or more executions and a mixed ratio gets at least one
+  // granted and one denied request, so every policy has both outcomes.
+  if (executionsPerPolicy >= 2 && satisfyRatio > 0 && satisfyRatio < 1) {
+    satisfyCount = Math.min(Math.max(satisfyCount, 1), executionsPerPolicy - 1);
+  }
   const plan = Array.from({ length: executionsPerPolicy }, (_, idx) => idx < satisfyCount);
   shuffleInPlace(rng, plan);
   return plan;
@@ -1361,6 +1366,117 @@ function selectDepthSubset(blueprints, { perStructure, structures, rng }) {
     picked.forEach((bp) => selected.add(bp.id));
   }
   return selected;
+}
+
+/**
+ * PI pair types (the manuscript's three), defined by what separates the two
+ * policies, from least to most:
+ *
+ *   semantic_equivalent    same logical form (normalized logic: DUO terms and
+ *                          Boolean structure), different compiled predicate
+ *                          parameters (the inputs of pp: whitelist roots,
+ *                          scope ids, ...)
+ *   weak_equivalent        same DUO term set, different logical form
+ *   controlled_difference  different DUO term sets; drawn evenly over the
+ *                          number of SPP axes (logic structure, nesting depth,
+ *                          predicate count, set size) on which the two differ
+ *
+ * No type admits two policies with the same content: they differ only in
+ * commitment randomness, which every execution draws afresh anyway.
+ */
+const PI_PAIR_TYPES = Object.freeze(['semantic_equivalent', 'weak_equivalent', 'controlled_difference']);
+const PI_SHAPE_AXES = Object.freeze(['logicStructure', 'nestingDepth', 'predicateCount', 'setSize']);
+
+function piShape(blueprint) {
+  const { annotatePolicy } = require('../analysis/crosscheck/spp/data_generator');
+  const annotated = annotatePolicy({ semantics: blueprint.semantics, structure: blueprint.structure });
+  return PI_SHAPE_AXES.map((axis) => annotated[axis]);
+}
+
+function piShapeDistance(a, b) {
+  return a.shape.filter((value, i) => value !== b.shape[i]).length;
+}
+
+const PI_PAIR_PREDICATES = Object.freeze({
+  semantic_equivalent: (a, b) => a.form === b.form && a.parameters !== b.parameters,
+  weak_equivalent: (a, b) => a.terms === b.terms && a.form !== b.form,
+  controlled_difference: (a, b) => a.terms !== b.terms
+});
+
+// controlled_difference quotas per shape distance (4 = all axes differ), with
+// any remainder going to the most different levels.
+function controlledQuotas(pairsPerType) {
+  const levels = [4, 3, 2, 1, 0];
+  return levels.map((distance, i) => ({
+    distance,
+    count: Math.floor(pairsPerType / levels.length) + (i < pairsPerType % levels.length ? 1 : 0)
+  }));
+}
+
+/**
+ * Draw `pairsPerType` policy pairs of each PI type. Every policy joins at most
+ * one pair, and the side each policy takes is drawn at random, so a side label
+ * carries no meaning outside its pair. Each pair records the number of SPP
+ * axes on which its policies differ.
+ */
+function selectPiPairs(blueprints, { pairsPerType, types = PI_PAIR_TYPES, rng }) {
+  const unknown = types.filter((type) => !PI_PAIR_TYPES.includes(type));
+  if (unknown.length > 0) {
+    throw new Error(`unknown PI pair types: ${unknown.join(', ')}`);
+  }
+  const order = shuffleInPlace(rng, blueprints.map((bp) => ({
+    bp,
+    form: bp.semantics.logicNormalized || bp.semantics.logicOriginal || '',
+    terms: [...bp.duoTerms].sort().join('+'),
+    parameters: JSON.stringify(bp.artifacts.predicates.scopeParameters),
+    shape: piShape(bp)
+  })));
+  const used = new Set();
+  const pairs = [];
+  const counts = {};
+
+  const draw = (type, count, accept) => {
+    let made = 0;
+    for (let i = 0; i < order.length && made < count; i += 1) {
+      const a = order[i];
+      if (used.has(a.bp.id)) continue;
+      const b = order.find((c) => c !== a && !used.has(c.bp.id) && PI_PAIR_PREDICATES[type](a, c) && accept(a, c));
+      if (!b) continue;
+      used.add(a.bp.id);
+      used.add(b.bp.id);
+      const members = rng() < 0.5 ? [a.bp.id, b.bp.id] : [b.bp.id, a.bp.id];
+      const index = counts[type] = (counts[type] || 0) + 1;
+      pairs.push({ pairId: `pi-${type}-${index - 1}`, pairType: type, members, shapeDistance: piShapeDistance(a, b) });
+      made += 1;
+    }
+    return made;
+  };
+
+  // Most constrained first: weak, semantic, then the controlled levels.
+  for (const type of ['weak_equivalent', 'semantic_equivalent', 'controlled_difference']) {
+    if (!types.includes(type)) continue;
+    const quotas = type === 'controlled_difference'
+      ? controlledQuotas(pairsPerType)
+      : [{ distance: null, count: pairsPerType }];
+    for (const { distance, count } of quotas.slice().reverse()) {
+      const made = draw(type, count, (a, b) => distance === null || piShapeDistance(a, b) === distance);
+      if (made < count) {
+        const level = distance === null ? '' : ` at shape distance ${distance}`;
+        throw new Error(`only ${made}/${count} PI pairs of type ${type}${level} can be drawn from this corpus`);
+      }
+    }
+  }
+
+  return { pairs };
+}
+
+// A fresh commitment randomizer for one execution, drawn like the compiler's.
+function freshCommitmentRandomizer() {
+  let value = 0n;
+  while (value === 0n) {
+    value = BigInt('0x' + crypto.randomBytes(31).toString('hex'));
+  }
+  return value;
 }
 
 /**
@@ -1540,6 +1656,11 @@ async function generateDataset(config = {}) {
     depthExecutions = null,
     depthSubsetPerStructure = 8,
     depthStructures = ['and_only', 'or_only', 'and_or_mixed'],
+    // PI layer: { pairsPerType, executionsPerOutcome, types }. Each paired
+    // policy runs executionsPerOutcome granted and executionsPerOutcome
+    // denied requests; every other policy runs coverageExecutions times
+    // (once: one granted or denied request, balanced within each group).
+    piLayer = null,
     satisfyRatio = DEFAULT_SATISFY_RATIO,
     semanticLayers = DEFAULT_SEMANTIC_LAYERS,
     duoTerms = null,
@@ -1651,6 +1772,9 @@ async function generateDataset(config = {}) {
   // depth-layer subset (depthExecutions reps each) and run every other policy
   // coverageExecutions times. depthSubset is null in single-layer mode, in
   // which case every policy uses the global executionsPerPolicy (unchanged).
+  if (piLayer && depthExecutions != null) {
+    throw new Error('piLayer replaces the depth layer; set depthExecutions or piLayer, not both');
+  }
   const twoLayer = depthExecutions != null;
   const depthSubset = twoLayer
     ? selectDepthSubset(blueprints, {
@@ -1661,13 +1785,72 @@ async function generateDataset(config = {}) {
     : null;
   const effectiveCoverageExecutions = coverageExecutions != null ? coverageExecutions : 1;
 
-  blueprints.forEach((blueprint, blueprintIndex) => {
+  let piSelection = null;
+  const piMembership = new Map();
+  if (piLayer) {
+    const { pairsPerType, executionsPerOutcome, types } = piLayer;
+    if (!Number.isInteger(pairsPerType) || pairsPerType < 1) {
+      throw new Error('piLayer.pairsPerType must be a positive integer');
+    }
+    if (!Number.isInteger(executionsPerOutcome) || executionsPerOutcome < 2) {
+      throw new Error('piLayer.executionsPerOutcome must be an integer >= 2 (train and test per outcome)');
+    }
+    piSelection = selectPiPairs(blueprints, { pairsPerType, types, rng });
+    piSelection.pairs.forEach((pair) => {
+      pair.members.forEach((policyId, side) => {
+        piMembership.set(policyId, { pairId: pair.pairId, pairType: pair.pairType, side, shapeDistance: pair.shapeDistance });
+      });
+    });
+  }
+  // Coverage policies that run once take a granted or a denied request,
+  // assigned in the configured ratio within each (layer, DUO term set) group,
+  // so the outcome is independent of the policy labels by design.
+  const singleOutcome = new Map();
+  if (piLayer && effectiveCoverageExecutions === 1 && satisfyRatio > 0 && satisfyRatio < 1) {
+    const groups = new Map();
+    blueprints.filter((bp) => !piMembership.has(bp.id)).forEach((bp) => {
+      const key = `${bp.layerName}|${[...bp.duoTerms].sort().join('+')}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(bp.id);
+    });
+    let carry = 0;
+    for (const key of [...groups.keys()].sort()) {
+      const ids = shuffleInPlace(rng, groups.get(key).slice());
+      // Alternate the rounding across groups so odd groups do not all lean one way.
+      const exact = ids.length * satisfyRatio + carry;
+      const granted = Math.round(exact);
+      carry = exact - granted;
+      ids.forEach((id, i) => singleOutcome.set(id, i < granted));
+    }
+  }
+
+  for (const [blueprintIndex, blueprint] of blueprints.entries()) {
     const isDepth = Boolean(depthSubset && depthSubset.has(blueprint.id));
-    const execCount = twoLayer
-      ? (isDepth ? depthExecutions : effectiveCoverageExecutions)
-      : executionsPerPolicy;
-    const plan = buildSatisfactionPlan(execCount, satisfyRatio, rng);
-    plan.forEach((satisfy, execIndex) => {
+    const piPair = piMembership.get(blueprint.id) || null;
+    let plan;
+    if (piPair) {
+      plan = buildSatisfactionPlan(2 * piLayer.executionsPerOutcome, 0.5, rng);
+    } else if (singleOutcome.has(blueprint.id)) {
+      plan = [singleOutcome.get(blueprint.id)];
+    } else {
+      const execCount = twoLayer || piLayer
+        ? (isDepth ? depthExecutions : effectiveCoverageExecutions)
+        : executionsPerPolicy;
+      plan = buildSatisfactionPlan(execCount, satisfyRatio, rng);
+    }
+    for (const [execIndex, satisfy] of plan.entries()) {
+      // Every execution commits its own instance of the policy, so each one
+      // carries a fresh randomizer: h and pp then differ between executions,
+      // as between two deployments of the same policy, and a PI attacker
+      // cannot match a test execution to training executions by commitment.
+      const randomizer = freshCommitmentRandomizer();
+      const programLength = blueprint.artifacts.numOperations ||
+        blueprint.artifacts.policy.filter((token) => token !== 0).length;
+      const policyCommitment = '0x' + BigInt(await calculatePolicyCommitment(
+        blueprint.artifacts.policy,
+        randomizer,
+        programLength
+      )).toString(16);
       const requesterProfile = generateRequesterProfile(blueprint.duoTerms, satisfy, {
         attributeOrder,
         policyTokens: blueprint.artifacts.policy,
@@ -1684,7 +1867,11 @@ async function generateDataset(config = {}) {
         duoTerms: blueprint.duoTerms.map((code) => ATTRIBUTE_CODE_TO_DUO_TERM[code]),
         duoTermCodes: blueprint.duoTerms.slice(),
         semantics: blueprint.semantics,
-        structure: blueprint.structure,
+        structure: {
+          ...blueprint.structure,
+          randomizer: '0x' + randomizer.toString(16),
+          policyCommitment
+        },
         policy: blueprint.artifacts.policy,
         tokens: blueprint.artifacts.tokens,
         numOperations: blueprint.artifacts.numOperations,
@@ -1705,10 +1892,11 @@ async function generateDataset(config = {}) {
         requesterAttrs: requesterProfile.attributes,
         duoProfileClaims: requesterProfile.duoProfileClaims,
         satisfy,
-        randomizer: blueprint.artifacts.randomizer,
-        policyCommitment: blueprint.artifacts.policyCommitment,
+        randomizer: '0x' + randomizer.toString(16),
+        policyCommitment,
         depthLayer: isDepth,
-        executionTier: twoLayer ? (isDepth ? 'depth' : 'coverage') : 'single'
+        executionTier: piPair ? 'pi' : (twoLayer ? (isDepth ? 'depth' : 'coverage') : (piLayer ? 'coverage' : 'single')),
+        piPair
       };
 
       const ontologySlots = datasetEntry.predicateSlots.filter((slot) => slot >= 0 && slot <= 4);
@@ -1729,8 +1917,8 @@ async function generateDataset(config = {}) {
       dataset.push(datasetEntry);
 
       incrementCounter(coverage.layerExecutions, blueprint.layerName || 'layer');
-    });
-  });
+    }
+  }
 
   dataset.__meta = {
     protocolVersion,
@@ -1750,6 +1938,12 @@ async function generateDataset(config = {}) {
       depthStructures,
       depthPolicyIds: [...depthSubset],
       depthPolicyCount: depthSubset.size,
+      totalExecutions: dataset.length
+    } : null,
+    piLayer: piSelection ? {
+      ...piLayer,
+      coverageExecutions: effectiveCoverageExecutions,
+      pairs: piSelection.pairs,
       totalExecutions: dataset.length
     } : null,
     satisfyRatio,
@@ -2072,6 +2266,15 @@ async function executePolicy(policyData, contract, options = {}) {
 
   const { commitReceipt, commitTx, resourceReceipt, resourceTx, policyCommitment, paramsCommitment, blockchainPolicyId } = commitResult;
   const { accessTx, proof, proofGenerationTime, proofTimings, chainResult } = accessResult;
+  // The outcome is the public decision o; a mismatch with the planned outcome
+  // means the requester evidence did not do what the plan says.
+  const accessGranted = Boolean(chainResult.isGranted);
+  if (policyData.satisfy !== undefined && accessGranted !== Boolean(policyData.satisfy)) {
+    throw new Error(
+      `policy ${policyData.policyId} execution ${policyData.executionId}: planned ` +
+      `${policyData.satisfy ? 'granted' : 'denied'} but the ACM recorded ${accessGranted ? 'granted' : 'denied'}`
+    );
+  }
 
   const commitEventLogs = commitReceipt.logs.filter(
     (log) => log.topics[0] === EVENT_SIGNATURES.POLICY_COMMITTED
@@ -2133,6 +2336,7 @@ async function executePolicy(policyData, contract, options = {}) {
     paramsCommitment,
     blockchainPolicyId: blockchainPolicyId.toString(),
     protectionProfile,
+    accessGranted,
     transactions: {
       commit: {
         tx: serializeTransactionResponse(commitTx),
@@ -2204,6 +2408,9 @@ module.exports = {
   generateRequesterProfile,
   generateRequesterAttrs,
   generateDataset,
+  buildSatisfactionPlan,
+  selectPiPairs,
+  PI_PAIR_TYPES,
   buildDuoV3PolicyMaterial,
   buildDuoV3RequesterEvidence,
   executePolicy,

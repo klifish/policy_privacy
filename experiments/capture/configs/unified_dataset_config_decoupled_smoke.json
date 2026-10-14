@@ -3,22 +3,24 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Smoke: structure-decoupled strata (localhost)",
   "description": "Tiny end-to-end smoke of the decoupled design: every namespace, profile-only and profile/ontology mixes, k=1..5, both access outcomes.",
-  "policyCount": 17,
-  "policyCountTarget": 17,
+  "policyCount": 19,
+  "policyCountTarget": 19,
   "coverageExecutions": 1,
-  "depthExecutions": 2,
-  "depthSubsetPerStructure": 1,
-  "depthStructures": [
-    "and_only",
-    "or_only",
-    "and_or_mixed"
-  ],
+  "piLayer": {
+    "pairsPerType": 1,
+    "executionsPerOutcome": 2,
+    "types": [
+      "semantic_equivalent",
+      "weak_equivalent",
+      "controlled_difference"
+    ]
+  },
   "satisfyRatio": 0.5,
   "seed": "decoupled-smoke-2026",
   "semanticLayers": [
     {
       "name": "trivial_ontology",
-      "comment": "smoke: 3 combos, one policy each",
+      "comment": "smoke: 4 combos, one policy each; the second DS policy shares the first one's logical form, so a semantic_equivalent PI pair exists",
       "combos": [
         [
           "DS"
@@ -28,10 +30,13 @@
         ],
         [
           "CC"
+        ],
+        [
+          "DS"
         ]
       ],
       "minPolicies": 0,
-      "maxPolicies": 3,
+      "maxPolicies": 4,
       "logicOptions": {
         "operators": [
           "AND"
@@ -114,7 +119,7 @@
     },
     {
       "name": "or_chain",
-      "comment": "smoke: 3 combos, one policy each",
+      "comment": "smoke: 4 combos, one policy each; GRU+DS repeats an and_chain combo under OR, so a weak_equivalent PI pair exists",
       "combos": [
         [
           "NMDS",
@@ -131,10 +136,14 @@
           "NMDS",
           "NCU",
           "RS"
+        ],
+        [
+          "GRU",
+          "DS"
         ]
       ],
       "minPolicies": 0,
-      "maxPolicies": 3,
+      "maxPolicies": 4,
       "logicOptions": {
         "operators": [
           "OR"

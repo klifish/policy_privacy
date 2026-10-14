@@ -6,7 +6,7 @@ const path = require('path');
 
 const {
   getArtifactPaths,
-  sliceExecutionsForSPP
+  buildExperimentSlices
 } = require('../../capture/artifacts');
 const {
   calculatePolicyCommitment
@@ -112,6 +112,8 @@ function replayDefinition(execution) {
   delete definition.blockchainPolicyId;
   delete definition.paramsCommitment;
   delete definition.protectionProfile;
+  delete definition.accessGranted;
+  delete definition.executionSequence;
   // The replay must use B2's actual randomizer so the recomputed commitment and
   // calldata are paired with the existing B2 execution, not the stale
   // pre-execution randomizer in historical policy_definitions.json.
@@ -163,9 +165,10 @@ function buildPolicies(definitions) {
   const policies = new Map();
   definitions.forEach((entry, index) => {
     const key = policyKey(entry);
-    if (!policies.has(key)) policies.set(key, { key, indices: [], labels: new Set() });
+    if (!policies.has(key)) policies.set(key, { key, indices: [], labels: new Set(), piPaired: false });
     const policy = policies.get(key);
     policy.indices.push(index);
+    if (entry.piPair) policy.piPaired = true;
     for (const label of labelsFor(entry)) policy.labels.add(label);
   });
   return policies;
@@ -190,9 +193,14 @@ function selectPolicies(definitions, options) {
   const allLabels = [...new Set(
     [...policies.values()].flatMap(policy => [...policy.labels])
   )].sort();
+  // Every PI pair is kept whole; captures without a PI layer keep their
+  // 30-execution depth-layer policies instead.
+  const isRetained = [...policies.values()].some(policy => policy.piPaired)
+    ? policy => policy.piPaired
+    : policy => policy.indices.length >= 30;
   const selected = new Set(
     [...policies.values()]
-      .filter(policy => policy.indices.length >= 30)
+      .filter(isRetained)
       .map(policy => policy.key)
   );
   const available = coverageFor(new Set(policies.keys()), policies);
@@ -241,7 +249,7 @@ function selectPolicies(definitions, options) {
   return {
     indices,
     selectedPolicyKeys: [...selected].sort(),
-    highExecutionPolicies: [...policies.values()].filter(p => p.indices.length >= 30).length,
+    highExecutionPolicies: [...policies.values()].filter(isRetained).length,
     coverage: Object.fromEntries(
       allLabels.map(label => [label, {
         ...coverage.get(label),
@@ -263,12 +271,10 @@ function writeB2Subset(outputDir, definitions, executions, selection, options, s
   writeJson(path.join(sharedDir, 'selected_source_indices.json'), selection.indices);
   writeJson(b2Paths.policyDefinitions, selectedDefinitions);
   writeJson(b2Paths.executedDataset, selectedExecutions);
-  writeJson(b2Paths.pchDataset, selectedExecutions);
-  writeJson(
-    b2Paths.sppDataset,
-    sliceExecutionsForSPP(selectedExecutions, options.sppExecutionsPerPolicy)
-  );
-  writeJson(b2Paths.piDataset, selectedExecutions);
+  const slices = buildExperimentSlices(selectedExecutions, options.sppExecutionsPerPolicy);
+  writeJson(b2Paths.pchDataset, slices.pch);
+  writeJson(b2Paths.sppDataset, slices.spp);
+  writeJson(b2Paths.piDataset, slices.pi);
 
   const sourceConfig = path.join(sourceDir, 'config.json');
   if (fs.existsSync(sourceConfig)) {
@@ -362,7 +368,7 @@ async function main() {
   console.log(`Prepared deterministic B2 subset at ${options.outputDir}`);
   console.log(`  executions: ${manifest.selectedExecutionCount}/${manifest.sourceDefinitionCount}`);
   console.log(`  policies:   ${manifest.selectedPolicyCount}`);
-  console.log(`  high-execution PI policies retained: ${manifest.highExecutionPoliciesRetained}`);
+  console.log(`  PI-paired (or depth-layer) policies retained: ${manifest.highExecutionPoliciesRetained}`);
   console.log(`  definitions sha256: ${manifest.policyDefinitionsSha256}`);
   console.log(`  estimated Amoy transactions: ${manifest.amoyPreflightEstimate.transactionCount}`);
   console.log(

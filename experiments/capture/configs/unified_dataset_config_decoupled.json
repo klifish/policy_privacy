@@ -6,14 +6,16 @@
   "policyCount": 1077,
   "policyCountTarget": 1077,
   "coverageExecutions": 1,
-  "depthExecutions": 30,
-  "depthSubsetPerStructure": 8,
-  "depthStructures": [
-    "and_only",
-    "or_only",
-    "and_or_mixed"
-  ],
-  "satisfyRatio": 1,
+  "piLayer": {
+    "pairsPerType": 10,
+    "executionsPerOutcome": 8,
+    "types": [
+      "semantic_equivalent",
+      "weak_equivalent",
+      "controlled_difference"
+    ]
+  },
+  "satisfyRatio": 0.5,
   "seed": "unified-decoupled-2026",
   "semanticLayers": [
     {
@@ -703,12 +705,14 @@
     "pi": {
       "minPairsPerType": 0,
       "minSemanticDiversity": 0.55,
-      "comment": "PI pairs are formed at experiment time on the depth layer (depthSubsetPerStructure x depthStructures policies, depthExecutions each); the generation-time pool estimate is informational."
+      "comment": "Legacy pool estimate only; the PI layer (piLayer) is drawn at generation time and checked by validatePILayer."
     }
   },
   "notes": [
     "policyCount equals the sum of layer maxPolicies (6 layers -> 1077); minPolicies is 0 everywhere, so the allocation is fixed by maxPolicies alone.",
-    "Two-layer execution: 24 depth-layer policies x 30 + 1053 coverage-layer policies x 1 = 1773 executions.",
+    "PI layer: 10 pairs of each manuscript type drawn from the corpus, no policy in two pairs: semantic_equivalent (same logical form, different compiled predicate parameters), weak_equivalent (same DUO term set, different logical form), controlled_difference (different DUO term sets, 2 pairs at each of 0-4 differing SPP axes). Every paired policy runs 8 granted and 8 denied requests. Each of the other 1017 policies runs once (coverage), with granted and denied requests split evenly within each (layer, DUO term set) group, so the outcome is independent of the PCH/SPP labels.",
+    "Sizing: a within-pair attack with k=8 executions per (side, outcome) and M=10 pairs per type detects a single-feature shift of d=0.75 (ideal AUC 0.70) with power 0.97 and d=0.5 with power 0.43 under the double criterion, with no false FAIL at d=0 (synthetic power simulation, LR, 30 replicates).",
+    "Executions: 60 paired policies x 16 + 1017 x 1 = 1977. Every execution commits its own instance of the policy with a fresh randomizer.",
     "Strata are keyed by logical form only. Whitelist size is drawn once per policy from the global buckets (see createPolicyBlueprint), so setSize does not track predicateCount.",
     "Profile terms (GRU, HMB, NMDS, GSO, NCU) share predicate slot 10; combos that include them raise the term count and nesting depth without raising predicateCount.",
     "Remaining dependencies are syntactic, not design choices: k=1 <=> trivial <=> flat; >=4 ontology-bound terms => deep; and_or_mixed => k>=3; setSize none <=> profile-only <=> predicateCount single.",

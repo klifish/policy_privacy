@@ -12,8 +12,9 @@ executes only the matching **B1** profile:
 node experiments/ablation/gas_padding/prepare.js
 ```
 
-The selector retains every policy with 30 executions for balanced PI clustering,
-then deterministically adds policies until every PCH/SPP class meets the configured
+The selector retains every policy of the capture's designed PI pairs (or, for a
+capture without a PI layer, every 30-execution depth-layer policy), then
+deterministically adds policies until every PCH/SPP class meets the configured
 row and independent-policy coverage.
 
 ## 2. Smoke-test B1 locally
