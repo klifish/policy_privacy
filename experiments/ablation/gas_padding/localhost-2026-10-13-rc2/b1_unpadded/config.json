@@ -1,0 +1,723 @@
+{
+  "policyCount": 423,
+  "executionsPerPolicy": null,
+  "satisfyRatio": 1,
+  "seed": "unified-decoupled-2026",
+  "validation": {
+    "pch": {
+      "minPoliciesPerDUO": 25,
+      "minMaxRatio": 0.35,
+      "comment": "Counted over every DUO term that appears in a policy (10 of the 13 DUO V3 attributes: the 6 PCH task terms plus HMB, NMDS, GSO, NCU)."
+    },
+    "spp": {
+      "minPoliciesPerCategory": 25,
+      "minMaxRatio": 0.25,
+      "maxCV": 0.7,
+      "excludedCategories": {
+        "logicStructures": [
+          "negation_heavy"
+        ],
+        "predicateCounts": [
+          "none"
+        ]
+      },
+      "comment": "excludedCategories lists enum values this config cannot produce: DUO V3 has no NOT, and every term binds a predicate or the profile slot. rangeWidths is skipped by default (no range predicates)."
+    },
+    "pi": {
+      "minPairsPerType": 0,
+      "minSemanticDiversity": 0.55,
+      "comment": "PI pairs are formed at experiment time on the depth layer (depthSubsetPerStructure x depthStructures policies, depthExecutions each); the generation-time pool estimate is informational."
+    }
+  },
+  "protocolVersion": "duo-v3",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified Dataset Configuration - structure-decoupled strata",
+  "description": "Policies are stratified by logical form only; term count, profile-term mix and whitelist size vary within every stratum so the SPP axes are not functions of one another.",
+  "policyCountTarget": 423,
+  "coverageExecutions": 1,
+  "depthExecutions": 30,
+  "depthSubsetPerStructure": 8,
+  "depthStructures": [
+    "and_only",
+    "or_only",
+    "and_or_mixed"
+  ],
+  "semanticLayers": [
+    {
+      "name": "trivial_ontology",
+      "comment": "k=1: one ontology-bound term (trivial / flat / single); whitelist size from the global buckets",
+      "combos": [
+        [
+          "DS"
+        ],
+        [
+          "RS"
+        ],
+        [
+          "POA"
+        ],
+        [
+          "GS"
+        ],
+        [
+          "CC"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 110,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "trivial_profile",
+      "comment": "k=1: one profile term (trivial / flat / single / setSize none)",
+      "combos": [
+        [
+          "GRU"
+        ],
+        [
+          "HMB"
+        ],
+        [
+          "NMDS"
+        ],
+        [
+          "GSO"
+        ],
+        [
+          "NCU"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 20,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      }
+    },
+    {
+      "name": "and_chain",
+      "comment": "AND-only chains, k=2..5, mixing ontology-bound and profile terms (profile terms share slot 10, so predicateCount < k)",
+      "combos": [
+        [
+          "DS",
+          "RS"
+        ],
+        [
+          "POA",
+          "GS"
+        ],
+        [
+          "CC",
+          "DS"
+        ],
+        [
+          "RS",
+          "GS"
+        ],
+        [
+          "POA",
+          "CC"
+        ],
+        [
+          "GRU",
+          "DS"
+        ],
+        [
+          "HMB",
+          "RS"
+        ],
+        [
+          "NCU",
+          "GS"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA"
+        ],
+        [
+          "GS",
+          "CC",
+          "RS"
+        ],
+        [
+          "DS",
+          "POA",
+          "CC"
+        ],
+        [
+          "GRU",
+          "DS",
+          "RS"
+        ],
+        [
+          "HMB",
+          "GS",
+          "CC"
+        ],
+        [
+          "NMDS",
+          "POA",
+          "DS"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "CC"
+        ],
+        [
+          "GSO",
+          "NCU",
+          "RS"
+        ],
+        [
+          "DS",
+          "RS",
+          "GS",
+          "CC"
+        ],
+        [
+          "POA",
+          "GS",
+          "CC",
+          "DS"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "DS",
+          "RS"
+        ],
+        [
+          "NMDS",
+          "GSO",
+          "POA",
+          "GS"
+        ],
+        [
+          "GRU",
+          "NCU",
+          "HMB",
+          "CC"
+        ],
+        [
+          "HMB",
+          "DS",
+          "RS",
+          "POA"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "DS",
+          "RS"
+        ],
+        [
+          "GSO",
+          "NCU",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO",
+          "DS"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 260,
+      "logicOptions": {
+        "operators": [
+          "AND"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "or_chain",
+      "comment": "OR-only chains, k=2..5, mixing ontology-bound and profile terms",
+      "combos": [
+        [
+          "DS",
+          "POA"
+        ],
+        [
+          "RS",
+          "CC"
+        ],
+        [
+          "GS",
+          "DS"
+        ],
+        [
+          "POA",
+          "RS"
+        ],
+        [
+          "CC",
+          "GS"
+        ],
+        [
+          "GRU",
+          "RS"
+        ],
+        [
+          "HMB",
+          "POA"
+        ],
+        [
+          "NMDS",
+          "CC"
+        ],
+        [
+          "DS",
+          "GS",
+          "POA"
+        ],
+        [
+          "RS",
+          "CC",
+          "DS"
+        ],
+        [
+          "POA",
+          "GS",
+          "RS"
+        ],
+        [
+          "GRU",
+          "POA",
+          "CC"
+        ],
+        [
+          "HMB",
+          "DS",
+          "GS"
+        ],
+        [
+          "NCU",
+          "RS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "GSO",
+          "DS"
+        ],
+        [
+          "NMDS",
+          "HMB",
+          "GS"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "CC"
+        ],
+        [
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "POA",
+          "GS"
+        ],
+        [
+          "NMDS",
+          "NCU",
+          "DS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "GSO",
+          "HMB",
+          "RS"
+        ],
+        [
+          "NCU",
+          "GS",
+          "CC",
+          "DS"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "GSO",
+          "POA",
+          "CC"
+        ],
+        [
+          "NMDS",
+          "NCU",
+          "DS",
+          "RS",
+          "GS"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "NCU",
+          "RS"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 260,
+      "logicOptions": {
+        "operators": [
+          "OR"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "mixed_chain",
+      "comment": "AND/OR chains with at least one of each operator, k=3..5 (two terms cannot be mixed)",
+      "combos": [
+        [
+          "DS",
+          "RS",
+          "POA"
+        ],
+        [
+          "GS",
+          "CC",
+          "DS"
+        ],
+        [
+          "RS",
+          "POA",
+          "GS"
+        ],
+        [
+          "CC",
+          "DS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "RS",
+          "GS"
+        ],
+        [
+          "HMB",
+          "CC",
+          "DS"
+        ],
+        [
+          "NMDS",
+          "GS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "RS"
+        ],
+        [
+          "GSO",
+          "NCU",
+          "CC"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "GS"
+        ],
+        [
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "DS",
+          "GS",
+          "CC",
+          "RS"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "DS",
+          "CC"
+        ],
+        [
+          "NMDS",
+          "GSO",
+          "RS",
+          "POA"
+        ],
+        [
+          "GRU",
+          "NCU",
+          "GS",
+          "DS"
+        ],
+        [
+          "HMB",
+          "NMDS",
+          "GSO",
+          "CC"
+        ],
+        [
+          "DS",
+          "RS",
+          "POA",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "DS",
+          "RS",
+          "POA"
+        ],
+        [
+          "NMDS",
+          "GSO",
+          "NCU",
+          "GS",
+          "CC"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO",
+          "POA"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 300,
+      "logicOptions": {
+        "operators": [
+          "AND",
+          "OR"
+        ],
+        "ensureMixedOperators": true,
+        "notProbability": 0,
+        "groupNotProbability": 0
+      },
+      "whitelistBuckets": [
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    {
+      "name": "profile_only",
+      "comment": "profile-only combos, k=2..5, random AND/OR: setSize none and predicateCount single at every nesting depth",
+      "combos": [
+        [
+          "GRU",
+          "HMB"
+        ],
+        [
+          "NMDS",
+          "GSO"
+        ],
+        [
+          "NCU",
+          "GRU"
+        ],
+        [
+          "HMB",
+          "NMDS"
+        ],
+        [
+          "GSO",
+          "NCU"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "GSO"
+        ],
+        [
+          "NMDS",
+          "NCU",
+          "HMB"
+        ],
+        [
+          "GRU",
+          "NMDS",
+          "GSO"
+        ],
+        [
+          "HMB",
+          "GSO",
+          "NCU"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO"
+        ],
+        [
+          "HMB",
+          "NMDS",
+          "GSO",
+          "NCU"
+        ],
+        [
+          "GRU",
+          "NCU",
+          "GSO",
+          "HMB"
+        ],
+        [
+          "GRU",
+          "HMB",
+          "NMDS",
+          "GSO",
+          "NCU"
+        ]
+      ],
+      "minPolicies": 0,
+      "maxPolicies": 127,
+      "logicOptions": {
+        "operators": [
+          "AND",
+          "OR"
+        ],
+        "notProbability": 0,
+        "groupNotProbability": 0
+      }
+    }
+  ],
+  "whitelistBuckets": [
+    2,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32
+  ],
+  "merkleDepthOptions": [
+    8
+  ],
+  "logicOptions": {
+    "notProbability": 0,
+    "groupNotProbability": 0,
+    "operators": [
+      "AND",
+      "OR"
+    ]
+  },
+  "duoConflicts": [
+    {
+      "includes": [
+        "POA"
+      ],
+      "excludes": [
+        "NPOA"
+      ]
+    },
+    {
+      "includes": [
+        "NCU"
+      ],
+      "excludes": [
+        "NPU",
+        "NPUNCU"
+      ]
+    },
+    {
+      "includes": [
+        "NPU"
+      ],
+      "excludes": [
+        "NPUNCU"
+      ]
+    }
+  ],
+  "notes": [
+    "policyCount equals the sum of layer maxPolicies (6 layers -> 1077); minPolicies is 0 everywhere, so the allocation is fixed by maxPolicies alone.",
+    "Two-layer execution: 24 depth-layer policies x 30 + 1053 coverage-layer policies x 1 = 1773 executions.",
+    "Strata are keyed by logical form only. Whitelist size is drawn once per policy from the global buckets (see createPolicyBlueprint), so setSize does not track predicateCount.",
+    "Profile terms (GRU, HMB, NMDS, GSO, NCU) share predicate slot 10; combos that include them raise the term count and nesting depth without raising predicateCount.",
+    "Remaining dependencies are syntactic, not design choices: k=1 <=> trivial <=> flat; >=4 ontology-bound terms => deep; and_or_mixed => k>=3; setSize none <=> profile-only <=> predicateCount single.",
+    "Structure is classified as in the SPP data generator: logicStructure on the author-level expression, nestingDepth/predicateCount on the normalized expression, setSize on whitelistSize.",
+    "Validate offline with: npm run unified:validate"
+  ],
+  "protectionProfile": "b1_unpadded",
+  "sourceDatasetPath": "/Users/likun/src/phd/decentralized_healthcare/policy_privacy/policy_privacy/experiments/ablation/gas_padding/localhost-2026-10-13-rc2/shared/policy_definitions.json",
+  "executionOrderSeed": "tps-zkpi-execution-order-v1",
+  "reusedDataset": true
+}
