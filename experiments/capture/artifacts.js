@@ -51,6 +51,14 @@ function buildProvenance({ network, protectionProfile } = {}) {
     }).toString().trim();
   } catch (_) { /* not a git checkout or git unavailable */ }
 
+  // A capture taken from a modified working tree is not the commit above: record
+  // that, and the hash of the tracked changes (`git diff HEAD`).
+  let workingTreeDiffSha256 = null;
+  try {
+    const diff = execSync('git diff HEAD', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28 });
+    workingTreeDiffSha256 = diff.length === 0 ? null : crypto.createHash('sha256').update(diff).digest('hex');
+  } catch (_) { /* not a git checkout or git unavailable */ }
+
   // snarkjs does not expose package.json via its exports map, so resolve the
   // installed module and read package.json from its directory.
   let snarkjsVersion = null;
@@ -75,7 +83,9 @@ function buildProvenance({ network, protectionProfile } = {}) {
     nodeVersion: process.version,
     network: network || null,
     protectionProfile: protectionProfile || null,
-    commitHash
+    commitHash,
+    workingTreeClean: commitHash ? workingTreeDiffSha256 === null : null,
+    workingTreeDiffSha256
   };
 }
 
