@@ -19,9 +19,16 @@ DEFAULT_PY_VERDICTS = {
     "pi": SUPERVISED_RESULTS_DIR / "pi_supervised_verdict.json",
     "spp": SUPERVISED_RESULTS_DIR / "spp_supervised_verdict.json",
 }
-# PCH: 10 DUO-term + 10 ICD-chapter tasks; PI: overall + 3 pair types
-# (structural_variant was retired); SPP: 6+3+6+6 within-axis contrasts.
-EXPECTED_TASK_COUNTS = {"pch": 20, "pi": 4, "spp": 21}
+# PCH: 10 DUO-term + 10 ICD-chapter tasks; SPP: 6+3+6+6 within-axis contrasts,
+# each once per access outcome when the capture has granted and denied
+# executions; PI: one task per designed pair type.
+BASE_TASK_COUNTS = {"pch": 20, "pi": 3, "spp": 21}
+STRATIFIED = {"pch", "spp"}
+
+
+def expected_task_count(experiment: str, py_tasks: Dict[str, Dict]) -> int:
+    stratified = experiment in STRATIFIED and any(t.get("outcome") for t in py_tasks.values())
+    return BASE_TASK_COUNTS[experiment] * (2 if stratified else 1)
 
 
 def load_json(path: Path):
@@ -78,6 +85,7 @@ def main() -> None:
         raise SystemExit(f"No multiseedVerdict in {js_path}")
 
     py_tasks = task_map(py)
+    expected = expected_task_count(args.experiment, py_tasks)
     js_tasks = task_map(js)
     shared = sorted(set(py_tasks) & set(js_tasks))
     only_python = sorted(set(py_tasks) - set(js_tasks))
@@ -90,7 +98,7 @@ def main() -> None:
         diffs = {}
         # Splits are independently implemented, so sample counts/AUCs are diagnostic.
         # The strict cross-check is on verdict status and gating status.
-        for field in ["passed", "nonGating"]:
+        for field in ["passed", "nonGating", "status"]:
             if p.get(field) != j.get(field):
                 diffs[field] = {"python": p.get(field), "js": j.get(field)}
         if diffs:
@@ -106,15 +114,15 @@ def main() -> None:
             "js": normalize_criterion(js.get("criterion", {})),
         },
         "taskCounts": {"python": len(py_tasks), "js": len(js_tasks), "shared": len(shared)},
-        "expectedTaskCount": EXPECTED_TASK_COUNTS[args.experiment],
+        "expectedTaskCount": expected,
         "onlyPython": only_python,
         "onlyJs": only_js,
         "taskDiffs": task_diffs,
         "matches": (
             py.get("overallPassed") == js.get("overallPassed")
             and normalize_criterion(py.get("criterion", {})) == normalize_criterion(js.get("criterion", {}))
-            and len(py_tasks) == EXPECTED_TASK_COUNTS[args.experiment]
-            and len(js_tasks) == EXPECTED_TASK_COUNTS[args.experiment]
+            and len(py_tasks) == expected
+            and len(js_tasks) == expected
             and not only_python
             and not only_js
             and not task_diffs

@@ -10,8 +10,12 @@ decoded with the contract ABI (one field per 32-byte argument word), and every
 log topic, log data word and transaction field (nonce, gas limit, block
 number) is added.  Each field is encoded four ways: its numeric value, its
 zero-byte count, its leading-zero-byte count, and the number of distinct
-policies in the capture that share the value.  For every task the AUC of each
-encoded field is computed over one execution per policy (PI: per pair side).
+policies in the capture that share the value.  For every PCH and SPP task the
+AUC of each encoded field is computed over one execution per policy, separately
+for granted and denied executions (the decision o is public).  For every PI
+pair type the statistic is the mean |AUC - 0.5| over its (pair, outcome)
+cells, each comparing the executions of the pair's two policies; it is
+reported as 0.5 + that mean.
 
 Positive control: a synthetic field reproduces the legacy pseudonym encoding
 (128-bit random without the DUO profile slot, 254-bit random with it).  The
@@ -19,7 +23,7 @@ gate must detect it; otherwise the verdict is INCONCLUSIVE.
 
 Decision (Westfall-Young min-p): for each task, the statistic is the largest
 |AUC - 0.5| over all fields and encodings, and its null distribution comes
-from permuting the labels across the task's policies.  Each task's p-value is
+from permuting the labels across the task's policies (PI: within cells).  Each task's p-value is
 taken against its own null, so tasks with small classes, whose maximum is
 large by chance, do not mask the others; the smallest p-value over tasks is
 then compared with its permutation distribution.  The gate passes when this
@@ -45,10 +49,9 @@ import numpy as np
 
 from experiments.analysis.paths import REPO_ROOT
 
-from .common import load_json
+from .common import load_json, outcome_of, outcome_strata, stratum_key
 from .pad_residual_diagnostic import build_spp_tasks_with_indices
 from .pch_supervised import build_tasks as build_pch_tasks
-from .pi_supervised import find_or_generate_pairs
 
 DEFAULT_ABI = REPO_ROOT / "build" / "protocol" / "v3.0.0-rc2" / "PolicyPrivacy.abi.json"
 CONTROL_FIELD = "control.legacyPseudonym"
@@ -172,8 +175,8 @@ def legacy_pseudonym(row: dict, rng: np.random.Generator) -> int:
     return int.from_bytes(rng.bytes(32), "big") >> (256 - bits)
 
 
-def policy_features(executed: List[dict], layouts, exclude: Sequence[str], rng) -> Tuple[Dict[str, np.ndarray], List[str]]:
-    """policyId -> feature vector of its first execution; column names."""
+def execution_features(executed: List[dict], layouts, exclude: Sequence[str], rng) -> Tuple[np.ndarray, List[str]]:
+    """Encoded field matrix (one row per execution, aligned with ``executed``) and column names."""
     per_exec = []
     for row in executed:
         fields = {k: v for k, v in execution_fields(row, layouts).items()
@@ -185,14 +188,9 @@ def policy_features(executed: List[dict], layouts, exclude: Sequence[str], rng) 
     for row, fields in per_exec:
         for k, v in fields.items():
             sharing[k][v].add(str(row["policyId"]))
-    first: Dict[str, Tuple[int, Dict[str, int]]] = {}
-    for row, fields in per_exec:
-        pid, eid = str(row["policyId"]), int(row.get("executionId", 0))
-        if pid not in first or eid < first[pid][0]:
-            first[pid] = (eid, fields)
     columns = [f"{n}|{e}" for n in names for e in ENCODINGS]
-    vectors = {}
-    for pid, (_, fields) in first.items():
+    matrix = np.full((len(per_exec), len(columns)), np.nan)
+    for i, (_, fields) in enumerate(per_exec):
         vec = []
         for n in names:
             if n not in fields:
@@ -200,39 +198,62 @@ def policy_features(executed: List[dict], layouts, exclude: Sequence[str], rng) 
                 continue
             value = fields[n]
             vec += [*encode(value), float(len(sharing[n][value]))]
-        vectors[pid] = np.array(vec)
-    return vectors, columns
+        matrix[i] = vec
+    return matrix, columns
 
 
 # ---------------------------------------------------------------------------
-# Tasks (units = policies; PI: pair sides)
+# Tasks.  PCH/SPP: units are policies, one execution each, per outcome.
+# PI: units are the executions of each designed pair, compared within
+# (pair, outcome) cells.
 # ---------------------------------------------------------------------------
 
-def task_units(data_dir: Path, pairs: List[dict]) -> List[Tuple[str, List[str], np.ndarray]]:
-    """[(task key, unit policyIds, labels)] for the 45 supervised tasks."""
+def _first_execution_rows(executed: List[dict]) -> Dict[Tuple[str, Optional[str]], int]:
+    """(policyId, outcome) -> row index of that policy's first execution with that outcome."""
+    first: Dict[Tuple[str, Optional[str]], Tuple[int, int]] = {}
+    for i, row in enumerate(executed):
+        key = (str(row["policyId"]), outcome_of(row))
+        eid = int(row.get("executionId", 0))
+        if key not in first or eid < first[key][0]:
+            first[key] = (eid, i)
+    return {k: v[1] for k, v in first.items()}
+
+
+def policy_task_units(data_dir: Path, executed: List[dict]) -> List[Tuple[str, np.ndarray, np.ndarray]]:
+    """[(task key, row indices into executed, labels)] for the PCH and SPP tasks."""
+    first = _first_execution_rows(executed)
     out = []
     for prefix, filename, builder in (("pch", "pch_dataset.json", build_pch_tasks),
                                       ("spp", "spp_dataset.json", build_spp_tasks_with_indices)):
         dataset = load_json(data_dir / filename)
-        for task in builder(dataset):
-            idx = task.get("indices", task.get("_indices"))
-            label_of = {}
-            for i, lab in zip(idx, task["y"]):
-                label_of[str(dataset[int(i)]["policyId"])] = int(lab)
-            units = sorted(label_of)
-            out.append((f"{prefix}|{task['key']}", units, np.array([label_of[u] for u in units])))
-    scopes = ["overall"] + [t for t in ("semantic_equivalent", "structural_variant", "weak_equivalent",
-                                         "controlled_difference") if any(p.get("pairType") == t for p in pairs)]
-    for scope in scopes:
-        units, labels = [], []
-        for pair in pairs:
-            if scope != "overall" and pair.get("pairType") != scope:
-                continue
-            for side, policy in enumerate(pair["policies"]):
-                units.append(str(policy["policyId"]))
-                labels.append(side)
-        out.append((f"pi|{scope}", units, np.array(labels)))
+        for outcome, rows in outcome_strata(dataset):
+            for task in builder(rows):
+                idx = task.get("indices", task.get("_indices"))
+                label_of = {}
+                for i, lab in zip(idx, task["y"]):
+                    row = rows[int(i)]
+                    label_of[(str(row["policyId"]), outcome_of(row))] = int(lab)
+                units = sorted(label_of)
+                out.append((f"{prefix}|{stratum_key(outcome, task['key'])}",
+                            np.array([first[u] for u in units]),
+                            np.array([label_of[u] for u in units])))
     return out
+
+
+def pi_cells(executed: List[dict]) -> Dict[str, List[Tuple[np.ndarray, np.ndarray]]]:
+    """pair type -> [(row indices, side labels)] for every (pair, outcome) cell."""
+    cells: Dict[Tuple[str, str, Optional[str]], List[Tuple[int, int]]] = defaultdict(list)
+    for i, row in enumerate(executed):
+        pair = row.get("piPair")
+        if pair:
+            cells[(pair["pairType"], pair["pairId"], outcome_of(row))].append((i, int(pair["side"])))
+    by_type: Dict[str, List[Tuple[np.ndarray, np.ndarray]]] = defaultdict(list)
+    for (pair_type, _, _), members in sorted(cells.items()):
+        idx = np.array([m[0] for m in members])
+        side = np.array([m[1] for m in members])
+        if len(set(side.tolist())) == 2:
+            by_type[pair_type].append((idx, side))
+    return dict(by_type)
 
 
 def _ranks(X: np.ndarray) -> np.ndarray:
@@ -262,12 +283,27 @@ def task_auc(R: np.ndarray, Y: np.ndarray) -> np.ndarray:
     return (Y @ R - n1 * (n1 + 1) / 2) / (n1 * n0)
 
 
+def cell_deviation(matrix: np.ndarray, cells, P: int, rng) -> Tuple[np.ndarray, np.ndarray]:
+    """Mean |AUC - 0.5| over a pair type's cells, observed (F) and under P within-cell permutations (P x F).
+
+    The attacker trains within each pair, so the direction of a field may differ
+    between pairs; the deviation, not the signed AUC, is averaged.
+    """
+    observed = np.zeros(matrix.shape[1])
+    null = np.zeros((P, matrix.shape[1]))
+    for idx, side in cells:
+        R = _ranks(matrix[idx])
+        observed += np.abs(task_auc(R, side[None, :].astype(float))[0] - 0.5)
+        Yp = np.vstack([rng.permutation(side) for _ in range(P)]).astype(float)
+        null += np.abs(task_auc(R, Yp) - 0.5)
+    return observed / len(cells), null / len(cells)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--abi", type=Path, default=DEFAULT_ABI)
-    parser.add_argument("--pairs", type=Path, default=None, help="PI pairs file (generated from pi_dataset.json if absent)")
     parser.add_argument("--permutations", type=int, default=1000)
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument("--seed", type=int, default=0)
@@ -279,34 +315,35 @@ def main() -> None:
     layouts = function_layouts(args.abi)
     executed = load_json(args.data_dir / "executed_dataset.json")
     rng = np.random.default_rng(args.seed)
-    vectors, columns = policy_features(executed, layouts, exclude, rng)
+    matrix, columns = execution_features(executed, layouts, exclude, rng)
     real = np.array([not c.startswith(CONTROL_FIELD) for c in columns])
-    if args.pairs:
-        pairs_data = load_json(args.pairs)
-    else:
-        _, pairs_data = find_or_generate_pairs(args.data_dir, args.output_dir / "pairs", "pi-experiment")
-    pairs = pairs_data["pairs"] if isinstance(pairs_data, dict) else pairs_data
-    tasks = task_units(args.data_dir, pairs)
 
     P = args.permutations
     observed = []
     task_p, control_p, null_p = [], [], []
-    for key, units, y in tasks:
-        if len(set(y.tolist())) < 2:
-            continue
-        X = np.vstack([vectors[u] for u in units])
-        R = _ranks(X)
-        auc = task_auc(R, y[None, :].astype(float))[0]
-        observed.extend((key, col, float(a)) for col, a in zip(columns, auc))
-        Yp = np.vstack([rng.permutation(y) for _ in range(P)]).astype(float)
-        null_t = np.abs(task_auc(R[:, real], Yp) - 0.5).max(axis=1)
-        obs_t = np.abs(auc[real] - 0.5).max()
-        ctl_t = np.abs(auc[~real] - 0.5).max()
+
+    def record(key, deviation, null_dev, signed=None):
+        values = signed if signed is not None else deviation + 0.5
+        observed.extend((key, col, float(a)) for col, a in zip(columns, values))
+        null_t = null_dev[:, real].max(axis=1)
+        obs_t = deviation[real].max()
+        ctl_t = deviation[~real].max()
         task_p.append((1 + np.sum(null_t >= obs_t - 1e-12)) / (P + 1))
         control_p.append((1 + np.sum(null_t >= ctl_t - 1e-12)) / (P + 1))
         # Null p-value of each permutation against the same task's null.
         sorted_null = np.sort(null_t)
         null_p.append((P - np.searchsorted(sorted_null, null_t - 1e-12, side="left")) / P)
+
+    for key, rows, y in policy_task_units(args.data_dir, executed):
+        if len(set(y.tolist())) < 2:
+            continue
+        R = _ranks(matrix[rows])
+        auc = task_auc(R, y[None, :].astype(float))[0]
+        Yp = np.vstack([rng.permutation(y) for _ in range(P)]).astype(float)
+        record(key, np.abs(auc - 0.5), np.abs(task_auc(R, Yp) - 0.5), signed=auc)
+    for pair_type, cells in sorted(pi_cells(executed).items()):
+        deviation, null_dev = cell_deviation(matrix, cells, P, rng)
+        record(f"pi|{pair_type}", deviation, null_dev)
     min_null_p = np.min(np.vstack(null_p), axis=0)
 
     def familywise(p_tasks):

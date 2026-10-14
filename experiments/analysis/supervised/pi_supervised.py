@@ -1,281 +1,315 @@
 #!/usr/bin/env python3
 """Supervised Policy Indistinguishability (PI) attack using scikit-learn.
 
-Produces the active MDPI manuscript's PI single-sample verdict scopes (overall
-plus pair types) with a policy-pair-disjoint multi-seed classifier check. The JS
-``pi_report.json`` is an independent implementation of the shared AUC +
-permutation double criterion.
+The PI attacker knows the two candidate policies P0 and P1 of a pair and can
+deploy and run each of them, so it trains on executions of the pair itself
+and classifies held-out executions.  Every execution commits its own policy
+instance (fresh randomizer), so training and test executions never share a
+commitment.  The decision o is public; executions are compared within the
+same outcome.
+
+Per seed and pair, each (side, outcome) cell is split half train / half test,
+one classifier is trained per pair on both outcomes (o is an input), and the
+test AUC is computed within each (pair, outcome) cell.  A pair type's
+statistic is the mean cell AUC over its pairs; its permutation null shuffles
+the test labels within cells on fixed scores.  The verdict per type uses the
+shared double criterion (mean AUC over seeds > 0.55 and >= 50% of seeds with
+p < 0.05, for either classifier).
+
+Positive control: the same attack with one synthetic column added, N(0, 1)
+shifted by ``control_shift`` on side 1.  A type whose control is not detected
+is INCONCLUSIVE.  The JS ``pi_report.json`` is an independent implementation.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import subprocess
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
+from joblib import Parallel, delayed
 
-from experiments.analysis.paths import CAPTURE_DATA_DIR, REPO_ROOT, SUPERVISED_RESULTS_DIR
+from experiments.analysis.paths import CAPTURE_DATA_DIR, SUPERVISED_RESULTS_DIR
 from .common import (
-    DEFAULT_SPLIT_CANDIDATES,
+    AUC_MAX,
     DEFAULT_SEEDS,
+    MIN_TEST_SAMPLES,
+    OUTCOMES,
+    PERM_ALPHA,
     PERM_ITERS,
-    TEST_RATIO,
-    analyze_contrast,
-    build_verdict,
+    SIG_FRACTION_MAX,
+    _auc_from_ranks,
+    _average_ranks,
     checkpoint_rows,
     feature_row,
+    file_sha256,
     find_json,
+    fit_predict_proba,
     load_json,
-    load_split_manifest,
-    new_split_manifest,
+    outcome_of,
     verdict_to_rows,
-    write_split_manifest,
 )
 
 DEFAULT_DATA_DIR = CAPTURE_DATA_DIR
 OUTPUT_DIR = SUPERVISED_RESULTS_DIR
-PAIR_GENERATOR = REPO_ROOT / "scripts" / "generate_pi_pairs.js"
-PAIR_TYPES = ("semantic_equivalent", "structural_variant", "weak_equivalent", "controlled_difference")
+PAIR_TYPES = ("semantic_equivalent", "weak_equivalent", "controlled_difference")
+CONTROL_SHIFT = 0.75
+TEST_FRACTION = 0.5
 
 
-def load_pi_pairs(path: Path) -> List[dict]:
-    data = load_json(path)
-    if isinstance(data, dict) and "pairs" in data:
-        return list(data["pairs"])
-    if isinstance(data, list):
-        return data
-    raise ValueError(f"Unrecognized PI pairs format at {path}")
+def stable_int(*parts) -> int:
+    digest = hashlib.sha256("|".join(map(str, parts)).encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big")
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def find_or_generate_pairs(data_dir: Path, output_dir: Path, seed: int) -> Tuple[Path, List[dict]]:
-    existing = find_json(data_dir, "pi_pairs.json")
-    if existing is not None:
-        return existing, load_pi_pairs(existing)
-
-    dataset_path = find_json(data_dir, "pi_dataset.json")
-    if dataset_path is None:
-        raise SystemExit(f"No pi_pairs.json or pi_dataset.json found under {data_dir}")
-    if not PAIR_GENERATOR.exists():
-        raise SystemExit(f"PI pair generator not found at {PAIR_GENERATOR}")
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    generated = output_dir / "pi_pairs_generated.json"
-    cmd = [
-        "node",
-        str(PAIR_GENERATOR),
-        "--dataset",
-        str(dataset_path),
-        "--output",
-        str(generated),
-        "--seed",
-        str(seed),
-        "--min",
-        "0",
-        "--target",
-        "100",
-        "--max",
-        "100",
-    ]
-    print(f"Generating PI pairs from {dataset_path} -> {generated}")
-    subprocess.run(cmd, cwd=REPO_ROOT, check=True)
-    return generated, load_pi_pairs(generated)
-
-
-def _policy_feature_runs(policy: dict) -> List[dict]:
-    """Execution runs for one PI policy side.
-
-    Uses only ``policy.features`` — matching the of-record JS attack
-    (attacks.js reads ``policy.features`` exclusively).  ``rawExecutions`` is the
-    same executions stored a second time (identical feature vectors, gas as
-    strings), so including it double-counts every run and leaks the test set into
-    training.  Every policy side across all pairs files carries ``features``, so
-    this drops no data.
-    """
-    runs = []
-    for run in policy.get("features") or []:
-        if isinstance(run, dict):
-            if "features" in run:
-                runs.append(run)
-            else:
-                runs.append({"features": run, "policyId": policy.get("policyId")})
-    return runs
-
-
-def build_scope_arrays(pairs: Sequence[dict], scope: Optional[str] = None):
-    rows = []
-    for pair in pairs:
-        pair_type = pair.get("pairType") or "unspecified"
-        if scope not in (None, "overall") and pair_type != scope:
+def load_pairs(dataset: List[dict]) -> Dict[str, Dict]:
+    """pairId -> {pairType, X, y (side), o (1 granted / 0 denied)}."""
+    rows = defaultdict(list)
+    types = {}
+    for entry in dataset:
+        pair = entry.get("piPair")
+        if not pair:
             continue
-        pair_id = str(pair.get("pairId") or f"pair-{len(rows)}")
-        policies = pair.get("policies") or []
-        if len(policies) != 2:
-            continue
-        for side, policy in enumerate(policies):
-            group = str(policy.get("policyId") or f"{pair_id}:{side}")
-            for run_index, run in enumerate(_policy_feature_runs(policy)):
-                rows.append({
-                    "x": feature_row(run),
-                    "y": side,
-                    # Match the JS Level-I split: group by policyId so executions
-                    # from the same policy never span train and test.
-                    "group": group,
-                    # Identify the execution behind the row: a policy in several
-                    # pairs repeats the same executions, and the per-seed
-                    # one-execution-per-policy subsample keeps every copy of the
-                    # chosen execution.
-                    "exec": f"{group}#{run.get('executionId', run_index)}",
-                    "pairType": pair_type,
-                })
+        outcome = outcome_of(entry)
+        if outcome not in OUTCOMES:
+            raise SystemExit(f"execution {entry.get('policyId')}#{entry.get('executionId')} has no outcome")
+        rows[pair["pairId"]].append((feature_row(entry), int(pair["side"]), int(outcome == "granted")))
+        types[pair["pairId"]] = pair["pairType"]
     if not rows:
-        return None
-    X = np.array([row["x"] for row in rows], dtype=float)
-    y = np.array([row["y"] for row in rows], dtype=int)
-    groups = np.array([row["group"] for row in rows], dtype=object)
-    exec_ids = np.array([row["exec"] for row in rows], dtype=object)
-    if len(np.unique(y)) < 2 or len(np.unique(groups)) < 2:
-        return None
-    return X, y, groups, exec_ids
+        raise SystemExit("pi_dataset.json has no designed PI pairs (piPair); capture with a piLayer config")
+    pairs = {}
+    for pair_id in sorted(rows):
+        X = np.array([r[0] for r in rows[pair_id]], dtype=float)
+        y = np.array([r[1] for r in rows[pair_id]], dtype=int)
+        o = np.array([r[2] for r in rows[pair_id]], dtype=int)
+        pairs[pair_id] = {"pairType": types[pair_id], "X": X, "y": y, "o": o}
+    return pairs
 
 
-def run_pairs(
-    pairs: List[dict],
-    seeds: int,
-    models: Sequence[str],
-    dataset_tag: str,
-    jobs: int,
-    csv_path: Optional[Path] = None,
-    json_path: Optional[Path] = None,
-    split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
-    split_manifest_in: Optional[Dict] = None,
-    split_manifest_out: Optional[Dict] = None,
-    perm_iters: int = PERM_ITERS,
-) -> Dict:
-    tasks = []
+def split_pair(y, o, seed: int, pair_id: str) -> np.ndarray:
+    """Boolean test mask: half of every (side, outcome) cell, at least one row each way."""
+    rng = np.random.default_rng(stable_int("pi-split", seed, pair_id))
+    test = np.zeros(len(y), dtype=bool)
+    for side in (0, 1):
+        for outcome in (0, 1):
+            idx = np.flatnonzero((y == side) & (o == outcome))
+            if len(idx) < 2:
+                raise ValueError(f"pair {pair_id}: cell side={side} o={outcome} has {len(idx)} executions")
+            n_test = min(len(idx) - 1, max(1, int(round(len(idx) * TEST_FRACTION))))
+            test[rng.choice(idx, size=n_test, replace=False)] = True
+    return test
+
+
+def control_column(y, seed_parts, shift: float) -> np.ndarray:
+    rng = np.random.default_rng(stable_int("pi-control", *seed_parts))
+    return rng.normal(0.0, 1.0, len(y)) + shift * y
+
+
+def score_pair(X, y, o, test, model: str, seed: int):
+    """Test scores of one pair, from a classifier trained on its other executions."""
+    features = np.column_stack([X, o])
+    train = ~test
+    keep = features[train].var(axis=0) > 0
+    if not keep.any():
+        return np.full(int(test.sum()), 0.5)
+    return fit_predict_proba(model, features[train][:, keep], y[train], features[test][:, keep], seed, rf_n_jobs=1)
+
+
+def cell_aucs(scores, y_test, o_test, perm_iters: int, rng):
+    """Observed AUC and permuted AUCs of each outcome cell of one pair."""
+    observed, null = [], []
+    for outcome in (0, 1):
+        mask = o_test == outcome
+        labels = y_test[mask]
+        ranks = _average_ranks(np.asarray(scores[mask], dtype=float))
+        n_pos = int(labels.sum())
+        n_neg = len(labels) - n_pos
+        observed.append(_auc_from_ranks(labels, ranks, n_pos, n_neg))
+        perms = np.argsort(rng.random((perm_iters, len(labels))), axis=1)
+        permuted = labels[perms]
+        null.append(((permuted * ranks).sum(axis=1) - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg))
+    return observed, null
+
+
+def evaluate_type_seed(pairs: Dict[str, Dict], seed: int, models: Sequence[str], perm_iters: int,
+                       control_shift: Optional[float]) -> Dict:
+    """One seed of one pair type: mean cell AUC and its within-cell permutation p-value per model."""
+    out = {"testN": 0, "pairAuc": {}}
+    per_model = {m: {"observed": [], "null": []} for m in models}
+    for pair_id, pair in pairs.items():
+        X, y, o = pair["X"], pair["y"], pair["o"]
+        if control_shift is not None:
+            X = np.column_stack([X, control_column(y, (seed, pair_id), control_shift)])
+        test = split_pair(y, o, seed, pair_id)
+        out["testN"] += int(test.sum())
+        for m in models:
+            rng = np.random.default_rng(stable_int("pi-perm", seed, pair_id, m))
+            scores = score_pair(X, y, o, test, m, seed)
+            observed, null = cell_aucs(scores, y[test], o[test], perm_iters, rng)
+            per_model[m]["observed"].extend(observed)
+            per_model[m]["null"].extend(null)
+            out["pairAuc"].setdefault(m, {})[pair_id] = float(np.mean(observed))
+    for m in models:
+        stat = float(np.mean(per_model[m]["observed"]))
+        null = np.mean(np.vstack(per_model[m]["null"]), axis=0)
+        out[m] = {"auc": stat, "advantage": abs(stat - 0.5),
+                  "pval": float((1 + np.sum(null >= stat - 1e-12)) / (perm_iters + 1))}
+    return out
+
+
+def summarize(per_seed: List[Dict], models: Sequence[str]) -> Dict:
+    result = {"nSeeds": len(per_seed), "models": {}}
+    result["medianTestN"] = float(np.median([r["testN"] for r in per_seed]))
+    result["nonGating"] = result["medianTestN"] < MIN_TEST_SAMPLES
+    any_leg_fails = False
+    for m in models:
+        aucs = [r[m]["auc"] for r in per_seed]
+        pvals = [r[m]["pval"] for r in per_seed]
+        auc_mean = float(np.mean(aucs))
+        sig_fraction = float(np.mean([p < PERM_ALPHA for p in pvals]))
+        leg_fails = auc_mean > AUC_MAX and sig_fraction >= SIG_FRACTION_MAX
+        any_leg_fails = any_leg_fails or leg_fails
+        pair_ids = sorted(per_seed[0]["pairAuc"][m])
+        result["models"][m] = {
+            "aucMean": auc_mean,
+            "aucStd": float(np.std(aucs)),
+            "advantageMean": float(np.mean([abs(a - 0.5) for a in aucs])),
+            "sigFraction": sig_fraction,
+            "aucHigh": auc_mean > AUC_MAX,
+            "sigHigh": sig_fraction >= SIG_FRACTION_MAX,
+            "legFails": leg_fails,
+            "perSeed": {"auc": [float(a) for a in aucs], "pval": [float(p) for p in pvals]},
+            "perPairAucMean": {pid: float(np.mean([r["pairAuc"][m][pid] for r in per_seed])) for pid in pair_ids},
+        }
+    # Underpowered types are reported but not judged, as in the JS aggregator.
+    result["passed"] = None if result["nonGating"] else not any_leg_fails
+    return result
+
+
+def run_type(pairs, seeds, models, perm_iters, jobs, control_shift):
+    def seeds_for(shift):
+        if jobs == 1:
+            return [evaluate_type_seed(pairs, s, models, perm_iters, shift) for s in range(seeds)]
+        return Parallel(n_jobs=jobs)(
+            delayed(evaluate_type_seed)(pairs, s, models, perm_iters, shift) for s in range(seeds)
+        )
+    result = summarize(seeds_for(None), models)
+    control = summarize(seeds_for(control_shift), models)
+    result["positiveControl"] = {
+        "shift": control_shift,
+        "detected": control["passed"] is False,
+        "models": {m: {k: control["models"][m][k] for k in ("aucMean", "sigFraction", "legFails")}
+                   for m in models},
+    }
+    if result["passed"] is None:
+        result["status"] = "NOT JUDGED"
+    elif not result["passed"]:
+        result["status"] = "FAIL"
+    else:
+        result["status"] = "PASS" if result["positiveControl"]["detected"] else "INCONCLUSIVE"
+    return result
+
+
+def build_pi_verdict(dataset_tag: str, seeds: int, tasks: List[Dict], perm_iters: int, control_shift: float) -> Dict:
+    judged = [t for t in tasks if not t.get("nonGating")]
+    if any(t["status"] == "FAIL" for t in judged):
+        overall = False
+    elif judged and all(t["status"] == "PASS" for t in judged):
+        overall = True
+    else:
+        overall = None
+    return {
+        "dataset": dataset_tag,
+        "criterion": {
+            "seeds": seeds,
+            "aucMax": AUC_MAX,
+            "permAlpha": PERM_ALPHA,
+            "sigFractionMax": SIG_FRACTION_MAX,
+            "minTestSamples": MIN_TEST_SAMPLES,
+            "permIters": perm_iters,
+            "testRatio": TEST_FRACTION,
+            "split": "within pair, half of every (side, outcome) cell",
+            "controlShift": control_shift,
+        },
+        "overallPassed": overall,
+        "tasks": tasks,
+    }
+
+
+def run_pairs(dataset: List[dict], seeds: int, models: Sequence[str], dataset_tag: str, jobs: int,
+              csv_path: Optional[Path] = None, json_path: Optional[Path] = None,
+              perm_iters: int = PERM_ITERS, control_shift: float = CONTROL_SHIFT) -> Dict:
+    pairs = load_pairs(dataset)
     if csv_path is not None and csv_path.exists():
         csv_path.unlink()
-
-    scopes = ["overall"] + [pair_type for pair_type in PAIR_TYPES if any(p.get("pairType") == pair_type for p in pairs)]
-    for scope in scopes:
-        arrays = build_scope_arrays(pairs, scope)
-        if arrays is None:
-            res = {
-                "dataset": dataset_tag,
-                "key": scope,
-                "target": "pairScope",
-                "class0": "policy0",
-                "class1": "policy1",
-                "nSeeds": 0,
-                "models": {},
-                "medianTestN": None,
-                "majorityAcc": None,
-                "nonGating": True,
-                "passed": None,
-                "skipped": True,
-            }
-        else:
-            X, y, groups, exec_ids = arrays
-            res = analyze_contrast(
-                X, y, groups, seeds, models, jobs=jobs,
-                perm_iters=perm_iters, task_key=scope,
-                split_candidates=split_candidates,
-                split_manifest_in=split_manifest_in,
-                split_manifest_out=split_manifest_out,
-                exec_ids=exec_ids,
-            )
-            res.update({
-                "dataset": dataset_tag,
-                "key": scope,
-                "target": "pairScope",
-                "class0": "policy0",
-                "class1": "policy1",
-                "skipped": False,
-            })
-        if scope == "controlled_difference":
-            res["diagnostic"] = True
-            res["nonGating"] = True
+    tasks = []
+    for pair_type in PAIR_TYPES:
+        subset = {pid: p for pid, p in pairs.items() if p["pairType"] == pair_type}
+        if not subset:
+            continue
+        res = run_type(subset, seeds, models, perm_iters, jobs, control_shift)
+        res.update({
+            "dataset": dataset_tag,
+            "key": pair_type,
+            "target": "pairSide",
+            "class0": "P0",
+            "class1": "P1",
+            "nPairs": len(subset),
+        })
         tasks.append(res)
-
-        parts = [
-            f"{m} AUC={res['models'][m]['aucMean']:.3f} sig={res['models'][m]['sigFraction']:.2f}"
-            for m in models if m in res.get("models", {})
-        ]
-        tag = "non-gating" if res.get("nonGating") else ("PASS" if res.get("passed") else "FAIL")
-        n = res.get("medianTestN")
-        print(f"  [{tag:10}] {scope:24} medN={n if n is not None else 'NA'} " + " | ".join(parts))
-
-        partial = build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters)
+        parts = [f"{m} AUC={res['models'][m]['aucMean']:.3f} sig={res['models'][m]['sigFraction']:.2f}"
+                 for m in models]
+        ctl = res["positiveControl"]
+        ctl_parts = [f"{m} {ctl['models'][m]['aucMean']:.3f}" for m in models]
+        print(f"  [{res['status']:12}] {pair_type:16} pairs={len(subset):3d} medN={res['medianTestN']:.0f} "
+              + " | ".join(parts) + f" | control({' '.join(ctl_parts)}) "
+              + ("detected" if ctl["detected"] else "NOT detected"))
         checkpoint_rows(csv_path, verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models), append=True)
         if json_path is not None:
             json_path.parent.mkdir(parents=True, exist_ok=True)
-            with json_path.open("w", encoding="utf-8") as handle:
-                json.dump(partial, handle, indent=2)
-
-    return build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters)
+            json_path.write_text(json.dumps(build_pi_verdict(dataset_tag, seeds, tasks, perm_iters, control_shift),
+                                            indent=2), encoding="utf-8")
+    return build_pi_verdict(dataset_tag, seeds, tasks, perm_iters, control_shift)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Supervised PI privacy cross-check (sklearn)")
+    parser = argparse.ArgumentParser(description="Supervised within-pair PI attack (sklearn)")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
-    parser.add_argument("--pairs", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     parser.add_argument("--seeds", type=int, default=DEFAULT_SEEDS)
     parser.add_argument("--models", nargs="+", default=["rf", "lr"], choices=["rf", "lr"])
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--tag", type=str, default=None)
-    parser.add_argument("--pair-seed", type=str, default="pi-experiment")
     parser.add_argument("--permutation-iterations", type=int, default=PERM_ITERS)
-    parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
-    parser.add_argument("--split-manifest-in", type=Path, default=None)
-    parser.add_argument("--split-manifest-out", type=Path, default=None)
+    parser.add_argument("--control-shift", type=float, default=CONTROL_SHIFT)
     args = parser.parse_args()
 
-    if args.pairs is not None:
-        pairs_path = args.pairs
-        pairs = load_pi_pairs(pairs_path)
-    else:
-        pairs_path, pairs = find_or_generate_pairs(args.data_dir, args.output_dir, args.pair_seed)
-    tag = args.tag or pairs_path.parent.name
-    print(f"Loading {pairs_path} (tag={tag})...")
-    pair_hash = file_sha256(pairs_path)
-    counts = defaultdict(int)
-    for pair in pairs:
-        counts[pair.get("pairType") or "unspecified"] += 1
-    print(f"{len(pairs)} pairs: {dict(counts)}\n")
+    dataset_path = find_json(args.data_dir, "pi_dataset.json")
+    if dataset_path is None:
+        raise SystemExit(f"No pi_dataset.json found under {args.data_dir}")
+    dataset = load_json(dataset_path)
+    tag = args.tag or dataset_path.parent.name
+    print(f"Loading {dataset_path} (tag={tag})...")
+    counts = defaultdict(set)
+    for entry in dataset:
+        if entry.get("piPair"):
+            counts[entry["piPair"]["pairType"]].add(entry["piPair"]["pairId"])
+    print(f"{len(dataset)} executions; pairs: { {t: len(v) for t, v in counts.items()} }\n")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = args.output_dir / "pi_supervised_summary.csv"
     json_path = args.output_dir / "pi_supervised_verdict.json"
-    manifest_in = load_split_manifest(args.split_manifest_in)
-    manifest_out = new_split_manifest(TEST_RATIO, args.split_candidates)
-    manifest_out["dataset"] = {"path": str(pairs_path), "sha256": pair_hash}
-    verdict = run_pairs(
-        pairs, args.seeds, args.models, tag, args.jobs, csv_path, json_path,
-        split_candidates=args.split_candidates,
-        split_manifest_in=manifest_in,
-        split_manifest_out=manifest_out,
-        perm_iters=args.permutation_iterations,
-    )
-    verdict["pairSource"] = {"path": str(pairs_path), "sha256": pair_hash, "seed": args.pair_seed}
-    with json_path.open("w", encoding="utf-8") as handle:
-        json.dump(verdict, handle, indent=2)
-    manifest_path = args.split_manifest_out or (args.output_dir / "pi_split_manifest.json")
-    write_split_manifest(manifest_path, manifest_out)
+    verdict = run_pairs(dataset, args.seeds, args.models, tag, args.jobs, csv_path, json_path,
+                        perm_iters=args.permutation_iterations, control_shift=args.control_shift)
+    verdict["dataSource"] = {"path": str(dataset_path), "sha256": file_sha256(dataset_path)}
+    json_path.write_text(json.dumps(verdict, indent=2), encoding="utf-8")
 
+    overall = verdict["overallPassed"]
     print(f"\nOverall PI supervised verdict [{tag}]: "
-          f"{'PASS' if verdict['overallPassed'] else verdict['overallPassed']}")
+          f"{'PASS' if overall else ('FAIL' if overall is False else 'INCONCLUSIVE')}")
     print(f"Summary -> {csv_path}")
     print(f"Verdict -> {json_path}")
 

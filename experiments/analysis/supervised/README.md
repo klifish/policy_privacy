@@ -19,15 +19,15 @@ before updating either manuscript.
 
 Outputs go to `experiments/results/supervised/`. The verdicts, summaries,
 split manifests, comparison reports, and ablation statistics used by the MDPI
-manuscript are git-tracked. Bulky generated PI-pair files and interactive
-dashboard payloads are gitignored and regenerated on demand.
+manuscript are git-tracked. Interactive dashboard payloads are gitignored and
+regenerated on demand.
 
 | File | Produced by |
 |---|---|
 | `pch_supervised_summary.csv` | `pch_supervised.py` — PCH DUO and ICD-10 one-vs-rest AUC/sigFraction/verdict rows |
 | `pch_supervised_verdict.json` | `pch_supervised.py` — PCH overall verdict + criterion + per-task detail |
-| `pi_supervised_summary.csv` | `pi_supervised.py` — PI overall and pair-type AUC/sigFraction/verdict rows |
-| `pi_supervised_verdict.json` | `pi_supervised.py` — PI overall verdict + criterion + per-scope detail |
+| `pi_supervised_summary.csv` | `pi_supervised.py` — PI per-pair-type AUC/sigFraction/verdict rows |
+| `pi_supervised_verdict.json` | `pi_supervised.py` — PI overall verdict + criterion + per-type detail, per-pair AUCs and positive control |
 | `spp_supervised_summary.csv` | `spp_supervised.py` — per (dataset, target, class0, class1, model) AUC/sigFraction/verdict |
 | `spp_supervised_verdict.json` | `spp_supervised.py` — overall verdict + criterion + per-contrast detail |
 | `spp_ablation_deltaLeakage.csv` | `run_ablation_supervised.py` — per-contrast b1/b2 leakage delta + bootstrap CI |
@@ -53,10 +53,20 @@ The independent JavaScript reports compared by
   standardized LogisticRegression. RF probabilities are the raw uncalibrated vote
   fractions — AUC is rank-based and sigmoid calibration is monotonic, so omitting
   calibration keeps the run cheaper and close to the JS attack framing.
-- **Protocol:** deterministic repeated stratified group holdout (test 0.3), 30
-  seeds by default. Each seed evaluates 512 whole-policy candidates and selects
-  the closest valid label-stratified partition. PCH/SPP/PI all group by
-  `policyId`; the PI splitter supports policies that occur on both pair sides.
+- **Access outcome:** the decision o is public. Coverage policies run once, with
+  granted and denied requests split evenly within each (layer, DUO term set)
+  group, so o is independent of the PCH/SPP labels by design. Each PCH/SPP task
+  uses every policy; o is a model input, and the AUC is computed within each
+  value of o and averaged, with the permutation test shuffling labels within o.
+  A chance difference in the granted share between two classes therefore does
+  not score as leakage, even where o moves the gas (unpadded B1). `--per-outcome`
+  runs each task once per outcome instead (keys `granted | ...`,
+  `denied | ...`), as a diagnostic. Captures with granted executions only are
+  analysed exactly as before.
+- **Protocol (PCH/SPP):** one execution per policy per seed, then a
+  deterministic repeated stratified group holdout (test 0.3), 30 seeds by
+  default. Each seed evaluates 512 whole-policy candidates and selects the
+  closest valid label-stratified partition, grouped by `policyId`.
 - **Metric / verdict:** AUC + a 500-shuffle permutation test (no retraining).
   Per (task/contrast, model) `legFails = (aucMean > 0.55) AND (sigFraction >=
   0.5)`; a task FAILs if either model's leg fails, and is non-gating when
@@ -67,12 +77,22 @@ The independent JavaScript reports compared by
 - **PCH:** DUO term presence tasks (`DUO GR`, `DUO DS`, ...) and ICD-10 chapter
   one-vs-rest tasks (`ICD ch...`) are built from `pch_dataset.json` and aligned
   with the JS PCH `multiseedVerdict` task names.
-- **PI:** `pi_supervised.py` reads `pi_pairs.json` when available, or generates a
-  gitignored pair file in the output directory from `pi_dataset.json`. It reports
-  the JS single-sample verdict scopes: `overall` plus pair types such as
-  `semantic_equivalent`, `structural_variant`, `weak_equivalent`, and
-  diagnostic `controlled_difference` (reported but non-gating, matching JS).
-- **SPP:** `spp_supervised.py` covers all 28 pairwise binary contrasts within
+- **PI:** `pi_supervised.py` runs a within-pair attack on the pairs the capture
+  was designed with (`piPair` in `pi_dataset.json`). The three types are set by
+  what separates the two policies: `semantic_equivalent` (same logical form,
+  different compiled predicate parameters), `weak_equivalent` (same DUO term
+  set, different logical form) and `controlled_difference` (different DUO term
+  sets, drawn evenly over 0-4 differing SPP axes). The attacker knows both candidate
+  policies, so it trains on executions of the pair itself: per seed, each
+  (side, outcome) cell is split half train / half test, one classifier per pair
+  is trained on both outcomes (o is an input), and the test AUC is computed
+  within each (pair, outcome) cell. The type statistic is the mean cell AUC; its
+  permutation null shuffles test labels within cells. Every execution commits
+  its own policy instance, so training and test executions never share a
+  commitment. A positive control adds one synthetic column shifted by 0.75 SD on
+  side 1; a type whose control is not detected is INCONCLUSIVE. All three types
+  gate, `controlled_difference` included.
+- **SPP:** `spp_supervised.py` covers the pairwise binary contrasts within
   `structureType`, `predicateCombo`, `paramType`, and `nestingDepth`.
 - **Ablation delta:** `deltaLeakage = |AUC_b1 - 0.5| - |AUC_b2 - 0.5|` (per seed,
   bootstrapped), matching `ablation_report.json`'s `effectDefinition`.
@@ -85,7 +105,7 @@ cd <repository-root>
 # PCH on the unified dataset (30 seeds).
 .venv/bin/python -m experiments.analysis.supervised.pch_supervised --seeds 30 --jobs -1
 
-# PI; auto-generates a gitignored pi_pairs_generated.json if needed.
+# PI (within-pair attack on the designed pairs).
 .venv/bin/python -m experiments.analysis.supervised.pi_supervised --seeds 30 --jobs -1
 
 # SPP on the unified dataset (30 seeds).
@@ -103,12 +123,11 @@ cd <repository-root>
 # then open it). One command to remember per experiment.
 ./refresh_viz.sh                 # PCH, 30 seeds (default)
 ./refresh_viz.sh spp             # SPP, 30 seeds
-./refresh_viz.sh pi              # PI, 30 seeds (prefers of-record pi_pairs.json)
 ./refresh_viz.sh pch --seeds 10  # any probe flag passes through
-# from the repo root, equivalently: npm run viz:pch / viz:spp / viz:pi
+# from the repo root, equivalently: npm run viz:pch / viz:spp
 ```
 
-The dashboards (`experiments/results/supervised/{pch,spp,pi}_protocol_viz.html`,
+The dashboards (`experiments/results/supervised/{pch,spp}_protocol_viz.html`,
 gitignored) are self-contained debug views of the attack protocol: the
 double-criterion decision space, permutation null distributions, per-seed AUC
 spread, a training-data health panel, and the raw per-execution rows (including
@@ -121,16 +140,13 @@ driver). Each experiment is a thin adapter that supplies a loader and a
 `build_tasks` returning tasks tagged with dataset `indices`:
 - `viz_probe.py` — PCH; delegates to `pch_supervised.build_tasks`.
 - `spp_viz_probe.py` — SPP; within-attribute pairwise contrasts.
-- `pi_viz_probe.py` — PI; pairs (not a flat dataset), so it builds its own row
-  pool of pair-side executions and passes `row_pool=` to `run_probe`. Label =
-  pair side (0/1), grouped by policyId; scopes are `overall` + each pairType;
-  `controlled_difference` is a diagnostic positive control (non-gating via the
-  task's `diagnostic` flag). Prefers the of-record `pi_pairs.json`, else runs
-  `scripts/generate_pi_pairs.js`.
+
+The PI dashboard showed the retired pooled-pair attack and was removed with it;
+the within-pair attack has no dashboard.
 
 `build_viz_html.py` inlines any `viz_data*.json` into the shared
 `pch_protocol_viz.template.html` (data-driven; titles itself from
-`DATA.experiment`). `refresh_viz.sh <pch|spp|pi>` chains probe + build; run it
+`DATA.experiment`). `refresh_viz.sh <pch|spp>` chains probe + build; run it
 after the dataset or criterion changes.
 
 `--jobs` parallelizes the independent per-seed evaluations across processes
@@ -138,11 +154,11 @@ after the dataset or criterion changes.
 with `--jobs > 1` each fit is single-threaded to avoid oversubscription. Results
 are deterministic for a fixed input dataset and seed configuration.
 
-Each runner accepts `--split-manifest-in`, `--split-manifest-out`, and
-`--split-candidates`. Verdict JSON includes per-class policy-count diagnostics
-and `powerWarning`; warnings remain diagnostic and do not change the JS-aligned
-PASS/FAIL criterion. PI defaults to the JS pairing seed `pi-experiment` and
-records the pair artifact SHA-256.
+The PCH and SPP runners accept `--split-manifest-in`, `--split-manifest-out`,
+and `--split-candidates`. Verdict JSON includes per-class policy-count
+diagnostics and `powerWarning`; warnings remain diagnostic and do not change
+the JS-aligned PASS/FAIL criterion. The PI verdict records the SHA-256 of the
+`pi_dataset.json` it read.
 
 ## Relationship to `run_policy_privacy_experiments.py`
 

@@ -87,10 +87,15 @@ def validate_inputs(data_dir: Path):
     if icd is None or len(icd["X"]) < 20 or icd["n_classes"] < 2:
         raise ValueError("PCH ICD-10 input is too small or has fewer than two classes")
 
-    policies = aggregate_policies(pi)
-    high_execution = sum(len(record["runs"]) >= 30 for record in policies.values())
-    if high_execution < 2:
-        raise ValueError("PI requires at least two policies with 30 executions")
+    designed = {entry["piPair"]["pairId"] for entry in pi if entry.get("piPair")}
+    if designed:
+        pi_summary = f"{len(designed)} designed pairs"
+    else:
+        policies = aggregate_policies(pi)
+        high_execution = sum(len(record["runs"]) >= 30 for record in policies.values())
+        if high_execution < 2:
+            raise ValueError("PI requires designed pairs or at least two policies with 30 executions")
+        pi_summary = f"{high_execution} policies with >=30 executions"
 
     for target, classes in TARGETS.items():
         data = extract_data_for_target(spp, target, classes)
@@ -104,7 +109,7 @@ def validate_inputs(data_dir: Path):
     print("Input validation passed:")
     print(f"  PCH DUO: {len(duo['X'])} samples / {duo['n_classes']} classes")
     print(f"  PCH ICD-10: {len(icd['X'])} samples / {icd['n_classes']} classes")
-    print(f"  PI: {high_execution} policies with >=30 executions")
+    print(f"  PI: {pi_summary}")
     print("  SPP: all targets have >=20 samples and >=2 classes")
 
 
@@ -136,7 +141,7 @@ def validate_outputs(work_dir: Path, results_dir: Path):
         raise ValueError("No balanced PI pairs were generated")
     for pair in pairs:
         counts = [len(policy.get("features", [])) for policy in pair.get("policies", [])]
-        if counts != [30, 30]:
+        if len(counts) != 2 or counts[0] != counts[1] or counts[0] < 2:
             raise ValueError(f"Unbalanced PI pair {pair.get('pairId')}: {counts}")
 
     pi_frame = pd.read_csv(
@@ -146,8 +151,8 @@ def validate_outputs(work_dir: Path, results_dir: Path):
         raise ValueError(
             f"Expected one PI result per pair ({len(pairs)}); found {len(pi_frame)}"
         )
-    if not ((pi_frame["n0"] == 30) & (pi_frame["n1"] == 30)).all():
-        raise ValueError("PI result CSV contains a non-30-vs-30 pair")
+    if not (pi_frame["n0"] == pi_frame["n1"]).all():
+        raise ValueError("PI result CSV contains an unbalanced pair")
     if int(pi_frame["significant"].sum()) != int(
         (pi_frame["p_value"] < 0.05).sum()
     ):
@@ -174,10 +179,6 @@ def main():
     source_dir = args.source_dir.resolve()
     work_dir = args.work_dir.resolve()
     results_dir = args.results_dir.resolve()
-    pch_output = results_dir / RESULT_SUBDIRS["pch"]
-    pi_output = results_dir / RESULT_SUBDIRS["pi"]
-    spp_output = results_dir / RESULT_SUBDIRS["spp"]
-
     work_dir.mkdir(parents=True, exist_ok=True)
     mpl_cache = work_dir / ".matplotlib"
     mpl_cache.mkdir(parents=True, exist_ok=True)
@@ -190,6 +191,40 @@ def main():
     env = os.environ.copy()
 
     validate_dataset_files(source_dir)
+    strata = outcome_sources(source_dir, work_dir)
+    if strata:
+        # o is public: each analysis compares executions with the same outcome.
+        for outcome, stratum_source in strata:
+            print(f"\n### Access outcome: {outcome}")
+            run_pipeline(stratum_source, work_dir / outcome, results_dir / outcome, args, env)
+    else:
+        run_pipeline(source_dir, work_dir, results_dir, args, env)
+    print("\nAll authoritative clustering analyses completed.")
+
+
+def outcome_sources(source_dir: Path, work_dir: Path):
+    """[(outcome, dir)] holding each outcome's rows of the three datasets; [] for single-outcome captures."""
+    from experiments.analysis.supervised.common import outcome_strata
+
+    datasets = {name: load_json(source_dir / name) for name in DATASET_FILES}
+    if len(outcome_strata(datasets["pch_dataset.json"])) < 2:
+        return []
+    out = []
+    for outcome in ("granted", "denied"):
+        target = work_dir / outcome / "source"
+        target.mkdir(parents=True, exist_ok=True)
+        for name, rows in datasets.items():
+            stratum = dict(outcome_strata(rows))[outcome]
+            (target / name).write_text(json.dumps(stratum), encoding="utf-8")
+        out.append((outcome, target))
+    return out
+
+
+def run_pipeline(source_dir: Path, work_dir: Path, results_dir: Path, args, env):
+    pch_output = results_dir / RESULT_SUBDIRS["pch"]
+    pi_output = results_dir / RESULT_SUBDIRS["pi"]
+    spp_output = results_dir / RESULT_SUBDIRS["spp"]
+    work_dir.mkdir(parents=True, exist_ok=True)
     reset_results(results_dir)
     validate_inputs(source_dir)
 
@@ -250,7 +285,6 @@ def main():
     )
 
     validate_outputs(work_dir, results_dir)
-    print("\nAll authoritative Polygon Amoy clustering analyses completed.")
 
 
 if __name__ == "__main__":

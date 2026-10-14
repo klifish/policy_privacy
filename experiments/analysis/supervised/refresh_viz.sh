@@ -22,25 +22,12 @@ EXP="$(echo "$EXP" | tr '[:upper:]' '[:lower:]')"
 case "$EXP" in
   pch) PROBE="viz_probe";     DATA="viz_data.json";     OUT="pch_protocol_viz.html" ;;
   spp) PROBE="spp_viz_probe"; DATA="viz_data_spp.json"; OUT="spp_protocol_viz.html" ;;
-  pi)  PROBE="pi_viz_probe";  DATA="viz_data_pi.json";  OUT="pi_protocol_viz.html" ;;
-  *) echo "unknown experiment '$EXP' (expected: pch | spp | pi)" >&2; exit 2 ;;
+  pi) echo "the PI dashboard showed the retired pooled-pair attack; PI is now a within-pair attack (pi_supervised.py) with no dashboard" >&2; exit 2 ;;
+  *) echo "unknown experiment '$EXP' (expected: pch | spp)" >&2; exit 2 ;;
 esac
 
-# PI: prefer the of-record pi_pairs.json so the dashboard matches the
-# authoritative verdict, instead of a freshly generated random draw. Only inject
-# --pairs when the caller didn't already pass one.
-EXTRA=()
-if [[ "$EXP" == "pi" && "$*" != *"--pairs"* ]]; then
-  OFRECORD="$RESULTS/pi_pairs_generated.json"
-  if [[ -f "$OFRECORD" ]]; then EXTRA=(--pairs "$OFRECORD"); echo "(using of-record pi_pairs.json)"; fi
-fi
-
-echo "[1/2] probing $EXP ($PROBE $* ${EXTRA[*]:-}) ..."
-if [[ ${#EXTRA[@]} -gt 0 ]]; then
-  "$PY" -m "experiments.analysis.supervised.$PROBE" "$@" "${EXTRA[@]}"
-else
-  "$PY" -m "experiments.analysis.supervised.$PROBE" "$@"
-fi
+echo "[1/2] probing $EXP ($PROBE $*) ..."
+"$PY" -m "experiments.analysis.supervised.$PROBE" "$@"
 
 echo "[2/2] building dashboard ..."
 "$PY" -m experiments.analysis.supervised.build_viz_html --data "$RESULTS/$DATA" --out "$RESULTS/$OUT"

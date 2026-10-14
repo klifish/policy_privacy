@@ -45,7 +45,8 @@ const experiments = {
     table: 'paper_mdpi/tables/tab_pch_terms.tex'
   },
   pi: {
-    taskCount: 4,
+    // Three designed pair types; captures before the PI layer pooled four scopes.
+    taskCount: 3,
     dataset: 'experiments/data/polygonAmoy/pi_dataset.json',
     pythonVerdict: 'experiments/results/supervised/pi_supervised_verdict.json',
     jsReport: 'experiments/results/crosscheck/pi/polygonAmoy/pi_report.json',
@@ -261,7 +262,12 @@ for (const [name, config] of Object.entries(experiments)) {
   const comparison = readJson(config.comparison);
   const pythonTasks = tasksOf(pythonVerdict);
   const jsTasks = tasksOf(jsVerdict);
-  const liveMatch = compareVerdicts(pythonVerdict, jsVerdict, config.taskCount);
+  // PCH and SPP run every task once per access outcome when the capture has
+  // granted and denied executions.
+  const stratified = name !== 'pi' && pythonTasks.some(task => task.outcome);
+  const designedPi = name === 'pi' && pythonTasks.some(task => task.positiveControl);
+  const taskCount = name === 'pi' && !designedPi ? 4 : config.taskCount * (stratified ? 2 : 1);
+  const liveMatch = compareVerdicts(pythonVerdict, jsVerdict, taskCount);
 
   if (pythonVerdict && !equalJson(normalizeCriterion(pythonVerdict.criterion), expectedCriterion)) {
     errors.push(`${config.pythonVerdict} does not use the MDPI 30-seed verdict criterion`);
@@ -269,13 +275,13 @@ for (const [name, config] of Object.entries(experiments)) {
   if (pythonVerdict && pythonVerdict.criterion?.permIters !== 500) {
     errors.push(`${config.pythonVerdict} must use 500 permutation iterations`);
   }
-  if (pythonVerdict && pythonTasks.length !== config.taskCount) {
-    errors.push(`${config.pythonVerdict} has ${pythonTasks.length} tasks; expected ${config.taskCount}`);
+  if (pythonVerdict && pythonTasks.length !== taskCount) {
+    errors.push(`${config.pythonVerdict} has ${pythonTasks.length} tasks; expected ${taskCount}`);
   }
   if (!jsVerdict) {
     errors.push(`${config.jsReport} has no multiseedVerdict`);
-  } else if (jsTasks.length !== config.taskCount) {
-    errors.push(`${config.jsReport} has ${jsTasks.length} tasks; expected ${config.taskCount}`);
+  } else if (jsTasks.length !== taskCount) {
+    errors.push(`${config.jsReport} has ${jsTasks.length} tasks; expected ${taskCount}`);
   }
   // A Python/JS disagreement on a task is an error unless the pad-target
   // residual diagnostic shows the Python FAIL is carried entirely by the
@@ -323,12 +329,18 @@ if (summaryTable) {
   }
 }
 
-const clusteringOutputs = [
-  'experiments/results/clustering/pch/pch_global_duo_clustering.csv',
-  'experiments/results/clustering/pch/pch_global_icd10_clustering.csv',
-  'experiments/results/clustering/pi/pi_balanced_debiased.csv',
-  'experiments/results/clustering/spp/spp_clustering_summary.csv'
+// Clustering runs once per access outcome for captures with both outcomes.
+const clusteringFiles = [
+  'pch/pch_global_duo_clustering.csv',
+  'pch/pch_global_icd10_clustering.csv',
+  'pi/pi_balanced_debiased.csv',
+  'spp/spp_clustering_summary.csv'
 ];
+const clusteringRoot = 'experiments/results/clustering';
+const clusteringStrata = fs.existsSync(absolute(`${clusteringRoot}/granted`)) ? ['granted/', 'denied/'] : [''];
+const clusteringOutputs = clusteringStrata.flatMap(
+  stratum => clusteringFiles.map(file => `${clusteringRoot}/${stratum}${file}`)
+);
 for (const relativePath of clusteringOutputs) {
   const filePath = requireFile(relativePath);
   manifest.clustering[relativePath] = filePath ? {

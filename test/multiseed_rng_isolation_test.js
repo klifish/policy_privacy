@@ -15,7 +15,8 @@ const {
   buildPchRecordsForSeed
 } = require('../experiments/analysis/crosscheck/pch/seed_records');
 const {
-  buildPiRecordsForSeed
+  buildPiRecordsForSeed,
+  loadPairs
 } = require('../experiments/analysis/crosscheck/pi/seed_records');
 const {
   runSupervisedAttacks
@@ -74,21 +75,25 @@ function makePchFeatures() {
   }));
 }
 
-function makePiPairs() {
-  return Array.from({ length: 12 }, (_, pairIndex) => ({
-    pairId: `pair-${pairIndex}`,
-    pairType: pairIndex < 6 ? 'semantic' : 'structural',
-    policies: [0, 1].map((label) => ({
-      policyId: `pair-${pairIndex}-policy-${label}`,
-      features: Array.from({ length: 2 }, (_, executionIndex) => ({
-        features: featureBag(pairIndex * 4 + executionIndex, label * 31),
-        satisfy: executionIndex % 2 === 0,
-        duoTerm: label,
-        ontologyNamespace: null,
-        ontologyValue: null
-      }))
-    }))
-  }));
+// pi_dataset rows of designed pairs: two pair types, 3 executions per
+// (side, outcome) cell.
+function makePiDataset() {
+  const rows = [];
+  for (let pairIndex = 0; pairIndex < 12; pairIndex++) {
+    const pairType = pairIndex < 6 ? 'semantic_equivalent' : 'weak_equivalent';
+    for (const side of [0, 1]) {
+      for (let executionId = 0; executionId < 6; executionId++) {
+        rows.push({
+          policyId: `pair-${pairIndex}-policy-${side}`,
+          executionId,
+          piPair: { pairId: `pair-${pairIndex}`, pairType, side },
+          accessGranted: executionId % 2 === 0,
+          features: featureBag(pairIndex * 12 + side * 6 + executionId, side * 31)
+        });
+      }
+    }
+  }
+  return rows;
 }
 
 function makeSppExecutions() {
@@ -196,15 +201,15 @@ describe('Multi-seed isolated RNG streams', function () {
     expect(keyed(reverse)).to.deep.equal(keyed(forward));
   });
 
-  it('keeps named PI scopes stable when scope traversal order changes', function () {
-    const pairs = makePiPairs();
-    const reordered = [...pairs.slice(6), ...pairs.slice(0, 6)];
-    const ctx = { testRatio: 0.3, permutationIterations: 2 };
-    const forward = keyed(buildPiRecordsForSeed(0, { ...ctx, pairs }, 222));
-    const reverse = keyed(buildPiRecordsForSeed(0, { ...ctx, pairs: reordered }, 222));
+  it('keeps named PI pair types stable when pair order changes', function () {
+    const rows = makePiDataset();
+    const reordered = [...rows.slice(72), ...rows.slice(0, 72)];
+    const ctx = { permutationIterations: 2, rfOpts: { trees: 3, maxDepth: 3 }, controlShift: null };
+    const forward = keyed(buildPiRecordsForSeed(0, { ...ctx, pairs: loadPairs(rows) }, 222));
+    const reverse = keyed(buildPiRecordsForSeed(0, { ...ctx, pairs: loadPairs(reordered) }, 222));
 
-    expect(reverse['semantic:single']).to.deep.equal(forward['semantic:single']);
-    expect(reverse['structural:single']).to.deep.equal(forward['structural:single']);
+    expect(reverse['semantic_equivalent:lr']).to.deep.equal(forward['semantic_equivalent:lr']);
+    expect(reverse['weak_equivalent:rf']).to.deep.equal(forward['weak_equivalent:rf']);
   });
 
   it('keeps named SPP tasks stable when attribute traversal order changes', function () {
@@ -262,10 +267,11 @@ describe('Multi-seed isolated RNG streams', function () {
   });
 
   it('produces identical PI serial and worker verdicts', async function () {
-    const pairs = makePiPairs();
-    const pairsPath = path.join(tmpDir, 'pairs.json');
-    fs.writeFileSync(pairsPath, JSON.stringify({ pairs }));
-    const ctx = { pairs, testRatio: 0.3, permutationIterations: 2 };
+    const rows = makePiDataset();
+    const piDatasetPath = path.join(tmpDir, 'pi_dataset.json');
+    fs.writeFileSync(piDatasetPath, JSON.stringify(rows));
+    const rfOpts = { trees: 3, maxDepth: 3 };
+    const ctx = { pairs: loadPairs(rows), permutationIterations: 2, rfOpts, controlShift: 0.75 };
     const opts = { seeds: 2, permutationIterations: 2 };
     const serial = await evaluateMultiseed(
       (seedIndex, baseSeed) => buildPiRecordsForSeed(seedIndex, ctx, baseSeed),
@@ -277,11 +283,7 @@ describe('Multi-seed isolated RNG streams', function () {
         ...opts,
         concurrency: 2,
         workerEntry: PI_WORKER,
-        workerData: {
-          pairsOutputPath: pairsPath,
-          testRatio: 0.3,
-          permutationIterations: 2
-        }
+        workerData: { piDatasetPath, permutationIterations: 2, rfOpts, controlShift: 0.75 }
       }
     );
     expect(parallel).to.deep.equal(serial);

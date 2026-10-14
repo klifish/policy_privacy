@@ -128,8 +128,29 @@ def build(byp, mode, rng):
     return high, pairs
 
 
+def designed_pairs(dataset):
+    """The capture's designed PI pairs (piPair), each side with all its executions."""
+    sides = defaultdict(lambda: [None, None])
+    types = {}
+    for e in dataset:
+        pair = e.get("piPair")
+        feats = e.get("features") or {}
+        if not pair or feats.get("commitGasUsed") is None or feats.get("accessGasUsed") is None:
+            continue
+        side = sides[pair["pairId"]]
+        if side[pair["side"]] is None:
+            side[pair["side"]] = {"name": e["policyId"], "layer": e.get("layer"),
+                                  "duoTerm": e.get("duoTerm"), "features": []}
+        side[pair["side"]]["features"].append(dict(feats))
+        types[pair["pairId"]] = pair["pairType"]
+    return [
+        {"pairId": pid, "pairType": types[pid], "mode": "designed", "policies": sides[pid]}
+        for pid in sorted(sides) if all(sides[pid])
+    ]
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Build balanced 30v30 PI pairs")
+    ap = argparse.ArgumentParser(description="Build balanced PI pairs (designed pairs when the capture has them)")
     ap.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     ap.add_argument("--mode", choices=["same-layer", "cross-layer", "both"], default="both")
     ap.add_argument("--seed", type=int, default=42)
@@ -145,6 +166,12 @@ def main():
 
     print(f"Loading {ds_path} ...")
     dataset = load_json(ds_path)
+    designed = designed_pairs(dataset)
+    if designed:
+        with open(out_path, "w") as f:
+            json.dump({"balanced": True, "mode": "designed", "seed": args.seed, "pairs": designed}, f)
+        print(f"{len(designed)} designed pairs -> {out_path}")
+        return
     byp = aggregate_policies(dataset)
     n_high = sum(1 for r in byp.values() if len(r["runs"]) >= MIN_EXEC)
     print(f"高执行策略 (>= {MIN_EXEC} 次): {n_high}")

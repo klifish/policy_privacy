@@ -271,11 +271,23 @@ def bootstrap_cluster_targets(root, rng, iterations):
     return output
 
 
+def load_pi_clustering(profile_dir):
+    """PI clustering rows of one profile; per-outcome result directories are concatenated."""
+    single = profile_dir / "results" / "pi" / "pi_balanced_debiased.csv"
+    if single.exists():
+        return pd.read_csv(single).set_index("pair_id")
+    frames = []
+    for outcome in ("granted", "denied"):
+        frame = pd.read_csv(profile_dir / "results" / outcome / "pi" / "pi_balanced_debiased.csv")
+        frame["pair_id"] = frame["pair_id"].astype(str) + "@" + outcome
+        frames.append(frame)
+    return pd.concat(frames).set_index("pair_id")
+
+
 def compare_pi_clustering(root, rng, iterations):
     base = root / "comparison" / "clustering"
-    relative = Path("results/pi/pi_balanced_debiased.csv")
-    b1 = pd.read_csv(base / "b1_unpadded" / relative).set_index("pair_id")
-    b2 = pd.read_csv(base / "b2_padded" / relative).set_index("pair_id")
+    b1 = load_pi_clustering(base / "b1_unpadded")
+    b2 = load_pi_clustering(base / "b2_padded")
     if set(b1.index) != set(b2.index):
         raise ValueError("PI clustering pair IDs differ between B1 and B2")
     common = sorted(b1.index)

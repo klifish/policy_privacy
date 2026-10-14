@@ -35,8 +35,8 @@ def main():
         raise ValueError(f"Missing PI balanced columns: {missing}")
     if frame.empty or frame[list(required)].isna().any().any():
         raise ValueError("PI balanced input is empty or contains NaN")
-    if not ((frame["n0"] == 30) & (frame["n1"] == 30)).all():
-        raise ValueError("PI plot input must contain only balanced 30-vs-30 pairs")
+    if not (frame["n0"] == frame["n1"]).all():
+        raise ValueError("PI plot input must contain only balanced pairs")
 
     pair_types = sorted(frame["pair_type"].unique())
     labels = [pair_type.replace("_", "\n") for pair_type in pair_types]
@@ -65,7 +65,7 @@ def main():
 
     axes[0, 0].bar(x, summaries["observed_ari"], color="steelblue", alpha=0.8)
     axes[0, 0].axhline(0, color="black", linewidth=0.8)
-    axes[0, 0].set_title("Observed ARI by Balanced Pair Type")
+    axes[0, 0].set_title("Observed ARI by Pair Type")
     axes[0, 0].set_ylabel("Mean ARI")
 
     axes[0, 1].bar(
@@ -86,7 +86,7 @@ def main():
     ]
     axes[1, 0].bar(x, summaries["debiased_nmi"], color=colors, alpha=0.8)
     axes[1, 0].axhline(0, color="black", linewidth=0.8)
-    axes[1, 0].set_title("Debiased NMI by Balanced Pair Type")
+    axes[1, 0].set_title("Debiased NMI by Pair Type")
     axes[1, 0].set_ylabel("Observed NMI - baseline NMI")
 
     rates = summaries["significant"] / summaries["pairs"]
@@ -103,8 +103,8 @@ def main():
         axis.grid(True, axis="y", alpha=0.25)
 
     fig.suptitle(
-        "PI Unsupervised Attack: Balanced 30-vs-30 Pairs\n"
-        "20 K-Means seeds and 200 label permutations",
+        f"PI Unsupervised Attack: Balanced {int(frame['n0'].iloc[0])}-vs-{int(frame['n1'].iloc[0])} Pairs\n"
+        "K-Means with label-permutation baseline",
         fontsize=14,
     )
     fig.tight_layout()

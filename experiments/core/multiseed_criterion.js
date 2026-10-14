@@ -493,9 +493,9 @@ function pickVerdictText(overallPassed, { pass, fail, inconclusive }) {
 }
 
 /** Pretty one-line-per-task console block for a verdict. */
-function printVerdict(title, verdict) {
+function printVerdict(title, verdict, splitLabel = 'policy-disjoint') {
   const c = verdict.criterion;
-  console.log(`\n${title} — multi-seed verdict (${c.seeds} seeds, policy-disjoint)`);
+  console.log(`\n${title} — multi-seed verdict (${c.seeds} seeds, ${splitLabel})`);
   console.log(`Criterion: FAIL iff AUC_mean > ${c.aucMax} AND significant-seed fraction ≥ ${c.sigFractionMax} (perm α=${c.permAlpha}); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.`);
   console.log(`Underpowered tasks (median test n < ${c.minTestSamples}) are reported but do not gate.`);
   console.log(`Diagnostic tasks are reported but do not gate.`);
