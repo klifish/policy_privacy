@@ -32,6 +32,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (arg.startsWith('--min-rows-per-class=')) options.minRowsPerClass = Number(arg.split('=')[1]);
     else if (arg.startsWith('--min-policies-per-class=')) options.minPoliciesPerClass = Number(arg.split('=')[1]);
     else if (arg.startsWith('--spp-executions=')) options.sppExecutionsPerPolicy = Number(arg.split('=')[1]);
+    else if (arg === '--all') options.all = true;
     else if (arg === '--help' || arg === '-h') options.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -51,6 +52,7 @@ function printUsage() {
   console.log('  --min-rows-per-class=<n>        Coverage target per label class (default: 70)');
   console.log('  --min-policies-per-class=<n>    Independent policy target per label class (default: 8)');
   console.log('  --spp-executions=<n>            SPP executions retained per policy (default: 3)');
+  console.log('  --all                           Keep every policy (replay the whole capture)');
 }
 
 function readJson(filePath) {
@@ -190,6 +192,15 @@ function coverageFor(selected, policies) {
 
 function selectPolicies(definitions, options) {
   const policies = buildPolicies(definitions);
+  if (options.all) {
+    return {
+      indices: definitions.map((_, index) => index),
+      selectedPolicyKeys: [...policies.keys()].sort(),
+      highExecutionPolicies: [...policies.values()].filter((policy) => policy.piPaired).length,
+      coverage: null,
+      all: true
+    };
+  }
   const allLabels = [...new Set(
     [...policies.values()].flatMap(policy => [...policy.labels])
   )].sort();
@@ -291,8 +302,8 @@ function writeB2Subset(outputDir, definitions, executions, selection, options, s
     selectedExecutionCount: selectedDefinitions.length,
     selectedPolicyCount: selection.selectedPolicyKeys.length,
     highExecutionPoliciesRetained: selection.highExecutionPolicies,
-    selectionRules: {
-      retainPoliciesWithAtLeastExecutions: 30,
+    selectionRules: selection.all ? { all: true } : {
+      retain: 'every PI-paired policy (or every 30-execution depth-layer policy without a PI layer)',
       minRowsPerClass: options.minRowsPerClass,
       minPoliciesPerClass: options.minPoliciesPerClass,
       dimensions: ['DUO', 'ICD10', 'logicStructure', 'structureType', 'nestingDepth', 'predicateCombo', 'paramType']
