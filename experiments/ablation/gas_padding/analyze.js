@@ -18,6 +18,9 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (arg.startsWith('--concurrency=')) options.concurrency = Number(arg.split('=')[1]);
     else if (arg.startsWith('--seeds=')) options.seeds = Number(arg.split('=')[1]);
     else if (arg.startsWith('--bootstrap-iterations=')) options.bootstrapIterations = Number(arg.split('=')[1]);
+    // The ablation compares AUCs; a low count only shortens the per-seed
+    // permutation tests, whose significance columns are then not meaningful.
+    else if (arg.startsWith('--permutation-iterations=')) options.permutationIterations = Number(arg.split('=')[1]);
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return options;
@@ -49,7 +52,8 @@ function analyzeProfile(rootDir, profile, options) {
     '--phase', '2',
     '--multiseed-seeds', String(options.seeds),
     '--concurrency', String(options.concurrency),
-    '--include-seed-records'
+    '--include-seed-records',
+    ...(options.permutationIterations ? ['--permutation-iterations', String(options.permutationIterations)] : [])
   ];
   const jobs = [
     {

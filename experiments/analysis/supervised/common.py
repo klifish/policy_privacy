@@ -53,6 +53,34 @@ CSV_FIELDS = [
 ]
 
 
+OUTCOMES: Sequence[str] = ("granted", "denied")
+
+
+def outcome_of(entry: dict) -> Optional[str]:
+    """Public access decision o of one execution (recorded outcome, else the plan)."""
+    value = entry.get("accessGranted", entry.get("satisfy"))
+    if value is None:
+        return None
+    return "granted" if bool(value) else "denied"
+
+
+def outcome_strata(dataset: List[dict]):
+    """[(outcome, rows)] for a capture with both outcomes; [(None, dataset)] otherwise.
+
+    Used by the per-outcome diagnostic runs (``--per-outcome``) and by the
+    value gate.  Captures with granted executions only keep one stratum and
+    their original task keys.
+    """
+    present = {outcome_of(entry) for entry in dataset}
+    if not present <= set(OUTCOMES) or len(present) < 2:
+        return [(None, dataset)]
+    return [(o, [entry for entry in dataset if outcome_of(entry) == o]) for o in OUTCOMES]
+
+
+def stratum_key(outcome: Optional[str], key: str) -> str:
+    return key if outcome is None else f"{outcome} | {key}"
+
+
 def ensure_numeric(value) -> float:
     """Parse a feature value to float; None/missing -> 0.0 (matches JS `value || 0`)."""
     if value is None:
@@ -315,6 +343,49 @@ def permutation_pvalue(
     return (count + 1) / (iters + 1)
 
 
+def outcome_codes(dataset: Sequence[dict]) -> np.ndarray:
+    """1 for granted, 0 for denied, per row (the public decision o)."""
+    return np.array([1 if outcome_of(entry) == "granted" else 0 for entry in dataset], dtype=int)
+
+
+def stratified_auc_pvalue(y_true, proba, strata, iters: int, rng: np.random.Generator):
+    """AUC within each stratum of o, averaged over strata with both classes, and
+    its permutation p-value with labels shuffled within strata.
+
+    o is public. Averaging within-stratum AUCs keeps o from scoring as label
+    information when its share differs by chance between the classes, and the
+    within-stratum permutation keeps that difference in the null. A single
+    stratum reduces to the plain AUC and permutation test.
+    """
+    y_true = np.asarray(y_true).astype(int)
+    proba = np.asarray(proba, dtype=float)
+    strata = np.asarray(strata)
+    levels = [s for s in np.unique(strata)
+              if 0 < int(y_true[strata == s].sum()) < int((strata == s).sum())]
+    if len(np.unique(strata)) == 1:
+        auc = roc_auc_score(y_true, proba)
+        return auc, permutation_pvalue(y_true, proba, auc, iters, rng)
+    if not levels:
+        return 0.5, 1.0
+    cells = []
+    for s in levels:
+        mask = strata == s
+        labels = y_true[mask]
+        n_pos = int(labels.sum())
+        cells.append((labels, _average_ranks(proba[mask]), n_pos, len(labels) - n_pos))
+    auc = float(np.mean([_auc_from_ranks(l, r, p, n) for l, r, p, n in cells]))
+    count = 0
+    for _ in range(iters):
+        perm = []
+        for labels, ranks, n_pos, n_neg in cells:
+            shuffled = labels.copy()
+            rng.shuffle(shuffled)
+            perm.append(_auc_from_ranks(shuffled, ranks, n_pos, n_neg))
+        if np.mean(perm) >= auc:
+            count += 1
+    return auc, (count + 1) / (iters + 1)
+
+
 def one_execution_per_group(groups, seed: int, exec_ids=None) -> np.ndarray:
     """Row indices keeping one execution per policy for this seed.
 
@@ -354,14 +425,23 @@ def evaluate_seed(
     perm_iters: int = PERM_ITERS,
     split_plan: Optional[Dict] = None,
     split_candidates: int = DEFAULT_SPLIT_CANDIDATES,
+    strata=None,
 ) -> Optional[Dict]:
-    """One stratified group holdout; returns model metrics and split diagnostics."""
+    """One stratified group holdout; returns model metrics and split diagnostics.
+
+    ``strata`` (the public decision o per row, optional) is given to the
+    classifier as an input and the AUC is computed within its levels (see
+    ``stratified_auc_pvalue``).
+    """
     split = split_plan or repeated_stratified_group_holdout(
         y, groups, seed, test_ratio=test_ratio, candidates=split_candidates
     )
     if split is None:
         return None
     tr_idx, te_idx = split["trainIndex"], split["testIndex"]
+    if strata is not None:
+        strata = np.asarray(strata)
+        X = np.column_stack([X, strata])
     X_tr, X_te = X[tr_idx], X[te_idx]
     y_tr, y_te = y[tr_idx], y[te_idx]
 
@@ -390,8 +470,11 @@ def evaluate_seed(
             auc, pval = 0.5, 1.0
         else:
             proba = fit_predict_proba(m, X_tr, y_tr, X_te, seed, rf_n_jobs)
-            auc = roc_auc_score(y_te, proba)
-            pval = permutation_pvalue(y_te, proba, auc, perm_iters, rng)
+            if strata is None:
+                auc = roc_auc_score(y_te, proba)
+                pval = permutation_pvalue(y_te, proba, auc, perm_iters, rng)
+            else:
+                auc, pval = stratified_auc_pvalue(y_te, proba, strata[te_idx], perm_iters, rng)
         out[m] = {"auc": auc, "advantage": abs(auc - 0.5), "pval": pval}
     return out
 
@@ -415,6 +498,7 @@ def analyze_contrast(
     split_manifest_in: Optional[Dict] = None,
     split_manifest_out: Optional[Dict] = None,
     exec_ids=None,
+    strata=None,
 ) -> Dict:
     """Aggregate one binary contrast under the JS double criterion.
 
@@ -456,11 +540,17 @@ def analyze_contrast(
         split_plans.append(plan)
 
     rf_n_jobs = -1 if jobs == 1 else 1
+    strata = None if strata is None else np.asarray(strata)
+
+    def seed_strata(s):
+        return None if strata is None else strata[subsamples[s]]
+
     if jobs == 1:
         per_seed = [
             evaluate_seed(
                 X[subsamples[s]], y[subsamples[s]], groups[subsamples[s]], s, models, rf_n_jobs,
                 test_ratio, perm_iters, split_plan=split_plans[s], split_candidates=split_candidates,
+                strata=seed_strata(s),
             )
             for s in range(seeds)
         ]
@@ -469,6 +559,7 @@ def analyze_contrast(
             delayed(evaluate_seed)(
                 X[subsamples[s]], y[subsamples[s]], groups[subsamples[s]], s, models, rf_n_jobs,
                 test_ratio, perm_iters, split_plan=split_plans[s], split_candidates=split_candidates,
+                strata=seed_strata(s),
             )
             for s in range(seeds)
         )

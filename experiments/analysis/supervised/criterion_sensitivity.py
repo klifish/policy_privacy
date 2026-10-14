@@ -113,12 +113,14 @@ def null_simulation(replicates: int, seeds: int, jobs: int, perm_iters: int, spl
                 features["commitGasUsed"] = str(int(rng.uniform(*NULL_COMMIT_BAND)))
             failed = []
             for task in build_tasks(synthetic):
+                key = task["key"]
                 res = analyze_contrast(task["X"], task["y"], task["groups"], seeds, ["lr", "rf"], jobs=jobs,
-                                       perm_iters=perm_iters, task_key=task["key"], split_candidates=split_candidates)
-                counts[exp].setdefault(task["key"], 0)
+                                       perm_iters=perm_iters, task_key=key, split_candidates=split_candidates,
+                                       strata=task["outcome"])
+                counts[exp].setdefault(key, 0)
                 if not res["passed"]:
-                    failed.append(task["key"])
-                    counts[exp][task["key"]] += 1
+                    failed.append(key)
+                    counts[exp][key] += 1
             record["fails"][exp] = failed
             print(f"[null {rep}] {exp}: {len(failed)} FAIL -> {failed}", flush=True)
         out["perReplicate"].append(record)

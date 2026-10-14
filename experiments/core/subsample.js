@@ -66,4 +66,33 @@ function oneExecutionPerPolicyInPairs(pairs, rng = Math.random) {
   }));
 }
 
-module.exports = { oneExecutionPerPolicy, oneExecutionPerPolicyInPairs };
+/** Public access decision o of one row: the recorded outcome, else the plan. */
+function outcomeOf(row) {
+  const value = row.accessGranted ?? row.satisfy;
+  if (value === undefined || value === null) return null;
+  return value ? 'granted' : 'denied';
+}
+
+/**
+ * [{ outcome, rows }] for rows with both outcomes; [{ outcome: null, rows }]
+ * otherwise. o is public, so a task compares executions with the same
+ * outcome and runs once per outcome. Mirrors `outcome_strata` in
+ * experiments/analysis/supervised/common.py.
+ */
+function outcomeStrata(rows) {
+  const present = new Set(rows.map(outcomeOf));
+  if (present.size !== 2 || !present.has('granted') || !present.has('denied')) {
+    return [{ outcome: null, rows }];
+  }
+  return ['granted', 'denied'].map((outcome) => ({
+    outcome,
+    rows: rows.filter((row) => outcomeOf(row) === outcome)
+  }));
+}
+
+/** Task key within an outcome stratum (unchanged for unstratified captures). */
+function stratumKey(outcome, key) {
+  return outcome ? `${outcome} | ${key}` : key;
+}
+
+module.exports = { oneExecutionPerPolicy, oneExecutionPerPolicyInPairs, outcomeOf, outcomeStrata, stratumKey };

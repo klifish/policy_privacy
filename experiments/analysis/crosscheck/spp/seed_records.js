@@ -11,7 +11,7 @@
 
 const { runSupervisedAttacks } = require('./attacks');
 const { createRng } = require('../../../core/random');
-const { oneExecutionPerPolicy } = require('../../../core/subsample');
+const { oneExecutionPerPolicy, outcomeOf, outcomeStrata, stratumKey } = require('../../../core/subsample');
 
 /**
  * Build per-classifier verdict records (one LR, one RF) from a single
@@ -59,14 +59,25 @@ function buildPerClassifierRecords(key, r) {
  *          permutationIterations:number, balanceMethod:string}} ctx
  */
 function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
-  const { executionResults, targetAttributes, testRatio, permutationIterations, balanceMethod } = ctx;
+  // Default: every policy in one contrast, with o as an input and the AUC
+  // taken within o. ctx.perOutcome (diagnostic): each contrast once per outcome.
+  if (ctx.perOutcome) {
+    return outcomeStrata(ctx.executionResults).flatMap(({ outcome, rows }) =>
+      buildSppStratumRecords(rows, outcome, ctx, baseSeed));
+  }
+  return buildSppStratumRecords(ctx.executionResults, null, ctx, baseSeed);
+}
+
+function buildSppStratumRecords(executionResults, outcome, ctx, baseSeed) {
+  const { targetAttributes, testRatio, permutationIterations, balanceMethod } = ctx;
   const isolated = Number.isInteger(baseSeed);
   const skipLegacyPermutation = isolated && ctx.skipLegacyPermutation !== false;
   // One execution per policy per seed (see core/subsample.js); the attacks
-  // then split that subsample policy-disjointly.
+  // then split that subsample policy-disjointly. Unstratified captures keep
+  // their original RNG streams.
   const sampled = oneExecutionPerPolicy(
     executionResults,
-    isolated ? createRng(baseSeed, 'spp', 'subsample') : Math.random
+    isolated ? createRng(baseSeed, ...(outcome ? ['spp', outcome] : ['spp']), 'subsample') : Math.random
   );
   const records = [];
   const origLog = console.log;
@@ -82,6 +93,8 @@ function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
         perClassifierPermutation: true,
         rngMode: isolated ? 'isolated' : 'legacy',
         baseSeed,
+        // o as a model input and AUC stratum when the rows hold both outcomes.
+        outcomeAdjusted: !outcome && new Set(sampled.map(outcomeOf)).size > 1,
         skipLegacyPermutation
       });
     } finally {
@@ -91,7 +104,7 @@ function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
       if (r.skipped || !r.logisticRegression) continue;
       // Keep 'none' contrasts visible. The shared criterion decides from their
       // actual median test size whether they are underpowered/non-gating.
-      records.push(...buildPerClassifierRecords(`${attr}: ${r.class0}/${r.class1}`, r));
+      records.push(...buildPerClassifierRecords(stratumKey(outcome, `${attr}: ${r.class0}/${r.class1}`), r));
     }
   }
 

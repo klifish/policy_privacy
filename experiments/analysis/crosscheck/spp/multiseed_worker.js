@@ -18,7 +18,8 @@ runSeedWorker(
     targetAttributes: workerData.targetAttributes,
     testRatio: workerData.testRatio,
     permutationIterations: workerData.permutationIterations,
-    balanceMethod: workerData.balanceMethod
+    balanceMethod: workerData.balanceMethod,
+    perOutcome: workerData.perOutcome === true
   }),
   (seedIndex, ctx, baseSeed) => buildSppRecordsForSeed(seedIndex, ctx, baseSeed)
 );

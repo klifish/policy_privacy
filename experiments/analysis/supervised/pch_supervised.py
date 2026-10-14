@@ -23,6 +23,9 @@ from .common import (
     PERM_ITERS,
     TEST_RATIO,
     analyze_contrast,
+    outcome_codes,
+    outcome_strata,
+    stratum_key,
     build_verdict,
     checkpoint_rows,
     feature_row,
@@ -123,6 +126,7 @@ def build_base_arrays(dataset: List[dict]):
 
 def build_tasks(dataset: List[dict]):
     X, groups = build_base_arrays(dataset)
+    outcome = outcome_codes(dataset)
     tasks = []
     all_indices = np.arange(len(dataset), dtype=int)
 
@@ -142,6 +146,7 @@ def build_tasks(dataset: List[dict]):
             "X": X,
             "y": y,
             "groups": groups,
+            "outcome": outcome,
             # Original dataset row indices for this task (diagnostics only; the
             # of-record pipeline ignores this key).
             "indices": all_indices,
@@ -171,6 +176,7 @@ def build_tasks(dataset: List[dict]):
                 "X": X[indices],
                 "y": y,
                 "groups": groups[indices],
+                "outcome": outcome[indices],
                 "indices": indices,
             })
     return tasks
@@ -188,41 +194,50 @@ def run_dataset(
     split_manifest_in: Optional[Dict] = None,
     split_manifest_out: Optional[Dict] = None,
     perm_iters: int = PERM_ITERS,
+    per_outcome: bool = False,
 ) -> Dict:
+    """All PCH tasks. Default: every policy in one task, with o as an input and
+    the AUC taken within o. ``per_outcome`` (diagnostic): each task once per
+    outcome on that outcome's executions."""
     results = []
     if csv_path is not None and csv_path.exists():
         csv_path.unlink()
 
-    for task in build_tasks(dataset):
-        res = analyze_contrast(
-            task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
-            perm_iters=perm_iters, task_key=task["key"],
-            split_candidates=split_candidates,
-            split_manifest_in=split_manifest_in,
-            split_manifest_out=split_manifest_out,
-        )
-        res.update({
-            "dataset": dataset_tag,
-            "key": task["key"],
-            "target": task["target"],
-            "class0": task["class0"],
-            "class1": task["class1"],
-        })
-        results.append(res)
-        parts = [
-            f"{m} AUC={res['models'][m]['aucMean']:.3f} sig={res['models'][m]['sigFraction']:.2f}"
-            for m in models if m in res.get("models", {})
-        ]
-        tag = "non-gating" if res.get("nonGating") else ("PASS" if res.get("passed") else "FAIL")
-        n = res.get("medianTestN")
-        print(f"  [{tag:10}] {task['key']:16} medN={n if n is not None else 'NA'} " + " | ".join(parts))
+    strata = outcome_strata(dataset) if per_outcome else [(None, dataset)]
+    for outcome, rows in strata:
+        for task in build_tasks(rows):
+            key = stratum_key(outcome, task["key"])
+            res = analyze_contrast(
+                task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
+                perm_iters=perm_iters, task_key=key,
+                split_candidates=split_candidates,
+                split_manifest_in=split_manifest_in,
+                split_manifest_out=split_manifest_out,
+                strata=None if per_outcome else task["outcome"],
+            )
+            res.update({
+                "dataset": dataset_tag,
+                "key": key,
+                "outcome": outcome,
+                "target": task["target"],
+                "class0": task["class0"],
+                "class1": task["class1"],
+            })
+            results.append(res)
+            parts = [
+                f"{m} AUC={res['models'][m]['aucMean']:.3f} sig={res['models'][m]['sigFraction']:.2f}"
+                for m in models if m in res.get("models", {})
+            ]
+            tag = "non-gating" if res.get("nonGating") else ("PASS" if res.get("passed") else "FAIL")
+            n = res.get("medianTestN")
+            print(f"  [{tag:10}] {key:26} medN={n if n is not None else 'NA'} " + " | ".join(parts))
 
-        partial = build_verdict(dataset_tag, seeds, results, perm_iters=perm_iters)
-        checkpoint_rows(csv_path, verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models), append=True)
-        if json_path is not None:
-            json_path.parent.mkdir(parents=True, exist_ok=True)
-            with json_path.open("w", encoding="utf-8") as handle:
-                json.dump(partial, handle, indent=2)
+            partial = build_verdict(dataset_tag, seeds, results, perm_iters=perm_iters)
+            checkpoint_rows(csv_path, verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models), append=True)
+            if json_path is not None:
+                json_path.parent.mkdir(parents=True, exist_ok=True)
+                with json_path.open("w", encoding="utf-8") as handle:
+                    json.dump(partial, handle, indent=2)
 
     return build_verdict(dataset_tag, seeds, results, perm_iters=perm_iters)
 
@@ -239,6 +254,8 @@ def main() -> None:
     parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
     parser.add_argument("--split-manifest-in", type=Path, default=None)
     parser.add_argument("--split-manifest-out", type=Path, default=None)
+    parser.add_argument("--per-outcome", action="store_true",
+                        help="diagnostic: run every task once per access outcome")
     args = parser.parse_args()
 
     dataset_path = find_pch_dataset(args.data_dir)
@@ -261,6 +278,7 @@ def main() -> None:
         split_manifest_in=manifest_in,
         split_manifest_out=manifest_out,
         perm_iters=args.permutation_iterations,
+        per_outcome=args.per_outcome,
     )
     manifest_path = args.split_manifest_out or (args.output_dir / "pch_split_manifest.json")
     write_split_manifest(manifest_path, manifest_out)

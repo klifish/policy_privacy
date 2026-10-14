@@ -72,6 +72,9 @@ function parseArgs(argv = process.argv.slice(2)) {
       case '--balance-method':
         config.balanceMethod = unknown[++i];
         break;
+      case '--per-outcome':
+        config.perOutcome = true;
+        break;
       default:
         console.warn(`Unknown argument ${arg} ignored`);
     }
@@ -485,7 +488,8 @@ async function runExperiment(config = {}) {
     targetAttributes,
     testRatio: config.testRatio,
     permutationIterations: permIterations,
-    balanceMethod: config.balanceMethod
+    balanceMethod: config.balanceMethod,
+    perOutcome: config.perOutcome === true
   };
   const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
@@ -504,7 +508,8 @@ async function runExperiment(config = {}) {
         targetAttributes,
         testRatio: config.testRatio,
         permutationIterations: permIterations,
-        balanceMethod: config.balanceMethod
+        balanceMethod: config.balanceMethod,
+        perOutcome: config.perOutcome === true
       } : undefined
     });
   printVerdict('Structure & Parameter Privacy', verdict);

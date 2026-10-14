@@ -8,7 +8,7 @@
  */
 
 const { LogisticRegression, RandomForest } = require('../../../core/classifiers');
-const { calculateAUC, permutationTestAUC } = require('../../../core/evaluator');
+const { calculateAUC, permutationTestAUC, stratifiedPermutationTestAUC } = require('../../../core/evaluator');
 const { createRng, shuffleInPlace } = require('../../../core/random');
 
 // Feature keys for side-channel analysis
@@ -318,8 +318,12 @@ function runSupervisedAttacks(executionResults, config = {}) {
     perClassifierPermutation = false,
     rngMode = 'legacy',
     baseSeed,
-    skipLegacyPermutation = false
+    skipLegacyPermutation = false,
+    // The public decision o as a model input, with the AUC and its
+    // permutation taken within o (see core/evaluator.stratifiedPermutationTestAUC).
+    outcomeAdjusted = false
   } = config;
+  const outcomeCode = (r) => ((r.accessGranted ?? r.satisfy) ? 1 : 0);
   if (rngMode !== 'legacy' && rngMode !== 'isolated') {
     throw new Error(`Unsupported rngMode: ${rngMode}`);
   }
@@ -364,17 +368,17 @@ function runSupervisedAttacks(executionResults, config = {}) {
       console.log(`\nClassifying ${class0} vs ${class1} (${originalCount0} vs ${originalCount1} samples, ratio ${imbalanceRatio.toFixed(2)}:1)`);
 
       // Prepare data, carrying policyIndex so the split can be policy-disjoint.
-      const class0Data = data0Raw.map(r => ({
-        features: featuresToArray(extractFeatures(r)),
-        label: 0,
-        policyIndex: r.policyIndex
-      }));
-
-      const class1Data = data1Raw.map(r => ({
-        features: featuresToArray(extractFeatures(r)),
-        label: 1,
-        policyIndex: r.policyIndex
-      }));
+      const asRow = (r, label) => {
+        const features = featuresToArray(extractFeatures(r));
+        return {
+          features: outcomeAdjusted ? [...features, outcomeCode(r)] : features,
+          label,
+          outcome: outcomeCode(r),
+          policyIndex: r.policyIndex
+        };
+      };
+      const class0Data = data0Raw.map(r => asRow(r, 0));
+      const class1Data = data1Raw.map(r => asRow(r, 1));
 
       // Skip if insufficient data
       if (class0Data.length + class1Data.length < 20) {
@@ -454,17 +458,17 @@ function runSupervisedAttacks(executionResults, config = {}) {
       // accuracy/advantage it is threshold-free and stable on imbalanced sets.
       const lrProba = lr.predictProba(lrScaled.test);
       const lrLabels = test.map(d => d.label);
+      const testOutcomes = test.map(d => d.outcome);
       lrEval.auc = calculateAUC(lrLabels, lrProba);
       // Self-consistent significance test for the unified per-classifier verdict:
       // permute the LR's own probabilities (no retrain). Kept separate from the
       // LR-retrain permTest below, which the legacy single-split path still uses.
       if (perClassifierPermutation) {
-        lrEval.aucPermPValue = permutationTestAUC(
-          lrLabels,
-          lrProba,
-          permutationIterations,
-          rng('lr-permutation')
-        ).pValue;
+        const lrTest = outcomeAdjusted
+          ? stratifiedPermutationTestAUC(lrLabels, lrProba, testOutcomes, permutationIterations, rng('lr-permutation'))
+          : permutationTestAUC(lrLabels, lrProba, permutationIterations, rng('lr-permutation'));
+        lrEval.auc = lrTest.auc;
+        lrEval.aucPermPValue = lrTest.pValue;
       }
 
       console.log(`  Logistic Regression: accuracy=${lrEval.accuracy.toFixed(3)}, advantage=${lrEval.advantage.toFixed(3)}, auc=${lrEval.auc.toFixed(3)}`);
@@ -503,12 +507,11 @@ function runSupervisedAttacks(executionResults, config = {}) {
       // fraction probabilities (no retrain), so RF gets the same {AUC, perm p}
       // pair as LR and the per-classifier verdict can gate on it independently.
       if (perClassifierPermutation) {
-        rfEval.aucPermPValue = permutationTestAUC(
-          rfLabels,
-          rfProba,
-          permutationIterations,
-          rng('rf-permutation')
-        ).pValue;
+        const rfTest = outcomeAdjusted
+          ? stratifiedPermutationTestAUC(rfLabels, rfProba, testOutcomes, permutationIterations, rng('rf-permutation'))
+          : permutationTestAUC(rfLabels, rfProba, permutationIterations, rng('rf-permutation'));
+        rfEval.auc = rfTest.auc;
+        rfEval.aucPermPValue = rfTest.pValue;
       }
 
       console.log(`  Random Forest: accuracy=${rfEval.accuracy.toFixed(3)}, advantage=${rfEval.advantage.toFixed(3)}, auc=${rfEval.auc.toFixed(3)}`);

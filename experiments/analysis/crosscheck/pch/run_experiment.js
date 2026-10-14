@@ -81,6 +81,10 @@ function parseArgs(argv = process.argv.slice(2)) {
       config.evaluateDataset = true;
     } else if (arg === '--dataset-quality-output') {
       config.datasetQualityOutput = path.resolve(unknown[++i]);
+    } else if (arg === '--per-outcome') {
+      config.perOutcome = true;
+    } else if (arg === '--permutation-iterations') {
+      config.permutationIterations = parseInt(unknown[++i], 10);
     } else {
       console.warn(`Ignoring unknown argument: ${arg}`);
     }
@@ -455,7 +459,8 @@ async function runExperiment(config = {}) {
     observedDuoTermIds,
     testRatio,
     permutationIterations: permIterations,
-    rfOpts
+    rfOpts,
+    perOutcome: config.perOutcome === true
   };
   const concurrency = config.concurrency ?? 1;
   const verdict = await evaluateMultiseed(
@@ -473,7 +478,8 @@ async function runExperiment(config = {}) {
         featuresOutputPath,
         testRatio,
         permutationIterations: permIterations,
-        rfOpts
+        rfOpts,
+        perOutcome: config.perOutcome === true
       } : undefined
     });
 

@@ -25,7 +25,8 @@ runSeedWorker(
       observedDuoTermIds,
       testRatio: workerData.testRatio,
       permutationIterations: workerData.permutationIterations,
-      rfOpts: workerData.rfOpts
+      rfOpts: workerData.rfOpts,
+      perOutcome: workerData.perOutcome === true
     };
   },
   (seedIndex, ctx, baseSeed) => buildPchRecordsForSeed(seedIndex, ctx, baseSeed)

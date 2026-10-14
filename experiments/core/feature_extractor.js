@@ -84,7 +84,7 @@ function extractFeatures(executionResults, options = {}) {
       // Only set when namespace is ICD10, otherwise undefined
       icd10Chapter: result.ontologyNamespace === 'ICD10' ? result.ontologyValue : undefined,
 
-      satisfy: result.satisfy ? 1 : 0
+      satisfy: (result.accessGranted ?? result.satisfy) ? 1 : 0
     };
   });
 }

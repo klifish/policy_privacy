@@ -15,12 +15,12 @@ const {
 const { LogisticRegression, RandomForest } = require('../../../core/classifiers');
 const {
   calculateAUC,
-  permutationTestAUC,
+  stratifiedPermutationTestAUC,
   evaluateBinaryClassification,
   calculateConfusionMatrix
 } = require('../../../core/evaluator');
 const { createRng } = require('../../../core/random');
-const { oneExecutionPerPolicy } = require('../../../core/subsample');
+const { oneExecutionPerPolicy, outcomeStrata, stratumKey } = require('../../../core/subsample');
 
 // Task labels per DUO term id (keys must match the Python pipeline's
 // DUO_TERM_ORDER so compare_with_js_verdict can pair the tasks). Datasets emit
@@ -83,7 +83,8 @@ function bothAttacks(
   teY,
   permIterations,
   rfOpts = {},
-  rngs = {}
+  rngs = {},
+  teStrata = null
 ) {
   const { trees = 50, maxDepth = 10 } = rfOpts;
 
@@ -97,17 +98,19 @@ function bothAttacks(
 
   const records = [];
   for (const [classifier, proba] of [['lr', lrProba], ['rf', rfProba]]) {
-    const auc = calculateAUC(teY, proba);
-    if (auc == null) continue; // degenerate AUC for this classifier
+    if (calculateAUC(teY, proba) == null) continue; // degenerate AUC for this classifier
     const pred = proba.map(p => (p >= 0.5 ? 1 : 0));
     const ev = evaluateBinaryClassification(teY, pred, proba);
     const confusion = calculateConfusionMatrix(teY, pred);
     const permutationRng = classifier === 'lr'
       ? rngs.lrPermutation
       : rngs.rfPermutation;
-    const { pValue } = permutationTestAUC(
+    // AUC within o and its within-o permutation p-value (plain AUC and
+    // permutation test when o takes one value).
+    const { auc, pValue } = stratifiedPermutationTestAUC(
       teY,
       proba,
+      teStrata || teY.map(() => 0),
       permIterations,
       permutationRng || Math.random
     );
@@ -139,10 +142,29 @@ function bothAttacks(
  *          permutationIterations:number, rfOpts:{trees:number,maxDepth:number}}} ctx
  */
 function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
-  const { normalizedFeatures, observedDuoTermIds, testRatio, permutationIterations: permIterations, rfOpts } = ctx;
+  // Default: every policy in one task, with o as an input and the AUC taken
+  // within o. ctx.perOutcome (diagnostic): each task once per access outcome.
+  if (ctx.perOutcome) {
+    return outcomeStrata(ctx.normalizedFeatures).flatMap(({ outcome, rows }) =>
+      buildPchStratumRecords(rows, outcome, ctx, baseSeed));
+  }
+  return buildPchStratumRecords(ctx.normalizedFeatures, null, ctx, baseSeed);
+}
+
+// Feature matrix of `rows`, with o appended as a model input when `adjust`
+// (the capture holds both outcomes).
+function featureMatrix(rows, labelKey, adjust) {
+  const X = prepareClassificationData(rows, labelKey).X;
+  return adjust ? X.map((x, i) => [...x, rows[i].satisfy]) : X;
+}
+
+function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
+  const { observedDuoTermIds, testRatio, permutationIterations: permIterations, rfOpts } = ctx;
   const isolated = Number.isInteger(baseSeed);
+  // Unstratified captures keep their original RNG streams.
+  const streamParts = outcome ? ['pch', outcome] : ['pch'];
   const rng = (...parts) => isolated
-    ? createRng(baseSeed, 'pch', ...parts)
+    ? createRng(baseSeed, ...streamParts, ...parts)
     : Math.random;
   // One execution per policy per seed (see core/subsample.js), then a
   // policy-disjoint split of that subsample.
@@ -152,8 +174,11 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
     testRatio,
     rng('duo', 'split')
   );
-  const trX = prepareClassificationData(train, 'duoTerm').X;
-  const teX = prepareClassificationData(test, 'duoTerm').X;
+  // o enters as a model input and AUC stratum only when both outcomes occur,
+  // so granted-only captures keep their original computation.
+  const adjust = new Set(sampled.map((f) => f.satisfy)).size > 1;
+  const trX = featureMatrix(train, 'duoTerm', adjust);
+  const teX = featureMatrix(test, 'duoTerm', adjust);
   const records = [];
   for (const termId of observedDuoTermIds) {
     const code = DUO_TO_ATTRIBUTE_CODE[termId];
@@ -161,7 +186,7 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
     const trY = train.map(labelOf);
     const teY = test.map(labelOf);
     if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-    const key = `DUO ${code}`;
+    const key = stratumKey(outcome, `DUO ${code}`);
     records.push(...bothAttacks(
       key,
       trX,
@@ -174,7 +199,8 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
         rfBootstrap: rng(key, 'rf-bootstrap'),
         lrPermutation: rng(key, 'lr-permutation'),
         rfPermutation: rng(key, 'rf-permutation')
-      }
+      },
+      adjust ? test.map((f) => f.satisfy) : null
     ));
   }
 
@@ -191,14 +217,14 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
         testRatio,
         rng('icd', 'split')
       );
-      const icdTrX = prepareClassificationData(icdTrain, 'icd10Chapter').X;
-      const icdTeX = prepareClassificationData(icdTest, 'icd10Chapter').X;
+      const icdTrX = featureMatrix(icdTrain, 'icd10Chapter', adjust);
+      const icdTeX = featureMatrix(icdTest, 'icd10Chapter', adjust);
       for (const ch of icdChapters) {
         const labelOf = f => (f.icd10Chapter === ch ? 1 : 0);
         const trY = icdTrain.map(labelOf);
         const teY = icdTest.map(labelOf);
         if (new Set(trY).size < 2 || new Set(teY).size < 2) continue; // degenerate split
-        const key = `ICD ch${ch}`;
+        const key = stratumKey(outcome, `ICD ch${ch}`);
         records.push(...bothAttacks(
           key,
           icdTrX,
@@ -211,7 +237,8 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
             rfBootstrap: rng(key, 'rf-bootstrap'),
             lrPermutation: rng(key, 'lr-permutation'),
             rfPermutation: rng(key, 'rf-permutation')
-          }
+          },
+          adjust ? icdTest.map((f) => f.satisfy) : null
         ));
       }
     }

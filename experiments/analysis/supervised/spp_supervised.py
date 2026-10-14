@@ -27,6 +27,9 @@ from .common import (
     TEST_RATIO,
     analyze_contrast,
     build_verdict,
+    outcome_codes,
+    outcome_strata,
+    stratum_key,
     feature_row,
     file_sha256,
     find_json,
@@ -68,6 +71,7 @@ def build_feature_matrix(dataset: List[dict]):
 
 def build_tasks(dataset: List[dict]):
     X, groups, labels_by_target = build_feature_matrix(dataset)
+    outcome = outcome_codes(dataset)
     tasks = []
     for target in TARGET_ATTRS:
         labels = labels_by_target[target]
@@ -84,6 +88,7 @@ def build_tasks(dataset: List[dict]):
                 "X": X[mask],
                 "y": (labels[mask] == c1).astype(int),
                 "groups": groups[mask],
+                "outcome": outcome[mask],
             })
     return tasks
 
@@ -100,8 +105,11 @@ def run_dataset(
     split_manifest_in: Optional[Dict] = None,
     split_manifest_out: Optional[Dict] = None,
     perm_iters: int = PERM_ITERS,
+    per_outcome: bool = False,
 ) -> Dict:
-    """Run all SPP contrasts, checkpointing after each contrast."""
+    """Run all SPP contrasts, checkpointing after each contrast. Default: every
+    policy in one task, with o as an input and the AUC taken within o.
+    ``per_outcome`` (diagnostic): each contrast once per access outcome."""
     tasks = []
 
     writer = None
@@ -112,33 +120,37 @@ def run_dataset(
         writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
         writer.writeheader()
 
-    for task in build_tasks(dataset):
-        target, c0, c1 = task["target"], task["class0"], task["class1"]
-        task_key = task["key"]
-        res = analyze_contrast(
-            task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
-            perm_iters=perm_iters, task_key=task_key,
-            split_candidates=split_candidates,
-            split_manifest_in=split_manifest_in,
-            split_manifest_out=split_manifest_out,
-        )
-        res.update({
-            "dataset": dataset_tag,
-            "key": task_key,
-            "target": target,
-            "class0": c0,
-            "class1": c1,
-        })
-        tasks.append(res)
-        _print_contrast(res, models)
+    strata = outcome_strata(dataset) if per_outcome else [(None, dataset)]
+    for outcome, rows in strata:
+        for task in build_tasks(rows):
+            target, c0, c1 = task["target"], task["class0"], task["class1"]
+            task_key = stratum_key(outcome, task["key"])
+            res = analyze_contrast(
+                task["X"], task["y"], task["groups"], seeds, models, jobs=jobs,
+                perm_iters=perm_iters, task_key=task_key,
+                split_candidates=split_candidates,
+                split_manifest_in=split_manifest_in,
+                split_manifest_out=split_manifest_out,
+                strata=None if per_outcome else task["outcome"],
+            )
+            res.update({
+                "dataset": dataset_tag,
+                "key": task_key,
+                "outcome": outcome,
+                "target": target,
+                "class0": c0,
+                "class1": c1,
+            })
+            tasks.append(res)
+            _print_contrast(res, models)
 
-        if writer is not None:
-            for row in verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models):
-                writer.writerow(row)
-            csv_file.flush()
-        if json_path is not None:
-            with json_path.open("w", encoding="utf-8") as handle:
-                json.dump(build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters), handle, indent=2)
+            if writer is not None:
+                for row in verdict_to_rows({"dataset": dataset_tag, "tasks": [res]}, models):
+                    writer.writerow(row)
+                csv_file.flush()
+            if json_path is not None:
+                with json_path.open("w", encoding="utf-8") as handle:
+                    json.dump(build_verdict(dataset_tag, seeds, tasks, perm_iters=perm_iters), handle, indent=2)
 
     if csv_file is not None:
         csv_file.close()
@@ -148,7 +160,7 @@ def run_dataset(
 
 def _print_contrast(res: Dict, models: Sequence[str]):
     tag = "non-gating" if res["nonGating"] else ("PASS" if res["passed"] else "FAIL")
-    label = f"{res['target']}: {res['class0']}/{res['class1']}"
+    label = stratum_key(res.get("outcome"), f"{res['target']}: {res['class0']}/{res['class1']}")
     parts = []
     for m in models:
         md = res["models"].get(m)
@@ -156,7 +168,7 @@ def _print_contrast(res: Dict, models: Sequence[str]):
             parts.append(f"{m} AUC={md['aucMean']:.3f} sig={md['sigFraction']:.2f}")
     n = res.get("medianTestN")
     n_str = f"medN={n:.0f}" if n is not None else "medN=NA"
-    print(f"  [{tag:10}] {label:38} {n_str:8} " + " | ".join(parts))
+    print(f"  [{tag:10}] {label:48} {n_str:8} " + " | ".join(parts))
 
 
 def main() -> None:
@@ -174,6 +186,8 @@ def main() -> None:
     parser.add_argument("--split-candidates", type=int, default=DEFAULT_SPLIT_CANDIDATES)
     parser.add_argument("--split-manifest-in", type=Path, default=None)
     parser.add_argument("--split-manifest-out", type=Path, default=None)
+    parser.add_argument("--per-outcome", action="store_true",
+                        help="diagnostic: run every contrast once per access outcome")
     args = parser.parse_args()
 
     global JOBS
@@ -201,6 +215,7 @@ def main() -> None:
         split_manifest_in=manifest_in,
         split_manifest_out=manifest_out,
         perm_iters=args.permutation_iterations,
+        per_outcome=args.per_outcome,
     )
     manifest_path = args.split_manifest_out or (args.output_dir / "spp_split_manifest.json")
     write_split_manifest(manifest_path, manifest_out)
