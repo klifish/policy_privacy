@@ -2,11 +2,11 @@
 \subsection{Attack Methodology}
 \label{sec:eval-method}
 
-We evaluate each privacy objective with a primary supervised attack and a complementary unsupervised cross-check.
-The \emph{supervised} method trains classifiers on labeled data to predict hidden labels from the observables.
-Performance is measured by AUC, with a chance baseline of $0.5$.
-The \emph{unsupervised} method clusters the observables without using labels.
-We evaluate agreement between the resulting clusters and the true labels using the Adjusted Rand Index (ARI)~\cite{hubert1985comparing} and Normalized Mutual Information (NMI)~\cite{vinh2010information}.
+We evaluate each privacy objective primarily through supervised attacks, complemented by an unsupervised clustering cross-check.
+The \emph{supervised} attacks test whether an observer can learn from labeled examples to predict hidden policy labels from the observables.
+We measure predictive performance using AUC, with a chance baseline of $0.5$.
+The \emph{unsupervised} analysis tests whether grouping executions by observable similarity recovers hidden policy categories without using labels during clustering.
+We measure agreement between the clusters and the true labels using the Adjusted Rand Index (ARI)~\cite{hubert1985comparing} and Normalized Mutual Information (NMI)~\cite{vinh2010information}.
 
 % We execute the generated policies on the \emph{Polygon~Amoy} testnet.
 % For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
