@@ -20,21 +20,17 @@ every count derivable from the text and resolve the inconsistencies.
       policies (24 policies allow 276 pairs): state how the 127 are selected.
 - [ ] `sec_pi.tex:14` — "100 pairs per type ... yielding 71 weak_equivalent":
       give the actual counts for the other two pair types.
-- [ ] `sec_ablation.tex` — "1,119 executions" of the ablation subset: state
-      the deterministic selection rule and where the size comes from.
+- [x] `sec_ablation.tex` — "1,119 executions" of the ablation subset: moot,
+      the ablation section is removed (gas padding is no longer in the design).
 - [ ] Abstract / introduction "43 of 45 supervised tasks" vs `sec_pi.tex:25`
-      (three PI tasks): PCH 20 + SPP 21 + PI 3 = 44. The ablation figure counts
-      4 PI tasks, i.e. 45 includes the controlled_difference positive control,
-      which the text excludes from PASS/FAIL. Make the denominator consistent
-      everywhere (abstract, introduction, ablation text and figure caption).
+      (three PI tasks): PCH 20 + SPP 21 + PI 3 = 44 in the new data, where
+      controlled_difference gates. Make the denominator consistent everywhere
+      (abstract, introduction, conclusion).
 
 ### 2. Mechanism numbers without the arithmetic
 
-- [ ] `sec_ablation.tex` — 192-gas and 24-gas calldata gaps: show the
-      calculation (zero vs non-zero calldata byte = 4 vs 16 gas, i.e. 12 gas per
-      byte; 192 = 16 bytes × 12, 24 = 2 bytes × 12) so readers can verify it.
-- [ ] Residual overhead (4,661–4,750 gas in the padded data): say what it
-      consists of, if it survives the rewrite.
+- [x] `sec_ablation.tex` 192-gas / 24-gas gaps and the padded residual
+      overhead: moot, the ablation section and the padding diagnostics go.
 
 ### 3. Parameter choices without rationale (justify the likely-challenged ones)
 
@@ -51,3 +47,30 @@ every count derivable from the text and resolve the inconsistencies.
       "proof type", neither defined in the text.
 - [ ] Lower priority: 30 seeds, 512 split candidates, R=500 / R=200
       permutations, 20 K-Means seeds.
+
+## Gas padding removed from the design — rewrite for the unpadded (B1) data
+
+Done (framing, data-independent): design table row and gas-decomposition
+paragraph, pp blinded by r, abstract/introduction/conclusion design sentences,
+contribution 3 and the Amoy contract footnote (B1 contract), evaluation intro,
+discussion cost paragraph, ablation section/table/figure removed, threat-model
+reference now points to the transcript-normalization subsection (no calldata
+value check in the paper).
+
+Still to rewrite with the new data:
+
+- [ ] `sec_dataset.tex` — new capture (1077 policies / 1977 executions, PI
+      layer, denied requests); state the label-independent seeded execution
+      order and that each execution commits its own policy instance (the design
+      paragraph relies on identifiers following registration order).
+- [ ] State the observed execution costs that support the design paragraph
+      (access 695,254 denied / 695,264 granted; commit 196,964; resource
+      70,400; +17,940 on each sender's first transaction).
+- [ ] `sec_pch.tex` L24–50 ch5 padding diagnostic and `eq:gas-decomp`,
+      `sec_spp.tex` L24–27, `sec_clustering.tex` L11–16 (uses `eq:gas-decomp`),
+      `sec_discussion.tex` L5–9: padding-target explanations of old FAILs; the
+      new results have none.
+- [ ] Abstract L25, introduction L39–40, conclusion L8: result sentences.
+- [ ] `sec_performance.tex` L6, `tables/tab_cost_profile.tex` L18,
+      `sec_discussion.tex` L20: padded gas costs → unpadded B1 costs.
+- [ ] `tables/tab_privacy_summary.tex` (currently not \input).

@@ -14,7 +14,7 @@ We then assess whether the resulting clusters correspond to the hidden labels.
 % The unsupervised analysis shows little agreement between the clusters and the hidden labels, with only a weak clustering signal observed.
 % Diagnostic analyses suggest that the two FAIL outcomes and this weak signal reflect chance associations between the randomly drawn padding targets and the hidden labels.
 
-Beyond privacy, we evaluate the system's computational and on-chain costs, including gas consumption for commit and access transactions, padding overhead, calldata sizes, circuit constraint count, and proving time.
+Beyond privacy, we evaluate the system's computational and on-chain costs, including gas consumption for commit and access transactions, calldata sizes, circuit constraint count, and proving time.
 We also examine how these costs vary with circuit capacity and policy complexity within a fixed circuit, and how offline proof generation throughput scales with workload.
 
 % \input{tables/tab_privacy_summary.tex}
@@ -30,5 +30,4 @@ We also examine how these costs vary with circuit capacity and policy complexity
 \input{sec_spp.tex}
 \input{tables/tab_spp_contrasts.tex}
 \input{sec_clustering.tex}
-\input{sec_ablation.tex}
 \input{sec_performance.tex}

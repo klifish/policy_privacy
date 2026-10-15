@@ -74,7 +74,7 @@ The acceptance relation requires that $C$ output $1$.
 
 A new or changed policy is therefore only a different program for the same circuit, so policies can evolve without changing the on-chain verifier.
 
-\noindent\textbf{Scope of the supported policies.} 
+\noindent\textbf{Scope of the supported policies.}
 Table~\ref{tab:policy-support} summarizes how the prototype supports each consent feature (in-circuit, on-chain, committed only, or not provided) and which combinations are supported.
 In particular, the ACM enforces time-limited use (TS) using public state.
 The commit transaction emits the duration, and the first grant emits the requester's authorization window, so policies containing TS do not provide content privacy for that term.
@@ -119,7 +119,7 @@ The public-signal vector is
 \begin{equation}
 	u = (o,h,\mathit{pp},d_{\chi},\tau),
 \end{equation}
-where $o$ is the authorization output of the circuit, $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters, and $\tau$ is the request epoch used by the temporal checks.
+where $o$ is the authorization output of the circuit, $\mathit{pp}$ is a fixed-format commitment to the per-predicate parameters, blinded by the commitment randomness $r$, and $\tau$ is the request epoch used by the temporal checks.
 Although the three components of $\chi$ are not separate Groth16 public inputs, the ACM receives them as transaction parameters in order to recompute $d_{\chi}$; they are therefore visible in transaction calldata.
 
 For the compiled circuit, the Groth16~\cite{groth2016size} setup produces the common reference string as a proving key and a verification key, once for the shared circuit:
@@ -176,11 +176,10 @@ The circuit additionally requires $t_{\mathrm{from}}\leq\tau\leq t_{\mathrm{unti
 Because this credential is holder-bound, a policy that activates this slot also requires $\mathit{id}_{\mathrm{req}}=\mathsf{Poseidon}(s_{\mathrm{holder}})$, binding the credential to the requester pseudonym in the authorization context. The corresponding DUO attributes are constrained to these claim-derived values.
 
 \subsection{Transcript Normalization}
+\label{subsec:transcript-normalization}
 
-Zero-knowledge proofs hide private witness values, but surrounding
-blockchain artifacts may still leak policy-dependent information to the passive public-chain observer (Section~\ref{sec:problem}). TPS-ZKPI therefore
-normalizes the public-chain transcript so that different policies induce fixed or tightly
-bounded observable profiles (Table~\ref{tab:transcript-normalization}).
+Zero-knowledge proofs hide private witness values, but surrounding blockchain artifacts may still leak policy-dependent information to the passive public-chain observer (Section~\ref{sec:problem}).
+TPS-ZKPI therefore normalizes the public-chain transcript so that different policies induce fixed or tightly bounded observable profiles (Table~\ref{tab:transcript-normalization}).
 
 \begin{table}[htbp]
 	\centering
@@ -188,12 +187,24 @@ bounded observable profiles (Table~\ref{tab:transcript-normalization}).
 	\label{tab:transcript-normalization} \footnotesize
 	\begin{tabular}{p{0.24\linewidth}p{0.66\linewidth}}
 		\hline
-		\textbf{Artifact} & \textbf{Normalization mechanism}                                                                                                                              \\
+		\textbf{Artifact} & \textbf{Normalization mechanism}                                          \\
 		\hline
-		Calldata          & Fixed verification interface and fixed-size proof/public-input encoding.                                                                                      \\
-		Logs              & Fixed event structure with constant topic and payload layout.                                                                                                 \\
-		Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses.                                                                                     \\
-		Gas usage         & Policy-independent verifier logic and gas padding that counts calldata byte costs and tops each transaction up to a target drawn at random from a fixed band. \\
+		Calldata          & Fixed verification interface and fixed-size proof/public-input encoding.  \\
+		Logs              & Fixed event structure with constant topic and payload layout.             \\
+		Public parameters & Fixed-format handles instead of policy artifacts or credential witnesses. \\
 		\hline
 	\end{tabular}
 \end{table}
+
+Even with these fixed formats, gas usage may vary across executions and therefore requires separate analysis as a potential source of policy leakage.
+Transaction gas consists of a base cost of $21{,}000$, calldata cost, and execution cost.
+Calldata costs $16$ gas per non-zero byte and $4$ gas per zero byte~\cite{akhunov2019eip2028}.
+All policies use the same interpreter circuit and verifier contract, keeping the on-chain verification procedure uniform.
+The authorization outcome $o$ is already disclosed in the event log.
+Although calldata length is fixed for each transaction type, its gas cost can still vary with the number of zero bytes in the encoded values.
+
+The proof $\pi$ is randomized, and the commitments $h$ and $\mathit{pp}$ are blinded using the randomness $r$.
+The fields $d_{\chi}$ and $\mathit{id}_{\mathrm{req}}$ are Poseidon digests, while $\nu$ is a fresh nonce.
+The epoch $\tau$ reflects request timing, and the policy and resource identifiers follow registration order.
+These fields carry cryptographic representations and public request context rather than plaintext policy content.
+We evaluate whether the remaining gas variation supports policy inference in Section~\ref{sec:eval}.

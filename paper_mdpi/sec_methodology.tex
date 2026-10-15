@@ -9,9 +9,9 @@ The \emph{unsupervised} analysis tests whether grouping executions by observable
 We measure agreement between the clusters and the true labels using the Adjusted Rand Index (ARI)~\cite{hubert1985comparing} and Normalized Mutual Information (NMI)~\cite{vinh2010information}.
 
 % We execute the generated policies on the \emph{Polygon~Amoy} testnet.
-% For each policy, a provider account submits the policy commitment using \texttt{commitPolicyWithGasPad}.
+% For each policy, a provider account submits the policy commitment using \texttt{commitPolicy}.
 % We then generate the Groth16 proof locally, acting as the TPS (Section~\ref{subsec:trust-model}).
-% A separate TPS account submits the access transaction using \texttt{requestAccessBoundWithGasPad}.
+% A separate TPS account submits the access transaction using \texttt{requestAccessBound}.
 % In the prototype, provider-to-TPS and requester-to-TPS exchanges are implemented as in-process calls and generate no additional on-chain artifacts.
 % We extract the observables defined in Section~\ref{sec:eval-threat} from the transaction receipts, calldata, and event logs.
 

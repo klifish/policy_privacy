@@ -31,14 +31,13 @@ To prevent the transcript itself from revealing the policy, TPS-ZKPI combines fo
 First, proof generation at the TPS keeps confidentiality-sensitive policy material and requester evidence off the chain.
 Second, heterogeneous Boolean consent policies are compiled into fixed-length Reverse Polish Notation (RPN) programs, so that every policy has the same length.
 Third, building on the standard commit-and-prove paradigm, a reusable zero-knowledge policy interpreter evaluates these programs; this avoids policy-specific verifier contracts and allows policies to evolve without changing the public verification interface.
-Fourth, transcript normalization, including randomized gas padding, reduces the remaining policy-dependent variation in calldata, event logs, public parameters, and gas consumption.
+Fourth, transcript normalization fixes the format of the calldata, event logs, and public parameters; together with the policy-independent verifier, this leaves the gas consumption independent of the policy content.
 
 We evaluate TPS-ZKPI against a passive public-chain observer who sees only the public-chain transcript.
 The evaluation expresses consent policy privacy as three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 For these objectives, supervised and unsupervised attacks test whether the public-chain metadata allow the observer to recover hidden policy content, to distinguish otherwise-equivalent policies, or to infer structural and parameter properties of a policy.
 The results show no leakage in $43$ of the $45$ supervised tasks under our leakage criterion, which flags a task only when its mean area under the receiver operating characteristic curve (AUC) exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; the other two trace to chance correlations with the randomly drawn padding targets.
 Unsupervised clustering likewise finds no policy structure beyond the same padding effect.
-Furthermore, a gas-padding ablation shows that, without padding, the same attacks recover a policy-correlated gas signal, which randomized gas padding suppresses.
 
 This paper makes the following contributions:
 
@@ -47,7 +46,7 @@ This paper makes the following contributions:
 
 	\item We encode each Boolean consent policy as a fixed-length RPN program over a bounded token alphabet and evaluate it in a single zero-knowledge circuit. Combined with policy commitments, this approach provides a policy-independent on-chain verification interface, allowing policies to evolve without changing the verifier.
 
-	\item We empirically evaluate how much policy information remains in the public-chain metadata on the Polygon~Amoy testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x461853d10fB9A286a75dE05c9B166e77645160D7}} using supervised and unsupervised attacks, and quantify the gas overhead of the randomized gas padding that suppresses the remaining gas channel.
+	\item We empirically evaluate how much policy information remains in the public-chain metadata on the Polygon~Amoy testnet\footnote{\url{https://amoy.polygonscan.com/txs?a=0x89281182b4385AEc4634335c838e5059f4Eca1C6}} using supervised and unsupervised attacks, and measure its on-chain gas and off-chain proving costs.
 \end{itemize}
 
 The remainder of this paper is organized as follows.

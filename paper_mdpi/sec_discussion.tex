@@ -9,11 +9,8 @@ Such padding-induced failures are a property of the criterion on a corpus in whi
 we keep the criterion as stated and document the diagnostic, since raising the significant-seed or AUC threshold far enough to absorb these cases would also weaken it against genuine leaks.
 
 The commitment-only interface and fixed circuit avoid exposing policy logic directly in the public transcript.
-The paired ablation provides empirical evidence that randomized gas padding reduces leakage through gas consumption.
-Without padding, deterministic differences in calldata encoding yield attack AUCs of up to $0.90$ (Section~\ref{sec:eval-ablation}).
 
-\textbf{The cost of padding.} The on-chain cost of this protection is the gas overhead of randomized gas padding (Section~\ref{sec:eval-performance}).
-Within the evaluated circuit, policy complexity has little effect on on-chain costs.
+\textbf{Costs.} Within the evaluated circuit, policy complexity has little effect on on-chain costs.
 All proofs require the same verification operations and use a fixed public-input format with five signals.
 The costs of witness generation and proving for larger circuit capacities or different policy contents are incurred off-chain (Tables~\ref{tab:cost-scaling} and~\ref{tab:workload-scaling}).
 
@@ -22,8 +19,6 @@ The best observed batch throughput is $0.936$ proofs/s at concurrency four, with
 At this throughput, one prover on the benchmark host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve; the estimate is conservative, because half of the rotated requests include the harness's credential issuance (Section~\ref{sec:eval-performance}).
 On-chain, each padded access costs $1{,}057{,}283$ gas on average (about $0.032$~POL, the native token of Polygon, at the $30$~gwei tip of the evaluation, against $0.022$~POL unpadded; Table~\ref{tab:cost-profile}), and each policy commit adds a one-time $304{,}167$ gas ($0.009$~POL).
 
-The padding band must be positioned above the unpadded access cost on the target network, which differs between networks because the verifier's cost does ($243{,}000$ gas on a local EVM and $372{,}000$ on Amoy, whose BN254 precompiles are priced higher);
-a deployment therefore calibrates the center of the band once per network, and its width, $\pm 10\%$ here, determines how large a residual difference the random target can mask.
 
 \textbf{TPS trust and credential provenance.}
 The TPS trust assumption is the main architectural tradeoff.

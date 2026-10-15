@@ -5,7 +5,6 @@
 \input{tables/tab_cost_profile.tex}
 At $L=64$ and eight Merkle levels, the prototype has $81{,}740$ constraints and mean padded gas costs of $304{,}167$ for commit and $1{,}057{,}283$ for access (Table~\ref{tab:cost-profile}).
 Across $1{,}773$ Amoy executions on the two-vCPU capture server, mean witness and proving times are $0.764$ and $2.884$~s.
-On the ablation subset, padding adds approximately $333{,}000$ gas per access ($+46\%$) and $84{,}000$ gas per commit ($+38\%$; Table~\ref{tab:ablation-gas-padding}).
 
 \input{tables/tab_cost_scaling.tex}
 To assess how circuit capacity affects proving costs, we generate $30$ verified proofs per configuration using rapidsnark on an Apple M1 (Table~\ref{tab:cost-scaling}).
