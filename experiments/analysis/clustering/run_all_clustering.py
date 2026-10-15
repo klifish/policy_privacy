@@ -191,33 +191,10 @@ def main():
     env = os.environ.copy()
 
     validate_dataset_files(source_dir)
-    strata = outcome_sources(source_dir, work_dir)
-    if strata:
-        # o is public: each analysis compares executions with the same outcome.
-        for outcome, stratum_source in strata:
-            print(f"\n### Access outcome: {outcome}")
-            run_pipeline(stratum_source, work_dir / outcome, results_dir / outcome, args, env)
-    else:
-        run_pipeline(source_dir, work_dir, results_dir, args, env)
+    # Granted and denied executions are analysed together; o carries no
+    # information about the policy.
+    run_pipeline(source_dir, work_dir, results_dir, args, env)
     print("\nAll authoritative clustering analyses completed.")
-
-
-def outcome_sources(source_dir: Path, work_dir: Path):
-    """[(outcome, dir)] holding each outcome's rows of the three datasets; [] for single-outcome captures."""
-    from experiments.analysis.supervised.common import outcome_strata
-
-    datasets = {name: load_json(source_dir / name) for name in DATASET_FILES}
-    if len(outcome_strata(datasets["pch_dataset.json"])) < 2:
-        return []
-    out = []
-    for outcome in ("granted", "denied"):
-        target = work_dir / outcome / "source"
-        target.mkdir(parents=True, exist_ok=True)
-        for name, rows in datasets.items():
-            stratum = dict(outcome_strata(rows))[outcome]
-            (target / name).write_text(json.dumps(stratum), encoding="utf-8")
-        out.append((outcome, target))
-    return out
 
 
 def run_pipeline(source_dir: Path, work_dir: Path, results_dir: Path, args, env):

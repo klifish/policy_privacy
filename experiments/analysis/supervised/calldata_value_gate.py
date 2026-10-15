@@ -11,11 +11,10 @@ log topic, log data word and transaction field (nonce, gas limit, block
 number) is added.  Each field is encoded four ways: its numeric value, its
 zero-byte count, its leading-zero-byte count, and the number of distinct
 policies in the capture that share the value.  For every PCH and SPP task the
-AUC of each encoded field is computed over one execution per policy, separately
-for granted and denied executions (the decision o is public).  For every PI
-pair type the statistic is the mean |AUC - 0.5| over its (pair, outcome)
-cells, each comparing the executions of the pair's two policies; it is
-reported as 0.5 + that mean.
+AUC of each encoded field is computed over one execution per policy, granted
+and denied executions pooled.  For every PI pair type the statistic is the
+mean |AUC - 0.5| over its pairs, each comparing all executions of the pair's
+two policies; it is reported as 0.5 + that mean.
 
 Positive control: a synthetic field reproduces the legacy pseudonym encoding
 (128-bit random without the DUO profile slot, 254-bit random with it).  The
@@ -23,7 +22,7 @@ gate must detect it; otherwise the verdict is INCONCLUSIVE.
 
 Decision (Westfall-Young min-p): for each task, the statistic is the largest
 |AUC - 0.5| over all fields and encodings, and its null distribution comes
-from permuting the labels across the task's policies (PI: within cells).  Each task's p-value is
+from permuting the labels across the task's policies (PI: within pairs).  Each task's p-value is
 taken against its own null, so tasks with small classes, whose maximum is
 large by chance, do not mask the others; the smallest p-value over tasks is
 then compared with its permutation distribution.  The gate passes when this
@@ -49,7 +48,7 @@ import numpy as np
 
 from experiments.analysis.paths import REPO_ROOT
 
-from .common import load_json, outcome_of, outcome_strata, stratum_key
+from .common import load_json
 from .pad_residual_diagnostic import build_spp_tasks_with_indices
 from .pch_supervised import build_tasks as build_pch_tasks
 
@@ -203,16 +202,15 @@ def execution_features(executed: List[dict], layouts, exclude: Sequence[str], rn
 
 
 # ---------------------------------------------------------------------------
-# Tasks.  PCH/SPP: units are policies, one execution each, per outcome.
-# PI: units are the executions of each designed pair, compared within
-# (pair, outcome) cells.
+# Tasks.  PCH/SPP: units are policies, one execution each.  PI: units are the
+# executions of each designed pair, compared within the pair.
 # ---------------------------------------------------------------------------
 
-def _first_execution_rows(executed: List[dict]) -> Dict[Tuple[str, Optional[str]], int]:
-    """(policyId, outcome) -> row index of that policy's first execution with that outcome."""
-    first: Dict[Tuple[str, Optional[str]], Tuple[int, int]] = {}
+def _first_execution_rows(executed: List[dict]) -> Dict[str, int]:
+    """policyId -> row index of that policy's first execution."""
+    first: Dict[str, Tuple[int, int]] = {}
     for i, row in enumerate(executed):
-        key = (str(row["policyId"]), outcome_of(row))
+        key = str(row["policyId"])
         eid = int(row.get("executionId", 0))
         if key not in first or eid < first[key][0]:
             first[key] = (eid, i)
@@ -226,29 +224,27 @@ def policy_task_units(data_dir: Path, executed: List[dict]) -> List[Tuple[str, n
     for prefix, filename, builder in (("pch", "pch_dataset.json", build_pch_tasks),
                                       ("spp", "spp_dataset.json", build_spp_tasks_with_indices)):
         dataset = load_json(data_dir / filename)
-        for outcome, rows in outcome_strata(dataset):
-            for task in builder(rows):
-                idx = task.get("indices", task.get("_indices"))
-                label_of = {}
-                for i, lab in zip(idx, task["y"]):
-                    row = rows[int(i)]
-                    label_of[(str(row["policyId"]), outcome_of(row))] = int(lab)
-                units = sorted(label_of)
-                out.append((f"{prefix}|{stratum_key(outcome, task['key'])}",
-                            np.array([first[u] for u in units]),
-                            np.array([label_of[u] for u in units])))
+        for task in builder(dataset):
+            idx = task.get("indices", task.get("_indices"))
+            label_of = {}
+            for i, lab in zip(idx, task["y"]):
+                label_of[str(dataset[int(i)]["policyId"])] = int(lab)
+            units = sorted(label_of)
+            out.append((f"{prefix}|{task['key']}",
+                        np.array([first[u] for u in units]),
+                        np.array([label_of[u] for u in units])))
     return out
 
 
 def pi_cells(executed: List[dict]) -> Dict[str, List[Tuple[np.ndarray, np.ndarray]]]:
-    """pair type -> [(row indices, side labels)] for every (pair, outcome) cell."""
-    cells: Dict[Tuple[str, str, Optional[str]], List[Tuple[int, int]]] = defaultdict(list)
+    """pair type -> [(row indices, side labels)] for every designed pair."""
+    cells: Dict[Tuple[str, str], List[Tuple[int, int]]] = defaultdict(list)
     for i, row in enumerate(executed):
         pair = row.get("piPair")
         if pair:
-            cells[(pair["pairType"], pair["pairId"], outcome_of(row))].append((i, int(pair["side"])))
+            cells[(pair["pairType"], pair["pairId"])].append((i, int(pair["side"])))
     by_type: Dict[str, List[Tuple[np.ndarray, np.ndarray]]] = defaultdict(list)
-    for (pair_type, _, _), members in sorted(cells.items()):
+    for (pair_type, _), members in sorted(cells.items()):
         idx = np.array([m[0] for m in members])
         side = np.array([m[1] for m in members])
         if len(set(side.tolist())) == 2:
@@ -284,7 +280,7 @@ def task_auc(R: np.ndarray, Y: np.ndarray) -> np.ndarray:
 
 
 def cell_deviation(matrix: np.ndarray, cells, P: int, rng) -> Tuple[np.ndarray, np.ndarray]:
-    """Mean |AUC - 0.5| over a pair type's cells, observed (F) and under P within-cell permutations (P x F).
+    """Mean |AUC - 0.5| over a pair type's pairs, observed (F) and under P within-pair permutations (P x F).
 
     The attacker trains within each pair, so the direction of a field may differ
     between pairs; the deviation, not the signed AUC, is averaged.

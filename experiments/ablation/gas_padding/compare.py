@@ -272,16 +272,8 @@ def bootstrap_cluster_targets(root, rng, iterations):
 
 
 def load_pi_clustering(profile_dir):
-    """PI clustering rows of one profile; per-outcome result directories are concatenated."""
-    single = profile_dir / "results" / "pi" / "pi_balanced_debiased.csv"
-    if single.exists():
-        return pd.read_csv(single).set_index("pair_id")
-    frames = []
-    for outcome in ("granted", "denied"):
-        frame = pd.read_csv(profile_dir / "results" / outcome / "pi" / "pi_balanced_debiased.csv")
-        frame["pair_id"] = frame["pair_id"].astype(str) + "@" + outcome
-        frames.append(frame)
-    return pd.concat(frames).set_index("pair_id")
+    """PI clustering rows of one profile, indexed by pair."""
+    return pd.read_csv(profile_dir / "results" / "pi" / "pi_balanced_debiased.csv").set_index("pair_id")
 
 
 def compare_pi_clustering(root, rng, iterations):
