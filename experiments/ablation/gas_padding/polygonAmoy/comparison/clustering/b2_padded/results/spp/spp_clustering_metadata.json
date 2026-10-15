@@ -1,0 +1,18 @@
+{
+  "source": "/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/spp_dataset.json",
+  "sourceSha256": "750b30f6dc304d3ee0ee589734112e5d8095594d0e9573fffa6301df72c5ff09",
+  "featureKeys": [
+    "commitGasUsed",
+    "accessGasUsed"
+  ],
+  "targets": [
+    "logicStructure",
+    "nestingDepth",
+    "predicateCount",
+    "setSize"
+  ],
+  "kmeansSeeds": 20,
+  "permutations": 200,
+  "bootstraps": 500,
+  "randomSeed": 42
+}

@@ -24,16 +24,13 @@
         "aucMax": 0.52,
         "sigMax": 0.3,
         "fails": {
-          "pch": 1,
-          "spp": 2,
+          "pch": 0,
+          "spp": 1,
           "pi": 0
         },
         "failedKeys": {
-          "pch": [
-            "DUO POA"
-          ],
+          "pch": [],
           "spp": [
-            "structureType: trivial/or_only",
             "nestingDepth: flat/medium"
           ],
           "pi": []
@@ -44,14 +41,12 @@
         "sigMax": 0.4,
         "fails": {
           "pch": 0,
-          "spp": 1,
+          "spp": 0,
           "pi": 0
         },
         "failedKeys": {
           "pch": [],
-          "spp": [
-            "nestingDepth: flat/medium"
-          ],
+          "spp": [],
           "pi": []
         }
       },
@@ -102,13 +97,12 @@
         "sigMax": 0.3,
         "fails": {
           "pch": 0,
-          "spp": 2,
+          "spp": 1,
           "pi": 0
         },
         "failedKeys": {
           "pch": [],
           "spp": [
-            "structureType: trivial/or_only",
             "nestingDepth: flat/medium"
           ],
           "pi": []
@@ -119,14 +113,12 @@
         "sigMax": 0.4,
         "fails": {
           "pch": 0,
-          "spp": 1,
+          "spp": 0,
           "pi": 0
         },
         "failedKeys": {
           "pch": [],
-          "spp": [
-            "nestingDepth: flat/medium"
-          ],
+          "spp": [],
           "pi": []
         }
       },
@@ -317,9 +309,25 @@
       "pch": {
         "tasks": 20,
         "aucOnly": {
+          "0.52": 8,
+          "0.55": 3,
+          "0.58": 0,
+          "0.6": 0
+        },
+        "sigOnly": {
+          "0.3": 0,
+          "0.4": 0,
+          "0.5": 0,
+          "0.6": 0,
+          "0.7": 0
+        }
+      },
+      "spp": {
+        "tasks": 21,
+        "aucOnly": {
           "0.52": 10,
-          "0.55": 6,
-          "0.58": 2,
+          "0.55": 2,
+          "0.58": 0,
           "0.6": 0
         },
         "sigOnly": {
@@ -330,26 +338,10 @@
           "0.7": 0
         }
       },
-      "spp": {
-        "tasks": 21,
-        "aucOnly": {
-          "0.52": 12,
-          "0.55": 3,
-          "0.58": 0,
-          "0.6": 0
-        },
-        "sigOnly": {
-          "0.3": 2,
-          "0.4": 1,
-          "0.5": 0,
-          "0.6": 0,
-          "0.7": 0
-        }
-      },
       "pi": {
         "tasks": 3,
         "aucOnly": {
-          "0.52": 1,
+          "0.52": 2,
           "0.55": 0,
           "0.58": 0,
           "0.6": 0

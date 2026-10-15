@@ -1,0 +1,1952 @@
+{
+  "dataDir": "/root/policy_privacy/experiments/data/polygonAmoy",
+  "criterion": {
+    "seeds": 30,
+    "aucMax": 0.55,
+    "permAlpha": 0.05,
+    "sigFractionMax": 0.5,
+    "permIters": 500
+  },
+  "univariatePermutations": 2000,
+  "experiments": {
+    "pch": {
+      "dataset": "/root/policy_privacy/experiments/data/polygonAmoy/pch_dataset.json",
+      "datasetSha256": "870a0bb8b3bd2963ff7e2c47bf7de63bd18bbcb89e5d41305a556f79a63954fd",
+      "tasks": {
+        "DUO GR": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4772826319162572,
+                "p": 0.1184407796101949
+              },
+              "calldataCost": {
+                "auc": 0.4786797692800684,
+                "p": 0.15542228885557222
+              },
+              "executionCost": {
+                "auc": 0.49806451612903224,
+                "p": 0.5567216391804098
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.48502029480880154,
+                "p": 0.4542728635682159
+              },
+              "calldataCost": {
+                "auc": 0.48728049562059383,
+                "p": 0.5182408795602199
+              },
+              "executionCost": {
+                "auc": 0.497060457167272,
+                "p": 0.8585707146426786
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49374052671466456,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.4877155172413793,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO DS": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5108624868854238,
+                "p": 0.42478760619690153
+              },
+              "calldataCost": {
+                "auc": 0.5111482942006439,
+                "p": 0.40729635182408797
+              },
+              "executionCost": {
+                "auc": 0.49965811656597087,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.504301580984769,
+                "p": 0.823088455772114
+              },
+              "calldataCost": {
+                "auc": 0.5069516298252595,
+                "p": 0.6976511744127936
+              },
+              "executionCost": {
+                "auc": 0.4924405774031331,
+                "p": 0.6261869065467266
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5012266323852376,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48582744121270555,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO RS": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5210124826629682,
+                "p": 0.11794102948525736
+              },
+              "calldataCost": {
+                "auc": 0.5212898751733703,
+                "p": 0.10044977511244378
+              },
+              "executionCost": {
+                "auc": 0.49970983283451353,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5090426308489672,
+                "p": 0.6051974012993503
+              },
+              "calldataCost": {
+                "auc": 0.5116212862252719,
+                "p": 0.5062468765617192
+              },
+              "executionCost": {
+                "auc": 0.49827177166216513,
+                "p": 0.9240379810094953
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5010205597881883,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4857702490949371,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO POA": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5101873231044243,
+                "p": 0.46476761619190404
+              },
+              "calldataCost": {
+                "auc": 0.5103530463280203,
+                "p": 0.4362818590704648
+              },
+              "executionCost": {
+                "auc": 0.49981565618948315,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5032176374199314,
+                "p": 0.8600699650174912
+              },
+              "calldataCost": {
+                "auc": 0.5063440339639506,
+                "p": 0.7101449275362319
+              },
+              "executionCost": {
+                "auc": 0.49826828541635637,
+                "p": 0.894552723638181
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4979275182582334,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.483522116577098,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO GS": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.48700327695958406,
+                "p": 0.34182908545727136
+              },
+              "calldataCost": {
+                "auc": 0.4885965573091265,
+                "p": 0.4177911044477761
+              },
+              "executionCost": {
+                "auc": 0.497841726618705,
+                "p": 0.31334332833583206
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5202399337074843,
+                "p": 0.26636681659170414
+              },
+              "calldataCost": {
+                "auc": 0.526121511168029,
+                "p": 0.14292853573213393
+              },
+              "executionCost": {
+                "auc": 0.4952352254322197,
+                "p": 0.7801099450274862
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5003205128205128,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48300027870680046,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO CC": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.509168776999851,
+                "p": 0.5187406296851574
+              },
+              "calldataCost": {
+                "auc": 0.510844629822732,
+                "p": 0.4357821089455272
+              },
+              "executionCost": {
+                "auc": 0.4978102189781022,
+                "p": 0.2993503248375812
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.49198569938924475,
+                "p": 0.6666666666666666
+              },
+              "calldataCost": {
+                "auc": 0.49558505884105475,
+                "p": 0.8130934532733634
+              },
+              "executionCost": {
+                "auc": 0.49927007299270076,
+                "p": 0.95952023988006
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5004499104313077,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4866218823205181,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO NCU": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.49040551536566607,
+                "p": 0.5602198900549725
+              },
+              "calldataCost": {
+                "auc": 0.4916762342135477,
+                "p": 0.6301849075462269
+              },
+              "executionCost": {
+                "auc": 0.49827784156142363,
+                "p": 0.6316841579210395
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5086358721701426,
+                "p": 0.7006496751624188
+              },
+              "calldataCost": {
+                "auc": 0.5100932975154102,
+                "p": 0.6401799100449775
+              },
+              "executionCost": {
+                "auc": 0.5143903336194309,
+                "p": 0.4672663668165917
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4930025130803774,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.4854921105755365,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO HMB": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.48482541328171197,
+                "p": 0.2938530734632684
+              },
+              "calldataCost": {
+                "auc": 0.48465937163360684,
+                "p": 0.27636181909045476
+              },
+              "executionCost": {
+                "auc": 0.5001700914444004,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4741643245344759,
+                "p": 0.18140929535232383
+              },
+              "calldataCost": {
+                "auc": 0.47078881932238803,
+                "p": 0.11494252873563218
+              },
+              "executionCost": {
+                "auc": 0.4971529932044418,
+                "p": 0.8510744627686156
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49472402597402604,
+                "sigFraction": 0.06666666666666667
+              },
+              "rf": {
+                "aucMean": 0.47795890452140455,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO NMDS": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4644740807715491,
+                "p": 0.025987006496751622
+              },
+              "calldataCost": {
+                "auc": 0.4657248342374924,
+                "p": 0.03648175912043978
+              },
+              "executionCost": {
+                "auc": 0.4982142857142857,
+                "p": 0.6016991504247876
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.48418977295559573,
+                "p": 0.4497751124437781
+              },
+              "calldataCost": {
+                "auc": 0.4837427164958811,
+                "p": 0.4387806096951524
+              },
+              "executionCost": {
+                "auc": 0.5007534659433394,
+                "p": 0.974512743628186
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5049435501900291,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4839490647589239,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "DUO GSO": {
+          "policies": 1077,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.49542262036719803,
+                "p": 0.7856071964017991
+              },
+              "calldataCost": {
+                "auc": 0.49676031358955236,
+                "p": 0.8530734632683659
+              },
+              "executionCost": {
+                "auc": 0.4982164090368609,
+                "p": 0.5997001499250375
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.48723775166770794,
+                "p": 0.5692153923038481
+              },
+              "calldataCost": {
+                "auc": 0.48843688909490324,
+                "p": 0.5717141429285357
+              },
+              "executionCost": {
+                "auc": 0.5048167032789859,
+                "p": 0.7971014492753623
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5018695506371562,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48164263357925324,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch0": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5246512746512746,
+                "p": 0.46976511744127936
+              },
+              "calldataCost": {
+                "auc": 0.515993265993266,
+                "p": 0.6821589205397302
+              },
+              "executionCost": {
+                "auc": 0.5113636363636364,
+                "p": 0.10594702648675662
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5658369408369409,
+                "p": 0.16541729135432284
+              },
+              "calldataCost": {
+                "auc": 0.5513768638768638,
+                "p": 0.2623688155922039
+              },
+              "executionCost": {
+                "auc": 0.5108525733525733,
+                "p": 0.776111944027986
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.48062303193882144,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4659131803868647,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch1": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.47319034852546926,
+                "p": 0.4432783608195902
+              },
+              "calldataCost": {
+                "auc": 0.47414783607813105,
+                "p": 0.4542728635682159
+              },
+              "executionCost": {
+                "auc": 0.49865951742627346,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4691141872298517,
+                "p": 0.48075962018990503
+              },
+              "calldataCost": {
+                "auc": 0.4593204574054823,
+                "p": 0.3613193403298351
+              },
+              "executionCost": {
+                "auc": 0.5219675001367841,
+                "p": 0.6296851574212894
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4529166666666667,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.5171825396825397,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch2": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.48118719326945547,
+                "p": 0.671664167916042
+              },
+              "calldataCost": {
+                "auc": 0.48212199111942045,
+                "p": 0.670664667666167
+              },
+              "executionCost": {
+                "auc": 0.4987146529562982,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.47834384980914546,
+                "p": 0.6856571714142928
+              },
+              "calldataCost": {
+                "auc": 0.4779543507049934,
+                "p": 0.6666666666666666
+              },
+              "executionCost": {
+                "auc": 0.4962997585105554,
+                "p": 1.0
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49091168091168097,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.435014245014245,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch3": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4776319048798613,
+                "p": 0.47176411794102946
+              },
+              "calldataCost": {
+                "auc": 0.47862273965816204,
+                "p": 0.5122438780609695
+              },
+              "executionCost": {
+                "auc": 0.4986376021798365,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5313103789943027,
+                "p": 0.4512743628185907
+              },
+              "calldataCost": {
+                "auc": 0.5229625959871191,
+                "p": 0.5782108945527237
+              },
+              "executionCost": {
+                "auc": 0.5412682685162249,
+                "p": 0.32083958020989506
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.46515151515151515,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.512379679144385,
+                "sigFraction": 0.13333333333333333
+              }
+            }
+          }
+        },
+        "ICD ch4": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.42090775238461053,
+                "p": 0.018490754622688656
+              },
+              "calldataCost": {
+                "auc": 0.42173996543115044,
+                "p": 0.015492253873063468
+              },
+              "executionCost": {
+                "auc": 0.49868766404199477,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4845720504449139,
+                "p": 0.7626186906546727
+              },
+              "calldataCost": {
+                "auc": 0.5000960245822931,
+                "p": 0.9965017491254373
+              },
+              "executionCost": {
+                "auc": 0.44395365213494653,
+                "p": 0.20039980009995004
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5538768115942029,
+                "sigFraction": 0.13333333333333333
+              },
+              "rf": {
+                "aucMean": 0.5531884057971014,
+                "sigFraction": 0.13333333333333333
+              }
+            }
+          }
+        },
+        "ICD ch5": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5089827167980594,
+                "p": 0.8355822088955522
+              },
+              "calldataCost": {
+                "auc": 0.5100060642813826,
+                "p": 0.8340829585207397
+              },
+              "executionCost": {
+                "auc": 0.49871134020618557,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.42563674954517894,
+                "p": 0.1539230384807596
+              },
+              "calldataCost": {
+                "auc": 0.43052607640994545,
+                "p": 0.16241879060469766
+              },
+              "executionCost": {
+                "auc": 0.48855366889023655,
+                "p": 0.8480759620189905
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.47160968660968655,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4462535612535612,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch6": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5247604723707665,
+                "p": 0.47126436781609193
+              },
+              "calldataCost": {
+                "auc": 0.5258467023172906,
+                "p": 0.4732633683158421
+              },
+              "executionCost": {
+                "auc": 0.49866310160427807,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5286876114081996,
+                "p": 0.5257371314342829
+              },
+              "calldataCost": {
+                "auc": 0.5296345811051694,
+                "p": 0.4777611194402799
+              },
+              "executionCost": {
+                "auc": 0.5164048573975045,
+                "p": 0.7446276861569215
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4744732406236831,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4803518752633797,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch7": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5389928698752229,
+                "p": 0.239880059970015
+              },
+              "calldataCost": {
+                "auc": 0.5401069518716578,
+                "p": 0.2433783108445777
+              },
+              "executionCost": {
+                "auc": 0.49866310160427807,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.481060606060606,
+                "p": 0.6661669165417291
+              },
+              "calldataCost": {
+                "auc": 0.4948752228163993,
+                "p": 0.9045477261369316
+              },
+              "executionCost": {
+                "auc": 0.4460505793226381,
+                "p": 0.18590704647676162
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5558048883270122,
+                "sigFraction": 0.13333333333333333
+              },
+              "rf": {
+                "aucMean": 0.5550674252001685,
+                "sigFraction": 0.1
+              }
+            }
+          }
+        },
+        "ICD ch8": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5294461322738958,
+                "p": 0.4737631184407796
+              },
+              "calldataCost": {
+                "auc": 0.5304977798551064,
+                "p": 0.4707646176911544
+              },
+              "executionCost": {
+                "auc": 0.4987146529562982,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4959492093168186,
+                "p": 0.936031984007996
+              },
+              "calldataCost": {
+                "auc": 0.49419646334813433,
+                "p": 0.9070464767616192
+              },
+              "executionCost": {
+                "auc": 0.4962997585105554,
+                "p": 1.0
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4737179487179487,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.44337606837606836,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "ICD ch9": {
+          "policies": 422,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5257985257985258,
+                "p": 0.49325337331334335
+              },
+              "calldataCost": {
+                "auc": 0.5268515268515268,
+                "p": 0.48075962018990503
+              },
+              "executionCost": {
+                "auc": 0.4987012987012987,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5150579150579151,
+                "p": 0.7576211894052973
+              },
+              "calldataCost": {
+                "auc": 0.5181116181116181,
+                "p": 0.7181409295352323
+              },
+              "executionCost": {
+                "auc": 0.5267111267111266,
+                "p": 0.6166916541729135
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49670846394984325,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4867293625914317,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        }
+      }
+    },
+    "spp": {
+      "dataset": "/root/policy_privacy/experiments/data/polygonAmoy/spp_dataset.json",
+      "datasetSha256": "67efb4f5b0cd7bb3fad5ab35ffffe719376cfaf6e3d9db17a3b05dfb403c770c",
+      "tasks": {
+        "structureType: trivial/or_only": {
+          "policies": 433,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4331429296775831,
+                "p": 0.004997501249375313
+              },
+              "calldataCost": {
+                "auc": 0.4370906321401371,
+                "p": 0.009495252373813094
+              },
+              "executionCost": {
+                "auc": 0.49395785732419395,
+                "p": 0.21339330334832585
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4366971312515867,
+                "p": 0.035982008995502246
+              },
+              "calldataCost": {
+                "auc": 0.43945163747143945,
+                "p": 0.03398300849575212
+              },
+              "executionCost": {
+                "auc": 0.4977659304391977,
+                "p": 0.92103948025987
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5060345637268714,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.4781252935099089,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "structureType: trivial/and_only": {
+          "policies": 424,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4851517530088959,
+                "p": 0.48575712143928035
+              },
+              "calldataCost": {
+                "auc": 0.49124803767660913,
+                "p": 0.670664667666167
+              },
+              "executionCost": {
+                "auc": 0.49230769230769234,
+                "p": 0.09095452273863068
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.45300889586603876,
+                "p": 0.12143928035982009
+              },
+              "calldataCost": {
+                "auc": 0.4625719518576661,
+                "p": 0.2013993003498251
+              },
+              "executionCost": {
+                "auc": 0.4944793301936159,
+                "p": 0.8840579710144928
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5048562548562548,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.46970668220668227,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "structureType: trivial/and_or_mixed": {
+          "policies": 480,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4673516483516484,
+                "p": 0.14792603698150925
+              },
+              "calldataCost": {
+                "auc": 0.4731758241758242,
+                "p": 0.23288355822088955
+              },
+              "executionCost": {
+                "auc": 0.49230769230769234,
+                "p": 0.06896551724137931
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.46535164835164833,
+                "p": 0.24387806096951525
+              },
+              "calldataCost": {
+                "auc": 0.47783516483516486,
+                "p": 0.4512743628185907
+              },
+              "executionCost": {
+                "auc": 0.49615384615384617,
+                "p": 0.8725637181409296
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5108994708994709,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.48262108262108266,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "structureType: or_only/and_only": {
+          "policies": 597,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5523169663905165,
+                "p": 0.00399800099950025
+              },
+              "calldataCost": {
+                "auc": 0.553624750230125,
+                "p": 0.005497251374312844
+              },
+              "executionCost": {
+                "auc": 0.49834983498349833,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5167373880245167,
+                "p": 0.4752623688155922
+              },
+              "calldataCost": {
+                "auc": 0.5216934958802003,
+                "p": 0.3453273363318341
+              },
+              "executionCost": {
+                "auc": 0.4966547675175681,
+                "p": 0.8910544727636182
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.48984348984348985,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.4684669497169498,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "structureType: or_only/and_or_mixed": {
+          "policies": 653,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5344554455445544,
+                "p": 0.054972513743128434
+              },
+              "calldataCost": {
+                "auc": 0.5357048561999057,
+                "p": 0.04597701149425287
+              },
+              "executionCost": {
+                "auc": 0.49834983498349833,
+                "p": 0.4492753623188406
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5271287128712872,
+                "p": 0.22988505747126436
+              },
+              "calldataCost": {
+                "auc": 0.535007072135785,
+                "p": 0.111944027986007
+              },
+              "executionCost": {
+                "auc": 0.49834983498349833,
+                "p": 0.9390304847576212
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49073783359497647,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48556776556776554,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "structureType: and_only/and_or_mixed": {
+          "policies": 644,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4820942662779397,
+                "p": 0.28835582208895555
+              },
+              "calldataCost": {
+                "auc": 0.4820942662779397,
+                "p": 0.27786106946526734
+              },
+              "executionCost": {
+                "auc": 0.5,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5107434402332363,
+                "p": 0.6361819090454772
+              },
+              "calldataCost": {
+                "auc": 0.5128717201166182,
+                "p": 0.5577211394302849
+              },
+              "executionCost": {
+                "auc": 0.5017006802721088,
+                "p": 0.9310344827586207
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.47950577200577194,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48011544011544005,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "predicateCombo: single/few": {
+          "policies": 902,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.48444786293849723,
+                "p": 0.34132933533233384
+              },
+              "calldataCost": {
+                "auc": 0.4867040690133623,
+                "p": 0.3868065967016492
+              },
+              "executionCost": {
+                "auc": 0.496884143214792,
+                "p": 0.20089955022488756
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4801616746599101,
+                "p": 0.3733133433283358
+              },
+              "calldataCost": {
+                "auc": 0.4844629445299069,
+                "p": 0.4577711144427786
+              },
+              "executionCost": {
+                "auc": 0.5013301963623201,
+                "p": 0.9655172413793104
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49859753648413446,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.47607890391395546,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "predicateCombo: single/many": {
+          "policies": 432,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5246025569760978,
+                "p": 0.23638180909545228
+              },
+              "calldataCost": {
+                "auc": 0.5277821011673152,
+                "p": 0.16091954022988506
+              },
+              "executionCost": {
+                "auc": 0.4961089494163424,
+                "p": 0.5352323838080959
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.48889382990550306,
+                "p": 0.7071464267866067
+              },
+              "calldataCost": {
+                "auc": 0.4992884936075598,
+                "p": 0.975512243878061
+              },
+              "executionCost": {
+                "auc": 0.4919399666481379,
+                "p": 0.7666166916541729
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49791717716246015,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48020093114432744,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "predicateCombo: few/many": {
+          "policies": 820,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.540983388704319,
+                "p": 0.027486256871564217
+              },
+              "calldataCost": {
+                "auc": 0.5416168327796235,
+                "p": 0.027486256871564217
+              },
+              "executionCost": {
+                "auc": 0.4992248062015504,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5095238095238096,
+                "p": 0.7066466766616691
+              },
+              "calldataCost": {
+                "auc": 0.5145736434108527,
+                "p": 0.5637181409295352
+              },
+              "executionCost": {
+                "auc": 0.49054263565891476,
+                "p": 0.6596701649175413
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.48507798043880523,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.47692968543483993,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "paramType: none/small": {
+          "policies": 379,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4892094768942059,
+                "p": 0.6626686656671664
+              },
+              "calldataCost": {
+                "auc": 0.4892094768942059,
+                "p": 0.6411794102948526
+              },
+              "executionCost": {
+                "auc": 0.5,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5103360309641098,
+                "p": 0.7261369315342329
+              },
+              "calldataCost": {
+                "auc": 0.5099841660802251,
+                "p": 0.7476261869065467
+              },
+              "executionCost": {
+                "auc": 0.5060110250996951,
+                "p": 0.8300849575212393
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.48110389610389614,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.47742424242424236,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "paramType: none/medium": {
+          "policies": 499,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5360041743970315,
+                "p": 0.09295352323838081
+              },
+              "calldataCost": {
+                "auc": 0.5349799010513296,
+                "p": 0.10344827586206896
+              },
+              "executionCost": {
+                "auc": 0.5014204545454546,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.517750850340136,
+                "p": 0.5407296351824088
+              },
+              "calldataCost": {
+                "auc": 0.5167459029066171,
+                "p": 0.5342328835582209
+              },
+              "executionCost": {
+                "auc": 0.5151901669758812,
+                "p": 0.5632183908045977
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5177315608919383,
+                "sigFraction": 0.06666666666666667
+              },
+              "rf": {
+                "aucMean": 0.4821969696969698,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "paramType: none/large": {
+          "policies": 493,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5335712319609925,
+                "p": 0.10844577711144428
+              },
+              "calldataCost": {
+                "auc": 0.5314871613385238,
+                "p": 0.136431784107946
+              },
+              "executionCost": {
+                "auc": 0.5028901734104047,
+                "p": 0.6021989005497251
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.521302740749479,
+                "p": 0.4572713643178411
+              },
+              "calldataCost": {
+                "auc": 0.5243993551177697,
+                "p": 0.3633183408295852
+              },
+              "executionCost": {
+                "auc": 0.4872399826982816,
+                "p": 0.6051974012993503
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4892409673659674,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.5033653846153847,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "paramType: small/medium": {
+          "policies": 584,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5483076998432602,
+                "p": 0.010994502748625687
+              },
+              "calldataCost": {
+                "auc": 0.5473280760188087,
+                "p": 0.009495252373813094
+              },
+              "executionCost": {
+                "auc": 0.5014204545454546,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5083635384012539,
+                "p": 0.7261369315342329
+              },
+              "calldataCost": {
+                "auc": 0.5071328859717869,
+                "p": 0.7641179410294853
+              },
+              "executionCost": {
+                "auc": 0.5091962186520376,
+                "p": 0.6636681659170415
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.514063492063492,
+                "sigFraction": 0.06666666666666667
+              },
+              "rf": {
+                "aucMean": 0.5048412698412698,
+                "sigFraction": 0.03333333333333333
+              }
+            }
+          }
+        },
+        "paramType: small/large": {
+          "policies": 578,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.545632350009966,
+                "p": 0.014492753623188406
+              },
+              "calldataCost": {
+                "auc": 0.5436391269683077,
+                "p": 0.020989505247376312
+              },
+              "executionCost": {
+                "auc": 0.5028901734104047,
+                "p": 0.5262368815592204
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5108755232210485,
+                "p": 0.6491754122938531
+              },
+              "calldataCost": {
+                "auc": 0.5146564181781942,
+                "p": 0.5502248875562219
+              },
+              "executionCost": {
+                "auc": 0.48126370340841146,
+                "p": 0.38980509745127434
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4877901063337956,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48717984281091076,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "paramType: medium/large": {
+          "policies": 698,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4975860483447189,
+                "p": 0.8850574712643678
+              },
+              "calldataCost": {
+                "auc": 0.4964242314766159,
+                "p": 0.8340829585207397
+              },
+              "executionCost": {
+                "auc": 0.5014697188649502,
+                "p": 0.6231884057971014
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5027957501313716,
+                "p": 0.894552723638181
+              },
+              "calldataCost": {
+                "auc": 0.5074348068838676,
+                "p": 0.7096451774112944
+              },
+              "executionCost": {
+                "auc": 0.47216976484498163,
+                "p": 0.13943028485757122
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.4788644688644689,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.5152899877899877,
+                "sigFraction": 0.1
+              }
+            }
+          }
+        },
+        "nestingDepth: flat/shallow": {
+          "policies": 340,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4662271062271063,
+                "p": 0.16691654172913542
+              },
+              "calldataCost": {
+                "auc": 0.4700915750915752,
+                "p": 0.20889555222388806
+              },
+              "executionCost": {
+                "auc": 0.4946886446886447,
+                "p": 0.5557221389305347
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.4452014652014652,
+                "p": 0.08895552223888056
+              },
+              "calldataCost": {
+                "auc": 0.44745421245421246,
+                "p": 0.09345327336331834
+              },
+              "executionCost": {
+                "auc": 0.4973076923076923,
+                "p": 0.9245377311344328
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5055962555962555,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.47049925383258717,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "nestingDepth: flat/medium": {
+          "policies": 465,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.4514236509758898,
+                "p": 0.03298350824587706
+              },
+              "calldataCost": {
+                "auc": 0.45700344431687717,
+                "p": 0.05697151424287856
+              },
+              "executionCost": {
+                "auc": 0.49230769230769234,
+                "p": 0.08245877061469266
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.44497129735935703,
+                "p": 0.063968015992004
+              },
+              "calldataCost": {
+                "auc": 0.4533295063145809,
+                "p": 0.11244377811094453
+              },
+              "executionCost": {
+                "auc": 0.49835820895522387,
+                "p": 0.9255372313843079
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49658542777354664,
+                "sigFraction": 0.03333333333333333
+              },
+              "rf": {
+                "aucMean": 0.4734577303884234,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "nestingDepth: flat/deep": {
+          "policies": 532,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.46844623038652894,
+                "p": 0.14592703648175911
+              },
+              "calldataCost": {
+                "auc": 0.47428243398392655,
+                "p": 0.2273863068465767
+              },
+              "executionCost": {
+                "auc": 0.49230769230769234,
+                "p": 0.05747126436781609
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.46223689246077304,
+                "p": 0.18990504747626186
+              },
+              "calldataCost": {
+                "auc": 0.47403367776502103,
+                "p": 0.3523238380809595
+              },
+              "executionCost": {
+                "auc": 0.49370455415231534,
+                "p": 0.8310844577711144
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5053930917567282,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.47990746627110265,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "nestingDepth: shallow/medium": {
+          "policies": 545,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.48555081734186223,
+                "p": 0.44627686156921537
+              },
+              "calldataCost": {
+                "auc": 0.4872778962331201,
+                "p": 0.5197401299350325
+              },
+              "executionCost": {
+                "auc": 0.4976190476190476,
+                "p": 0.3873063468265867
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5020824449182657,
+                "p": 0.9365317341329336
+              },
+              "calldataCost": {
+                "auc": 0.5073276474769012,
+                "p": 0.7526236881559221
+              },
+              "executionCost": {
+                "auc": 0.5010376687988628,
+                "p": 0.9535232383808095
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.49387867358164395,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.4863560165540364,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "nestingDepth: shallow/deep": {
+          "policies": 612,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5026060175313908,
+                "p": 0.8900549725137431
+              },
+              "calldataCost": {
+                "auc": 0.5044124615020138,
+                "p": 0.84007996001999
+              },
+              "executionCost": {
+                "auc": 0.4976190476190476,
+                "p": 0.3343328335832084
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.5177149964463398,
+                "p": 0.47176411794102946
+              },
+              "calldataCost": {
+                "auc": 0.525580431177446,
+                "p": 0.3003498250874563
+              },
+              "executionCost": {
+                "auc": 0.49633380715470266,
+                "p": 0.8640679660169915
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.5049739822467096,
+                "sigFraction": 0.06666666666666667
+              },
+              "rf": {
+                "aucMean": 0.47514539332721145,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        },
+        "nestingDepth: medium/deep": {
+          "policies": 737,
+          "univariate": {
+            "commit": {
+              "gasUsed": {
+                "auc": 0.5172607113685305,
+                "p": 0.2893553223388306
+              },
+              "calldataCost": {
+                "auc": 0.5172607113685305,
+                "p": 0.2938530734632684
+              },
+              "executionCost": {
+                "auc": 0.5,
+                "p": 1.0
+              }
+            },
+            "access": {
+              "gasUsed": {
+                "auc": 0.516273112051682,
+                "p": 0.43428285857071464
+              },
+              "calldataCost": {
+                "auc": 0.5189685898863889,
+                "p": 0.3733133433283358
+              },
+              "executionCost": {
+                "auc": 0.49527363184079604,
+                "p": 0.8265867066466767
+              }
+            }
+          },
+          "ofRecordPassed": true,
+          "executionOnly": {
+            "passed": true,
+            "models": {
+              "lr": {
+                "aucMean": 0.48253994490358126,
+                "sigFraction": 0.0
+              },
+              "rf": {
+                "aucMean": 0.48362809917355365,
+                "sigFraction": 0.0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@
   "jsReport": "/root/policy_privacy/experiments/results/crosscheck/spp/polygonAmoy/report.json",
   "overall": {
     "python": true,
-    "js": true
+    "js": false
   },
   "criterion": {
     "python": {
@@ -30,6 +30,16 @@
   "expectedTaskCount": 21,
   "onlyPython": [],
   "onlyJs": [],
-  "taskDiffs": [],
-  "matches": true
+  "taskDiffs": [
+    {
+      "key": "nestingDepth: flat/medium",
+      "diffs": {
+        "passed": {
+          "python": true,
+          "js": false
+        }
+      }
+    }
+  ],
+  "matches": false
 }

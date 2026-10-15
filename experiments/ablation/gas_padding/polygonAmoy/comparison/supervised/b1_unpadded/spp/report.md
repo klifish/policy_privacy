@@ -1,6 +1,6 @@
 # Structure & Parameter Privacy Evaluation Report
 
-**Date:** 10/15/2026, 4:08:44 PM
+**Date:** 10/15/2026, 9:54:22 PM
 
 ## Objective
 
@@ -21,10 +21,7 @@ after applying postfix interpreter + padding protections.
 
 #### Target: structureType
 
-**Status:** ✗ FAIL
-
-**Failures:**
-- trivial vs or_only / Permutation Test: p-value=0.0040 (threshold: 0.05)
+**Status:** ✓ PASS
 
 #### Target: predicateCombo
 
@@ -57,8 +54,8 @@ after applying postfix interpreter + padding protections.
 **Failures:**
 - k=2 / silhouette: 0.9990 (threshold: 0.3)
 - k=3 / silhouette: 0.5451 (threshold: 0.3)
-- k=4 / silhouette: 0.5227 (threshold: 0.3)
-- k=5 / silhouette: 0.5017 (threshold: 0.3)
+- k=4 / silhouette: 0.4736 (threshold: 0.3)
+- k=5 / silhouette: 0.5168 (threshold: 0.3)
 
 #### Target: predicateCombo
 
@@ -67,8 +64,8 @@ after applying postfix interpreter + padding protections.
 **Failures:**
 - k=2 / silhouette: 0.9990 (threshold: 0.3)
 - k=3 / silhouette: 0.5451 (threshold: 0.3)
-- k=4 / silhouette: 0.5227 (threshold: 0.3)
-- k=5 / silhouette: 0.5168 (threshold: 0.3)
+- k=4 / silhouette: 0.3839 (threshold: 0.3)
+- k=5 / silhouette: 0.5122 (threshold: 0.3)
 
 #### Target: paramType
 
@@ -77,11 +74,11 @@ after applying postfix interpreter + padding protections.
 **Failures:**
 - k=2 / silhouette: 0.9990 (threshold: 0.3)
 - k=3 / silhouette: 0.5451 (threshold: 0.3)
-- k=4 / silhouette: 0.5067 (threshold: 0.3)
-- k=5 / silhouette: 0.4710 (threshold: 0.3)
+- k=4 / silhouette: 0.5227 (threshold: 0.3)
+- k=5 / silhouette: 0.5156 (threshold: 0.3)
 
 ## Conclusion
 
-**Overall Status:** ✓ PASS _(multi-seed, policy-disjoint; single-split table below is diagnostic)_
+**Overall Status:** ✗ FAIL _(multi-seed, policy-disjoint; single-split table below is diagnostic)_
 
-Policy structure and parameters appear well-protected against side-channel analysis (multi-seed AUC ≈ 0.5, permutation not significant).
+Potential leakage detected in structure or parameters. Further hardening recommended.
