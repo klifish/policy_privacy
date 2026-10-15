@@ -179,7 +179,7 @@ Because this credential is holder-bound, a policy that activates this slot also 
 \label{subsec:transcript-normalization}
 
 Zero-knowledge proofs hide private witness values, but surrounding blockchain artifacts may still leak policy-dependent information to the passive public-chain observer (Section~\ref{sec:problem}).
-TPS-ZKPI therefore normalizes the public-chain transcript so that different policies induce fixed or tightly bounded observable profiles (Table~\ref{tab:transcript-normalization}).
+TPS-ZKPI therefore normalizes the public-chain transcript so that the calldata, event logs, and public parameters have the same format for every policy (Table~\ref{tab:transcript-normalization}).
 
 \begin{table}[htbp]
 	\centering
