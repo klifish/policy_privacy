@@ -11,11 +11,15 @@ The policies are produced by a deterministic generator with a fixed seed (\textt
 For reproducibility, the generator uses a deterministic test issuer to construct private credential witnesses for policies that require credential verification.
 
 For each policy, the generator selects a set of DUO data-use terms and a logical form that combines them.
-Five terms use code whitelists drawn from external vocabularies: DS uses ICD-10, RS uses the Ontology for Biomedical Investigations (OBI)~\cite{bandrowski2016ontology}, POA uses the Human Ancestry Ontology (HANCESTRO), GS uses ISO~3166 country codes, and CC uses SNOMED Clinical Terms (SNOMED~CT).
+Five ontology-linked terms (Section~\ref{subsec:duo}) use code whitelists drawn from external vocabularies: DS uses ICD-10, RS uses the Ontology for Biomedical Investigations (OBI)~\cite{bandrowski2016ontology}, POA uses the Human Ancestry Ontology (HANCESTRO), GS uses ISO~3166 country codes, and CC uses SNOMED Clinical Terms (SNOMED~CT).
 The other five terms (GRU, HMB, NMDS, GSO, NCU) are evaluated using signed claims from the requester's profile credential (Section~\ref{sec:design}).
 
-Whitelist sizes are sampled once per policy from a fixed set of candidate sizes, independently of the logical form.
-The recorded whitelist size is the number of codes included in the committed whitelist.
+Each policy contains one whitelist for each ontology-linked term it includes.
+We draw a target whitelist size once per policy from $\{2, 4, 8, 12, 16, 20, 24, 32\}$, independently of its logical form.
+This target applies to all whitelists in the policy.
+If a selected scope contains fewer codes than the target, the corresponding whitelist contains only the available codes; this occurs in $8$ of the $2{,}000$ whitelists.
+For analysis, we define a policy's whitelist size as the largest actual whitelist size within that policy.
+The $147$ policies without an ontology-linked term are assigned a whitelist size of $0$.
 
 For example, one generated policy combines the DUO terms RS (research-specific use) and DS (disease-specific use).
 It requires the study design to belong to the OBI \emph{observational and comparative designs} family and the requested record to fall within the ICD-10 \emph{diseases of the circulatory system} chapter.
