@@ -1,0 +1,443 @@
+{
+  "dataDir": "experiments/ablation/gas_padding/polygonAmoy/b1_unpadded",
+  "verdict": "PASS",
+  "passed": true,
+  "excluded": [],
+  "positiveControl": {
+    "field": "control.legacyPseudonym",
+    "maxDeviation": 0.30400104035718933,
+    "detected": true,
+    "task": "pch|denied | DUO HMB"
+  },
+  "observedMaxDeviation": 0.2064676616915423,
+  "familywiseP": 0.6133866133866134,
+  "controlFamilywiseP": 0.000999000999000999,
+  "alpha": 0.05,
+  "permutations": 1000,
+  "tasks": 85,
+  "fields": 60,
+  "top": [
+    {
+      "task": "pch|denied | ICD ch9",
+      "feature": "access.requestAccessBound._pC[1]|value",
+      "auc": 0.7064676616915423
+    },
+    {
+      "task": "pch|granted | ICD ch2",
+      "feature": "access.requestAccessBound._pB[0]|value",
+      "auc": 0.6832107843137255
+    },
+    {
+      "task": "pch|granted | ICD ch3",
+      "feature": "access.requestAccessBound._pB[0]|value",
+      "auc": 0.3237724842002917
+    },
+    {
+      "task": "pi|weak_equivalent",
+      "feature": "access.requestAccessBound._pubSignals[3]|value",
+      "auc": 0.67578125
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "access.requestAccessBound._pA[0]|value",
+      "auc": 0.67265625
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "access.requestAccessBound._pubSignals[2]|value",
+      "auc": 0.66796875
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "commit.commitPolicy._paramsCommitment|value",
+      "auc": 0.66796875
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "commit.log0.data1|value",
+      "auc": 0.66796875
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "access.requestAccessBound._pubSignals[3]|value",
+      "auc": 0.659375
+    },
+    {
+      "task": "pch|denied | ICD ch1",
+      "feature": "access.requestAccessBound._pC[1]|value",
+      "auc": 0.34072759538598046
+    },
+    {
+      "task": "pch|granted | ICD ch2",
+      "feature": "access.requestAccessBound._pubSignals[2]|value",
+      "auc": 0.34099264705882354
+    },
+    {
+      "task": "pch|granted | ICD ch2",
+      "feature": "commit.commitPolicy._paramsCommitment|value",
+      "auc": 0.34099264705882354
+    },
+    {
+      "task": "pch|granted | ICD ch2",
+      "feature": "commit.log0.data1|value",
+      "auc": 0.34099264705882354
+    },
+    {
+      "task": "pch|denied | ICD ch9",
+      "feature": "access.blockNumber|multiplicity",
+      "auc": 0.6565782200110558
+    },
+    {
+      "task": "pch|granted | ICD ch7",
+      "feature": "access.requestAccessBound._pB[1]|value",
+      "auc": 0.34354543074103167
+    },
+    {
+      "task": "pch|granted | ICD ch5",
+      "feature": "access.requestAccessBound._pC[1]|value",
+      "auc": 0.34946392350043465
+    },
+    {
+      "task": "pch|granted | ICD ch8",
+      "feature": "access.requestAccessBound._nonce|value",
+      "auc": 0.35033323674297306
+    },
+    {
+      "task": "pi|weak_equivalent",
+      "feature": "access.requestAccessBound._pubSignals[1]|value",
+      "auc": 0.6421875
+    },
+    {
+      "task": "pi|weak_equivalent",
+      "feature": "commit.commitPolicy._commitment|value",
+      "auc": 0.6421875
+    },
+    {
+      "task": "pi|weak_equivalent",
+      "feature": "commit.log0.data0|value",
+      "auc": 0.6421875
+    },
+    {
+      "task": "pi|semantic_equivalent",
+      "feature": "access.requestAccessBound._nonce|value",
+      "auc": 0.64140625
+    },
+    {
+      "task": "pi|controlled_difference",
+      "feature": "access.requestAccessBound._idReq|value",
+      "auc": 0.63984375
+    },
+    {
+      "task": "pi|semantic_equivalent",
+      "feature": "access.requestAccessBound._pC[0]|value",
+      "auc": 0.63984375
+    },
+    {
+      "task": "pch|granted | ICD ch7",
+      "feature": "access.requestAccessBound._pA[1]|value",
+      "auc": 0.6396962555642839
+    },
+    {
+      "task": "pch|granted | ICD ch3",
+      "feature": "access.blockNumber|value",
+      "auc": 0.6387943607194944
+    }
+  ],
+  "perField": {
+    "access.blockNumber": {
+      "auc": 0.6565782200110558,
+      "encoding": "multiplicity",
+      "task": "pch|denied | ICD ch9"
+    },
+    "access.log0.data0": {
+      "auc": 0.6387943607194944,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.log0.topic0": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.log0.topic1": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "access.log0.topic2": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.log1.data0": {
+      "auc": 0.6387943607194944,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.log1.topic0": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.log1.topic1": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "access.log1.topic2": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.logCount": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.requestAccessBound._idReq": {
+      "auc": 0.63984375,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "access.requestAccessBound._nonce": {
+      "auc": 0.35033323674297306,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch8"
+    },
+    "access.requestAccessBound._pA[0]": {
+      "auc": 0.67265625,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "access.requestAccessBound._pA[1]": {
+      "auc": 0.6396962555642839,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch7"
+    },
+    "access.requestAccessBound._pB[0]": {
+      "auc": 0.6832107843137255,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch2"
+    },
+    "access.requestAccessBound._pB[1]": {
+      "auc": 0.34354543074103167,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch7"
+    },
+    "access.requestAccessBound._pB[2]": {
+      "auc": 0.61796875,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "access.requestAccessBound._pB[3]": {
+      "auc": 0.63671875,
+      "encoding": "value",
+      "task": "pi|semantic_equivalent"
+    },
+    "access.requestAccessBound._pC[0]": {
+      "auc": 0.63984375,
+      "encoding": "value",
+      "task": "pi|semantic_equivalent"
+    },
+    "access.requestAccessBound._pC[1]": {
+      "auc": 0.7064676616915423,
+      "encoding": "value",
+      "task": "pch|denied | ICD ch9"
+    },
+    "access.requestAccessBound._policyId": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.requestAccessBound._pubSignals[0]": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.requestAccessBound._pubSignals[1]": {
+      "auc": 0.6421875,
+      "encoding": "value",
+      "task": "pi|weak_equivalent"
+    },
+    "access.requestAccessBound._pubSignals[2]": {
+      "auc": 0.66796875,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "access.requestAccessBound._pubSignals[3]": {
+      "auc": 0.67578125,
+      "encoding": "value",
+      "task": "pi|weak_equivalent"
+    },
+    "access.requestAccessBound._pubSignals[4]": {
+      "auc": 0.36522838057411083,
+      "encoding": "multiplicity",
+      "task": "pch|granted | ICD ch1"
+    },
+    "access.requestAccessBound._requestEpoch": {
+      "auc": 0.36522838057411083,
+      "encoding": "multiplicity",
+      "task": "pch|granted | ICD ch1"
+    },
+    "access.requestAccessBound._resourceId": {
+      "auc": 0.6386323124291039,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "access.requestAccessBound.selector": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.tx.from": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "access.tx.gasLimit": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "access.tx.nonce": {
+      "auc": 0.3636035385448637,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch1"
+    },
+    "commit.blockNumber": {
+      "auc": 0.6385512882839086,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "commit.commitPolicy._commitment": {
+      "auc": 0.6421875,
+      "encoding": "value",
+      "task": "pi|weak_equivalent"
+    },
+    "commit.commitPolicy._metadataURI.length": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "commit.commitPolicy._metadataURI.word0": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "commit.commitPolicy._paramsCommitment": {
+      "auc": 0.66796875,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "commit.commitPolicy.selector": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "commit.log0.data0": {
+      "auc": 0.6421875,
+      "encoding": "value",
+      "task": "pi|weak_equivalent"
+    },
+    "commit.log0.data1": {
+      "auc": 0.66796875,
+      "encoding": "value",
+      "task": "pi|controlled_difference"
+    },
+    "commit.log0.topic0": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "commit.log0.topic1": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "commit.log0.topic2": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "commit.logCount": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "commit.tx.from": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "commit.tx.gasLimit": {
+      "auc": 0.6141698058533759,
+      "encoding": "multiplicity",
+      "task": "pch|granted | ICD ch8"
+    },
+    "commit.tx.nonce": {
+      "auc": 0.3639646145513631,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch1"
+    },
+    "executionSequence": {
+      "auc": 0.6373359261059796,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "resource.blockNumber": {
+      "auc": 0.6386323124291039,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "resource.log0.topic0": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "resource.log0.topic1": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "resource.log0.topic2": {
+      "auc": 0.6386323124291039,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "resource.log0.topic3": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "resource.logCount": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "resource.registerResource._policyId": {
+      "auc": 0.6384702641387133,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch3"
+    },
+    "resource.registerResource.selector": {
+      "auc": 0.5,
+      "encoding": "value",
+      "task": "pch|granted | DUO GR"
+    },
+    "resource.tx.from": {
+      "auc": 0.62734375,
+      "encoding": "multiplicity",
+      "task": "pi|weak_equivalent"
+    },
+    "resource.tx.gasLimit": {
+      "auc": 0.58125,
+      "encoding": "value",
+      "task": "pi|weak_equivalent"
+    },
+    "resource.tx.nonce": {
+      "auc": 0.3639646145513631,
+      "encoding": "value",
+      "task": "pch|granted | ICD ch1"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "source": "/root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/spp_dataset.json",
+  "sourceSha256": "432fb61b751ecad2679ac92dd7cca55f9853c8a84b1d456d4bf34157081fe236",
+  "featureKeys": [
+    "commitGasUsed",
+    "accessGasUsed"
+  ],
+  "targets": [
+    "logicStructure",
+    "nestingDepth",
+    "predicateCount",
+    "setSize"
+  ],
+  "kmeansSeeds": 20,
+  "permutations": 200,
+  "bootstraps": 500,
+  "randomSeed": 42
+}

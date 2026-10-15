@@ -1,0 +1,4363 @@
+{
+  "experiment": "Policy Indistinguishability",
+  "timestamp": "2026-10-15T08:08:39.387Z",
+  "datasetPath": "/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/pi_dataset.json",
+  "pairTypes": [
+    "semantic_equivalent",
+    "weak_equivalent",
+    "controlled_difference"
+  ],
+  "pairCounts": {
+    "controlled_difference": 10,
+    "semantic_equivalent": 10,
+    "weak_equivalent": 10
+  },
+  "controlShift": 0.75,
+  "multiseedVerdict": {
+    "overallPassed": true,
+    "controlsPresent": false,
+    "controlsValid": null,
+    "missingPositiveControlKeys": [],
+    "criterion": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20,
+      "nonGatingKeys": [],
+      "permutationIterations": 500
+    },
+    "tasks": [
+      {
+        "key": "semantic_equivalent",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.5441666666666668,
+          "std": 0.0343795767155282,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.048020833333333325,
+          "std": 0.02875150962220167,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.22548236859614104,
+          "std": 0.18801468754647468,
+          "n": 30
+        },
+        "sigFraction": 0.23333333333333334,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.5277083333333333,
+              "std": 0.03272292668077773,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.03708333333333334,
+              "std": 0.021525985588482482,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.3139720558882236,
+              "std": 0.21687350092146038,
+              "n": 30
+            },
+            "sigFraction": 0.06666666666666667,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.5441666666666668,
+              "std": 0.0343795767155282,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.048020833333333325,
+              "std": 0.02875150962220167,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.22548236859614104,
+              "std": 0.18801468754647468,
+              "n": 30
+            },
+            "sigFraction": 0.23333333333333334,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        },
+        "status": "PASS",
+        "positiveControlDetected": true
+      },
+      {
+        "key": "weak_equivalent",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.49562499999999987,
+          "std": 0.03574541054457202,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.027812499999999997,
+          "std": 0.022876622210238996,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.5282767797737858,
+          "std": 0.23471748831819497,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.4722395833333332,
+              "std": 0.040933689655157174,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.03859374999999998,
+              "std": 0.03093105467372826,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.671057884231537,
+              "std": 0.2353198887289546,
+              "n": 30
+            },
+            "sigFraction": 0,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.49562499999999987,
+              "std": 0.03574541054457202,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.027812499999999997,
+              "std": 0.022876622210238996,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.5282767797737858,
+              "std": 0.23471748831819497,
+              "n": 30
+            },
+            "sigFraction": 0,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        },
+        "status": "PASS",
+        "positiveControlDetected": true
+      },
+      {
+        "key": "controlled_difference",
+        "passed": true,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.47375,
+          "std": 0.03153102803853161,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.03197916666666666,
+          "std": 0.02570216194159982,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.6759148369926813,
+          "std": 0.19906680621965805,
+          "n": 30
+        },
+        "sigFraction": 0,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.47375,
+              "std": 0.03153102803853161,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.03197916666666666,
+              "std": 0.02570216194159982,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.6759148369926813,
+              "std": 0.19906680621965805,
+              "n": 30
+            },
+            "sigFraction": 0,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.4347916666666667,
+              "std": 0.03273784496657585,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.06583333333333334,
+              "std": 0.03146212725466746,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.8767797737857618,
+              "std": 0.12529349115582894,
+              "n": 30
+            },
+            "sigFraction": 0,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": false,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        },
+        "status": "PASS",
+        "positiveControlDetected": true
+      }
+    ],
+    "seedRecords": [
+      {
+        "seedIndex": 0,
+        "baseSeed": 0,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.06786427145708583,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4921875,
+            "advantage": 0.0078125,
+            "permPValue": 0.6067864271457086,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4890625,
+            "advantage": 0.010937499999999989,
+            "permPValue": 0.5888223552894212,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.515625,
+            "advantage": 0.015625,
+            "permPValue": 0.36127744510978044,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.626746506986028,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.390625,
+            "advantage": 0.109375,
+            "permPValue": 0.9960079840319361,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 1,
+        "baseSeed": 2654435761,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.525,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.313373253493014,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.596875,
+            "advantage": 0.09687500000000004,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4640625,
+            "advantage": 0.03593750000000001,
+            "permPValue": 0.7604790419161677,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.6467065868263473,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.46875,
+            "advantage": 0.03125,
+            "permPValue": 0.7624750499001997,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.6866267465069861,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 2,
+        "baseSeed": 1013904226,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.06986027944111776,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.540625,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.20958083832335328,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.3921875,
+            "advantage": 0.10781249999999998,
+            "permPValue": 0.9920159680638723,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.6706586826347305,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.496875,
+            "advantage": 0.003124999999999989,
+            "permPValue": 0.5109780439121756,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4578125,
+            "advantage": 0.04218749999999999,
+            "permPValue": 0.8283433133732535,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 3,
+        "baseSeed": 3668339987,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.509375,
+            "advantage": 0.009375000000000022,
+            "permPValue": 0.4431137724550898,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5859375,
+            "advantage": 0.0859375,
+            "permPValue": 0.03792415169660679,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4859375,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.6327345309381237,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.434375,
+            "advantage": 0.06562499999999999,
+            "permPValue": 0.9221556886227545,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.409375,
+            "advantage": 0.09062500000000001,
+            "permPValue": 0.9840319361277445,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4109375,
+            "advantage": 0.08906249999999999,
+            "permPValue": 0.9700598802395209,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 4,
+        "baseSeed": 2027808452,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.06187624750499002,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5796875,
+            "advantage": 0.07968750000000002,
+            "permPValue": 0.0499001996007984,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4375,
+            "advantage": 0.0625,
+            "permPValue": 0.908183632734531,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.503125,
+            "advantage": 0.0031250000000000444,
+            "permPValue": 0.46107784431137727,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.521875,
+            "advantage": 0.021874999999999978,
+            "permPValue": 0.3153692614770459,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4515625,
+            "advantage": 0.04843750000000002,
+            "permPValue": 0.8702594810379242,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 5,
+        "baseSeed": 387276917,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.031936127744510975,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5,
+            "advantage": 0,
+            "permPValue": 0.5029940119760479,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4890625,
+            "advantage": 0.010937499999999989,
+            "permPValue": 0.6227544910179641,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.565625,
+            "advantage": 0.06562500000000004,
+            "permPValue": 0.08582834331337326,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4671875,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.7564870259481038,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4484375,
+            "advantage": 0.05156250000000001,
+            "permPValue": 0.8483033932135728,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 6,
+        "baseSeed": 3041712678,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5234375,
+            "advantage": 0.0234375,
+            "permPValue": 0.32335329341317365,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5421875,
+            "advantage": 0.042187500000000044,
+            "permPValue": 0.20758483033932135,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4375,
+            "advantage": 0.0625,
+            "permPValue": 0.9221556886227545,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.503125,
+            "advantage": 0.0031250000000000444,
+            "permPValue": 0.4550898203592814,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.7025948103792415,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.45625,
+            "advantage": 0.04375000000000001,
+            "permPValue": 0.8243512974051896,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 7,
+        "baseSeed": 1401181143,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4578125,
+            "advantage": 0.04218749999999999,
+            "permPValue": 0.8083832335329342,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.521875,
+            "advantage": 0.021874999999999978,
+            "permPValue": 0.3213572854291417,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5140625,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.3932135728542914,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5140625,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.44510978043912175,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.475,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.7085828343313373,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.41875,
+            "advantage": 0.08124999999999999,
+            "permPValue": 0.9680638722554891,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 8,
+        "baseSeed": 4055616904,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5390625,
+            "advantage": 0.0390625,
+            "permPValue": 0.20359281437125748,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5921875,
+            "advantage": 0.09218749999999998,
+            "permPValue": 0.023952095808383235,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4625,
+            "advantage": 0.03749999999999998,
+            "permPValue": 0.7944111776447106,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.496875,
+            "advantage": 0.003124999999999989,
+            "permPValue": 0.499001996007984,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.459375,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.7924151696606786,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4515625,
+            "advantage": 0.04843750000000002,
+            "permPValue": 0.844311377245509,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 9,
+        "baseSeed": 2415085369,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.525,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.2934131736526946,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5328125,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.24750499001996007,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4875,
+            "advantage": 0.012500000000000011,
+            "permPValue": 0.6187624750499002,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5390625,
+            "advantage": 0.0390625,
+            "permPValue": 0.21157684630738524,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.48125,
+            "advantage": 0.01874999999999999,
+            "permPValue": 0.6526946107784432,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4078125,
+            "advantage": 0.09218749999999998,
+            "permPValue": 0.9820359281437125,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 10,
+        "baseSeed": 774553834,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5203125,
+            "advantage": 0.020312499999999956,
+            "permPValue": 0.31736526946107785,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5234375,
+            "advantage": 0.0234375,
+            "permPValue": 0.32335329341317365,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4828125,
+            "advantage": 0.017187500000000022,
+            "permPValue": 0.6407185628742516,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4984375,
+            "advantage": 0.0015625000000000222,
+            "permPValue": 0.469061876247505,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5328125,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.21157684630738524,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.403125,
+            "advantage": 0.09687499999999999,
+            "permPValue": 0.9780439121756487,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 11,
+        "baseSeed": 3428989595,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5484375,
+            "advantage": 0.04843750000000002,
+            "permPValue": 0.15568862275449102,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.559375,
+            "advantage": 0.059374999999999956,
+            "permPValue": 0.0998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.403125,
+            "advantage": 0.09687499999999999,
+            "permPValue": 0.9760479041916168,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.471875,
+            "advantage": 0.02812500000000001,
+            "permPValue": 0.7345309381237525,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4984375,
+            "advantage": 0.0015625000000000222,
+            "permPValue": 0.4870259481037924,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.874251497005988,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 12,
+        "baseSeed": 1788458060,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.51875,
+            "advantage": 0.018750000000000044,
+            "permPValue": 0.35129740518962077,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6078125,
+            "advantage": 0.10781249999999998,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4453125,
+            "advantage": 0.0546875,
+            "permPValue": 0.8882235528942116,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5078125,
+            "advantage": 0.0078125,
+            "permPValue": 0.4171656686626746,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.503125,
+            "advantage": 0.0031250000000000444,
+            "permPValue": 0.499001996007984,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.3921875,
+            "advantage": 0.10781249999999998,
+            "permPValue": 0.9900199600798403,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 13,
+        "baseSeed": 147926525,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.528125,
+            "advantage": 0.028124999999999956,
+            "permPValue": 0.32335329341317365,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55625,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.1277445109780439,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.475,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.7105788423153693,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.484375,
+            "advantage": 0.015625,
+            "permPValue": 0.6487025948103793,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.484375,
+            "advantage": 0.015625,
+            "permPValue": 0.6786427145708582,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4234375,
+            "advantage": 0.07656249999999998,
+            "permPValue": 0.9600798403193613,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 14,
+        "baseSeed": 2802362286,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6015625,
+            "advantage": 0.1015625,
+            "permPValue": 0.015968063872255488,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.51875,
+            "advantage": 0.018750000000000044,
+            "permPValue": 0.3393213572854291,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5140625,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.3912175648702595,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.6686626746506986,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4828125,
+            "advantage": 0.017187500000000022,
+            "permPValue": 0.6706586826347305,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.3859375,
+            "advantage": 0.11406250000000001,
+            "permPValue": 0.9960079840319361,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 15,
+        "baseSeed": 1161830751,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5328125,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.27944111776447106,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.525,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.3093812375249501,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4625,
+            "advantage": 0.03749999999999998,
+            "permPValue": 0.7844311377245509,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4796875,
+            "advantage": 0.02031250000000001,
+            "permPValue": 0.6826347305389222,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.478125,
+            "advantage": 0.021874999999999978,
+            "permPValue": 0.6766467065868264,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.8542914171656687,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 16,
+        "baseSeed": 3816266512,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4640625,
+            "advantage": 0.03593750000000001,
+            "permPValue": 0.8343313373253493,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5265625,
+            "advantage": 0.026562500000000044,
+            "permPValue": 0.25149700598802394,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.43125,
+            "advantage": 0.06874999999999998,
+            "permPValue": 0.8942115768463074,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4484375,
+            "advantage": 0.05156250000000001,
+            "permPValue": 0.872255489021956,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.43125,
+            "advantage": 0.06874999999999998,
+            "permPValue": 0.9181636726546906,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.403125,
+            "advantage": 0.09687499999999999,
+            "permPValue": 0.9780439121756487,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 17,
+        "baseSeed": 2175734977,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4734375,
+            "advantage": 0.02656249999999999,
+            "permPValue": 0.6926147704590818,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.8662674650698603,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.471875,
+            "advantage": 0.02812500000000001,
+            "permPValue": 0.7465069860279441,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.521875,
+            "advantage": 0.021874999999999978,
+            "permPValue": 0.3213572854291417,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.421875,
+            "advantage": 0.078125,
+            "permPValue": 0.9540918163672655,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4453125,
+            "advantage": 0.0546875,
+            "permPValue": 0.9001996007984032,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 18,
+        "baseSeed": 535203442,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.534375,
+            "advantage": 0.034375000000000044,
+            "permPValue": 0.19560878243512975,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5140625,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.3872255489021956,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.8782435129740519,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.515625,
+            "advantage": 0.015625,
+            "permPValue": 0.36127744510978044,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4921875,
+            "advantage": 0.0078125,
+            "permPValue": 0.5828343313373253,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4125,
+            "advantage": 0.08750000000000002,
+            "permPValue": 0.9780439121756487,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 19,
+        "baseSeed": 3189639203,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.51875,
+            "advantage": 0.018750000000000044,
+            "permPValue": 0.3213572854291417,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5265625,
+            "advantage": 0.026562500000000044,
+            "permPValue": 0.3213572854291417,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.375,
+            "advantage": 0.125,
+            "permPValue": 0.998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.3953125,
+            "advantage": 0.10468749999999999,
+            "permPValue": 0.9840319361277445,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4875,
+            "advantage": 0.012500000000000011,
+            "permPValue": 0.6047904191616766,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4140625,
+            "advantage": 0.0859375,
+            "permPValue": 0.9700598802395209,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 20,
+        "baseSeed": 1549107668,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5125,
+            "advantage": 0.012499999999999956,
+            "permPValue": 0.35528942115768464,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5796875,
+            "advantage": 0.07968750000000002,
+            "permPValue": 0.04790419161676647,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4546875,
+            "advantage": 0.04531249999999998,
+            "permPValue": 0.8522954091816367,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.528125,
+            "advantage": 0.028124999999999956,
+            "permPValue": 0.2834331337325349,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.45625,
+            "advantage": 0.04375000000000001,
+            "permPValue": 0.8203592814371258,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.8842315369261478,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 21,
+        "baseSeed": 4203543429,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.53125,
+            "advantage": 0.03125,
+            "permPValue": 0.2894211576846307,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55,
+            "advantage": 0.050000000000000044,
+            "permPValue": 0.18363273453093812,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.465625,
+            "advantage": 0.03437499999999999,
+            "permPValue": 0.7485029940119761,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5359375,
+            "advantage": 0.035937499999999956,
+            "permPValue": 0.23552894211576847,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4015625,
+            "advantage": 0.09843750000000001,
+            "permPValue": 0.9880239520958084,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.378125,
+            "advantage": 0.12187500000000001,
+            "permPValue": 0.998003992015968,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 22,
+        "baseSeed": 2563011894,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.53125,
+            "advantage": 0.03125,
+            "permPValue": 0.29141716566866266,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.546875,
+            "advantage": 0.046875,
+            "permPValue": 0.1536926147704591,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5296875,
+            "advantage": 0.029687499999999978,
+            "permPValue": 0.249500998003992,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5125,
+            "advantage": 0.012499999999999956,
+            "permPValue": 0.4311377245508982,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5078125,
+            "advantage": 0.0078125,
+            "permPValue": 0.4151696606786427,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.46875,
+            "advantage": 0.03125,
+            "permPValue": 0.7445109780439122,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 23,
+        "baseSeed": 922480359,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.534375,
+            "advantage": 0.034375000000000044,
+            "permPValue": 0.24151696606786427,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5296875,
+            "advantage": 0.029687499999999978,
+            "permPValue": 0.249500998003992,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4984375,
+            "advantage": 0.0015625000000000222,
+            "permPValue": 0.5369261477045908,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5390625,
+            "advantage": 0.0390625,
+            "permPValue": 0.2055888223552894,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.45,
+            "advantage": 0.04999999999999999,
+            "permPValue": 0.8343313373253493,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.509375,
+            "advantage": 0.009375000000000022,
+            "permPValue": 0.4530938123752495,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 24,
+        "baseSeed": 3576916120,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.465625,
+            "advantage": 0.03437499999999999,
+            "permPValue": 0.7784431137724551,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.525,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.2994011976047904,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5625,
+            "advantage": 0.0625,
+            "permPValue": 0.09181636726546906,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4859375,
+            "advantage": 0.014062499999999978,
+            "permPValue": 0.6666666666666666,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.478125,
+            "advantage": 0.021874999999999978,
+            "permPValue": 0.7245508982035929,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4171875,
+            "advantage": 0.08281250000000001,
+            "permPValue": 0.9580838323353293,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 25,
+        "baseSeed": 1936384585,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.540625,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.19760479041916168,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5328125,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.22355289421157684,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5171875,
+            "advantage": 0.017187500000000022,
+            "permPValue": 0.3273453093812375,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.6966067864271457,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5203125,
+            "advantage": 0.020312499999999956,
+            "permPValue": 0.31736526946107785,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.3921875,
+            "advantage": 0.10781249999999998,
+            "permPValue": 0.9880239520958084,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 26,
+        "baseSeed": 295853050,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5234375,
+            "advantage": 0.0234375,
+            "permPValue": 0.3193612774451098,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5640625,
+            "advantage": 0.06406250000000002,
+            "permPValue": 0.08782435129740519,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.44375,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.8502994011976048,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4890625,
+            "advantage": 0.010937499999999989,
+            "permPValue": 0.6007984031936128,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.434375,
+            "advantage": 0.06562499999999999,
+            "permPValue": 0.9481037924151696,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.6986027944111777,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 27,
+        "baseSeed": 2950288811,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4984375,
+            "advantage": 0.0015625000000000222,
+            "permPValue": 0.5149700598802395,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5515625,
+            "advantage": 0.051562499999999956,
+            "permPValue": 0.1277445109780439,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5203125,
+            "advantage": 0.020312499999999956,
+            "permPValue": 0.35728542914171657,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.7345309381237525,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4921875,
+            "advantage": 0.0078125,
+            "permPValue": 0.5568862275449101,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.465625,
+            "advantage": 0.03437499999999999,
+            "permPValue": 0.7784431137724551,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 28,
+        "baseSeed": 1309757276,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5609375,
+            "advantage": 0.06093749999999998,
+            "permPValue": 0.10778443113772455,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5515625,
+            "advantage": 0.051562499999999956,
+            "permPValue": 0.11776447105788423,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5046875,
+            "advantage": 0.004687499999999956,
+            "permPValue": 0.500998003992016,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55,
+            "advantage": 0.050000000000000044,
+            "permPValue": 0.18163672654690619,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.6986027944111777,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4765625,
+            "advantage": 0.0234375,
+            "permPValue": 0.6906187624750499,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 29,
+        "baseSeed": 3964193037,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.53125,
+            "advantage": 0.03125,
+            "permPValue": 0.21956087824351297,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6015625,
+            "advantage": 0.1015625,
+            "permPValue": 0.011976047904191617,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5,
+            "advantage": 0,
+            "permPValue": 0.4750499001996008,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.440625,
+            "advantage": 0.05937500000000001,
+            "permPValue": 0.8942115768463074,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.44375,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.8782435129740519,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.459375,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.812375249500998,
+            "n": 160
+          }
+        ]
+      }
+    ]
+  },
+  "controlVerdict": {
+    "overallPassed": false,
+    "controlsPresent": false,
+    "controlsValid": null,
+    "missingPositiveControlKeys": [],
+    "criterion": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20,
+      "nonGatingKeys": [],
+      "permutationIterations": 500
+    },
+    "tasks": [
+      {
+        "key": "semantic_equivalent",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.6564583333333334,
+          "std": 0.04724116245982475,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.1564583333333333,
+          "std": 0.04724116245982476,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.010911510312707916,
+          "std": 0.020690130912124346,
+          "n": 30
+        },
+        "sigFraction": 0.9666666666666667,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.6564583333333334,
+              "std": 0.04724116245982475,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.1564583333333333,
+              "std": 0.04724116245982476,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.010911510312707916,
+              "std": 0.020690130912124346,
+              "n": 30
+            },
+            "sigFraction": 0.9666666666666667,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": true,
+            "legFails": true,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.6231770833333333,
+              "std": 0.0399912167548666,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.1231770833333333,
+              "std": 0.039991216754866596,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.02801064537591485,
+              "std": 0.050002512100412996,
+              "n": 30
+            },
+            "sigFraction": 0.8,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": true,
+            "legFails": true,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        }
+      },
+      {
+        "key": "weak_equivalent",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.6027083333333333,
+          "std": 0.05154345186884125,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.106875,
+          "std": 0.04223107317682876,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.06906187624750498,
+          "std": 0.16322708446597498,
+          "n": 30
+        },
+        "sigFraction": 0.6333333333333333,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.6027083333333333,
+              "std": 0.05154345186884125,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.106875,
+              "std": 0.04223107317682876,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.06906187624750498,
+              "std": 0.16322708446597498,
+              "n": 30
+            },
+            "sigFraction": 0.6333333333333333,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": true,
+            "legFails": true,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.5853125,
+              "std": 0.06162354207200361,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.09187500000000001,
+              "std": 0.05132901683015173,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.12122421823020621,
+              "std": 0.20364233891625524,
+              "n": 30
+            },
+            "sigFraction": 0.5333333333333333,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": true,
+            "legFails": true,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        }
+      },
+      {
+        "key": "controlled_difference",
+        "passed": false,
+        "skipped": false,
+        "underpowered": false,
+        "diagnostic": false,
+        "nonGating": false,
+        "medianTestN": 160,
+        "auc": {
+          "mean": 0.6046875,
+          "std": 0.050322850902116696,
+          "n": 30
+        },
+        "advantage": {
+          "mean": 0.10468750000000003,
+          "std": 0.050322850902116696,
+          "n": 30
+        },
+        "permPValue": {
+          "mean": 0.06526946107784432,
+          "std": 0.08313103680216954,
+          "n": 30
+        },
+        "sigFraction": 0.6333333333333333,
+        "seeds": {
+          "auc": 30,
+          "perm": 30
+        },
+        "classifiers": {
+          "lr": {
+            "auc": {
+              "mean": 0.6046875,
+              "std": 0.050322850902116696,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.10468750000000003,
+              "std": 0.050322850902116696,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.06526946107784432,
+              "std": 0.08313103680216954,
+              "n": 30
+            },
+            "sigFraction": 0.6333333333333333,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": true,
+            "legFails": true,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          },
+          "rf": {
+            "auc": {
+              "mean": 0.5534895833333334,
+              "std": 0.03431975516547365,
+              "n": 30
+            },
+            "advantage": {
+              "mean": 0.05609375000000001,
+              "std": 0.029874275400905818,
+              "n": 30
+            },
+            "permPValue": {
+              "mean": 0.1803725881570193,
+              "std": 0.16833380665201866,
+              "n": 30
+            },
+            "sigFraction": 0.2,
+            "prf": {
+              "precision": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "recall": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              },
+              "f1": {
+                "mean": null,
+                "std": null,
+                "n": 0
+              }
+            },
+            "confusion": [],
+            "aucHigh": true,
+            "sigHigh": false,
+            "legFails": false,
+            "seeds": {
+              "auc": 30,
+              "perm": 30
+            }
+          }
+        }
+      }
+    ],
+    "seedRecords": [
+      {
+        "seedIndex": 0,
+        "baseSeed": 0,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.7375,
+            "advantage": 0.23750000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.603125,
+            "advantage": 0.10312500000000002,
+            "permPValue": 0.023952095808383235,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.63125,
+            "advantage": 0.13124999999999998,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6015625,
+            "advantage": 0.1015625,
+            "permPValue": 0.017964071856287425,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.71875,
+            "advantage": 0.21875,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5921875,
+            "advantage": 0.09218749999999998,
+            "permPValue": 0.021956087824351298,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 1,
+        "baseSeed": 2654435761,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.609375,
+            "advantage": 0.109375,
+            "permPValue": 0.02594810379241517,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6140625,
+            "advantage": 0.11406249999999996,
+            "permPValue": 0.011976047904191617,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6375,
+            "advantage": 0.13749999999999996,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6546875,
+            "advantage": 0.15468749999999998,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.659375,
+            "advantage": 0.15937500000000004,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5203125,
+            "advantage": 0.020312499999999956,
+            "permPValue": 0.3393213572854291,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 2,
+        "baseSeed": 1013904226,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.728125,
+            "advantage": 0.22812500000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6328125,
+            "advantage": 0.1328125,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.615625,
+            "advantage": 0.11562499999999998,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5546875,
+            "advantage": 0.0546875,
+            "permPValue": 0.1277445109780439,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.665625,
+            "advantage": 0.16562500000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6484375,
+            "advantage": 0.1484375,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 3,
+        "baseSeed": 3668339987,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6375,
+            "advantage": 0.13749999999999996,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.640625,
+            "advantage": 0.140625,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.625,
+            "advantage": 0.125,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.590625,
+            "advantage": 0.09062499999999996,
+            "permPValue": 0.031936127744510975,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.59375,
+            "advantage": 0.09375,
+            "permPValue": 0.03592814371257485,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.06986027944111776,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 4,
+        "baseSeed": 2027808452,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.696875,
+            "advantage": 0.19687500000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6640625,
+            "advantage": 0.1640625,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6375,
+            "advantage": 0.13749999999999996,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5875,
+            "advantage": 0.08750000000000002,
+            "permPValue": 0.03592814371257485,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.609375,
+            "advantage": 0.109375,
+            "permPValue": 0.015968063872255488,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5578125,
+            "advantage": 0.057812500000000044,
+            "permPValue": 0.1217564870259481,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 5,
+        "baseSeed": 387276917,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65,
+            "advantage": 0.15000000000000002,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.621875,
+            "advantage": 0.12187499999999996,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.634375,
+            "advantage": 0.13437500000000002,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.65625,
+            "advantage": 0.15625,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.58125,
+            "advantage": 0.08125000000000004,
+            "permPValue": 0.03792415169660679,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5546875,
+            "advantage": 0.0546875,
+            "permPValue": 0.12375249500998003,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 6,
+        "baseSeed": 3041712678,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.64375,
+            "advantage": 0.14375000000000004,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.60625,
+            "advantage": 0.10624999999999996,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6125,
+            "advantage": 0.11250000000000004,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.60625,
+            "advantage": 0.10624999999999996,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.61875,
+            "advantage": 0.11875000000000002,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.559375,
+            "advantage": 0.059374999999999956,
+            "permPValue": 0.11177644710578842,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 7,
+        "baseSeed": 1401181143,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.671875,
+            "advantage": 0.171875,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.675,
+            "advantage": 0.17500000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5625,
+            "advantage": 0.0625,
+            "permPValue": 0.12974051896207583,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5546875,
+            "advantage": 0.0546875,
+            "permPValue": 0.1437125748502994,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.64375,
+            "advantage": 0.14375000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5734375,
+            "advantage": 0.07343750000000004,
+            "permPValue": 0.06986027944111776,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 8,
+        "baseSeed": 4055616904,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6,
+            "advantage": 0.09999999999999998,
+            "permPValue": 0.021956087824351298,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.56875,
+            "advantage": 0.06874999999999998,
+            "permPValue": 0.07584830339321358,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.06387225548902195,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.565625,
+            "advantage": 0.06562500000000004,
+            "permPValue": 0.10179640718562874,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.540625,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.21357285429141717,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5484375,
+            "advantage": 0.04843750000000002,
+            "permPValue": 0.15768463073852296,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 9,
+        "baseSeed": 2415085369,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65,
+            "advantage": 0.15000000000000002,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6140625,
+            "advantage": 0.11406249999999996,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.06786427145708583,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5765625,
+            "advantage": 0.07656249999999998,
+            "permPValue": 0.06187624750499002,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.04790419161676647,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5828125,
+            "advantage": 0.08281249999999996,
+            "permPValue": 0.04590818363273453,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 10,
+        "baseSeed": 774553834,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.63125,
+            "advantage": 0.13124999999999998,
+            "permPValue": 0.013972055888223553,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.56875,
+            "advantage": 0.06874999999999998,
+            "permPValue": 0.08982035928143713,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.61875,
+            "advantage": 0.11875000000000002,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.596875,
+            "advantage": 0.09687500000000004,
+            "permPValue": 0.029940119760479042,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.61875,
+            "advantage": 0.11875000000000002,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5265625,
+            "advantage": 0.026562500000000044,
+            "permPValue": 0.2874251497005988,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 11,
+        "baseSeed": 3428989595,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.675,
+            "advantage": 0.17500000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6421875,
+            "advantage": 0.14218750000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6375,
+            "advantage": 0.13749999999999996,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.58125,
+            "advantage": 0.08125000000000004,
+            "permPValue": 0.027944111776447105,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.559375,
+            "advantage": 0.059374999999999956,
+            "permPValue": 0.10778443113772455,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.496875,
+            "advantage": 0.003124999999999989,
+            "permPValue": 0.5528942115768463,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 12,
+        "baseSeed": 1788458060,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65625,
+            "advantage": 0.15625,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5984375,
+            "advantage": 0.09843749999999996,
+            "permPValue": 0.02594810379241517,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5875,
+            "advantage": 0.08750000000000002,
+            "permPValue": 0.03792415169660679,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.584375,
+            "advantage": 0.08437499999999998,
+            "permPValue": 0.04590818363273453,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.634375,
+            "advantage": 0.13437500000000002,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.528125,
+            "advantage": 0.028124999999999956,
+            "permPValue": 0.25149700598802394,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 13,
+        "baseSeed": 147926525,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.70625,
+            "advantage": 0.20625000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6859375,
+            "advantage": 0.18593749999999998,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.0718562874251497,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4828125,
+            "advantage": 0.017187500000000022,
+            "permPValue": 0.6766467065868264,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.60625,
+            "advantage": 0.10624999999999996,
+            "permPValue": 0.021956087824351298,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.04590818363273453,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 14,
+        "baseSeed": 2802362286,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.671875,
+            "advantage": 0.171875,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5625,
+            "advantage": 0.0625,
+            "permPValue": 0.10978043912175649,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.584375,
+            "advantage": 0.08437499999999998,
+            "permPValue": 0.05189620758483034,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55625,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.11776447105788423,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.09181636726546906,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.51875,
+            "advantage": 0.018750000000000044,
+            "permPValue": 0.35728542914171657,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 15,
+        "baseSeed": 1161830751,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.696875,
+            "advantage": 0.19687500000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6421875,
+            "advantage": 0.14218750000000002,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.059880239520958084,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.54375,
+            "advantage": 0.043749999999999956,
+            "permPValue": 0.21157684630738524,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.55,
+            "advantage": 0.050000000000000044,
+            "permPValue": 0.16966067864271456,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55,
+            "advantage": 0.050000000000000044,
+            "permPValue": 0.17764471057884232,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 16,
+        "baseSeed": 3816266512,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.559375,
+            "advantage": 0.059374999999999956,
+            "permPValue": 0.10778443113772455,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.615625,
+            "advantage": 0.11562499999999998,
+            "permPValue": 0.015968063872255488,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.584375,
+            "advantage": 0.08437499999999998,
+            "permPValue": 0.03992015968063872,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5421875,
+            "advantage": 0.042187500000000044,
+            "permPValue": 0.18762475049900199,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.540625,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.17964071856287425,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.4640625,
+            "advantage": 0.03593750000000001,
+            "permPValue": 0.780439121756487,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 17,
+        "baseSeed": 2175734977,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.603125,
+            "advantage": 0.10312500000000002,
+            "permPValue": 0.017964071856287425,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.58125,
+            "advantage": 0.08125000000000004,
+            "permPValue": 0.041916167664670656,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65625,
+            "advantage": 0.15625,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.64375,
+            "advantage": 0.14375000000000004,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6625,
+            "advantage": 0.16249999999999998,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.546875,
+            "advantage": 0.046875,
+            "permPValue": 0.18962075848303392,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 18,
+        "baseSeed": 535203442,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.78125,
+            "advantage": 0.28125,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6296875,
+            "advantage": 0.12968749999999996,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.55625,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.13373253493013973,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5875,
+            "advantage": 0.08750000000000002,
+            "permPValue": 0.03992015968063872,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.5625,
+            "advantage": 0.0625,
+            "permPValue": 0.10578842315369262,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.534375,
+            "advantage": 0.034375000000000044,
+            "permPValue": 0.249500998003992,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 19,
+        "baseSeed": 3189639203,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.659375,
+            "advantage": 0.15937500000000004,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6359375,
+            "advantage": 0.13593750000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.4375,
+            "advantage": 0.0625,
+            "permPValue": 0.906187624750499,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.41875,
+            "advantage": 0.08124999999999999,
+            "permPValue": 0.9560878243512974,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.0658682634730539,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5328125,
+            "advantage": 0.03281250000000002,
+            "permPValue": 0.22554890219560877,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 20,
+        "baseSeed": 1549107668,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65,
+            "advantage": 0.15000000000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.578125,
+            "advantage": 0.078125,
+            "permPValue": 0.05389221556886228,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.621875,
+            "advantage": 0.12187499999999996,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.690625,
+            "advantage": 0.19062500000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.559375,
+            "advantage": 0.059374999999999956,
+            "permPValue": 0.12375249500998003,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5453125,
+            "advantage": 0.04531249999999998,
+            "permPValue": 0.17764471057884232,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 21,
+        "baseSeed": 4203543429,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.625,
+            "advantage": 0.125,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.665625,
+            "advantage": 0.16562500000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.615625,
+            "advantage": 0.11562499999999998,
+            "permPValue": 0.011976047904191617,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.640625,
+            "advantage": 0.140625,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.525,
+            "advantage": 0.025000000000000022,
+            "permPValue": 0.3093812375249501,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.07385229540918163,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 22,
+        "baseSeed": 2563011894,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.678125,
+            "advantage": 0.17812499999999998,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.615625,
+            "advantage": 0.11562499999999998,
+            "permPValue": 0.007984031936127744,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.590625,
+            "advantage": 0.09062499999999996,
+            "permPValue": 0.031936127744510975,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5796875,
+            "advantage": 0.07968750000000002,
+            "permPValue": 0.05389221556886228,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.534375,
+            "advantage": 0.034375000000000044,
+            "permPValue": 0.26147704590818366,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5078125,
+            "advantage": 0.0078125,
+            "permPValue": 0.4091816367265469,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 23,
+        "baseSeed": 922480359,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.703125,
+            "advantage": 0.203125,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.675,
+            "advantage": 0.17500000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.08183632734530938,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5828125,
+            "advantage": 0.08281249999999996,
+            "permPValue": 0.03592814371257485,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6,
+            "advantage": 0.09999999999999998,
+            "permPValue": 0.021956087824351298,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5859375,
+            "advantage": 0.0859375,
+            "permPValue": 0.041916167664670656,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 24,
+        "baseSeed": 3576916120,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.58125,
+            "advantage": 0.08125000000000004,
+            "permPValue": 0.041916167664670656,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5375,
+            "advantage": 0.03749999999999998,
+            "permPValue": 0.24750499001996007,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6375,
+            "advantage": 0.13749999999999996,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5609375,
+            "advantage": 0.06093749999999998,
+            "permPValue": 0.1277445109780439,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.603125,
+            "advantage": 0.10312500000000002,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5609375,
+            "advantage": 0.06093749999999998,
+            "permPValue": 0.10778443113772455,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 25,
+        "baseSeed": 1936384585,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.596875,
+            "advantage": 0.09687500000000004,
+            "permPValue": 0.033932135728542916,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6484375,
+            "advantage": 0.1484375,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.634375,
+            "advantage": 0.13437500000000002,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6046875,
+            "advantage": 0.10468750000000004,
+            "permPValue": 0.01996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6625,
+            "advantage": 0.16249999999999998,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.55625,
+            "advantage": 0.05625000000000002,
+            "permPValue": 0.10778443113772455,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 26,
+        "baseSeed": 295853050,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.65625,
+            "advantage": 0.15625,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6421875,
+            "advantage": 0.14218750000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.6125,
+            "advantage": 0.11250000000000004,
+            "permPValue": 0.00998003992015968,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.0658682634730539,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.565625,
+            "advantage": 0.06562500000000004,
+            "permPValue": 0.08183632734530938,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5625,
+            "advantage": 0.0625,
+            "permPValue": 0.10379241516966067,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 27,
+        "baseSeed": 2950288811,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.66875,
+            "advantage": 0.16874999999999996,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6578125,
+            "advantage": 0.15781250000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.540625,
+            "advantage": 0.04062500000000002,
+            "permPValue": 0.22554890219560877,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5484375,
+            "advantage": 0.04843750000000002,
+            "permPValue": 0.1437125748502994,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.625,
+            "advantage": 0.125,
+            "permPValue": 0.005988023952095809,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5703125,
+            "advantage": 0.0703125,
+            "permPValue": 0.059880239520958084,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 28,
+        "baseSeed": 1309757276,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.625,
+            "advantage": 0.125,
+            "permPValue": 0.003992015968063872,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.56875,
+            "advantage": 0.06874999999999998,
+            "permPValue": 0.06786427145708583,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.765625,
+            "advantage": 0.265625,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.7703125,
+            "advantage": 0.27031249999999996,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.68125,
+            "advantage": 0.18125000000000002,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.553125,
+            "advantage": 0.05312499999999998,
+            "permPValue": 0.12574850299401197,
+            "n": 160
+          }
+        ]
+      },
+      {
+        "seedIndex": 29,
+        "baseSeed": 3964193037,
+        "records": [
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.64375,
+            "advantage": 0.14375000000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "semantic_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.703125,
+            "advantage": 0.203125,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.571875,
+            "advantage": 0.07187500000000002,
+            "permPValue": 0.06187624750499002,
+            "n": 160
+          },
+          {
+            "key": "weak_equivalent",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.5234375,
+            "advantage": 0.0234375,
+            "permPValue": 0.3373253493013972,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "lr",
+            "auc": 0.690625,
+            "advantage": 0.19062500000000004,
+            "permPValue": 0.001996007984031936,
+            "n": 160
+          },
+          {
+            "key": "controlled_difference",
+            "perClassifier": true,
+            "classifier": "rf",
+            "auc": 0.6078125,
+            "advantage": 0.10781249999999998,
+            "permPValue": 0.021956087824351298,
+            "n": 160
+          }
+        ]
+      }
+    ]
+  },
+  "overallPassed": true
+}
