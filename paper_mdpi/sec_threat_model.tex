@@ -6,8 +6,9 @@ Under the assumptions stated in Section~\ref{subsec:trust-model}, the zero-knowl
 These cryptographic protections do not, by themselves, prevent policy information from leaking through observable metadata.
 We therefore evaluate whether the passive public-chain observer defined in Section~\ref{sec:problem} can recover policy content (PCH, Section~\ref{sec:eval-pch}), distinguish between semantically related policies (PI, Section~\ref{sec:eval-pi}), or infer policy structure or parameter sizes (SPP, Section~\ref{sec:eval-spp}).
 
-To assess whether the observer can achieve these goals, we use nine metadata features extracted from each policy execution.
+To assess whether the observer can achieve these goals, we focus on static metadata from individual policy executions.
 Each execution consists of a commit transaction followed by an access transaction.
+We select nine features covering execution cost, calldata length, proof size, and event-log counts and sizes, as these measurements may reveal policy-dependent differences in computation or transaction representation.
 The features are grouped into four categories.
 %
 \begin{itemize}
