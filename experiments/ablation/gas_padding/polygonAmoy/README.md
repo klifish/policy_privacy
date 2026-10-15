@@ -1,6 +1,6 @@
 # Polygon Amoy B1/B2 ablation — full replay (2026-10-15)
 
-`b2_padded/` is the whole capture `experiments/data/polygonAmoy/`
+`b2_padded/` is the whole padded capture `experiments/data/polygonAmoy-b2-padded/`
 (`prepare.js --all`); `b1_unpadded/` replays the same 1977 definitions, with
 the B2 randomizers and planned outcomes, without gas padding, on its own
 deployment (PolicyPrivacy `0x89281182b4385AEc4634335c838e5059f4Eca1C6`), as 4

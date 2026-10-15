@@ -76,6 +76,6 @@ npm run analysis:compare:js
 npm run evaluation:verify
 ```
 
-已提交的 `experiments/data/polygonAmoy/` 是当前论文 source of record，但它
-早于 DUO V3 adapter。生成器验证通过不等于该历史 capture 已升级；只有新的
-Amoy 采集完成、哈希和 provenance 校验通过并被显式提升后，才能修改版本声明。
+已提交的 `experiments/data/polygonAmoy/` 是当前论文 source of record：2026-10-15
+在 Amoy 上用 DUO V3 实现(protocol v3.0.0-rc2)采集的无 padding(B1)capture，
+见其 README；padded(B2)对照在 `experiments/data/polygonAmoy-b2-padded/`。

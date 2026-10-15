@@ -14,7 +14,7 @@ const {
 
 const DEFAULT_SOURCE = path.resolve(
   __dirname,
-  '../../data/polygonAmoy'
+  '../../data/polygonAmoy-b2-padded'
 );
 const DEFAULT_OUTPUT = path.resolve(__dirname, 'polygonAmoy');
 

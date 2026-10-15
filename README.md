@@ -169,8 +169,9 @@ For the complete data flow, command map, and source-of-record rules, see
 
 ## Reproducing the Evaluation
 
-The canonical Polygon Amoy capture lives under
-`experiments/data/polygonAmoy/`. Both analysis implementations read that
+The canonical Polygon Amoy capture (unpadded, B1) lives under
+`experiments/data/polygonAmoy/`; the padded (B2) capture used by the gas-padding
+ablation is `experiments/data/polygonAmoy-b2-padded/`. Both analysis implementations read that
 capture directly; regenerable intermediates live under ignored
 `experiments/.work/`.
 

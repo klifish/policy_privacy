@@ -1,6 +1,6 @@
 {
   "policyCount": 1077,
-  "executionsPerPolicy": 5,
+  "executionsPerPolicy": null,
   "satisfyRatio": 0.5,
   "seed": "unified-decoupled-2026",
   "validation": {
@@ -720,7 +720,8 @@
     "Structure is classified as in the SPP data generator: logicStructure on the author-level expression, nestingDepth/predicateCount on the normalized expression, setSize on whitelistSize.",
     "Validate offline with: npm run unified:validate"
   ],
-  "protectionProfile": "b2_padded",
-  "sourceDatasetPath": null,
-  "executionOrderSeed": "tps-zkpi-execution-order-v1"
+  "protectionProfile": "b1_unpadded",
+  "sourceDatasetPath": "/root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/shared/policy_definitions.json",
+  "executionOrderSeed": "tps-zkpi-execution-order-v1",
+  "reusedDataset": true
 }

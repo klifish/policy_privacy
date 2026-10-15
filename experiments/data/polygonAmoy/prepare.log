@@ -1,135 +1,15 @@
 ======================================================================
 Unified Dataset Pipeline (TPS Workflow)
 ======================================================================
-Config: experiments/capture/configs/unified_dataset_config_decoupled.json
-Artifacts: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy-2026-10-15
+Config: /root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/shared/source_config.json
+Artifacts: /root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/b1_unpadded
 
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                    UNIFIED DATASET VALIDATOR                                 ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-📋 Configuration:
-  Policy count:              1077
-  Executions per policy:     5
-  Seed:                      unified-decoupled-2026
-
-================================================================================
-Step 1: Generating Policy Definitions (no blockchain execution)
-================================================================================
-Allowed codes: null
-Policy blueprint targets per layer: [
-  { layer: 'trivial_ontology', target: 110, min: 0, max: 110 },
-  { layer: 'trivial_profile', target: 20, min: 0, max: 20 },
-  { layer: 'and_chain', target: 260, min: 0, max: 260 },
-  { layer: 'or_chain', target: 260, min: 0, max: 260 },
-  { layer: 'mixed_chain', target: 300, min: 0, max: 300 },
-  { layer: 'profile_only', target: 127, min: 0, max: 127 }
-]
-
-✓ Generated 1977 policy instances in 51.4s
-
-================================================================================
-PCH (Policy Content Hiding) Validation
-================================================================================
-
-📊 DUO Term Distribution:
-  DUO_DS:  422 (39.2%)
-  DUO_RS:  412 (38.3%)
-  DUO_POA:  392 (36.4%)
-  DUO_GS:  382 (35.5%)
-  DUO_CC:  392 (36.4%)
-  DUO_GRU:  302 (28.0%)
-  DUO_HMB:  331 (30.7%)
-  DUO_NMDS:  237 (22.0%)
-  DUO_GSO:  236 (21.9%)
-  DUO_NCU:  206 (19.1%)
-
-📈 Balance Metrics:
-  Min:         206
-  Max:         422
-  Mean:        331.2
-  Min/Max:     0.488
-
-✅ PCH Requirements: PASSED
-
-================================================================================
-SPP (Structure & Parameter Privacy) Validation
-================================================================================
-
-📊 5-Dimension Distributions:
-
-  Logic Structure:
-    trivial             :  130 (12.1%)
-    and_only            :  294 (27.3%)
-    or_only             :  303 (28.1%)
-    and_or_mixed        :  350 (32.5%)
-    Balance: min/max=0.371, CV=0.309
-
-  Nesting Depth:
-    flat                :  130 (12.1%)
-    shallow             :  210 (19.5%)
-    medium              :  335 (31.1%)
-    deep                :  402 (37.3%)
-    Balance: min/max=0.323, CV=0.393
-
-  Predicate Count:
-    single              :  257 (23.9%)
-    few                 :  645 (59.9%)
-    many                :  175 (16.2%)
-    Balance: min/max=0.271, CV=0.571
-
-  Set Size:
-    none                :  147 (13.6%)
-    small               :  232 (21.5%)
-    medium              :  352 (32.7%)
-    large               :  346 (32.1%)
-    Balance: min/max=0.418, CV=0.317
-
-  Range Width:
-    none                : 1077 (100.0%)
-    narrow              :    0 (0.0%)
-    medium              :    0 (0.0%)
-    wide                :    0 (0.0%)
-    Balance: min/max=0.000, CV=1.732
-    (validation skipped for this dimension)
-
-✅ SPP Requirements: PASSED
-
-================================================================================
-PI (Policy Indistinguishability) Layer Validation
-================================================================================
-
-📊 Single-execution coverage: 1017 policies, granted share 0.500, largest per-DUO-term deviation 0.011
-
-📊 PI pairs by type:
-  semantic_equivalent   : 10
-  controlled_difference : 10
-  weak_equivalent       : 10
-  controlled_difference by number of differing SPP axes: {"0":2,"1":2,"2":2,"3":2,"4":2}
-  executions per outcome per paired policy: 8
-
-✅ PI Layer: PASSED
-
-════════════════════════════════════════════════════════════════════════════════
-VALIDATION SUMMARY
-════════════════════════════════════════════════════════════════════════════════
-
-📊 Results:
-  PCH: ✅ PASSED
-  SPP: ✅ PASSED
-  PI:  ✅ PASSED
-
-🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
-✅ ALL VALIDATIONS PASSED
-✅ Dataset is ready for blockchain execution!
-🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
-
-💾 Results saved to: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy-2026-10-15/validation_results.json
-Policy definitions saved to: /root/policy-privacy/policy_privacy/experiments/data/polygonAmoy-2026-10-15/policy_definitions.json
-Protection profile: b2_padded
+Reusing exact policy definitions: /root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/shared/policy_definitions.json
+Policy definitions saved to: /root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/b1_unpadded/policy_definitions.json
+Protection profile: b1_unpadded
 Deploying PolicyPrivacy + verifier contracts...
-Verifier deployed at: 0x6c416e255111b0541B9B1a33ce5CA5176162b93D
-Poseidon3 deployed at: 0x02043160b55F5fbdC64F9049B06695A8ad87B2C1
-PolicyPrivacy deployed at: 0x2Bac834Bc38b75711d3608e2F0BBd6981Cc0E8D0
+Verifier deployed at: 0x34235B1A2A466f79ae108d2E94EF1E5E43897fFC
+Poseidon3 deployed at: 0x0B095444b0a72C8e3281E58729CE6931E61abeD2
+PolicyPrivacy deployed at: 0x89281182b4385AEc4634335c838e5059f4Eca1C6
 
-Prepared 1977 executions; contracts at 0x2Bac834Bc38b75711d3608e2F0BBd6981Cc0E8D0
+Prepared 1977 executions; contracts at 0x89281182b4385AEc4634335c838e5059f4Eca1C6

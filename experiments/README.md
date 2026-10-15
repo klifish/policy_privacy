@@ -9,7 +9,8 @@
 ```text
 experiments/
 ├── capture/                         # 统一采集入口、配置、切片和验证
-├── data/polygonAmoy/                # 当前权威 Amoy capture
+├── data/polygonAmoy/                # 当前权威 Amoy capture(B1,无 padding)
+├── data/polygonAmoy-b2-padded/      # 同一批执行的 padded(B2)capture,消融用
 ├── core/                            # capture 与 JS crosscheck 共享实现
 ├── analysis/
 │   ├── supervised/                  # MDPI 正式 Python 监督分析
@@ -76,7 +77,8 @@ npm 命令仍是兼容别名，但旧文件路径不再兼容。
 
 ## 结果权威关系
 
-- `data/polygonAmoy/`：链上 capture source of record。
+- `data/polygonAmoy/`：链上 capture source of record(2026-10-15,B1 无 padding)。
+- `data/polygonAmoy-b2-padded/`：同一批 1977 条执行的 padded(B2)capture，只作消融对照。
 - `results/supervised/`：MDPI 监督表格 source of record。
 - `results/clustering/`：MDPI 聚类表格与图 source of record。
 - `results/crosscheck/`：独立 JavaScript 复核，不覆盖正式 Python verdict。
@@ -87,6 +89,5 @@ DEPTH=64、8 层 Merkle 路径，以及 slot 10 的签名 profile credential。
 DUO V3 不支持 `NOT`，所以新 capture 不再生成 `negation_heavy`；当前实验
 词汇也不会产生 `predicateCount=none`。
 
-但已提交的 `data/polygonAmoy/` 仍早于这些改动。只有在显式执行并验证新的
-Amoy capture 后，才能更新该数据集的版本声明；当前 `evaluation:verify`
-继续报告这一 provenance 警告。
+`data/polygonAmoy/` 采自这一实现(protocol v3.0.0-rc2，代码 `f9039e1`)，
+见其 README。
