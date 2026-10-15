@@ -151,7 +151,16 @@ function compareVerdicts(pythonVerdict, jsVerdict, expectedTaskCount) {
   return true;
 }
 
-function explainedMismatches(name, pythonVerdict, jsVerdict) {
+const GAS_DECOMPOSITION = 'experiments/results/supervised/gas_decomposition_diagnostic.json';
+const VALUE_GATE = 'experiments/results/value_gate/b1_unpadded/calldata_value_gate.json';
+
+// Tasks on which the JS cross-check FAILs a task that the Python of-record
+// verdict passes, explained by the gas decomposition diagnostic: the of-record
+// protocol passes once the calldata cost is removed from both gas features, so
+// what the JS attack picks up is carried by calldata values, and the calldata
+// value gate, which tests every calldata value directly, passes on the same
+// capture. Returns null when any mismatch is not of this kind.
+function explainedMismatches(name, pythonVerdict, jsVerdict, datasetPath) {
   if (!pythonVerdict || !jsVerdict) return null;
   const jsTasks = new Map(tasksOf(jsVerdict).map(task => [taskKey(task), task]));
   const mismatched = tasksOf(pythonVerdict).filter(pythonTask => {
@@ -159,19 +168,19 @@ function explainedMismatches(name, pythonVerdict, jsVerdict) {
     return !jsTask || pythonTask.passed !== jsTask.passed || !!pythonTask.nonGating !== !!jsTask.nonGating;
   });
   if (mismatched.length === 0) return null;
-  const diagnostic = readJson('experiments/results/supervised/pad_residual_diagnostic.json');
-  const reruns = diagnostic?.experiments?.[name]?.protocolReruns || {};
+  const diagnostic = readJson(GAS_DECOMPOSITION);
+  const gate = readJson(VALUE_GATE);
+  const experiment = diagnostic?.experiments?.[name];
+  if (!experiment || gate?.passed !== true) return null;
+  if (!datasetPath || experiment.datasetSha256 !== sha256(datasetPath)) return null;
   const explained = [];
   for (const pythonTask of mismatched) {
-    const rerun = reruns[pythonTask.key];
-    const carriedByTarget = rerun &&
-      rerun.ofRecord?.passed === false &&
-      rerun.targetOnly?.passed === false &&
-      rerun.residualSubstituted?.passed === true;
-    if (pythonTask.passed || !carriedByTarget) return null;
+    const jsTask = jsTasks.get(taskKey(pythonTask));
+    const entry = experiment.tasks?.[pythonTask.key];
+    if (pythonTask.passed !== true || jsTask?.passed !== false || entry?.executionOnly?.passed !== true) return null;
     explained.push(pythonTask.key);
   }
-  return explained.length > 0 ? explained : null;
+  return explained;
 }
 
 function featureCardinality(rows, key) {
@@ -283,19 +292,18 @@ for (const [name, config] of Object.entries(experiments)) {
   } else if (jsTasks.length !== taskCount) {
     errors.push(`${config.jsReport} has ${jsTasks.length} tasks; expected ${taskCount}`);
   }
-  // A Python/JS disagreement on a task is an error unless the pad-target
-  // residual diagnostic shows the Python FAIL is carried entirely by the
-  // CSPRNG pad target (the of-record protocol passes once the target is
-  // subtracted) and the two pipelines agree everywhere else. Such a task is
-  // still reported as FAIL of record; the diagnostic only explains it.
-  const explained = explainedMismatches(name, pythonVerdict, jsVerdict);
+  // A Python/JS disagreement on a task is an error unless it is a JS FAIL on a
+  // task the Python of-record verdict passes and the gas decomposition
+  // diagnostic explains it (see explainedMismatches). The task stays PASS of
+  // record; the diagnostic only explains the JS FAIL.
+  const explained = explainedMismatches(name, pythonVerdict, jsVerdict, datasetPath);
   if (comparison && comparison.matches !== true) {
     const message = `${config.comparison} reports a Python/JS verdict mismatch`;
-    (explained ? warnings : errors).push(explained ? `${message} (explained by pad residual: ${explained.join(', ')})` : message);
+    (explained ? warnings : errors).push(explained ? `${message} (explained by gas decomposition: ${explained.join(', ')})` : message);
   }
   if (!liveMatch) {
     const message = `${name} Python/JS verdicts differ when checked directly`;
-    (explained ? warnings : errors).push(explained ? `${message} (explained by pad residual: ${explained.join(', ')})` : message);
+    (explained ? warnings : errors).push(explained ? `${message} (explained by gas decomposition: ${explained.join(', ')})` : message);
   }
 
   const tablePath = requireFile(config.table);

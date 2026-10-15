@@ -106,6 +106,7 @@
     "cost:scalability:render": "node scripts/render_scalability_report.js",
     "cost:scalability": "npm run cost:capacity-sweep && npm run cost:policy-scalability && npm run cost:scalability:render",
     "cost:context-binding": "node scripts/context_binding_gas.js",
+    "analysis:gas-decomposition": ".venv/bin/python -m experiments.analysis.supervised.gas_decomposition_diagnostic --jobs -1",
     "analysis:criterion-sensitivity": ".venv/bin/python -m experiments.analysis.supervised.criterion_sensitivity --null-replicates 10 --jobs -1",
     "analysis:pad-residual": ".venv/bin/python -m experiments.analysis.supervised.pad_residual_diagnostic --seeds 30 --jobs -1",
     "analysis:value-gate": ".venv/bin/python -m experiments.analysis.supervised.calldata_value_gate",
