@@ -25,10 +25,14 @@ For each task, we train logistic regression (LR)~\cite{cox1958regression} and ra
 Both classifiers use the nine features listed in Section~\ref{sec:eval-threat}.
 We repeat the evaluation with $30$ random seeds, following the same protocol for PCH, PI, and SPP.
 
-For each seed, we randomly select one execution from each policy.
-We generate $512$ candidate $70/30$ train/test splits using non-overlapping sets of policies and retain only those with both classes represented in each set.
-Among these candidates, we select the split that places closest to $30\%$ of each class in the test set.
-We train each classifier on the training set and evaluate its predictions on the test set using AUC, with $0.5$ indicating chance-level performance.
+For each seed, we randomly select one execution per policy.
+We then generate $512$ random candidate splits, each assigning $70\%$ of the policies to training and $30\%$ to testing, with no policy appearing in both sets.
+To preserve class balance, we aim to place $30\%$ of each class in the test set.
+We discard splits that do not contain both classes in both sets.
+For each remaining split, we calculate the percentage of each class assigned to the test set and its absolute deviation from the $30\%$ target.
+We select the split that minimizes the larger of the two class deviations.
+
+We train each classifier on the selected training set and measure its test performance using AUC.
 The test AUC therefore measures attack performance on policies not seen during training.
 
 For each task, let $\mathrm{AUC}_s$ denote the test AUC for seed $s$, with $S=30$ seeds.
