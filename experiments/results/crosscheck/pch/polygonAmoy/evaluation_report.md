@@ -1,6 +1,6 @@
 # Policy Content Hiding Evaluation Report
 
-**Date:** 9/17/2026, 10:21:47 AM
+**Date:** 10/15/2026, 5:01:00 PM
 
 ## Objective
 
@@ -12,7 +12,7 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 - **DUO Terms (observed):** 10
 - **ICD-10 Chapters:** 10
 - **Executions per Policy:** 2
-- **Total Executions:** 1773
+- **Total Executions:** 1977
 - **Test Ratio:** 30%
 
 ## Privacy Evaluation Results
@@ -25,57 +25,57 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 ### DUO Term 0 Presence
 
 - **Type:** binary
-- **AUC:** 0.4993 (✓ PASS)
+- **AUC:** 0.4832 (✓ PASS)
 
 ### DUO Term 1 Presence
 
 - **Type:** binary
-- **AUC:** 0.4443 (✓ PASS)
+- **AUC:** 0.4793 (✓ PASS)
 
 ### DUO Term 2 Presence
 
 - **Type:** binary
-- **AUC:** 0.4814 (✓ PASS)
+- **AUC:** 0.5065 (✓ PASS)
 
 ### DUO Term 3 Presence
 
 - **Type:** binary
-- **AUC:** 0.5519 (✗ FAIL)
+- **AUC:** 0.4887 (✓ PASS)
 
 ### DUO Term 4 Presence
 
 - **Type:** binary
-- **AUC:** 0.4935 (✓ PASS)
+- **AUC:** 0.5257 (✓ PASS)
 
 ### DUO Term 5 Presence
 
 - **Type:** binary
-- **AUC:** 0.4797 (✓ PASS)
+- **AUC:** 0.5252 (✓ PASS)
 
 ### DUO Term 6 Presence
 
 - **Type:** binary
-- **AUC:** 0.4774 (✓ PASS)
+- **AUC:** 0.5103 (✓ PASS)
 
 ### DUO Term 7 Presence
 
 - **Type:** binary
-- **AUC:** 0.4817 (✓ PASS)
+- **AUC:** 0.5104 (✓ PASS)
 
 ### DUO Term 8 Presence
 
 - **Type:** binary
-- **AUC:** 0.4677 (✓ PASS)
+- **AUC:** 0.4158 (✓ PASS)
 
 ### DUO Term 9 Presence
 
 - **Type:** binary
-- **AUC:** 0.5271 (✓ PASS)
+- **AUC:** 0.4583 (✓ PASS)
 
 ### ICD-10 Chapter Prediction (RandomForest)
 
 - **Type:** multi-class
-- **Macro F1:** 4.62%
+- **Macro F1:** 4.81%
 
 ## Privacy Threshold Check
 
@@ -83,43 +83,43 @@ Evaluate whether the Policy Privacy system achieves **Policy Content Hiding** �
 
 ### DUO Term 0 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4993 (threshold: 0.55)
+- ✓ **AUC:** 0.4832 (threshold: 0.55)
 
 ### DUO Term 1 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4443 (threshold: 0.55)
+- ✓ **AUC:** 0.4793 (threshold: 0.55)
 
 ### DUO Term 2 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4814 (threshold: 0.55)
+- ✓ **AUC:** 0.5065 (threshold: 0.55)
 
-### DUO Term 3 Presence: ✗ FAIL
+### DUO Term 3 Presence: ✓ PASS
 
-- ✗ **AUC:** 0.5519 (threshold: 0.55)
+- ✓ **AUC:** 0.4887 (threshold: 0.55)
 
 ### DUO Term 4 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4935 (threshold: 0.55)
+- ✓ **AUC:** 0.5257 (threshold: 0.55)
 
 ### DUO Term 5 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4797 (threshold: 0.55)
+- ✓ **AUC:** 0.5252 (threshold: 0.55)
 
 ### DUO Term 6 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4774 (threshold: 0.55)
+- ✓ **AUC:** 0.5103 (threshold: 0.55)
 
 ### DUO Term 7 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4817 (threshold: 0.55)
+- ✓ **AUC:** 0.5104 (threshold: 0.55)
 
 ### DUO Term 8 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.4677 (threshold: 0.55)
+- ✓ **AUC:** 0.4158 (threshold: 0.55)
 
 ### DUO Term 9 Presence: ✓ PASS
 
-- ✓ **AUC:** 0.5271 (threshold: 0.55)
+- ✓ **AUC:** 0.4583 (threshold: 0.55)
 
 ### ICD-10 Chapter Prediction (RandomForest): ✓ PASS
 
@@ -130,26 +130,26 @@ Criterion: a task FAILs iff AUC_mean > 0.55 **and** significant-seed fraction �
 
 | Task | LR AUC mean±std | LR %sig | RF AUC mean±std | RF %sig | median test n | Verdict |
 |---|---|---|---|---|---|---|
-| DUO GR | 0.542 ± 0.028 | 27% | 0.499 ± 0.029 | 0% | 324 | ✓ PASS |
-| DUO DS | 0.510 ± 0.022 | 3% | 0.507 ± 0.027 | 3% | 324 | ✓ PASS |
-| DUO RS | 0.498 ± 0.021 | 0% | 0.508 ± 0.024 | 0% | 324 | ✓ PASS |
-| DUO POA | 0.481 ± 0.022 | 0% | 0.426 ± 0.024 | 0% | 324 | ✓ PASS |
-| DUO GS | 0.498 ± 0.016 | 0% | 0.506 ± 0.027 | 0% | 324 | ✓ PASS |
-| DUO CC | 0.485 ± 0.024 | 0% | 0.481 ± 0.025 | 0% | 324 | ✓ PASS |
-| DUO NCU | 0.513 ± 0.039 | 13% | 0.515 ± 0.029 | 7% | 324 | ✓ PASS |
-| DUO HMB | 0.514 ± 0.028 | 7% | 0.488 ± 0.031 | 0% | 324 | ✓ PASS |
-| DUO NMDS | 0.490 ± 0.037 | 0% | 0.523 ± 0.025 | 3% | 324 | ✓ PASS |
-| DUO GSO | 0.505 ± 0.038 | 3% | 0.527 ± 0.034 | 17% | 324 | ✓ PASS |
-| ICD ch0 | 0.451 ± 0.077 | 0% | 0.423 ± 0.054 | 0% | 127 | ✓ PASS |
-| ICD ch1 | 0.559 ± 0.066 | 13% | 0.559 ± 0.073 | 20% | 127 | ✓ PASS |
-| ICD ch2 | 0.493 ± 0.081 | 7% | 0.510 ± 0.066 | 3% | 127 | ✓ PASS |
-| ICD ch3 | 0.560 ± 0.078 | 17% | 0.544 ± 0.060 | 17% | 127 | ✓ PASS |
-| ICD ch4 | 0.433 ± 0.065 | 0% | 0.544 ± 0.058 | 3% | 127 | ✓ PASS |
-| ICD ch5 | 0.393 ± 0.063 | 0% | 0.580 ± 0.079 | 17% | 127 | ✓ PASS |
-| ICD ch6 | 0.488 ± 0.055 | 0% | 0.490 ± 0.058 | 0% | 127 | ✓ PASS |
-| ICD ch7 | 0.541 ± 0.071 | 3% | 0.521 ± 0.065 | 0% | 127 | ✓ PASS |
-| ICD ch8 | 0.475 ± 0.086 | 0% | 0.470 ± 0.091 | 0% | 127 | ✓ PASS |
-| ICD ch9 | 0.521 ± 0.069 | 0% | 0.490 ± 0.084 | 3% | 127 | ✓ PASS |
+| DUO GR | 0.482 ± 0.025 | 0% | 0.477 ± 0.033 | 0% | 323 | ✓ PASS |
+| DUO DS | 0.475 ± 0.023 | 0% | 0.525 ± 0.027 | 17% | 323 | ✓ PASS |
+| DUO RS | 0.515 ± 0.029 | 3% | 0.490 ± 0.026 | 0% | 323 | ✓ PASS |
+| DUO POA | 0.501 ± 0.026 | 3% | 0.504 ± 0.031 | 7% | 323 | ✓ PASS |
+| DUO GS | 0.507 ± 0.026 | 3% | 0.503 ± 0.033 | 7% | 323 | ✓ PASS |
+| DUO CC | 0.528 ± 0.027 | 17% | 0.526 ± 0.023 | 10% | 323 | ✓ PASS |
+| DUO NCU | 0.530 ± 0.035 | 10% | 0.501 ± 0.031 | 0% | 323 | ✓ PASS |
+| DUO HMB | 0.464 ± 0.035 | 0% | 0.499 ± 0.035 | 10% | 323 | ✓ PASS |
+| DUO NMDS | 0.437 ± 0.035 | 0% | 0.535 ± 0.032 | 20% | 323 | ✓ PASS |
+| DUO GSO | 0.449 ± 0.027 | 0% | 0.499 ± 0.043 | 7% | 323 | ✓ PASS |
+| ICD ch0 | 0.533 ± 0.078 | 7% | 0.520 ± 0.090 | 3% | 127 | ✓ PASS |
+| ICD ch1 | 0.470 ± 0.055 | 0% | 0.506 ± 0.064 | 3% | 127 | ✓ PASS |
+| ICD ch2 | 0.608 ± 0.085 | 27% | 0.610 ± 0.090 | 30% | 127 | ✓ PASS |
+| ICD ch3 | 0.433 ± 0.076 | 0% | 0.476 ± 0.070 | 3% | 127 | ✓ PASS |
+| ICD ch4 | 0.497 ± 0.107 | 7% | 0.480 ± 0.072 | 3% | 127 | ✓ PASS |
+| ICD ch5 | 0.481 ± 0.091 | 0% | 0.471 ± 0.087 | 3% | 127 | ✓ PASS |
+| ICD ch6 | 0.510 ± 0.070 | 3% | 0.458 ± 0.058 | 3% | 127 | ✓ PASS |
+| ICD ch7 | 0.519 ± 0.071 | 0% | 0.546 ± 0.102 | 17% | 127 | ✓ PASS |
+| ICD ch8 | 0.474 ± 0.100 | 3% | 0.602 ± 0.095 | 27% | 127 | ✓ PASS |
+| ICD ch9 | 0.520 ± 0.083 | 13% | 0.532 ± 0.075 | 3% | 127 | ✓ PASS |
 
 ## Overall Result
 
