@@ -1,5 +1,5 @@
-% Dataset and corpus generation. \input from evaluation.tex after sec_methodology.tex
-% and before tab_privacy_summary.tex. Numbers are of-record from
+% Dataset and corpus generation. \input from evaluation.tex after sec_threat_model.tex
+% and before sec_methodology.tex. Numbers are of-record from
 % experiments/data/polygonAmoy/metadata.json, policy_definitions.json and
 % executed_dataset.json (capture of 2026-09-17, v3.0.0-rc1 artifacts).
 \subsection{Dataset and Corpus Generation}
@@ -26,7 +26,7 @@ Both whitelist sizes fall within the ``medium'' parameter-size bucket in Table~\
 
 We execute the policies in two layers.
 The \emph{coverage layer} executes $1053$ distinct policies once each, spanning the content labels and structural buckets to support training and testing on disjoint policy sets.
-The \emph{depth layer} executes $24$ policies $30$ times each ($720$ executions), providing repeated observations for the per-pair PI clustering analysis (Section~\ref{sec:eval-method}).
+The \emph{depth layer} executes $24$ policies $30$ times each ($720$ executions), providing repeated observations for the per-pair PI clustering analysis.
 All $1{,}773$ executions produced the expected authorization outcomes.
 Sampling is configured to provide at least $30$ executions in the smallest content-label class.
 Table~\ref{tab:corpus} summarizes the counts for each content label and structural bucket.
