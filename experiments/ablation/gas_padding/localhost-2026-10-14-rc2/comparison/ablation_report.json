@@ -1,0 +1,1925 @@
+{
+  "schemaVersion": 1,
+  "bootstrapIterations": 500,
+  "bootstrapSeed": 20260625,
+  "effectDefinition": "abs(AUC_B1 - 0.5) - abs(AUC_B2 - 0.5)",
+  "supervisedIntervalType": "repeated-split stability interval",
+  "supervised": {
+    "pch": {
+      "tasks": [
+        {
+          "task": "DUO CC",
+          "classifier": "lr",
+          "b1AucMean": 0.505333030564054,
+          "b2AucMean": 0.5475445365263624,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.008806118126585955,
+            "ci95": [
+              -0.020199534021263177,
+              0.003390521393835772
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO CC",
+          "classifier": "rf",
+          "b1AucMean": 0.5542396285612627,
+          "b2AucMean": 0.5037239743156621,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.035104664247017636,
+            "ci95": [
+              0.01973661676365226,
+              0.04765775544190296
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO DS",
+          "classifier": "lr",
+          "b1AucMean": 0.4720580801214329,
+          "b2AucMean": 0.5151406365546776,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.0007657560520714535,
+            "ci95": [
+              -0.019507745366946425,
+              0.021784181421992187
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO DS",
+          "classifier": "rf",
+          "b1AucMean": 0.5118401435604781,
+          "b2AucMean": 0.4885573106998156,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.009365377037224449,
+            "ci95": [
+              -0.027408970523895987,
+              0.008823743997117973
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GR",
+          "classifier": "lr",
+          "b1AucMean": 0.49976265582674256,
+          "b2AucMean": 0.4549983018316903,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.025108320722417147,
+            "ci95": [
+              -0.04612866578502758,
+              -0.005171796443135804
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GR",
+          "classifier": "rf",
+          "b1AucMean": 0.5328573948932837,
+          "b2AucMean": 0.4776637447622746,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.005392875137380757,
+            "ci95": [
+              -0.02558521468681348,
+              0.01493496238378165
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GS",
+          "classifier": "lr",
+          "b1AucMean": 0.4940870464644695,
+          "b2AucMean": 0.5092689384147927,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.001223309660156339,
+            "ci95": [
+              -0.01344634256271975,
+              0.014385417804042091
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GS",
+          "classifier": "rf",
+          "b1AucMean": 0.5240001253148387,
+          "b2AucMean": 0.5039898448104277,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.0068701525171165735,
+            "ci95": [
+              -0.008222404785909493,
+              0.024653463323363416
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GSO",
+          "classifier": "lr",
+          "b1AucMean": 0.48261135789047993,
+          "b2AucMean": 0.5233958546248707,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.00011645974575011005,
+            "ci95": [
+              -0.023468978967231723,
+              0.025622311454348613
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO GSO",
+          "classifier": "rf",
+          "b1AucMean": 0.4913805931797531,
+          "b2AucMean": 0.44709032141611554,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.040126286461997805,
+            "ci95": [
+              -0.06373206163052952,
+              -0.019478616210847965
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO HMB",
+          "classifier": "lr",
+          "b1AucMean": 0.48646972217831663,
+          "b2AucMean": 0.535002868755784,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.015225690230395987,
+            "ci95": [
+              -0.03383080906729632,
+              0.00042504549907431766
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO HMB",
+          "classifier": "rf",
+          "b1AucMean": 0.5007078486253567,
+          "b2AucMean": 0.4930601745385351,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0002130787055620605,
+            "ci95": [
+              -0.014818203032419156,
+              0.016223325926466078
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO NCU",
+          "classifier": "lr",
+          "b1AucMean": 0.4906003654956603,
+          "b2AucMean": 0.4702884947722929,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.015296731232023807,
+            "ci95": [
+              -0.035663413939511036,
+              0.004637803080434009
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO NCU",
+          "classifier": "rf",
+          "b1AucMean": 0.47925474078201485,
+          "b2AucMean": 0.45776618309294415,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.036980199002807204,
+            "ci95": [
+              -0.057291117859933086,
+              -0.014290508252903743
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO NMDS",
+          "classifier": "lr",
+          "b1AucMean": 0.5125244415772244,
+          "b2AucMean": 0.5417409062953733,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.004261903566949201,
+            "ci95": [
+              -0.02423963804448908,
+              0.016152662669403205
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO NMDS",
+          "classifier": "rf",
+          "b1AucMean": 0.5041165884687512,
+          "b2AucMean": 0.4499464290591363,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.03227749685604405,
+            "ci95": [
+              -0.04900990408539941,
+              -0.016243654128856182
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO POA",
+          "classifier": "lr",
+          "b1AucMean": 0.5037223681894539,
+          "b2AucMean": 0.495681882304382,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.008225660331070334,
+            "ci95": [
+              -0.02156120315705978,
+              0.00286269190485957
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO POA",
+          "classifier": "rf",
+          "b1AucMean": 0.5443316428067975,
+          "b2AucMean": 0.5297190610268369,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.016021523624664327,
+            "ci95": [
+              -0.0018199834565531328,
+              0.0316560005963513
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO RS",
+          "classifier": "lr",
+          "b1AucMean": 0.4678976894491463,
+          "b2AucMean": 0.5587525892280746,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.01748790199332848,
+            "ci95": [
+              -0.03153570839198199,
+              -0.002865606254286591
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "DUO RS",
+          "classifier": "rf",
+          "b1AucMean": 0.4906651687843622,
+          "b2AucMean": 0.5364906892928717,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.00910322369227688,
+            "ci95": [
+              -0.02218286804203089,
+              0.0053614102852499205
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch0",
+          "classifier": "lr",
+          "b1AucMean": 0.5042751450973575,
+          "b2AucMean": 0.46732263797038526,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.004671572656529719,
+            "ci95": [
+              -0.05206735210280187,
+              0.05426720688083171
+            ],
+            "n": 25
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 25,
+          "droppedSeeds": 5
+        },
+        {
+          "task": "ICD ch0",
+          "classifier": "rf",
+          "b1AucMean": 0.4911040694413413,
+          "b2AucMean": 0.45462317320622975,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.12045084018753524,
+            "ci95": [
+              -0.15638683373149093,
+              -0.08376787423667481
+            ],
+            "n": 25
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 25,
+          "droppedSeeds": 5
+        },
+        {
+          "task": "ICD ch1",
+          "classifier": "lr",
+          "b1AucMean": 0.5956574763889932,
+          "b2AucMean": 0.5017376202584363,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.012790237467742206,
+            "ci95": [
+              -0.03202093690171069,
+              0.053829288348085966
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch1",
+          "classifier": "rf",
+          "b1AucMean": 0.5212523813480642,
+          "b2AucMean": 0.5501681668523332,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.04154065951641582,
+            "ci95": [
+              -0.06681187297493758,
+              -0.014244638476635365
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch2",
+          "classifier": "lr",
+          "b1AucMean": 0.41484947006488887,
+          "b2AucMean": 0.5329625725668659,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.007319900561342474,
+            "ci95": [
+              -0.024744462181220974,
+              0.042221159507405175
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch2",
+          "classifier": "rf",
+          "b1AucMean": 0.5165539891966527,
+          "b2AucMean": 0.44340254481687075,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0500528602916801,
+            "ci95": [
+              -0.07805232297535253,
+              -0.019036638925718358
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch3",
+          "classifier": "lr",
+          "b1AucMean": 0.43534354043482015,
+          "b2AucMean": 0.53172627192832,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.006559979932602476,
+            "ci95": [
+              -0.026808794381756644,
+              0.03831419881502519
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch3",
+          "classifier": "rf",
+          "b1AucMean": 0.4840497300822175,
+          "b2AucMean": 0.48867976964510584,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.05028353498462869,
+            "ci95": [
+              -0.06724387362664787,
+              -0.03424946964175636
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch4",
+          "classifier": "lr",
+          "b1AucMean": 0.47207029863727856,
+          "b2AucMean": 0.4854624576688826,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.00904109946159433,
+            "ci95": [
+              -0.03728867806070272,
+              0.02217118134770026
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch4",
+          "classifier": "rf",
+          "b1AucMean": 0.4814105098771213,
+          "b2AucMean": 0.47991460794714663,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.03503803505966053,
+            "ci95": [
+              -0.05754708375678904,
+              -0.01407811676555607
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch5",
+          "classifier": "lr",
+          "b1AucMean": 0.5210106810000983,
+          "b2AucMean": 0.5311389281052585,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.004056007980155049,
+            "ci95": [
+              -0.0253610383376535,
+              0.03159238281047405
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch5",
+          "classifier": "rf",
+          "b1AucMean": 0.5114920462568813,
+          "b2AucMean": 0.5197240363300695,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.040762674456424466,
+            "ci95": [
+              -0.059323672562608475,
+              -0.019701067345494983
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch6",
+          "classifier": "lr",
+          "b1AucMean": 0.5061988076525666,
+          "b2AucMean": 0.4784292120967484,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.016806409501256905,
+            "ci95": [
+              -0.03994607626173882,
+              0.006453918985311363
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch6",
+          "classifier": "rf",
+          "b1AucMean": 0.5404303216687948,
+          "b2AucMean": 0.45552584695977166,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.026752432716596407,
+            "ci95": [
+              -0.048225771051923445,
+              -0.007428034828473291
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch7",
+          "classifier": "lr",
+          "b1AucMean": 0.5028916906821042,
+          "b2AucMean": 0.43093992046898294,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0037800989845049554,
+            "ci95": [
+              -0.030850473773071162,
+              0.021023846251656823
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch7",
+          "classifier": "rf",
+          "b1AucMean": 0.49156061836180476,
+          "b2AucMean": 0.5076312618486745,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.004325127934895593,
+            "ci95": [
+              -0.024418337726739278,
+              0.02527630213302901
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch8",
+          "classifier": "lr",
+          "b1AucMean": 0.49695468090001965,
+          "b2AucMean": 0.5588174354066274,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.010613624994021058,
+            "ci95": [
+              -0.03502641926005439,
+              0.011571801112313979
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch8",
+          "classifier": "rf",
+          "b1AucMean": 0.46316861824838,
+          "b2AucMean": 0.5395169927395663,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.047290853604113385,
+            "ci95": [
+              -0.08052131312581606,
+              -0.017637405427711545
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch9",
+          "classifier": "lr",
+          "b1AucMean": 0.5290745331912968,
+          "b2AucMean": 0.5255683305280575,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.009680524238374545,
+            "ci95": [
+              -0.012044662716440455,
+              0.029901177752415173
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "ICD ch9",
+          "classifier": "rf",
+          "b1AucMean": 0.45811471042964497,
+          "b2AucMean": 0.553343263333343,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.04108326396503215,
+            "ci95": [
+              -0.06749187177557192,
+              -0.017598849249038116
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        }
+      ]
+    },
+    "pi": {
+      "tasks": [
+        {
+          "task": "controlled_difference",
+          "classifier": "lr",
+          "b1AucMean": 0.5052604166666667,
+          "b2AucMean": 0.4732291666666667,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0007812500000000111,
+            "ci95": [
+              -0.01435546875000001,
+              0.010766927083333308
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "controlled_difference",
+          "classifier": "rf",
+          "b1AucMean": 0.5290625000000001,
+          "b2AucMean": 0.5364583333333333,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0027083333333333365,
+            "ci95": [
+              -0.015808593749999995,
+              0.010578124999999989
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "semantic_equivalent",
+          "classifier": "lr",
+          "b1AucMean": 0.4755729166666666,
+          "b2AucMean": 0.5797916666666667,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.041406250000000006,
+            "ci95": [
+              -0.055548177083333344,
+              -0.027752604166666698
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "semantic_equivalent",
+          "classifier": "rf",
+          "b1AucMean": 0.4703125000000001,
+          "b2AucMean": 0.5413020833333333,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.00921874999999999,
+            "ci95": [
+              -0.020136718749999987,
+              0.002373697916666671
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "weak_equivalent",
+          "classifier": "lr",
+          "b1AucMean": 0.5385937500000001,
+          "b2AucMean": 0.488125,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.008072916666666673,
+            "ci95": [
+              -0.008028645833333323,
+              0.02440755208333333
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "weak_equivalent",
+          "classifier": "rf",
+          "b1AucMean": 0.5360416666666665,
+          "b2AucMean": 0.4917708333333334,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.015625,
+            "ci95": [
+              0.0032513020833333404,
+              0.027562499999999993
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        }
+      ]
+    },
+    "spp": {
+      "tasks": [
+        {
+          "task": "nestingDepth: flat/deep",
+          "classifier": "lr",
+          "b1AucMean": 0.4559689893808674,
+          "b2AucMean": 0.5058701518543457,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.017375519799452406,
+            "ci95": [
+              -0.05053708099737623,
+              0.013801836688202335
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: flat/deep",
+          "classifier": "rf",
+          "b1AucMean": 0.5195560715684406,
+          "b2AucMean": 0.4766112901561367,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.00434015952046315,
+            "ci95": [
+              -0.0425702891710742,
+              0.03947931959600579
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: flat/medium",
+          "classifier": "lr",
+          "b1AucMean": 0.4823853461670578,
+          "b2AucMean": 0.5316995155029267,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.019335329173864883,
+            "ci95": [
+              -0.05217761253966795,
+              0.009963794559886684
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: flat/medium",
+          "classifier": "rf",
+          "b1AucMean": 0.48945395797466607,
+          "b2AucMean": 0.524288889267188,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.0029424246094056973,
+            "ci95": [
+              -0.026325395503573025,
+              0.02811533731404348
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: flat/shallow",
+          "classifier": "lr",
+          "b1AucMean": 0.47369135301426973,
+          "b2AucMean": 0.44865298821548816,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.02347187650312649,
+            "ci95": [
+              -0.05604906217432259,
+              0.012475999954906194
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: flat/shallow",
+          "classifier": "rf",
+          "b1AucMean": 0.5253465107423441,
+          "b2AucMean": 0.4605141644620811,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.006765918109668114,
+            "ci95": [
+              -0.01950002893518518,
+              0.036416509715207636
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: medium/deep",
+          "classifier": "lr",
+          "b1AucMean": 0.48976142164991177,
+          "b2AucMean": 0.5606147581088485,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.014043221957837136,
+            "ci95": [
+              -0.03779562325474675,
+              0.010614005612456671
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: medium/deep",
+          "classifier": "rf",
+          "b1AucMean": 0.4900326600362181,
+          "b2AucMean": 0.5199431117139377,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0011003047188153112,
+            "ci95": [
+              -0.01986530250796157,
+              0.016067535391334074
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: shallow/deep",
+          "classifier": "lr",
+          "b1AucMean": 0.5160974994469167,
+          "b2AucMean": 0.5094005392086723,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.004597932198667098,
+            "ci95": [
+              -0.022918871326241184,
+              0.031552231425018486
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: shallow/deep",
+          "classifier": "rf",
+          "b1AucMean": 0.5581930656635326,
+          "b2AucMean": 0.5244569471433905,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.021423604844563418,
+            "ci95": [
+              -0.004242123188886168,
+              0.04500748125561449
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: shallow/medium",
+          "classifier": "lr",
+          "b1AucMean": 0.4509174954996792,
+          "b2AucMean": 0.5879667135917557,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.02830131630022002,
+            "ci95": [
+              -0.0660683406489044,
+              0.012422459086572349
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "nestingDepth: shallow/medium",
+          "classifier": "rf",
+          "b1AucMean": 0.5277164920139749,
+          "b2AucMean": 0.5685025029105305,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.003167024120007339,
+            "ci95": [
+              -0.03140129109870842,
+              0.023283178426228006
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: large/none",
+          "classifier": "lr",
+          "b1AucMean": 0.5795682662311895,
+          "b2AucMean": 0.48983589373860215,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.06921802481372023,
+            "ci95": [
+              0.022938603625450988,
+              0.11805476538644016
+            ],
+            "n": 29
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 29,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: large/none",
+          "classifier": "rf",
+          "b1AucMean": 0.5515660923499303,
+          "b2AucMean": 0.48048882083083666,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.06147436192174047,
+            "ci95": [
+              0.012227799372966822,
+              0.10935223815088391
+            ],
+            "n": 29
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 29,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: large/small",
+          "classifier": "lr",
+          "b1AucMean": 0.4601287934346126,
+          "b2AucMean": 0.5092637794805855,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.017558312498971305,
+            "ci95": [
+              -0.006842406853100737,
+              0.04047911822440609
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: large/small",
+          "classifier": "rf",
+          "b1AucMean": 0.44881580530571225,
+          "b2AucMean": 0.47720682951705906,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.03126359526183061,
+            "ci95": [
+              0.010805853713773846,
+              0.05272524925562672
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/large",
+          "classifier": "lr",
+          "b1AucMean": 0.4775663068506554,
+          "b2AucMean": 0.5150451112934861,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.01357724598699674,
+            "ci95": [
+              -0.03808496377539051,
+              0.01103238427591032
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/large",
+          "classifier": "rf",
+          "b1AucMean": 0.49536634809563046,
+          "b2AucMean": 0.4840268230745115,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.009376241984126326,
+            "ci95": [
+              -0.026283232944683484,
+              0.006709498522254708
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/none",
+          "classifier": "lr",
+          "b1AucMean": 0.5029973434301592,
+          "b2AucMean": 0.5034649781235683,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.03608633208212935,
+            "ci95": [
+              -0.005159060942826035,
+              0.07279425363832948
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/none",
+          "classifier": "rf",
+          "b1AucMean": 0.5002858664444997,
+          "b2AucMean": 0.5252814348560448,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.05823181567042151,
+            "ci95": [
+              0.0109711162061952,
+              0.1063132831965701
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/small",
+          "classifier": "lr",
+          "b1AucMean": 0.4682743794388348,
+          "b2AucMean": 0.5332617951488877,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.007858989854290921,
+            "ci95": [
+              -0.009852450480909283,
+              0.02622818115164337
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: medium/small",
+          "classifier": "rf",
+          "b1AucMean": 0.529272257733677,
+          "b2AucMean": 0.5194419256816165,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.008526361172213776,
+            "ci95": [
+              -0.028511312767550867,
+              0.011799362204237844
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: small/none",
+          "classifier": "lr",
+          "b1AucMean": 0.5480152059980538,
+          "b2AucMean": 0.5111833459460339,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.012212258423489625,
+            "ci95": [
+              -0.03305837093475135,
+              0.06650833735434886
+            ],
+            "n": 28
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 28,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "paramType: small/none",
+          "classifier": "rf",
+          "b1AucMean": 0.5123524628958135,
+          "b2AucMean": 0.5232802458219518,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.0017289427886232353,
+            "ci95": [
+              -0.05653318446903973,
+              0.059604956903476634
+            ],
+            "n": 28
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 28,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: few/many",
+          "classifier": "lr",
+          "b1AucMean": 0.5018927229934913,
+          "b2AucMean": 0.5008357414965844,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.006743477850566998,
+            "ci95": [
+              -0.02221650297832657,
+              0.008296686332205235
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: few/many",
+          "classifier": "rf",
+          "b1AucMean": 0.48307957193065315,
+          "b2AucMean": 0.5009175342147181,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.005842301089479562,
+            "ci95": [
+              -0.025229003252828223,
+              0.011691499672254106
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: single/few",
+          "classifier": "lr",
+          "b1AucMean": 0.4605128887586841,
+          "b2AucMean": 0.5012553120382333,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.03195833795309352,
+            "ci95": [
+              0.007196900048499226,
+              0.05511475695267756
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: single/few",
+          "classifier": "rf",
+          "b1AucMean": 0.5061420549392045,
+          "b2AucMean": 0.45542375299184024,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.003889999302312138,
+            "ci95": [
+              -0.02330824394724377,
+              0.03377247034453554
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: single/many",
+          "classifier": "lr",
+          "b1AucMean": 0.4918282060282673,
+          "b2AucMean": 0.46998272462688095,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.007401515975448517,
+            "ci95": [
+              -0.03090151593990484,
+              0.016305297615924304
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "predicateCombo: single/many",
+          "classifier": "rf",
+          "b1AucMean": 0.5382683658951557,
+          "b2AucMean": 0.4990924457003695,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.0003554854874514383,
+            "ci95": [
+              -0.027987642232853143,
+              0.02768993152029141
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: and_only/and_or_mixed",
+          "classifier": "lr",
+          "b1AucMean": 0.5207448081288821,
+          "b2AucMean": 0.5413729397037248,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.013582296671318423,
+            "ci95": [
+              -0.03140566006512481,
+              0.009087024331074962
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: and_only/and_or_mixed",
+          "classifier": "rf",
+          "b1AucMean": 0.519206520439646,
+          "b2AucMean": 0.5809542755584359,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.045256762282160926,
+            "ci95": [
+              -0.06424173080950617,
+              -0.025301352152658163
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_increases_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: and_only/or_only",
+          "classifier": "lr",
+          "b1AucMean": 0.4940342272268582,
+          "b2AucMean": 0.48774073748062047,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.012887215558181888,
+            "ci95": [
+              -0.0366320210288757,
+              0.010365958387861727
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: and_only/or_only",
+          "classifier": "rf",
+          "b1AucMean": 0.4941572667372723,
+          "b2AucMean": 0.49877436707830913,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.003982170678064306,
+            "ci95": [
+              -0.015605500335806977,
+              0.023669054694294363
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: or_only/and_or_mixed",
+          "classifier": "lr",
+          "b1AucMean": 0.5757238353055099,
+          "b2AucMean": 0.5766791777080023,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.000653337727293655,
+            "ci95": [
+              -0.03332218602921128,
+              0.029161091750239787
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: or_only/and_or_mixed",
+          "classifier": "rf",
+          "b1AucMean": 0.5670888553901815,
+          "b2AucMean": 0.5118360016897906,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.03198504259562036,
+            "ci95": [
+              0.010517228384188908,
+              0.05292905237751585
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/and_only",
+          "classifier": "lr",
+          "b1AucMean": 0.44509014959562504,
+          "b2AucMean": 0.4855648909264166,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.012499444048905002,
+            "ci95": [
+              -0.046242032565232905,
+              0.02272854289307379
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/and_only",
+          "classifier": "rf",
+          "b1AucMean": 0.5246460682069938,
+          "b2AucMean": 0.4597417790728603,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.005160360787391183,
+            "ci95": [
+              -0.033513402177595554,
+              0.025422823302678105
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/and_or_mixed",
+          "classifier": "lr",
+          "b1AucMean": 0.4901076639028135,
+          "b2AucMean": 0.5850119525393003,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.020973934213743304,
+            "ci95": [
+              -0.05038090039111549,
+              0.010323413623592594
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/and_or_mixed",
+          "classifier": "rf",
+          "b1AucMean": 0.47634781834546414,
+          "b2AucMean": 0.5762740097378256,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": -0.017224847254807284,
+            "ci95": [
+              -0.04249734589840776,
+              0.004556394944226269
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/or_only",
+          "classifier": "lr",
+          "b1AucMean": 0.471340164531219,
+          "b2AucMean": 0.44298611697197315,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.0025369536087346324,
+            "ci95": [
+              -0.03640262355225798,
+              0.04114684744753471
+            ],
+            "n": 30
+          },
+          "interpretation": "no_detectable_incremental_effect",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        },
+        {
+          "task": "structureType: trivial/or_only",
+          "classifier": "rf",
+          "b1AucMean": 0.48104012576801397,
+          "b2AucMean": 0.47478705036989305,
+          "b1SignificantSeedFraction": 0.0,
+          "b2SignificantSeedFraction": 0.0,
+          "deltaLeakage": {
+            "mean": 0.04254967202430529,
+            "ci95": [
+              0.0075146030684677375,
+              0.08041467315561256
+            ],
+            "n": 30
+          },
+          "interpretation": "padding_reduces_leakage",
+          "pairedSeeds": 30,
+          "droppedSeeds": 0
+        }
+      ]
+    }
+  },
+  "clustering": {
+    "policyGroupBootstrap": {
+      "pch_duo": {
+        "b1": {
+          "ari": 0.0015999745490791484,
+          "nmi": 0.015318086415000022
+        },
+        "b2": {
+          "ari": -9.411203890886576e-05,
+          "nmi": 0.01524259819020229
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": 0.0016940865879880142,
+            "ci95": [
+              -0.006483077240923615,
+              0.008094114525020638
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": 7.54882247977328e-05,
+            "ci95": [
+              -0.00878070928388867,
+              0.01677998937557927
+            ],
+            "n": 500
+          }
+        }
+      },
+      "pch_icd10": {
+        "b1": {
+          "ari": -0.0004503083730650139,
+          "nmi": 0.027893198030472605
+        },
+        "b2": {
+          "ari": -0.0004257929493074545,
+          "nmi": 0.031840896151739
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": -2.451542375755939e-05,
+            "ci95": [
+              -0.014117399414312424,
+              0.010395351968579738
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": -0.003947698121266392,
+            "ci95": [
+              -0.023496803761641316,
+              0.018642099382632418
+            ],
+            "n": 500
+          }
+        }
+      },
+      "logicStructure": {
+        "b1": {
+          "ari": 0.0021479572932148485,
+          "nmi": 0.006765913415065852
+        },
+        "b2": {
+          "ari": -0.0021913794879514096,
+          "nmi": 0.0022316795732645503
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": 0.004339336781166258,
+            "ci95": [
+              -0.013570255870291119,
+              0.01304121955861579
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": 0.004534233841801301,
+            "ci95": [
+              -0.00984474257793848,
+              0.013577776323924118
+            ],
+            "n": 500
+          }
+        }
+      },
+      "nestingDepth": {
+        "b1": {
+          "ari": 0.002543269327259268,
+          "nmi": 0.006618287713785661
+        },
+        "b2": {
+          "ari": 0.0010199071704006623,
+          "nmi": 0.004901663347699894
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": 0.0015233621568586059,
+            "ci95": [
+              -0.016714915189276883,
+              0.013076518902650519
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": 0.0017166243660857675,
+            "ci95": [
+              -0.00971410475564584,
+              0.011739313758982753
+            ],
+            "n": 500
+          }
+        }
+      },
+      "predicateCount": {
+        "b1": {
+          "ari": -0.0005255179790263735,
+          "nmi": 0.003217216374099641
+        },
+        "b2": {
+          "ari": -0.0028515105270111303,
+          "nmi": 0.0009812780471908575
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": 0.0023259925479847568,
+            "ci95": [
+              -0.01439917997305082,
+              0.016784135260134475
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": 0.0022359383269087837,
+            "ci95": [
+              -0.005613166781038091,
+              0.011481392271622523
+            ],
+            "n": 500
+          }
+        }
+      },
+      "setSize": {
+        "b1": {
+          "ari": -0.001748888587366542,
+          "nmi": 0.004422696429167875
+        },
+        "b2": {
+          "ari": 0.002328370152365013,
+          "nmi": 0.006853156231736029
+        },
+        "deltaB1MinusB2": {
+          "ari": {
+            "mean": -0.004077258739731555,
+            "ci95": [
+              -0.015922748632071305,
+              0.012188627188512382
+            ],
+            "n": 500
+          },
+          "nmi": {
+            "mean": -0.0024304598025681537,
+            "ci95": [
+              -0.014274734435733157,
+              0.01037191531143063
+            ],
+            "n": 500
+          }
+        }
+      }
+    },
+    "piBalancedPairs": {
+      "observed_ari": {
+        "mean": -0.008953333333333332,
+        "ci95": [
+          -0.034390166666666666,
+          0.014025833333333333
+        ],
+        "n": 60
+      },
+      "observed_nmi": {
+        "mean": 0.014856666666666667,
+        "ci95": [
+          -0.010491041666666664,
+          0.042775833333333325
+        ],
+        "n": 60
+      },
+      "debiased_nmi": {
+        "mean": -2.6666666666669282e-05,
+        "ci95": [
+          -0.0252655,
+          0.024599708333333328
+        ],
+        "n": 60
+      },
+      "policyWeightedDebiasedNmi": {
+        "mean": -2.6666666666669282e-05,
+        "ci95": [
+          -0.03419791529605262,
+          0.040343333333333335
+        ],
+        "n": 500
+      },
+      "pairs": 60
+    }
+  },
+  "gas": {
+    "commitGasUsed": {
+      "mean": 104604.80344557557,
+      "ci95": [
+        103621.05256460454,
+        105516.71791307753
+      ],
+      "n": 1277,
+      "b1Mean": 197054.03602192638,
+      "b2Mean": 301658.83946750197,
+      "percentIncrease": 53.08432425811167
+    },
+    "accessGasUsed": {
+      "mean": 497770.9052466719,
+      "ci95": [
+        494461.9473766641,
+        500920.4854541895
+      ],
+      "n": 1277,
+      "b1Mean": 553571.2623335944,
+      "b2Mean": 1051342.1675802663,
+      "percentIncrease": 89.91993246692492
+    }
+  },
+  "limitation": "B2 reuses the existing Polygon Amoy run; B1/B2 are non-contemporaneous. blockDifference is excluded from every attack model."
+}
