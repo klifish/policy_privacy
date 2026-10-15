@@ -107,7 +107,9 @@ def load_json(path: Path):
 
 
 def find_json(data_dir: Path, filename: str) -> Optional[Path]:
-    candidates = sorted(data_dir.glob(f"**/{filename}"))
+    """The shallowest match under data_dir, so that a merged sharded capture is
+    read from its root rather than from one of its shards/shard-<i>/ subsets."""
+    candidates = sorted(data_dir.glob(f"**/{filename}"), key=lambda p: (len(p.parts), str(p)))
     return candidates[0] if candidates else None
 
 

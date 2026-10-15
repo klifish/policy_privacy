@@ -54,9 +54,10 @@ def load_json(path: Path):
 def find_pch_dataset(data_dir: Path) -> Optional[Path]:
     """Find pch_dataset.json in subdirectories."""
     # Check specific known path first or search
-    candidates = list(data_dir.glob("**/pch_dataset.json"))
+    # Shallowest first: a sharded capture's root, not one of its shards.
+    candidates = sorted(data_dir.glob("**/pch_dataset.json"), key=lambda p: (len(p.parts), str(p)))
     if candidates:
-        return candidates[0]  # Return the first one found
+        return candidates[0]
     return None
 
 

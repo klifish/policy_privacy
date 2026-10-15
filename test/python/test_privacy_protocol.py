@@ -1,11 +1,14 @@
 import json
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
 from experiments.analysis.paths import CAPTURE_DATA_DIR
 from experiments.analysis.supervised.common import (
     analyze_contrast,
+    find_json,
     new_split_manifest,
     outcome_strata,
     repeated_stratified_group_holdout,
@@ -74,6 +77,19 @@ class StratifiedGroupHoldoutTests(unittest.TestCase):
         )
         self.assertEqual(first["models"]["lr"]["aucMean"], replay["models"]["lr"]["aucMean"])
         self.assertIn("powerWarning", first)
+
+
+class DatasetLookupTests(unittest.TestCase):
+    def test_sharded_capture_is_read_from_its_root(self):
+        # "shards/" sorts before "spp_dataset.json", so a plain sorted glob
+        # picked shard 0's subset of a merged sharded capture.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "shards" / "shard-0").mkdir(parents=True)
+            for name in ("pch_dataset.json", "pi_dataset.json", "spp_dataset.json"):
+                (root / name).write_text("[]")
+                (root / "shards" / "shard-0" / name).write_text("[]")
+                self.assertEqual(find_json(root, name), root / name)
 
 
 class TaskAlignmentTests(unittest.TestCase):

@@ -48,7 +48,8 @@ def load_json(path: Path):
 
 
 def find_pi_dataset(data_dir: Path) -> Path:
-    cands = list(data_dir.glob("**/pi_dataset.json"))
+    # Shallowest first: a sharded capture's root, not one of its shards.
+    cands = sorted(data_dir.glob("**/pi_dataset.json"), key=lambda p: (len(p.parts), str(p)))
     if not cands:
         raise FileNotFoundError(f"No pi_dataset.json under {data_dir}")
     return cands[0]
