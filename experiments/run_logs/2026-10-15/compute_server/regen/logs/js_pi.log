@@ -1,0 +1,45 @@
+Configuration: {
+  permutationIterations: 500,
+  controlShift: 0.75,
+  useUnifiedDataset: true,
+  startPhase: 2,
+  network: 'polygonAmoy',
+  concurrency: 30
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/data/polygonAmoy
+  Policies:   /root/policy_privacy/experiments/data/polygonAmoy/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/data/polygonAmoy/pi_dataset.json
+
+Loaded 30 pairs from /root/policy_privacy/experiments/data/polygonAmoy/pi_dataset.json: {
+  controlled_difference: 10,
+  semantic_equivalent: 10,
+  weak_equivalent: 10
+}
+
+Policy Indistinguishability — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.534 ± 0.040   | 0.310       | 10%  | 160  | ✓ PASS
+weak_equivalent                       | 0.498 ± 0.040   | 0.515       | 3%   | 160  | ✓ PASS
+controlled_difference                 | 0.517 ± 0.047   | 0.427       | 13%  | 160  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+PI positive control (should FAIL) — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.638 ± 0.042   | 0.018       | 87%  | 160  | ✗ FAIL
+weak_equivalent                       | 0.622 ± 0.054   | 0.043       | 77%  | 160  | ✗ FAIL
+controlled_difference                 | 0.622 ± 0.051   | 0.052       | 83%  | 160  | ✗ FAIL
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✗ FAIL
+
+Overall PI (multi-seed): PASS
+Report -> /root/policy_privacy/experiments/results/crosscheck/pi/polygonAmoy/pi_report.json

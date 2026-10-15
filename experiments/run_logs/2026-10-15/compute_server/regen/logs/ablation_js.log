@@ -1,0 +1,2249 @@
+
+$ node experiments/analysis/crosscheck/pch/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pch
+Configuration: {
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pch'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/pch_dataset.json
+
+============================================================
+Policy Content Hiding Evaluation Experiment
+============================================================
+
+Using DUO terms: GR, DS, RS, POA, GS, CC, NCU, HMB, NMDS, GSO
+
+Phase 2: Feature Extraction
+------------------------------------------------------------
+Loading execution results from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/pch_dataset.json
+Loaded 1977 execution results
+
+No significant cold start detected, keeping all samples
+
+Extracted 1977 feature vectors
+Feature statistics:
+  commitGasUsed: mean=219756.97, std=806.18
+  commitCalldataLength: mean=164.00, std=0.00
+  accessGasUsed: mean=723565.32, std=805.33
+  accessCalldataLength: mean=580.00, std=0.00
+  proofSize: mean=938.00, std=0.00
+  commitLogsCount: mean=1.00, std=0.00
+  commitLogsSize: mean=180.00, std=0.00
+  accessLogsCount: mean=2.00, std=0.00
+  accessLogsSize: mean=296.00, std=0.00
+  blockDifference: mean=15.33, std=2.97
+
+Features saved to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pch/features.json
+
+Normalizing features: commitGasUsed, commitCalldataLength, accessGasUsed, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Dropping zero-variance features: commitCalldataLength, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Phase 3: Attack Modeling
+------------------------------------------------------------
+Split data: 1293 train, 684 test
+
+Task 1: DUO Term Presence Prediction (Binary)
+  Training classifier for DUO term 0...
+    Train: 376/1293 positive (29.1%)
+    Test: 241/684 positive (35.2%)
+  Training classifier for DUO term 1...
+    Train: 472/1293 positive (36.5%)
+    Test: 205/684 positive (30.0%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 2...
+    Train: 475/1293 positive (36.7%)
+    Test: 267/684 positive (39.0%)
+  Training classifier for DUO term 3...
+    Train: 519/1293 positive (40.1%)
+    Test: 218/684 positive (31.9%)
+  Training classifier for DUO term 4...
+    Train: 457/1293 positive (35.3%)
+    Test: 225/684 positive (32.9%)
+  Training classifier for DUO term 5...
+    Train: 385/1293 positive (29.8%)
+    Test: 247/684 positive (36.1%)
+  Training classifier for DUO term 6...
+    Train: 354/1293 positive (27.4%)
+    Test: 152/684 positive (22.2%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 7...
+    Train: 399/1293 positive (30.9%)
+    Test: 262/684 positive (38.3%)
+  Training classifier for DUO term 8...
+    Train: 260/1293 positive (20.1%)
+    Test: 127/684 positive (18.6%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 9...
+    Train: 369/1293 positive (28.5%)
+    Test: 182/684 positive (26.6%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+
+Task 2: ICD-10 Chapter Prediction (Multi-class)
+  Training Random Forest classifier...
+
+Phase 4: Evaluation
+------------------------------------------------------------
+Classification Results (Privacy Metrics):
+Note: AUC is the primary single-split privacy diagnostic.
+AUC ≤ 0.55 indicates the adversary cannot rank samples better than random.
+
+Task: DUO Term 0 Presence
+  Type: binary
+  Test Set: 241/684 positive (35.2%)
+  ✓ AUC: 0.5021 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 1 Presence
+  Type: binary
+  Test Set: 205/684 positive (30.0%)
+  ✓ AUC: 0.5000 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 2 Presence
+  Type: binary
+  Test Set: 267/684 positive (39.0%)
+  ✓ AUC: 0.5064 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 3 Presence
+  Type: binary
+  Test Set: 218/684 positive (31.9%)
+  ✓ AUC: 0.4800 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 4 Presence
+  Type: binary
+  Test Set: 225/684 positive (32.9%)
+  ✓ AUC: 0.5425 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 5 Presence
+  Type: binary
+  Test Set: 247/684 positive (36.1%)
+  ✓ AUC: 0.4875 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 6 Presence
+  Type: binary
+  Test Set: 152/684 positive (22.2%)
+  ✓ AUC: 0.4778 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 7 Presence
+  Type: binary
+  Test Set: 262/684 positive (38.3%)
+  ✓ AUC: 0.5331 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 8 Presence
+  Type: binary
+  Test Set: 127/684 positive (18.6%)
+  ✓ AUC: 0.4955 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 9 Presence
+  Type: binary
+  Test Set: 182/684 positive (26.6%)
+  ✓ AUC: 0.5032 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: ICD-10 Chapter Prediction (RandomForest)
+  Type: multi-class
+  Macro F1: 5.38%
+
+
+Privacy Threshold Check:
+  AUC Threshold: ≤ 0.55
+
+  DUO Term 0 Presence: ✓ PASS
+    ✓ AUC: 0.5021 (threshold: 0.55)
+  DUO Term 1 Presence: ✓ PASS
+    ✓ AUC: 0.5000 (threshold: 0.55)
+  DUO Term 2 Presence: ✓ PASS
+    ✓ AUC: 0.5064 (threshold: 0.55)
+  DUO Term 3 Presence: ✓ PASS
+    ✓ AUC: 0.4800 (threshold: 0.55)
+  DUO Term 4 Presence: ✓ PASS
+    ✓ AUC: 0.5425 (threshold: 0.55)
+  DUO Term 5 Presence: ✓ PASS
+    ✓ AUC: 0.4875 (threshold: 0.55)
+  DUO Term 6 Presence: ✓ PASS
+    ✓ AUC: 0.4778 (threshold: 0.55)
+  DUO Term 7 Presence: ✓ PASS
+    ✓ AUC: 0.5331 (threshold: 0.55)
+  DUO Term 8 Presence: ✓ PASS
+    ✓ AUC: 0.4955 (threshold: 0.55)
+  DUO Term 9 Presence: ✓ PASS
+    ✓ AUC: 0.5032 (threshold: 0.55)
+  ICD-10 Chapter Prediction (RandomForest): ✓ PASS
+
+Single-split (diagnostic) Overall: ✓ PASS
+
+
+Policy Content Hiding — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+DUO GR                                | 0.511 ± 0.028   | 0.407       | 10%  | 324  | ✓ PASS
+DUO DS                                | 0.498 ± 0.038   | 0.500       | 3%   | 324  | ✓ PASS
+DUO RS                                | 0.499 ± 0.029   | 0.506       | 3%   | 324  | ✓ PASS
+DUO POA                               | 0.516 ± 0.028   | 0.366       | 13%  | 324  | ✓ PASS
+DUO GS                                | 0.513 ± 0.030   | 0.365       | 7%   | 324  | ✓ PASS
+DUO CC                                | 0.507 ± 0.020   | 0.421       | 0%   | 324  | ✓ PASS
+DUO NCU                               | 0.497 ± 0.024   | 0.536       | 3%   | 324  | ✓ PASS
+DUO HMB                               | 0.521 ± 0.025   | 0.300       | 17%  | 324  | ✓ PASS
+DUO NMDS                              | 0.515 ± 0.035   | 0.372       | 7%   | 324  | ✓ PASS
+DUO GSO                               | 0.519 ± 0.021   | 0.288       | 13%  | 324  | ✓ PASS
+ICD ch0                               | 0.515 ± 0.106   | 0.453       | 10%  | 127  | ✓ PASS
+ICD ch1                               | 0.596 ± 0.078   | 0.192       | 23%  | 127  | ✓ PASS
+ICD ch2                               | 0.546 ± 0.075   | 0.358       | 10%  | 127  | ✓ PASS
+ICD ch3                               | 0.512 ± 0.068   | 0.443       | 3%   | 127  | ✓ PASS
+ICD ch4                               | 0.548 ± 0.063   | 0.296       | 17%  | 127  | ✓ PASS
+ICD ch5                               | 0.566 ± 0.098   | 0.324       | 13%  | 127  | ✓ PASS
+ICD ch6                               | 0.481 ± 0.035   | 0.702       | 0%   | 127  | ✓ PASS
+ICD ch7                               | 0.488 ± 0.032   | 0.594       | 0%   | 127  | ✓ PASS
+ICD ch8                               | 0.507 ± 0.043   | 0.575       | 7%   | 127  | ✓ PASS
+ICD ch9                               | 0.503 ± 0.046   | 0.649       | 3%   | 127  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+Phase 5: Reporting
+------------------------------------------------------------
+Saved evaluation report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pch/evaluation_report.json
+Saved readable report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pch/evaluation_report.md
+
+============================================================
+Experiment Complete
+============================================================
+
+$ node experiments/analysis/crosscheck/pi/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pi
+Configuration: {
+  permutationIterations: 500,
+  controlShift: 0.75,
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pi'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/pi_dataset.json
+
+Loaded 30 pairs from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/pi_dataset.json: {
+  controlled_difference: 10,
+  semantic_equivalent: 10,
+  weak_equivalent: 10
+}
+
+Policy Indistinguishability — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.544 ± 0.034   | 0.225       | 23%  | 160  | ✓ PASS
+weak_equivalent                       | 0.496 ± 0.036   | 0.528       | 0%   | 160  | ✓ PASS
+controlled_difference                 | 0.474 ± 0.032   | 0.676       | 0%   | 160  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+PI positive control (should FAIL) — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.656 ± 0.047   | 0.011       | 97%  | 160  | ✗ FAIL
+weak_equivalent                       | 0.603 ± 0.052   | 0.069       | 63%  | 160  | ✗ FAIL
+controlled_difference                 | 0.605 ± 0.050   | 0.065       | 63%  | 160  | ✗ FAIL
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✗ FAIL
+
+Overall PI (multi-seed): PASS
+Report -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/pi/pi_report.json
+
+$ node experiments/analysis/crosscheck/spp/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/spp --balance-method undersample
+Configuration: {
+  policyCount: 120,
+  executionsPerPolicy: 3,
+  satisfyRatio: 0.5,
+  testRatio: 0.3,
+  permutationIterations: 500,
+  kValues: [ 2, 3, 4, 5 ],
+  seed: 'spp-experiment',
+  balanceMethod: 'undersample',
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/spp'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/spp_dataset.json
+
+============================================================
+Structure & Parameter Privacy Experiment
+============================================================
+Starting from phase 2
+
+Loaded dataset metadata from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/policy_definitions.json
+Loaded execution results from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded/spp_dataset.json
+
+Phase 2: Attack Modeling
+------------------------------------------------------------
+
+▶ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 0s
+
+Running supervised classification attack on: structureType
+Balance method: undersample
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Classifying trivial vs and_only (165 vs 389 samples, ratio 2.36:1)
+  Train balanced: 111 vs 111; test left natural (54 vs 118)
+  Logistic Regression: accuracy=0.686, advantage=0.186, auc=0.562
+  Random Forest: accuracy=0.558, advantage=0.058, auc=0.408
+
+Classifying trivial vs or_only (165 vs 373 samples, ratio 2.26:1)
+  Train balanced: 105 vs 105; test left natural (60 vs 109)
+  Logistic Regression: accuracy=0.639, advantage=0.139, auc=0.618
+  Random Forest: accuracy=0.497, advantage=0.003, auc=0.533
+
+Classifying trivial vs and_or_mixed (165 vs 450 samples, ratio 2.73:1)
+  Train balanced: 113 vs 113; test left natural (52 vs 162)
+  Logistic Regression: accuracy=0.762, advantage=0.262, auc=0.538
+  Random Forest: accuracy=0.327, advantage=0.173, auc=0.466
+
+Classifying and_only vs or_only (389 vs 373 samples, ratio 1.04:1)
+  Train balanced: 253 vs 253; test left natural (136 vs 98)
+  Logistic Regression: accuracy=0.594, advantage=0.094, auc=0.564
+  Random Forest: accuracy=0.603, advantage=0.103, auc=0.558
+
+Classifying and_only vs and_or_mixed (389 vs 450 samples, ratio 1.16:1)
+  Train balanced: 246 vs 246; test left natural (143 vs 120)
+  Logistic Regression: accuracy=0.555, advantage=0.055, auc=0.517
+  Random Forest: accuracy=0.532, advantage=0.032, auc=0.538
+
+Classifying or_only vs and_or_mixed (373 vs 450 samples, ratio 1.21:1)
+  Train balanced: 263 vs 263; test left natural (110 vs 130)
+  Logistic Regression: accuracy=0.529, advantage=0.029, auc=0.527
+  Random Forest: accuracy=0.492, advantage=0.008, auc=0.558
+
+Running supervised classification attack on: predicateCombo
+Balance method: undersample
+Found 3 classes: single, few, many
+
+Classifying single vs few (337 vs 825 samples, ratio 2.45:1)
+  Train balanced: 245 vs 245; test left natural (92 vs 273)
+  Logistic Regression: accuracy=0.745, advantage=0.245, auc=0.529
+  Random Forest: accuracy=0.674, advantage=0.174, auc=0.547
+
+Classifying single vs many (337 vs 215 samples, ratio 1.57:1)
+  Train balanced: 157 vs 157; test left natural (101 vs 58)
+  Logistic Regression: accuracy=0.371, advantage=0.129, auc=0.482
+  Random Forest: accuracy=0.491, advantage=0.009, auc=0.484
+
+Classifying few vs many (825 vs 215 samples, ratio 3.84:1)
+  Train balanced: 153 vs 153; test left natural (254 vs 62)
+  Logistic Regression: accuracy=0.361, advantage=0.139, auc=0.496
+  Random Forest: accuracy=0.699, advantage=0.199, auc=0.526
+
+Running supervised classification attack on: paramType
+Balance method: undersample
+Found 4 classes: medium, large, small, none
+
+Classifying medium vs large (417 vs 456 samples, ratio 1.09:1)
+  Train balanced: 275 vs 275; test left natural (142 vs 127)
+  Logistic Regression: accuracy=0.435, advantage=0.065, auc=0.444
+  Random Forest: accuracy=0.442, advantage=0.058, auc=0.426
+
+Classifying medium vs small (417 vs 307 samples, ratio 1.36:1)
+  Train balanced: 229 vs 229; test left natural (132 vs 78)
+  Logistic Regression: accuracy=0.605, advantage=0.105, auc=0.517
+  Random Forest: accuracy=0.571, advantage=0.071, auc=0.519
+
+Classifying medium vs none (417 vs 197 samples, ratio 2.12:1)
+  Train balanced: 147 vs 147; test left natural (114 vs 50)
+  Logistic Regression: accuracy=0.695, advantage=0.195, auc=0.538
+  Random Forest: accuracy=0.695, advantage=0.195, auc=0.549
+
+Classifying large vs small (456 vs 307 samples, ratio 1.49:1)
+  Train balanced: 231 vs 231; test left natural (142 vs 76)
+  Logistic Regression: accuracy=0.601, advantage=0.101, auc=0.499
+  Random Forest: accuracy=0.601, advantage=0.101, auc=0.513
+
+Classifying large vs none (456 vs 197 samples, ratio 2.31:1)
+  Train balanced: 111 vs 111; test left natural (116 vs 86)
+  Logistic Regression: accuracy=0.426, advantage=0.074, auc=0.538
+  Random Forest: accuracy=0.569, advantage=0.069, auc=0.525
+
+Classifying small vs none (307 vs 197 samples, ratio 1.56:1)
+  Train balanced: 142 vs 142; test left natural (98 vs 55)
+  Logistic Regression: accuracy=0.464, advantage=0.036, auc=0.431
+  Random Forest: accuracy=0.608, advantage=0.108, auc=0.460
+
+✓ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 1s | ETA: 0m 3s
+
+▶ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 1s | ETA: 0m 2s
+
+Running statistical tests on: structureType
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Comparing trivial vs and_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=0.691, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs or_only
+  MMD: 0.001342
+  KS p-values: commitGasUsed=0.137, commitCalldataLength=1.000, accessGasUsed=0.464, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=0.715, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs or_only
+  MMD: 0.000140
+  KS p-values: commitGasUsed=0.029, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs and_or_mixed
+  MMD: 0.001133
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=0.969, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing or_only vs and_or_mixed
+  MMD: 0.003320
+  KS p-values: commitGasUsed=0.337, commitCalldataLength=1.000, accessGasUsed=0.119, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: predicateCombo
+Found 3 classes: single, few, many
+
+Comparing single vs few
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.976, commitCalldataLength=1.000, accessGasUsed=0.875, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing single vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing few vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.396, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: paramType
+Found 4 classes: medium, large, small, none
+
+Comparing medium vs large
+  MMD: 0.000000
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs small
+  MMD: 0.000262
+  KS p-values: commitGasUsed=0.118, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs small
+  MMD: 0.000889
+  KS p-values: commitGasUsed=0.288, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs none
+  MMD: 0.003428
+  KS p-values: commitGasUsed=1.000, commitCalldataLength=1.000, accessGasUsed=0.632, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing small vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.988, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+✓ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 1s | ETA: 0m 1s
+
+▶ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 1s | ETA: 0m 0s
+
+Running clustering attack on: structureType
+True classes: trivial, and_only, or_only, and_or_mixed
+
+Clustering with k=2...
+  Silhouette: 0.9990
+  Iterations: 2
+
+Clustering with k=3...
+  Silhouette: 0.5451
+  Iterations: 2
+
+Clustering with k=4...
+  ARI: -0.0022
+  Silhouette: 0.5227
+  Iterations: 11
+
+Clustering with k=5...
+  Silhouette: 0.5017
+  Iterations: 2
+
+Running clustering attack on: predicateCombo
+True classes: single, few, many
+
+Clustering with k=2...
+  Silhouette: 0.9990
+  Iterations: 2
+
+Clustering with k=3...
+  ARI: -0.0053
+  Silhouette: 0.5451
+  Iterations: 2
+
+Clustering with k=4...
+  Silhouette: 0.5227
+  Iterations: 5
+
+Clustering with k=5...
+  Silhouette: 0.5168
+  Iterations: 3
+
+Running clustering attack on: paramType
+True classes: medium, large, small, none
+
+Clustering with k=2...
+  Silhouette: 0.9990
+  Iterations: 2
+
+Clustering with k=3...
+  Silhouette: 0.5451
+  Iterations: 4
+
+Clustering with k=4...
+  ARI: -0.0017
+  Silhouette: 0.5067
+  Iterations: 3
+
+Clustering with k=5...
+  Silhouette: 0.4710
+  Iterations: 5
+
+✓ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 2s | ETA: 0m 0s
+
+Phase 3: Evaluation & Reporting
+------------------------------------------------------------
+
+▶ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 2s
+
+Structure & Parameter Privacy — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+structureType: trivial/and_only       | 0.530 ± 0.037   | 0.322       | 3%   | 127  | ✓ PASS
+structureType: trivial/or_only        | 0.582 ± 0.052   | 0.145       | 40%  | 129  | ✓ PASS
+structureType: trivial/and_or_mixed   | 0.548 ± 0.038   | 0.237       | 10%  | 144  | ✓ PASS
+structureType: and_only/or_only       | 0.545 ± 0.032   | 0.202       | 30%  | 179  | ✓ PASS
+structureType: and_only/and_or_mixed  | 0.502 ± 0.043   | 0.488       | 7%   | 193  | ✓ PASS
+structureType: or_only/and_or_mixed   | 0.553 ± 0.031   | 0.153       | 27%  | 195  | ✓ PASS
+predicateCombo: single/few            | 0.514 ± 0.034   | 0.388       | 0%   | 270  | ✓ PASS
+predicateCombo: single/many           | 0.501 ± 0.043   | 0.513       | 3%   | 129  | ✓ PASS
+predicateCombo: few/many              | 0.527 ± 0.041   | 0.307       | 7%   | 246  | ✓ PASS
+paramType: medium/large               | 0.507 ± 0.031   | 0.453       | 3%   | 209  | ✓ PASS
+paramType: medium/small               | 0.536 ± 0.038   | 0.269       | 20%  | 175  | ✓ PASS
+paramType: medium/none                | 0.505 ± 0.053   | 0.475       | 10%  | 149  | ✓ PASS
+paramType: large/small                | 0.534 ± 0.036   | 0.276       | 7%   | 173  | ✓ PASS
+paramType: large/none                 | 0.529 ± 0.038   | 0.329       | 7%   | 147  | ✓ PASS
+paramType: small/none                 | 0.520 ± 0.051   | 0.362       | 3%   | 113  | ✓ PASS
+nestingDepth: flat/shallow            | 0.563 ± 0.069   | 0.227       | 30%  | 102  | ✓ PASS
+nestingDepth: flat/medium             | 0.586 ± 0.046   | 0.122       | 47%  | 139  | ✓ PASS
+nestingDepth: flat/deep               | 0.524 ± 0.047   | 0.367       | 13%  | 159  | ✓ PASS
+nestingDepth: shallow/medium          | 0.527 ± 0.045   | 0.323       | 23%  | 163  | ✓ PASS
+nestingDepth: shallow/deep            | 0.500 ± 0.040   | 0.522       | 7%   | 183  | ✓ PASS
+nestingDepth: medium/deep             | 0.511 ± 0.031   | 0.420       | 3%   | 221  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+Saved JSON report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/spp/report.json
+Saved Markdown report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b1_unpadded/spp/report.md
+
+✓ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 4s
+
+
+✓ All steps completed in 0m 4s
+
+Overall status (multi-seed): PASS
+============================================================
+
+$ /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.run_all_clustering --source-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b1_unpadded --work-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work --results-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results
+
+### Access outcome: granted
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pch
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp
+Input validation passed:
+  PCH DUO: 989 samples / 10 classes
+  PCH ICD-10: 339 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: -0.0004 | NMI: 0.0209
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: -0.0019 | NMI: 0.0646
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (7). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          7                1.6        0.6939        0.6017        0.6963        0.0921   0.0945        False
+        or_chain         85         10                8.5        0.2251        0.2116        0.2522        0.0135   0.2985        False
+       and_chain        107         10               10.7        0.1453        0.1863        0.2198       -0.0410   0.9751        False
+     mixed_chain        136         10               13.6        0.1354        0.1445        0.1712       -0.0091   0.6766        False
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.2999
+纯小样本 baseline 平均: 0.2860
+去偏后平均 NMI       : 0.0139
+显著泄露的层 (p<0.05): 0/4
+→ 所有层的 observed NMI 都落在「零泄露」零分布内, ICD10 的高 NMI 可完全由小样本偏差解释, 无真实内容泄露证据。
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --pairs-file /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0139        0.0523       -0.0384 1.000000        False
+pi-controlled_difference-1 designed controlled_difference         16        0.0139        0.0504       -0.0365 1.000000        False
+pi-controlled_difference-2 designed controlled_difference         16        0.0139        0.0486       -0.0347 1.000000        False
+pi-controlled_difference-3 designed controlled_difference         16        0.0139        0.0428       -0.0289 1.000000        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0000        0.0804       -0.0804 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.0980        0.0980        0.0000 1.000000        False
+pi-controlled_difference-6 designed controlled_difference         16        0.1787        0.0849        0.0938 0.477612        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0980        0.0980        0.0000 1.000000        False
+pi-controlled_difference-8 designed controlled_difference         16        0.0938        0.0959       -0.0021 1.000000        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0000        0.0605       -0.0605 1.000000        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.0456        0.0532       -0.0076 0.626866        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.0980        0.0980        0.0000 1.000000        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0115        0.0569       -0.0454 1.000000        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.1787        0.0751        0.1037 0.422886        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0139        0.0484       -0.0345 1.000000        False
+
+=== 按 mode 汇总 ===
+           n   obs_nmi  base_nmi  debiased  n_sig
+mode                                             
+designed  30  0.051827  0.066673  -0.01485      0
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.05241   0.07118  -0.01877      0
+semantic_equivalent    10  0.06305   0.06452  -0.00146      0
+weak_equivalent        10  0.04002   0.06432  -0.02432      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0518
+小样本 baseline 平均 NMI: 0.0667
+去偏后平均 NMI: -0.0148
+显著可区分的对 (p<0.05): 0/30
+→ 平衡 + 去偏后无任何对显著: 聚类口径确认 PI 不可区分 (且不再受 1:30 退化污染)。
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/granted/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: 0.0062 | NMI: 0.0140
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: -0.0012 | NMI: 0.0098
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: -0.0055 | NMI: 0.0062
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: -0.0053 | NMI: 0.0028
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10      -0.02273       0.05241       0.07118      -0.01877            0
+semantic_equivalent       10       0.00226       0.06305       0.06452      -0.00146            0
+weak_equivalent           10      -0.02431       0.04002       0.06432      -0.02432            0
+
+Overall: 30 pairs, mean ARI=-0.0149, mean observed NMI=0.0518, mean debiased NMI=-0.0148, significant=0/30
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 689
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 689
+  类别数: 4
+  K-Means ARI: 0.006233
+  K-Means NMI: 0.014012
+  隐私保护评级: 优秀 ✓ (接近随机猜测)
+  风险等级: 极低风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.5%
+  相对随机的提升: 1.02x
+
+目标: nestingDepth
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.001167
+  K-Means NMI: 0.009820
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: predicateCount
+  样本数: 689
+  类别数: 3
+  K-Means ARI: -0.005510
+  K-Means NMI: 0.006241
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.3%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.005319
+  K-Means NMI: 0.002823
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  -0.001441       0.008224        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓ 所有4个目标都达到了良好级别
+   → 结构和参数隐私保护有效
+
+表现最好的目标: setSize
+  ARI: -0.005319, NMI: 0.002823
+
+表现最差的目标: logicStructure
+  ARI: 0.006233, NMI: 0.014012
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: -0.001441, 平均NMI: 0.008224
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/granted/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+### Access outcome: denied
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pch
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp
+Input validation passed:
+  PCH DUO: 988 samples / 10 classes
+  PCH ICD-10: 338 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: -0.0028 | NMI: 0.0171
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0076 | NMI: 0.0636
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+/root/policy_privacy/.venv/lib/python3.13/site-packages/sklearn/base.py:1365: ConvergenceWarning: Number of distinct clusters (5) found smaller than n_clusters (6). Possibly due to duplicate points in X.
+  return fit_method(estimator, *args, **kwargs)
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          6                1.8        0.5504        0.5729        0.7112       -0.0225   0.7015        False
+        or_chain         85         10                8.5        0.1900        0.2244        0.2665       -0.0344   0.9104        False
+       and_chain        108         10               10.8        0.1595        0.1818        0.2194       -0.0223   0.8308        False
+     mixed_chain        134         10               13.4        0.1732        0.1513        0.1794        0.0219   0.1194        False
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.2683
+纯小样本 baseline 平均: 0.2826
+去偏后平均 NMI       : -0.0143
+显著泄露的层 (p<0.05): 0/4
+→ 所有层的 observed NMI 都落在「零泄露」零分布内, ICD10 的高 NMI 可完全由小样本偏差解释, 无真实内容泄露证据。
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --pairs-file /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0980        0.0980        0.0000 1.000000        False
+pi-controlled_difference-1 designed controlled_difference         16        0.0222        0.0788       -0.0567 1.000000        False
+pi-controlled_difference-2 designed controlled_difference         16        0.0000        0.0576       -0.0576 1.000000        False
+pi-controlled_difference-3 designed controlled_difference         16        0.1311        0.0541        0.0770 0.293532        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0139        0.0547       -0.0408 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.0222        0.0717       -0.0496 1.000000        False
+pi-controlled_difference-6 designed controlled_difference         16        0.0980        0.0980        0.0000 1.000000        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0688        0.0564        0.0124 0.582090        False
+pi-controlled_difference-8 designed controlled_difference         16        0.0118        0.0600       -0.0481 1.000000        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0000        0.0751       -0.0751 1.000000        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.0980        0.0980        0.0000 1.000000        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.1311        0.0502        0.0809 0.273632        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0688        0.0523        0.0165 0.562189        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.0222        0.0611       -0.0389 1.000000        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0222        0.0776       -0.0555 1.000000        False
+
+=== 按 mode 汇总 ===
+           n  obs_nmi  base_nmi  debiased  n_sig
+mode                                            
+designed  30  0.05017   0.06655  -0.01639      0
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.04660   0.07044  -0.02385      0
+semantic_equivalent    10  0.08051   0.06976   0.01074      0
+weak_equivalent        10  0.02340   0.05945  -0.03606      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0502
+小样本 baseline 平均 NMI: 0.0665
+去偏后平均 NMI: -0.0164
+显著可区分的对 (p<0.05): 0/30
+→ 平衡 + 去偏后无任何对显著: 聚类口径确认 PI 不可区分 (且不再受 1:30 退化污染)。
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/work/denied/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: -0.0022 | NMI: 0.0072
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: 0.0022 | NMI: 0.0099
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: -0.0065 | NMI: 0.0012
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: 0.0071 | NMI: 0.0084
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10       -0.0137       0.04660       0.07044      -0.02385            0
+semantic_equivalent       10        0.0123       0.08051       0.06976       0.01074            0
+weak_equivalent           10       -0.0261       0.02340       0.05945      -0.03606            0
+
+Overall: 30 pairs, mean ARI=-0.0092, mean observed NMI=0.0502, mean debiased NMI=-0.0164, significant=0/30
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 688
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 688
+  类别数: 4
+  K-Means ARI: -0.002206
+  K-Means NMI: 0.007221
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: nestingDepth
+  样本数: 688
+  类别数: 4
+  K-Means ARI: 0.002227
+  K-Means NMI: 0.009899
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.2%
+  相对随机的提升: 1.01x
+
+目标: predicateCount
+  样本数: 688
+  类别数: 3
+  K-Means ARI: -0.006491
+  K-Means NMI: 0.001151
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.3%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 688
+  类别数: 4
+  K-Means ARI: 0.007070
+  K-Means NMI: 0.008370
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.5%
+  相对随机的提升: 1.02x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  0.000150        0.006660        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓✓ 所有4个目标都达到了优秀级别（ARI和NMI都接近0）
+   → 攻击者无法从gas成本中推断任何结构或参数特征
+
+表现最好的目标: predicateCount
+  ARI: -0.006491, NMI: 0.001151
+
+表现最差的目标: nestingDepth
+  ARI: 0.002227, NMI: 0.009899
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: 0.000150, 平均NMI: 0.006660
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b1_unpadded/results/denied/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+All authoritative clustering analyses completed.
+
+$ node experiments/analysis/crosscheck/pch/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pch
+Configuration: {
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pch'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/pch_dataset.json
+
+============================================================
+Policy Content Hiding Evaluation Experiment
+============================================================
+
+Using DUO terms: GR, DS, RS, POA, GS, CC, NCU, HMB, NMDS, GSO
+
+Phase 2: Feature Extraction
+------------------------------------------------------------
+Loading execution results from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/pch_dataset.json
+Loaded 1977 execution results
+
+Cold start detected and excluded:
+  Sample 0 commit gas: 275306
+  Sample 1 commit gas: 332706
+  Difference: 57400 gas (likely SSTORE cold start)
+
+Extracted 1976 feature vectors
+Feature statistics:
+  commitGasUsed: mean=304362.32, std=17729.42
+  commitCalldataLength: mean=196.00, std=0.00
+  accessGasUsed: mean=1051814.04, std=60628.53
+  accessCalldataLength: mean=612.00, std=0.00
+  proofSize: mean=938.00, std=0.00
+  commitLogsCount: mean=1.00, std=0.00
+  commitLogsSize: mean=180.00, std=0.00
+  accessLogsCount: mean=2.00, std=0.00
+  accessLogsSize: mean=296.00, std=0.00
+  blockDifference: mean=14.57, std=2.81
+
+Features saved to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pch/features.json
+
+Normalizing features: commitGasUsed, commitCalldataLength, accessGasUsed, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Dropping zero-variance features: commitCalldataLength, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Phase 3: Attack Modeling
+------------------------------------------------------------
+Split data: 1488 train, 488 test
+
+Task 1: DUO Term Presence Prediction (Binary)
+  Training classifier for DUO term 0...
+    Train: 495/1488 positive (33.3%)
+    Test: 122/488 positive (25.0%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 1...
+    Train: 491/1488 positive (33.0%)
+    Test: 185/488 positive (37.9%)
+  Training classifier for DUO term 2...
+    Train: 513/1488 positive (34.5%)
+    Test: 229/488 positive (46.9%)
+  Training classifier for DUO term 3...
+    Train: 569/1488 positive (38.2%)
+    Test: 168/488 positive (34.4%)
+  Training classifier for DUO term 4...
+    Train: 511/1488 positive (34.3%)
+    Test: 171/488 positive (35.0%)
+  Training classifier for DUO term 5...
+    Train: 479/1488 positive (32.2%)
+    Test: 153/488 positive (31.4%)
+  Training classifier for DUO term 6...
+    Train: 378/1488 positive (25.4%)
+    Test: 128/488 positive (26.2%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 7...
+    Train: 508/1488 positive (34.1%)
+    Test: 153/488 positive (31.4%)
+  Training classifier for DUO term 8...
+    Train: 285/1488 positive (19.2%)
+    Test: 102/488 positive (20.9%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 9...
+    Train: 476/1488 positive (32.0%)
+    Test: 75/488 positive (15.4%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+
+Task 2: ICD-10 Chapter Prediction (Multi-class)
+  Training Random Forest classifier...
+
+Phase 4: Evaluation
+------------------------------------------------------------
+Classification Results (Privacy Metrics):
+Note: AUC is the primary single-split privacy diagnostic.
+AUC ≤ 0.55 indicates the adversary cannot rank samples better than random.
+
+Task: DUO Term 0 Presence
+  Type: binary
+  Test Set: 122/488 positive (25.0%)
+  ✓ AUC: 0.4681 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 1 Presence
+  Type: binary
+  Test Set: 185/488 positive (37.9%)
+  ✓ AUC: 0.5105 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 2 Presence
+  Type: binary
+  Test Set: 229/488 positive (46.9%)
+  ✓ AUC: 0.4635 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 3 Presence
+  Type: binary
+  Test Set: 168/488 positive (34.4%)
+  ✓ AUC: 0.5073 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 4 Presence
+  Type: binary
+  Test Set: 171/488 positive (35.0%)
+  ✓ AUC: 0.5254 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 5 Presence
+  Type: binary
+  Test Set: 153/488 positive (31.4%)
+  ✓ AUC: 0.5016 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 6 Presence
+  Type: binary
+  Test Set: 128/488 positive (26.2%)
+  ✓ AUC: 0.4663 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 7 Presence
+  Type: binary
+  Test Set: 153/488 positive (31.4%)
+  ✓ AUC: 0.4669 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 8 Presence
+  Type: binary
+  Test Set: 102/488 positive (20.9%)
+  ✓ AUC: 0.4202 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 9 Presence
+  Type: binary
+  Test Set: 75/488 positive (15.4%)
+  ✓ AUC: 0.4038 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: ICD-10 Chapter Prediction (RandomForest)
+  Type: multi-class
+  Macro F1: 4.01%
+
+
+Privacy Threshold Check:
+  AUC Threshold: ≤ 0.55
+
+  DUO Term 0 Presence: ✓ PASS
+    ✓ AUC: 0.4681 (threshold: 0.55)
+  DUO Term 1 Presence: ✓ PASS
+    ✓ AUC: 0.5105 (threshold: 0.55)
+  DUO Term 2 Presence: ✓ PASS
+    ✓ AUC: 0.4635 (threshold: 0.55)
+  DUO Term 3 Presence: ✓ PASS
+    ✓ AUC: 0.5073 (threshold: 0.55)
+  DUO Term 4 Presence: ✓ PASS
+    ✓ AUC: 0.5254 (threshold: 0.55)
+  DUO Term 5 Presence: ✓ PASS
+    ✓ AUC: 0.5016 (threshold: 0.55)
+  DUO Term 6 Presence: ✓ PASS
+    ✓ AUC: 0.4663 (threshold: 0.55)
+  DUO Term 7 Presence: ✓ PASS
+    ✓ AUC: 0.4669 (threshold: 0.55)
+  DUO Term 8 Presence: ✓ PASS
+    ✓ AUC: 0.4202 (threshold: 0.55)
+  DUO Term 9 Presence: ✓ PASS
+    ✓ AUC: 0.4038 (threshold: 0.55)
+  ICD-10 Chapter Prediction (RandomForest): ✓ PASS
+
+Single-split (diagnostic) Overall: ✓ PASS
+
+
+Policy Content Hiding — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+DUO GR                                | 0.482 ± 0.025   | 0.653       | 0%   | 323  | ✓ PASS
+DUO DS                                | 0.525 ± 0.027   | 0.290       | 17%  | 323  | ✓ PASS
+DUO RS                                | 0.515 ± 0.029   | 0.368       | 3%   | 323  | ✓ PASS
+DUO POA                               | 0.504 ± 0.031   | 0.472       | 7%   | 323  | ✓ PASS
+DUO GS                                | 0.507 ± 0.026   | 0.430       | 3%   | 323  | ✓ PASS
+DUO CC                                | 0.528 ± 0.027   | 0.252       | 17%  | 323  | ✓ PASS
+DUO NCU                               | 0.530 ± 0.035   | 0.287       | 10%  | 323  | ✓ PASS
+DUO HMB                               | 0.499 ± 0.035   | 0.512       | 10%  | 323  | ✓ PASS
+DUO NMDS                              | 0.535 ± 0.032   | 0.250       | 20%  | 323  | ✓ PASS
+DUO GSO                               | 0.499 ± 0.043   | 0.515       | 7%   | 323  | ✓ PASS
+ICD ch0                               | 0.533 ± 0.078   | 0.405       | 7%   | 127  | ✓ PASS
+ICD ch1                               | 0.506 ± 0.064   | 0.483       | 3%   | 127  | ✓ PASS
+ICD ch2                               | 0.610 ± 0.090   | 0.207       | 30%  | 127  | ✓ PASS
+ICD ch3                               | 0.476 ± 0.070   | 0.611       | 3%   | 127  | ✓ PASS
+ICD ch4                               | 0.497 ± 0.107   | 0.502       | 7%   | 127  | ✓ PASS
+ICD ch5                               | 0.481 ± 0.091   | 0.533       | 0%   | 127  | ✓ PASS
+ICD ch6                               | 0.510 ± 0.070   | 0.453       | 3%   | 127  | ✓ PASS
+ICD ch7                               | 0.546 ± 0.102   | 0.380       | 17%  | 127  | ✓ PASS
+ICD ch8                               | 0.602 ± 0.095   | 0.218       | 27%  | 127  | ✓ PASS
+ICD ch9                               | 0.532 ± 0.075   | 0.414       | 3%   | 127  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+Phase 5: Reporting
+------------------------------------------------------------
+Saved evaluation report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pch/evaluation_report.json
+Saved readable report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pch/evaluation_report.md
+
+============================================================
+Experiment Complete
+============================================================
+
+$ node experiments/analysis/crosscheck/pi/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pi
+Configuration: {
+  permutationIterations: 500,
+  controlShift: 0.75,
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pi'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/pi_dataset.json
+
+Loaded 30 pairs from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/pi_dataset.json: {
+  controlled_difference: 10,
+  semantic_equivalent: 10,
+  weak_equivalent: 10
+}
+
+Policy Indistinguishability — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.534 ± 0.040   | 0.310       | 10%  | 160  | ✓ PASS
+weak_equivalent                       | 0.498 ± 0.040   | 0.515       | 3%   | 160  | ✓ PASS
+controlled_difference                 | 0.517 ± 0.047   | 0.427       | 13%  | 160  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+PI positive control (should FAIL) — multi-seed verdict (30 seeds, within-pair split)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+semantic_equivalent                   | 0.638 ± 0.042   | 0.018       | 87%  | 160  | ✗ FAIL
+weak_equivalent                       | 0.622 ± 0.054   | 0.043       | 77%  | 160  | ✗ FAIL
+controlled_difference                 | 0.622 ± 0.051   | 0.052       | 83%  | 160  | ✗ FAIL
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✗ FAIL
+
+Overall PI (multi-seed): PASS
+Report -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/pi/pi_report.json
+
+$ node experiments/analysis/crosscheck/spp/run_experiment.js --use-unified-dataset --unified-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded --phase 2 --multiseed-seeds 30 --concurrency 30 --include-seed-records --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/spp --balance-method undersample
+Configuration: {
+  policyCount: 120,
+  executionsPerPolicy: 3,
+  satisfyRatio: 0.5,
+  testRatio: 0.3,
+  permutationIterations: 500,
+  kValues: [ 2, 3, 4, 5 ],
+  seed: 'spp-experiment',
+  balanceMethod: 'undersample',
+  useUnifiedDataset: true,
+  unifiedDatasetDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded',
+  startPhase: 2,
+  multiseedSeeds: 30,
+  concurrency: 30,
+  includeSeedRecords: true,
+  outputDir: '/root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/spp'
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded
+  Policies:   /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/spp_dataset.json
+
+============================================================
+Structure & Parameter Privacy Experiment
+============================================================
+Starting from phase 2
+
+Loaded dataset metadata from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/policy_definitions.json
+Loaded execution results from: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded/spp_dataset.json
+
+Phase 2: Attack Modeling
+------------------------------------------------------------
+
+▶ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 0s
+
+Running supervised classification attack on: structureType
+Balance method: undersample
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Classifying trivial vs and_only (165 vs 389 samples, ratio 2.36:1)
+  Train balanced: 121 vs 121; test left natural (44 vs 108)
+  Logistic Regression: accuracy=0.579, advantage=0.079, auc=0.525
+  Random Forest: accuracy=0.375, advantage=0.125, auc=0.514
+
+Classifying trivial vs or_only (165 vs 373 samples, ratio 2.26:1)
+  Train balanced: 127 vs 127; test left natural (38 vs 116)
+  Logistic Regression: accuracy=0.649, advantage=0.149, auc=0.594
+  Random Forest: accuracy=0.597, advantage=0.097, auc=0.429
+
+Classifying trivial vs and_or_mixed (165 vs 450 samples, ratio 2.73:1)
+  Train balanced: 118 vs 118; test left natural (47 vs 142)
+  Logistic Regression: accuracy=0.275, advantage=0.225, auc=0.329
+  Random Forest: accuracy=0.370, advantage=0.130, auc=0.423
+
+Classifying and_only vs or_only (389 vs 373 samples, ratio 1.04:1)
+  Train balanced: 256 vs 256; test left natural (122 vs 117)
+  Logistic Regression: accuracy=0.510, advantage=0.010, auc=0.486
+  Random Forest: accuracy=0.502, advantage=0.002, auc=0.496
+
+Classifying and_only vs and_or_mixed (389 vs 450 samples, ratio 1.16:1)
+  Train balanced: 276 vs 276; test left natural (113 vs 145)
+  Logistic Regression: accuracy=0.484, advantage=0.016, auc=0.483
+  Random Forest: accuracy=0.465, advantage=0.035, auc=0.495
+
+Classifying or_only vs and_or_mixed (373 vs 450 samples, ratio 1.21:1)
+  Train balanced: 248 vs 248; test left natural (125 vs 145)
+  Logistic Regression: accuracy=0.489, advantage=0.011, auc=0.473
+  Random Forest: accuracy=0.478, advantage=0.022, auc=0.488
+
+Running supervised classification attack on: predicateCombo
+Balance method: undersample
+Found 3 classes: single, few, many
+
+Classifying single vs few (337 vs 825 samples, ratio 2.45:1)
+  Train balanced: 246 vs 246; test left natural (91 vs 239)
+  Logistic Regression: accuracy=0.579, advantage=0.079, auc=0.526
+  Random Forest: accuracy=0.288, advantage=0.212, auc=0.503
+
+Classifying single vs many (337 vs 215 samples, ratio 1.57:1)
+  Train balanced: 138 vs 138; test left natural (107 vs 77)
+  Logistic Regression: accuracy=0.495, advantage=0.005, auc=0.471
+  Random Forest: accuracy=0.402, advantage=0.098, auc=0.506
+
+Classifying few vs many (825 vs 215 samples, ratio 3.84:1)
+  Train balanced: 154 vs 154; test left natural (240 vs 61)
+  Logistic Regression: accuracy=0.571, advantage=0.071, auc=0.510
+  Random Forest: accuracy=0.492, advantage=0.008, auc=0.460
+
+Running supervised classification attack on: paramType
+Balance method: undersample
+Found 4 classes: medium, large, small, none
+
+Classifying medium vs large (417 vs 456 samples, ratio 1.09:1)
+  Train balanced: 294 vs 294; test left natural (112 vs 162)
+  Logistic Regression: accuracy=0.515, advantage=0.015, auc=0.481
+  Random Forest: accuracy=0.588, advantage=0.088, auc=0.500
+
+Classifying medium vs small (417 vs 307 samples, ratio 1.36:1)
+  Train balanced: 231 vs 231; test left natural (119 vs 76)
+  Logistic Regression: accuracy=0.467, advantage=0.033, auc=0.520
+  Random Forest: accuracy=0.462, advantage=0.038, auc=0.513
+
+Classifying medium vs none (417 vs 197 samples, ratio 2.12:1)
+  Train balanced: 124 vs 124; test left natural (111 vs 73)
+  Logistic Regression: accuracy=0.527, advantage=0.027, auc=0.510
+  Random Forest: accuracy=0.408, advantage=0.092, auc=0.497
+
+Classifying large vs small (456 vs 307 samples, ratio 1.49:1)
+  Train balanced: 213 vs 213; test left natural (124 vs 94)
+  Logistic Regression: accuracy=0.454, advantage=0.046, auc=0.458
+  Random Forest: accuracy=0.482, advantage=0.018, auc=0.430
+
+Classifying large vs none (456 vs 197 samples, ratio 2.31:1)
+  Train balanced: 149 vs 149; test left natural (129 vs 48)
+  Logistic Regression: accuracy=0.621, advantage=0.121, auc=0.414
+  Random Forest: accuracy=0.345, advantage=0.155, auc=0.467
+
+Classifying small vs none (307 vs 197 samples, ratio 1.56:1)
+  Train balanced: 140 vs 140; test left natural (86 vs 57)
+  Logistic Regression: accuracy=0.580, advantage=0.080, auc=0.554
+  Random Forest: accuracy=0.469, advantage=0.031, auc=0.540
+
+✓ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 1s | ETA: 0m 5s
+
+▶ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 1s | ETA: 0m 3s
+
+Running statistical tests on: structureType
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Comparing trivial vs and_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.162, commitCalldataLength=1.000, accessGasUsed=0.744, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs or_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.023, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.223, commitCalldataLength=1.000, accessGasUsed=0.363, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs or_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.658, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.737, commitCalldataLength=1.000, accessGasUsed=0.714, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing or_only vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.229, commitCalldataLength=1.000, accessGasUsed=0.419, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: predicateCombo
+Found 3 classes: single, few, many
+
+Comparing single vs few
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.147, commitCalldataLength=1.000, accessGasUsed=0.784, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing single vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.655, commitCalldataLength=1.000, accessGasUsed=0.588, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing few vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.270, commitCalldataLength=1.000, accessGasUsed=0.554, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: paramType
+Found 4 classes: medium, large, small, none
+
+Comparing medium vs large
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.626, commitCalldataLength=1.000, accessGasUsed=0.699, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs small
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.758, commitCalldataLength=1.000, accessGasUsed=0.681, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.376, commitCalldataLength=1.000, accessGasUsed=0.410, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs small
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.631, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.333, commitCalldataLength=1.000, accessGasUsed=0.906, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing small vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.468, commitCalldataLength=1.000, accessGasUsed=0.651, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+✓ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 2s | ETA: 0m 2s
+
+▶ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 2s | ETA: 0m 1s
+
+Running clustering attack on: structureType
+True classes: trivial, and_only, or_only, and_or_mixed
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 8
+
+Clustering with k=3...
+  Silhouette: 0.4738
+  Iterations: 16
+
+Clustering with k=4...
+  ARI: -0.0012
+  Silhouette: 0.3991
+  Iterations: 13
+
+Clustering with k=5...
+  Silhouette: 0.3441
+  Iterations: 20
+
+Running clustering attack on: predicateCombo
+True classes: single, few, many
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 8
+
+Clustering with k=3...
+  ARI: 0.0011
+  Silhouette: 0.4738
+  Iterations: 17
+
+Clustering with k=4...
+  Silhouette: 0.3992
+  Iterations: 21
+
+Clustering with k=5...
+  Silhouette: 0.3451
+  Iterations: 35
+
+Running clustering attack on: paramType
+True classes: medium, large, small, none
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 7
+
+Clustering with k=3...
+  Silhouette: 0.4736
+  Iterations: 14
+
+Clustering with k=4...
+  ARI: 0.0000
+  Silhouette: 0.3991
+  Iterations: 33
+
+Clustering with k=5...
+  Silhouette: 0.3713
+  Iterations: 16
+
+✓ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 2s | ETA: 0m 0s
+
+Phase 3: Evaluation & Reporting
+------------------------------------------------------------
+
+▶ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 2s
+
+Structure & Parameter Privacy — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+structureType: trivial/and_only       | 0.502 ± 0.053   | 0.483       | 3%   | 127  | ✓ PASS
+structureType: trivial/or_only        | 0.541 ± 0.049   | 0.291       | 10%  | 129  | ✓ PASS
+structureType: trivial/and_or_mixed   | 0.542 ± 0.046   | 0.288       | 23%  | 144  | ✓ PASS
+structureType: and_only/or_only       | 0.500 ± 0.032   | 0.493       | 0%   | 179  | ✓ PASS
+structureType: and_only/and_or_mixed  | 0.501 ± 0.038   | 0.489       | 7%   | 193  | ✓ PASS
+structureType: or_only/and_or_mixed   | 0.499 ± 0.034   | 0.483       | 0%   | 195  | ✓ PASS
+predicateCombo: single/few            | 0.529 ± 0.034   | 0.287       | 17%  | 270  | ✓ PASS
+predicateCombo: single/many           | 0.479 ± 0.037   | 0.621       | 0%   | 129  | ✓ PASS
+predicateCombo: few/many              | 0.511 ± 0.039   | 0.418       | 7%   | 246  | ✓ PASS
+paramType: medium/large               | 0.510 ± 0.032   | 0.417       | 0%   | 209  | ✓ PASS
+paramType: medium/small               | 0.513 ± 0.037   | 0.408       | 3%   | 175  | ✓ PASS
+paramType: medium/none                | 0.532 ± 0.054   | 0.341       | 23%  | 149  | ✓ PASS
+paramType: large/small                | 0.495 ± 0.046   | 0.519       | 3%   | 173  | ✓ PASS
+paramType: large/none                 | 0.495 ± 0.056   | 0.506       | 3%   | 147  | ✓ PASS
+paramType: small/none                 | 0.472 ± 0.049   | 0.644       | 0%   | 113  | ✓ PASS
+nestingDepth: flat/shallow            | 0.537 ± 0.041   | 0.316       | 7%   | 102  | ✓ PASS
+nestingDepth: flat/medium             | 0.539 ± 0.055   | 0.301       | 17%  | 139  | ✓ PASS
+nestingDepth: flat/deep               | 0.526 ± 0.049   | 0.372       | 13%  | 159  | ✓ PASS
+nestingDepth: shallow/medium          | 0.518 ± 0.046   | 0.393       | 17%  | 163  | ✓ PASS
+nestingDepth: shallow/deep            | 0.492 ± 0.041   | 0.558       | 3%   | 183  | ✓ PASS
+nestingDepth: medium/deep             | 0.496 ± 0.038   | 0.514       | 0%   | 221  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+Saved JSON report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/spp/report.json
+Saved Markdown report to: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/supervised/b2_padded/spp/report.md
+
+✓ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 6s
+
+
+✓ All steps completed in 0m 6s
+
+Overall status (multi-seed): PASS
+============================================================
+
+$ /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.run_all_clustering --source-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/b2_padded --work-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work --results-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results
+
+### Access outcome: granted
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pch
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp
+Input validation passed:
+  PCH DUO: 989 samples / 10 classes
+  PCH ICD-10: 339 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0007 | NMI: 0.0201
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0028 | NMI: 0.0572
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          7                1.6        0.7161        0.7387        0.7835       -0.0227   1.0000        False
+        or_chain         85         10                8.5        0.2571        0.2346        0.2810        0.0225   0.1343        False
+       and_chain        107         10               10.7        0.1916        0.1968        0.2305       -0.0051   0.5771        False
+     mixed_chain        136         10               13.6        0.1440        0.1548        0.1781       -0.0108   0.7811        False
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.3272
+纯小样本 baseline 平均: 0.3312
+去偏后平均 NMI       : -0.0040
+显著泄露的层 (p<0.05): 0/4
+→ 所有层的 observed NMI 都落在「零泄露」零分布内, ICD10 的高 NMI 可完全由小样本偏差解释, 无真实内容泄露证据。
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --pairs-file /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0139        0.0518       -0.0378 1.000000        False
+pi-controlled_difference-1 designed controlled_difference         16        0.0000        0.0552       -0.0552 1.000000        False
+pi-controlled_difference-2 designed controlled_difference         16        0.0000        0.0495       -0.0495 1.000000        False
+pi-controlled_difference-3 designed controlled_difference         16        0.0115        0.0472       -0.0357 1.000000        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0115        0.0524       -0.0408 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.0000        0.0653       -0.0653 1.000000        False
+pi-controlled_difference-6 designed controlled_difference         16        0.0481        0.0486       -0.0005 0.601990        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0518        0.0537       -0.0019 0.393035        False
+pi-controlled_difference-8 designed controlled_difference         16        0.0115        0.0504       -0.0389 1.000000        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0115        0.0496       -0.0381 0.835821        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.0384        0.0479       -0.0095 0.592040        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.0849        0.0640        0.0208 0.199005        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0000        0.0481       -0.0481 1.000000        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.0499        0.0556       -0.0056 0.661692        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0182        0.0487       -0.0305 0.393035        False
+
+=== 按 mode 汇总 ===
+           n   obs_nmi  base_nmi  debiased  n_sig
+mode                                             
+designed  30  0.031063  0.053117 -0.022047      0
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.01598   0.05237  -0.03637      0
+semantic_equivalent    10  0.05666   0.05356   0.00311      0
+weak_equivalent        10  0.02055   0.05342  -0.03288      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0311
+小样本 baseline 平均 NMI: 0.0531
+去偏后平均 NMI: -0.0220
+显著可区分的对 (p<0.05): 0/30
+→ 平衡 + 去偏后无任何对显著: 聚类口径确认 PI 不可区分 (且不再受 1:30 退化污染)。
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/granted/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: -0.0013 | NMI: 0.0026
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: -0.0006 | NMI: 0.0044
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: -0.0020 | NMI: 0.0031
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: -0.0012 | NMI: 0.0042
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10      -0.04446       0.01598       0.05237      -0.03637            0
+semantic_equivalent       10      -0.01161       0.05666       0.05356       0.00311            0
+weak_equivalent           10      -0.03789       0.02055       0.05342      -0.03288            0
+
+Overall: 30 pairs, mean ARI=-0.0313, mean observed NMI=0.0311, mean debiased NMI=-0.0220, significant=0/30
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 689
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.001254
+  K-Means NMI: 0.002600
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: nestingDepth
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.000639
+  K-Means NMI: 0.004423
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: predicateCount
+  样本数: 689
+  类别数: 3
+  K-Means ARI: -0.002015
+  K-Means NMI: 0.003127
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.3%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.001196
+  K-Means NMI: 0.004202
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  -0.001276       0.003588        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓✓ 所有4个目标都达到了优秀级别（ARI和NMI都接近0）
+   → 攻击者无法从gas成本中推断任何结构或参数特征
+
+表现最好的目标: logicStructure
+  ARI: -0.001254, NMI: 0.002600
+
+表现最差的目标: nestingDepth
+  ARI: -0.000639, NMI: 0.004423
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: -0.001276, 平均NMI: 0.003588
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/granted/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+### Access outcome: denied
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pch
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi
+Reset /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp
+Input validation passed:
+  PCH DUO: 988 samples / 10 classes
+  PCH ICD-10: 338 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: -0.0011 | NMI: 0.0174
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0029 | NMI: 0.0614
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          6                1.8        0.7724        0.6660        0.7687        0.1064   0.0249         True
+        or_chain         85         10                8.5        0.2635        0.2384        0.2739        0.0251   0.1294        False
+       and_chain        108         10               10.8        0.2154        0.1980        0.2347        0.0174   0.1791        False
+     mixed_chain        134         10               13.4        0.1464        0.1553        0.1854       -0.0088   0.7065        False
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.3494
+纯小样本 baseline 平均: 0.3144
+去偏后平均 NMI       : 0.0350
+显著泄露的层 (p<0.05): 1/4
+→ 以下层去偏后仍显著, 需进一步关注: ['trivial_ontology']
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --pairs-file /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0923        0.0561        0.0362 0.398010        False
+pi-controlled_difference-1 designed controlled_difference         16        0.1064        0.0510        0.0554 0.343284        False
+pi-controlled_difference-2 designed controlled_difference         16        0.1189        0.0567        0.0622 0.208955        False
+pi-controlled_difference-3 designed controlled_difference         16        0.0115        0.0497       -0.0382 1.000000        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0028        0.0573       -0.0545 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.1970        0.0587        0.1383 0.049751         True
+pi-controlled_difference-6 designed controlled_difference         16        0.0115        0.0577       -0.0461 1.000000        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0747        0.0531        0.0216 0.258706        False
+pi-controlled_difference-8 designed controlled_difference         16        0.1034        0.0502        0.0532 0.343284        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0000        0.0528       -0.0528 1.000000        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.1064        0.0518        0.0546 0.149254        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.0098        0.0574       -0.0476 1.000000        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0000        0.0511       -0.0511 1.000000        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.0000        0.0446       -0.0446 1.000000        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0688        0.0509        0.0179 0.562189        False
+
+=== 按 mode 汇总 ===
+           n  obs_nmi  base_nmi  debiased  n_sig
+mode                                            
+designed  30  0.04792  0.051523 -0.003597      1
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.07185   0.05433   0.01753      1
+semantic_equivalent    10  0.02285   0.05017  -0.02730      0
+weak_equivalent        10  0.04906   0.05007  -0.00102      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0479
+小样本 baseline 平均 NMI: 0.0515
+去偏后平均 NMI: -0.0036
+显著可区分的对 (p<0.05): 1/30
+→ 以下对去偏后仍显著可区分:
+                   pair_id             pair_type  debiased_nmi  p_value
+pi-controlled_difference-5 controlled_difference        0.1383 0.049751
+
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source --output-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/work/denied/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: -0.0002 | NMI: 0.0047
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: 0.0031 | NMI: 0.0071
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: 0.0003 | NMI: 0.0011
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: -0.0017 | NMI: 0.0023
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10       0.02880       0.07185       0.05433       0.01753            1
+semantic_equivalent       10      -0.03867       0.02285       0.05017      -0.02730            0
+weak_equivalent           10      -0.00308       0.04906       0.05007      -0.00102            0
+
+Overall: 30 pairs, mean ARI=-0.0043, mean observed NMI=0.0479, mean debiased NMI=-0.0036, significant=1/30
+Saved -> /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 688
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 688
+  类别数: 4
+  K-Means ARI: -0.000205
+  K-Means NMI: 0.004738
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: nestingDepth
+  样本数: 688
+  类别数: 4
+  K-Means ARI: 0.003134
+  K-Means NMI: 0.007126
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.2%
+  相对随机的提升: 1.01x
+
+目标: predicateCount
+  样本数: 688
+  类别数: 3
+  K-Means ARI: 0.000320
+  K-Means NMI: 0.001114
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.4%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 688
+  类别数: 4
+  K-Means ARI: -0.001706
+  K-Means NMI: 0.002320
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  0.000386        0.003825        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓✓ 所有4个目标都达到了优秀级别（ARI和NMI都接近0）
+   → 攻击者无法从gas成本中推断任何结构或参数特征
+
+表现最好的目标: predicateCount
+  ARI: 0.000320, NMI: 0.001114
+
+表现最差的目标: nestingDepth
+  ARI: 0.003134, NMI: 0.007126
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: 0.000386, 平均NMI: 0.003825
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/clustering/b2_padded/results/denied/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+All authoritative clustering analyses completed.
+
+$ /root/policy_privacy/.venv/bin/python /root/policy_privacy/experiments/ablation/gas_padding/compare.py --root-dir /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy --bootstrap-iterations 500
+Saved /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json
+Saved /root/policy_privacy/experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.md

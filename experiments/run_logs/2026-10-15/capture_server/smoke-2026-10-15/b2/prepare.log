@@ -1,0 +1,141 @@
+======================================================================
+Unified Dataset Pipeline (TPS Workflow)
+======================================================================
+Config: experiments/capture/configs/unified_dataset_config_decoupled_smoke.json
+Artifacts: /root/policy-privacy/smoke-2026-10-15/b2
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    UNIFIED DATASET VALIDATOR                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 Configuration:
+  Policy count:              19
+  Executions per policy:     5
+  Seed:                      decoupled-smoke-2026
+
+================================================================================
+Step 1: Generating Policy Definitions (no blockchain execution)
+================================================================================
+Allowed codes: null
+Policy blueprint targets per layer: [
+  { layer: 'trivial_ontology', target: 4, min: 0, max: 4 },
+  { layer: 'trivial_profile', target: 2, min: 0, max: 2 },
+  { layer: 'and_chain', target: 3, min: 0, max: 3 },
+  { layer: 'or_chain', target: 4, min: 0, max: 4 },
+  { layer: 'mixed_chain', target: 3, min: 0, max: 3 },
+  { layer: 'profile_only', target: 3, min: 0, max: 3 }
+]
+
+✓ Generated 37 policy instances in 2.9s
+
+================================================================================
+PCH (Policy Content Hiding) Validation
+================================================================================
+
+📊 DUO Term Distribution:
+  DUO_DS:    5 (26.3%)
+  DUO_GS:    2 (10.5%)
+  DUO_CC:    3 (15.8%)
+  DUO_HMB:    9 (47.4%)
+  DUO_NCU:    5 (26.3%)
+  DUO_GRU:    8 (42.1%)
+  DUO_NMDS:    7 (36.8%)
+  DUO_RS:    5 (26.3%)
+  DUO_POA:    3 (15.8%)
+  DUO_GSO:    3 (15.8%)
+
+📈 Balance Metrics:
+  Min:         2
+  Max:         9
+  Mean:        5.0
+  Min/Max:     0.222
+
+✅ PCH Requirements: PASSED
+
+================================================================================
+SPP (Structure & Parameter Privacy) Validation
+================================================================================
+
+📊 5-Dimension Distributions:
+
+  Logic Structure:
+    trivial             :    6 (31.6%)
+    and_only            :    5 (26.3%)
+    or_only             :    4 (21.1%)
+    and_or_mixed        :    4 (21.1%)
+    negation_heavy      :    0 (0.0%)
+    Balance: min/max=0.000, CV=0.537
+    (validation skipped for this dimension)
+
+  Nesting Depth:
+    flat                :    6 (31.6%)
+    shallow             :    4 (21.1%)
+    medium              :    4 (21.1%)
+    deep                :    5 (26.3%)
+    Balance: min/max=0.667, CV=0.175
+    (validation skipped for this dimension)
+
+  Predicate Count:
+    none                :    0 (0.0%)
+    single              :    9 (47.4%)
+    few                 :   10 (52.6%)
+    many                :    0 (0.0%)
+    Balance: min/max=0.000, CV=1.003
+    (validation skipped for this dimension)
+
+  Set Size:
+    none                :    5 (26.3%)
+    small               :    2 (10.5%)
+    medium              :    7 (36.8%)
+    large               :    5 (26.3%)
+    Balance: min/max=0.286, CV=0.376
+    (validation skipped for this dimension)
+
+  Range Width:
+    none                :   19 (100.0%)
+    narrow              :    0 (0.0%)
+    medium              :    0 (0.0%)
+    wide                :    0 (0.0%)
+    Balance: min/max=0.000, CV=1.732
+    (validation skipped for this dimension)
+
+✅ SPP Requirements: PASSED
+
+================================================================================
+PI (Policy Indistinguishability) Layer Validation
+================================================================================
+
+📊 Single-execution coverage: 13 policies, granted share 0.538, largest per-DUO-term deviation 0.500
+
+📊 PI pairs by type:
+  semantic_equivalent   : 1
+  controlled_difference : 1
+  weak_equivalent       : 1
+  controlled_difference by number of differing SPP axes: {"4":1}
+  executions per outcome per paired policy: 2
+
+✅ PI Layer: PASSED
+
+════════════════════════════════════════════════════════════════════════════════
+VALIDATION SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+
+📊 Results:
+  PCH: ✅ PASSED
+  SPP: ✅ PASSED
+  PI:  ✅ PASSED
+
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+✅ ALL VALIDATIONS PASSED
+✅ Dataset is ready for blockchain execution!
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+
+💾 Results saved to: /root/policy-privacy/smoke-2026-10-15/b2/validation_results.json
+Policy definitions saved to: /root/policy-privacy/smoke-2026-10-15/b2/policy_definitions.json
+Protection profile: b2_padded
+Deploying PolicyPrivacy + verifier contracts...
+Verifier deployed at: 0xC6f2B26007FFba19D575A9F63Dc69ef014471FfF
+Poseidon3 deployed at: 0xf5c1e126027726E23B4421A3A8b1bd735659966b
+PolicyPrivacy deployed at: 0xd41DC76191512ADA9fBaF733D66174ff53ccAbd0
+
+Prepared 37 executions; contracts at 0xd41DC76191512ADA9fBaF733D66174ff53ccAbd0

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-14T19:31:14.871Z",
+  "sourceB2Dir": "/root/policy-privacy/smoke-2026-10-15/b2",
+  "sourceDefinitionCount": 37,
+  "replayDefinitionSource": "existing B2 executed_dataset.json (actual randomizer/commitment provenance)",
+  "selectedExecutionCount": 37,
+  "selectedPolicyCount": 19,
+  "highExecutionPoliciesRetained": 6,
+  "selectionRules": {
+    "all": true
+  },
+  "selectedSourceIndicesSha256": "2dc009c14ef334c834b0f1d3f5c286d209e72fe743d797b1af008acaad7c2b7c",
+  "policyDefinitionsSha256": "d9fd565aa059550062ef119c98589adc74762b83872988190032bbce1ad09c8b",
+  "b2ExecutionsSha256": "2a8ee47ec46195c3f67c3ae6da5c9d88c20c85d4911d5bb19a14981d31904b90",
+  "coverage": null,
+  "profiles": {
+    "b1": "b1_unpadded",
+    "b2": "b2_padded"
+  },
+  "amoyPreflightEstimate": {
+    "transactionCount": 113,
+    "gasPriceGwei": 30,
+    "gasUnitsWith25PercentBuffer": 56500000,
+    "estimatedNativeToken": 1.695
+  },
+  "limitation": "B2 is reused from the existing Polygon Amoy run; B1 and B2 were not executed contemporaneously. blockDifference remains excluded from modeling."
+}

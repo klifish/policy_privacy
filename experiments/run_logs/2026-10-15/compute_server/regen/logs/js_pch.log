@@ -1,0 +1,223 @@
+Configuration: {
+  useUnifiedDataset: true,
+  startPhase: 2,
+  network: 'polygonAmoy',
+  concurrency: 30
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/data/polygonAmoy
+  Policies:   /root/policy_privacy/experiments/data/polygonAmoy/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/data/polygonAmoy/pch_dataset.json
+
+============================================================
+Policy Content Hiding Evaluation Experiment
+============================================================
+
+Using DUO terms: GR, DS, RS, POA, GS, CC, NCU, HMB, NMDS, GSO
+
+Phase 2: Feature Extraction
+------------------------------------------------------------
+Loading execution results from: /root/policy_privacy/experiments/data/polygonAmoy/pch_dataset.json
+Loaded 1977 execution results
+
+Cold start detected and excluded:
+  Sample 0 commit gas: 275306
+  Sample 1 commit gas: 332706
+  Difference: 57400 gas (likely SSTORE cold start)
+
+Extracted 1976 feature vectors
+Feature statistics:
+  commitGasUsed: mean=304362.32, std=17729.42
+  commitCalldataLength: mean=196.00, std=0.00
+  accessGasUsed: mean=1051814.04, std=60628.53
+  accessCalldataLength: mean=612.00, std=0.00
+  proofSize: mean=938.00, std=0.00
+  commitLogsCount: mean=1.00, std=0.00
+  commitLogsSize: mean=180.00, std=0.00
+  accessLogsCount: mean=2.00, std=0.00
+  accessLogsSize: mean=296.00, std=0.00
+  blockDifference: mean=14.57, std=2.81
+
+Features saved to: /root/policy_privacy/experiments/results/crosscheck/pch/polygonAmoy/features.json
+
+Normalizing features: commitGasUsed, commitCalldataLength, accessGasUsed, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Dropping zero-variance features: commitCalldataLength, accessCalldataLength, proofSize, commitLogsCount, commitLogsSize, accessLogsCount, accessLogsSize
+Phase 3: Attack Modeling
+------------------------------------------------------------
+Split data: 1398 train, 578 test
+
+Task 1: DUO Term Presence Prediction (Binary)
+  Training classifier for DUO term 0...
+    Train: 439/1398 positive (31.4%)
+    Test: 178/578 positive (30.8%)
+  Training classifier for DUO term 1...
+    Train: 457/1398 positive (32.7%)
+    Test: 219/578 positive (37.9%)
+  Training classifier for DUO term 2...
+    Train: 522/1398 positive (37.3%)
+    Test: 220/578 positive (38.1%)
+  Training classifier for DUO term 3...
+    Train: 531/1398 positive (38.0%)
+    Test: 206/578 positive (35.6%)
+  Training classifier for DUO term 4...
+    Train: 529/1398 positive (37.8%)
+    Test: 153/578 positive (26.5%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 5...
+    Train: 413/1398 positive (29.5%)
+    Test: 219/578 positive (37.9%)
+  Training classifier for DUO term 6...
+    Train: 335/1398 positive (24.0%)
+    Test: 171/578 positive (29.6%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 7...
+    Train: 483/1398 positive (34.5%)
+    Test: 178/578 positive (30.8%)
+  Training classifier for DUO term 8...
+    Train: 273/1398 positive (19.5%)
+    Test: 114/578 positive (19.7%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+  Training classifier for DUO term 9...
+    Train: 426/1398 positive (30.5%)
+    Test: 125/578 positive (21.6%)
+    ⚠️  Class imbalance detected - Accuracy metric may be misleading!
+
+Task 2: ICD-10 Chapter Prediction (Multi-class)
+  Training Random Forest classifier...
+
+Phase 4: Evaluation
+------------------------------------------------------------
+Classification Results (Privacy Metrics):
+Note: AUC is the primary single-split privacy diagnostic.
+AUC ≤ 0.55 indicates the adversary cannot rank samples better than random.
+
+Task: DUO Term 0 Presence
+  Type: binary
+  Test Set: 178/578 positive (30.8%)
+  ✓ AUC: 0.4832 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 1 Presence
+  Type: binary
+  Test Set: 219/578 positive (37.9%)
+  ✓ AUC: 0.4793 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 2 Presence
+  Type: binary
+  Test Set: 220/578 positive (38.1%)
+  ✓ AUC: 0.5065 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 3 Presence
+  Type: binary
+  Test Set: 206/578 positive (35.6%)
+  ✓ AUC: 0.4887 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 4 Presence
+  Type: binary
+  Test Set: 153/578 positive (26.5%)
+  ✓ AUC: 0.5257 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 5 Presence
+  Type: binary
+  Test Set: 219/578 positive (37.9%)
+  ✓ AUC: 0.5252 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 6 Presence
+  Type: binary
+  Test Set: 171/578 positive (29.6%)
+  ✓ AUC: 0.5103 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 7 Presence
+  Type: binary
+  Test Set: 178/578 positive (30.8%)
+  ✓ AUC: 0.5104 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 8 Presence
+  Type: binary
+  Test Set: 114/578 positive (19.7%)
+  ✓ AUC: 0.4158 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: DUO Term 9 Presence
+  Type: binary
+  Test Set: 125/578 positive (21.6%)
+  ✓ AUC: 0.4583 (threshold: ≤0.55)
+  Precision: 0.00%, Recall: 0.00%, F1: 0.00%
+
+Task: ICD-10 Chapter Prediction (RandomForest)
+  Type: multi-class
+  Macro F1: 4.81%
+
+
+Privacy Threshold Check:
+  AUC Threshold: ≤ 0.55
+
+  DUO Term 0 Presence: ✓ PASS
+    ✓ AUC: 0.4832 (threshold: 0.55)
+  DUO Term 1 Presence: ✓ PASS
+    ✓ AUC: 0.4793 (threshold: 0.55)
+  DUO Term 2 Presence: ✓ PASS
+    ✓ AUC: 0.5065 (threshold: 0.55)
+  DUO Term 3 Presence: ✓ PASS
+    ✓ AUC: 0.4887 (threshold: 0.55)
+  DUO Term 4 Presence: ✓ PASS
+    ✓ AUC: 0.5257 (threshold: 0.55)
+  DUO Term 5 Presence: ✓ PASS
+    ✓ AUC: 0.5252 (threshold: 0.55)
+  DUO Term 6 Presence: ✓ PASS
+    ✓ AUC: 0.5103 (threshold: 0.55)
+  DUO Term 7 Presence: ✓ PASS
+    ✓ AUC: 0.5104 (threshold: 0.55)
+  DUO Term 8 Presence: ✓ PASS
+    ✓ AUC: 0.4158 (threshold: 0.55)
+  DUO Term 9 Presence: ✓ PASS
+    ✓ AUC: 0.4583 (threshold: 0.55)
+  ICD-10 Chapter Prediction (RandomForest): ✓ PASS
+
+Single-split (diagnostic) Overall: ✓ PASS
+
+
+Policy Content Hiding — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+DUO GR                                | 0.482 ± 0.025   | 0.653       | 0%   | 323  | ✓ PASS
+DUO DS                                | 0.525 ± 0.027   | 0.290       | 17%  | 323  | ✓ PASS
+DUO RS                                | 0.515 ± 0.029   | 0.368       | 3%   | 323  | ✓ PASS
+DUO POA                               | 0.504 ± 0.031   | 0.472       | 7%   | 323  | ✓ PASS
+DUO GS                                | 0.507 ± 0.026   | 0.430       | 3%   | 323  | ✓ PASS
+DUO CC                                | 0.528 ± 0.027   | 0.252       | 17%  | 323  | ✓ PASS
+DUO NCU                               | 0.530 ± 0.035   | 0.287       | 10%  | 323  | ✓ PASS
+DUO HMB                               | 0.499 ± 0.035   | 0.512       | 10%  | 323  | ✓ PASS
+DUO NMDS                              | 0.535 ± 0.032   | 0.250       | 20%  | 323  | ✓ PASS
+DUO GSO                               | 0.499 ± 0.043   | 0.515       | 7%   | 323  | ✓ PASS
+ICD ch0                               | 0.533 ± 0.078   | 0.405       | 7%   | 127  | ✓ PASS
+ICD ch1                               | 0.506 ± 0.064   | 0.483       | 3%   | 127  | ✓ PASS
+ICD ch2                               | 0.610 ± 0.090   | 0.207       | 30%  | 127  | ✓ PASS
+ICD ch3                               | 0.476 ± 0.070   | 0.611       | 3%   | 127  | ✓ PASS
+ICD ch4                               | 0.497 ± 0.107   | 0.502       | 7%   | 127  | ✓ PASS
+ICD ch5                               | 0.481 ± 0.091   | 0.533       | 0%   | 127  | ✓ PASS
+ICD ch6                               | 0.510 ± 0.070   | 0.453       | 3%   | 127  | ✓ PASS
+ICD ch7                               | 0.546 ± 0.102   | 0.380       | 17%  | 127  | ✓ PASS
+ICD ch8                               | 0.602 ± 0.095   | 0.218       | 27%  | 127  | ✓ PASS
+ICD ch9                               | 0.532 ± 0.075   | 0.414       | 3%   | 127  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+
+Phase 5: Reporting
+------------------------------------------------------------
+Saved evaluation report to: /root/policy_privacy/experiments/results/crosscheck/pch/polygonAmoy/evaluation_report.json
+Saved readable report to: /root/policy_privacy/experiments/results/crosscheck/pch/polygonAmoy/evaluation_report.md
+
+============================================================
+Experiment Complete
+============================================================

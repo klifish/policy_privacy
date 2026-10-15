@@ -1,0 +1,396 @@
+{
+  "config": {
+    "policyCount": 19,
+    "executionsPerPolicy": 5,
+    "satisfyRatio": 0.5,
+    "seed": "decoupled-smoke-2026",
+    "validation": {
+      "pch": {
+        "minPoliciesPerDUO": 1,
+        "minMaxRatio": 0.1
+      },
+      "spp": {
+        "minPoliciesPerCategory": 1,
+        "minMaxRatio": 0.1,
+        "maxCV": 1.5,
+        "skipDimensions": [
+          "logicStructures",
+          "nestingDepths",
+          "predicateCounts",
+          "setSizes",
+          "rangeWidths"
+        ]
+      },
+      "pi": {
+        "minPairsPerType": 0,
+        "minSemanticDiversity": 0.1
+      }
+    },
+    "protocolVersion": "duo-v3",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Smoke: structure-decoupled strata (localhost)",
+    "description": "Tiny end-to-end smoke of the decoupled design: every namespace, profile-only and profile/ontology mixes, k=1..5, both access outcomes.",
+    "policyCountTarget": 19,
+    "coverageExecutions": 1,
+    "piLayer": {
+      "pairsPerType": 1,
+      "executionsPerOutcome": 2,
+      "types": [
+        "semantic_equivalent",
+        "weak_equivalent",
+        "controlled_difference"
+      ]
+    },
+    "semanticLayers": [
+      {
+        "name": "trivial_ontology",
+        "comment": "smoke: 4 combos, one policy each; the second DS policy shares the first one's logical form, so a semantic_equivalent PI pair exists",
+        "combos": [
+          [
+            "DS"
+          ],
+          [
+            "GS"
+          ],
+          [
+            "CC"
+          ],
+          [
+            "DS"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 4,
+        "logicOptions": {
+          "operators": [
+            "AND"
+          ],
+          "notProbability": 0,
+          "groupNotProbability": 0
+        },
+        "whitelistBuckets": [
+          2,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          32
+        ]
+      },
+      {
+        "name": "trivial_profile",
+        "comment": "smoke: 2 combos, one policy each",
+        "combos": [
+          [
+            "HMB"
+          ],
+          [
+            "NCU"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 2,
+        "logicOptions": {
+          "operators": [
+            "AND"
+          ],
+          "notProbability": 0,
+          "groupNotProbability": 0
+        }
+      },
+      {
+        "name": "and_chain",
+        "comment": "smoke: 3 combos, one policy each",
+        "combos": [
+          [
+            "GRU",
+            "DS"
+          ],
+          [
+            "HMB",
+            "GS",
+            "CC"
+          ],
+          [
+            "GRU",
+            "HMB",
+            "NMDS",
+            "DS",
+            "RS"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 3,
+        "logicOptions": {
+          "operators": [
+            "AND"
+          ],
+          "notProbability": 0,
+          "groupNotProbability": 0
+        },
+        "whitelistBuckets": [
+          2,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          32
+        ]
+      },
+      {
+        "name": "or_chain",
+        "comment": "smoke: 4 combos, one policy each; GRU+DS repeats an and_chain combo under OR, so a weak_equivalent PI pair exists",
+        "combos": [
+          [
+            "NMDS",
+            "CC"
+          ],
+          [
+            "NCU",
+            "RS",
+            "POA"
+          ],
+          [
+            "GRU",
+            "HMB",
+            "NMDS",
+            "NCU",
+            "RS"
+          ],
+          [
+            "GRU",
+            "DS"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 4,
+        "logicOptions": {
+          "operators": [
+            "OR"
+          ],
+          "notProbability": 0,
+          "groupNotProbability": 0
+        },
+        "whitelistBuckets": [
+          2,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          32
+        ]
+      },
+      {
+        "name": "mixed_chain",
+        "comment": "smoke: 3 combos, one policy each",
+        "combos": [
+          [
+            "GRU",
+            "HMB",
+            "RS"
+          ],
+          [
+            "NMDS",
+            "GSO",
+            "RS",
+            "POA"
+          ],
+          [
+            "GRU",
+            "HMB",
+            "NMDS",
+            "GSO",
+            "POA"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 3,
+        "logicOptions": {
+          "operators": [
+            "AND",
+            "OR"
+          ],
+          "ensureMixedOperators": true,
+          "notProbability": 0,
+          "groupNotProbability": 0
+        },
+        "whitelistBuckets": [
+          2,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          32
+        ]
+      },
+      {
+        "name": "profile_only",
+        "comment": "smoke: 3 combos, one policy each",
+        "combos": [
+          [
+            "GRU",
+            "HMB"
+          ],
+          [
+            "NMDS",
+            "NCU",
+            "HMB"
+          ],
+          [
+            "GRU",
+            "HMB",
+            "NMDS",
+            "GSO",
+            "NCU"
+          ]
+        ],
+        "minPolicies": 0,
+        "maxPolicies": 3,
+        "logicOptions": {
+          "operators": [
+            "AND",
+            "OR"
+          ],
+          "notProbability": 0,
+          "groupNotProbability": 0
+        }
+      }
+    ],
+    "whitelistBuckets": [
+      2,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      32
+    ],
+    "merkleDepthOptions": [
+      8
+    ],
+    "logicOptions": {
+      "notProbability": 0,
+      "groupNotProbability": 0,
+      "operators": [
+        "AND",
+        "OR"
+      ]
+    },
+    "duoConflicts": [
+      {
+        "includes": [
+          "POA"
+        ],
+        "excludes": [
+          "NPOA"
+        ]
+      },
+      {
+        "includes": [
+          "NCU"
+        ],
+        "excludes": [
+          "NPU",
+          "NPUNCU"
+        ]
+      },
+      {
+        "includes": [
+          "NPU"
+        ],
+        "excludes": [
+          "NPUNCU"
+        ]
+      }
+    ],
+    "notes": [
+      "Smoke configuration for localhost; not an experiment design. Run with UNIFIED_ARTIFACT_DIR pointing outside experiments/data."
+    ]
+  },
+  "results": {
+    "pch": {
+      "passed": true,
+      "issues": []
+    },
+    "spp": {
+      "passed": true,
+      "issues": [],
+      "metrics": {
+        "logicStructures": {
+          "min": 0,
+          "max": 6,
+          "mean": "3.8",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "0.537"
+        },
+        "nestingDepths": {
+          "min": 4,
+          "max": 6,
+          "mean": "4.8",
+          "minMaxRatio": "0.667",
+          "coefficientOfVariation": "0.175"
+        },
+        "predicateCounts": {
+          "min": 0,
+          "max": 10,
+          "mean": "4.8",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.003"
+        },
+        "setSizes": {
+          "min": 2,
+          "max": 7,
+          "mean": "4.8",
+          "minMaxRatio": "0.286",
+          "coefficientOfVariation": "0.376"
+        },
+        "rangeWidths": {
+          "min": 0,
+          "max": 19,
+          "mean": "4.8",
+          "minMaxRatio": "0.000",
+          "coefficientOfVariation": "1.732"
+        }
+      }
+    },
+    "pi": {
+      "passed": true,
+      "issues": [],
+      "pairTypes": {
+        "semantic_equivalent": 1,
+        "controlled_difference": 1,
+        "weak_equivalent": 1
+      },
+      "controlledShapeDistances": {
+        "4": 1
+      },
+      "outcomeBalance": {
+        "policies": 13,
+        "grantedShare": 0.5384615384615384,
+        "grantedShareByDuoTerm": {
+          "GS": 0,
+          "CC": 1,
+          "HMB": 0.5,
+          "GRU": 0.5,
+          "NMDS": 0.2857142857142857,
+          "DS": 1,
+          "RS": 0.6,
+          "NCU": 0.25,
+          "POA": 0.3333333333333333,
+          "GSO": 0
+        }
+      }
+    }
+  },
+  "timestamp": "2026-10-14T19:25:29.261Z",
+  "allPassed": true
+}

@@ -1,0 +1,310 @@
+Configuration: {
+  policyCount: 120,
+  executionsPerPolicy: 3,
+  satisfyRatio: 0.5,
+  testRatio: 0.3,
+  permutationIterations: 500,
+  kValues: [ 2, 3, 4, 5 ],
+  seed: 'spp-experiment',
+  balanceMethod: 'undersample',
+  useUnifiedDataset: true,
+  startPhase: 2,
+  network: 'polygonAmoy',
+  concurrency: 30
+}
+Using unified dataset artifacts:
+  Base dir:   /root/policy_privacy/experiments/data/polygonAmoy
+  Policies:   /root/policy_privacy/experiments/data/polygonAmoy/policy_definitions.json
+  Executions: /root/policy_privacy/experiments/data/polygonAmoy/spp_dataset.json
+
+============================================================
+Structure & Parameter Privacy Experiment
+============================================================
+Starting from phase 2
+
+Loaded dataset metadata from: /root/policy_privacy/experiments/data/polygonAmoy/policy_definitions.json
+Loaded execution results from: /root/policy_privacy/experiments/data/polygonAmoy/spp_dataset.json
+
+Phase 2: Attack Modeling
+------------------------------------------------------------
+
+▶ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 0s
+
+Running supervised classification attack on: structureType
+Balance method: undersample
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Classifying trivial vs and_only (165 vs 389 samples, ratio 2.36:1)
+  Train balanced: 124 vs 124; test left natural (41 vs 106)
+  Logistic Regression: accuracy=0.605, advantage=0.105, auc=0.533
+  Random Forest: accuracy=0.497, advantage=0.003, auc=0.520
+
+Classifying trivial vs or_only (165 vs 373 samples, ratio 2.26:1)
+  Train balanced: 114 vs 114; test left natural (51 vs 103)
+  Logistic Regression: accuracy=0.552, advantage=0.052, auc=0.546
+  Random Forest: accuracy=0.500, advantage=0.000, auc=0.520
+
+Classifying trivial vs and_or_mixed (165 vs 450 samples, ratio 2.73:1)
+  Train balanced: 108 vs 108; test left natural (57 vs 132)
+  Logistic Regression: accuracy=0.444, advantage=0.056, auc=0.496
+  Random Forest: accuracy=0.550, advantage=0.050, auc=0.555
+
+Classifying and_only vs or_only (389 vs 373 samples, ratio 1.04:1)
+  Train balanced: 244 vs 244; test left natural (140 vs 129)
+  Logistic Regression: accuracy=0.487, advantage=0.013, auc=0.498
+  Random Forest: accuracy=0.506, advantage=0.006, auc=0.509
+
+Classifying and_only vs and_or_mixed (389 vs 450 samples, ratio 1.16:1)
+  Train balanced: 256 vs 256; test left natural (133 vs 140)
+  Logistic Regression: accuracy=0.451, advantage=0.049, auc=0.431
+  Random Forest: accuracy=0.458, advantage=0.042, auc=0.462
+
+Classifying or_only vs and_or_mixed (373 vs 450 samples, ratio 1.21:1)
+  Train balanced: 252 vs 252; test left natural (121 vs 134)
+  Logistic Regression: accuracy=0.498, advantage=0.002, auc=0.466
+  Random Forest: accuracy=0.467, advantage=0.033, auc=0.492
+
+Running supervised classification attack on: predicateCombo
+Balance method: undersample
+Found 3 classes: single, few, many
+
+Classifying single vs few (337 vs 825 samples, ratio 2.45:1)
+  Train balanced: 247 vs 247; test left natural (90 vs 250)
+  Logistic Regression: accuracy=0.635, advantage=0.135, auc=0.555
+  Random Forest: accuracy=0.644, advantage=0.144, auc=0.514
+
+Classifying single vs many (337 vs 215 samples, ratio 1.57:1)
+  Train balanced: 158 vs 158; test left natural (112 vs 57)
+  Logistic Regression: accuracy=0.462, advantage=0.038, auc=0.468
+  Random Forest: accuracy=0.367, advantage=0.133, auc=0.496
+
+Classifying few vs many (825 vs 215 samples, ratio 3.84:1)
+  Train balanced: 161 vs 161; test left natural (237 vs 54)
+  Logistic Regression: accuracy=0.498, advantage=0.002, auc=0.487
+  Random Forest: accuracy=0.340, advantage=0.160, auc=0.522
+
+Running supervised classification attack on: paramType
+Balance method: undersample
+Found 4 classes: medium, large, small, none
+
+Classifying medium vs large (417 vs 456 samples, ratio 1.09:1)
+  Train balanced: 297 vs 297; test left natural (120 vs 134)
+  Logistic Regression: accuracy=0.500, advantage=0.000, auc=0.498
+  Random Forest: accuracy=0.516, advantage=0.016, auc=0.504
+
+Classifying medium vs small (417 vs 307 samples, ratio 1.36:1)
+  Train balanced: 218 vs 218; test left natural (116 vs 89)
+  Logistic Regression: accuracy=0.517, advantage=0.017, auc=0.451
+  Random Forest: accuracy=0.463, advantage=0.037, auc=0.426
+
+Classifying medium vs none (417 vs 197 samples, ratio 2.12:1)
+  Train balanced: 138 vs 138; test left natural (130 vs 59)
+  Logistic Regression: accuracy=0.471, advantage=0.029, auc=0.546
+  Random Forest: accuracy=0.529, advantage=0.029, auc=0.548
+
+Classifying large vs small (456 vs 307 samples, ratio 1.49:1)
+  Train balanced: 222 vs 222; test left natural (133 vs 85)
+  Logistic Regression: accuracy=0.417, advantage=0.083, auc=0.399
+  Random Forest: accuracy=0.459, advantage=0.041, auc=0.445
+
+Classifying large vs none (456 vs 197 samples, ratio 2.31:1)
+  Train balanced: 150 vs 150; test left natural (125 vs 47)
+  Logistic Regression: accuracy=0.686, advantage=0.186, auc=0.514
+  Random Forest: accuracy=0.645, advantage=0.145, auc=0.520
+
+Classifying small vs none (307 vs 197 samples, ratio 1.56:1)
+  Train balanced: 124 vs 124; test left natural (80 vs 73)
+  Logistic Regression: accuracy=0.464, advantage=0.036, auc=0.466
+  Random Forest: accuracy=0.503, advantage=0.003, auc=0.465
+
+✓ [1/4] [███████░░░░░░░░░░░░░░░░░░░░░░░] 25.0% | Running supervised classification attacks
+   Time elapsed: 0m 2s | ETA: 0m 5s
+
+▶ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 2s | ETA: 0m 3s
+
+Running statistical tests on: structureType
+Found 4 classes: trivial, and_only, or_only, and_or_mixed
+
+Comparing trivial vs and_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.162, commitCalldataLength=1.000, accessGasUsed=0.744, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs or_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.023, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing trivial vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.223, commitCalldataLength=1.000, accessGasUsed=0.363, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs or_only
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.658, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing and_only vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.737, commitCalldataLength=1.000, accessGasUsed=0.714, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing or_only vs and_or_mixed
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.229, commitCalldataLength=1.000, accessGasUsed=0.419, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: predicateCombo
+Found 3 classes: single, few, many
+
+Comparing single vs few
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.147, commitCalldataLength=1.000, accessGasUsed=0.784, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing single vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.655, commitCalldataLength=1.000, accessGasUsed=0.588, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing few vs many
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.270, commitCalldataLength=1.000, accessGasUsed=0.554, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Running statistical tests on: paramType
+Found 4 classes: medium, large, small, none
+
+Comparing medium vs large
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.626, commitCalldataLength=1.000, accessGasUsed=0.699, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs small
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.758, commitCalldataLength=1.000, accessGasUsed=0.681, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing medium vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.376, commitCalldataLength=1.000, accessGasUsed=0.410, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs small
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.631, commitCalldataLength=1.000, accessGasUsed=1.000, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing large vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.333, commitCalldataLength=1.000, accessGasUsed=0.906, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+Comparing small vs none
+  MMD: 0.000000
+  KS p-values: commitGasUsed=0.468, commitCalldataLength=1.000, accessGasUsed=0.651, accessCalldataLength=1.000, proofSize=1.000, commitLogsCount=1.000, commitLogsSize=1.000, accessLogsCount=1.000, accessLogsSize=1.000
+
+✓ [2/4] [███████████████░░░░░░░░░░░░░░░] 50.0% | Running statistical hypothesis tests
+   Time elapsed: 0m 2s | ETA: 0m 2s
+
+▶ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 2s | ETA: 0m 1s
+
+Running clustering attack on: structureType
+True classes: trivial, and_only, or_only, and_or_mixed
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 8
+
+Clustering with k=3...
+  Silhouette: 0.4738
+  Iterations: 20
+
+Clustering with k=4...
+  ARI: -0.0013
+  Silhouette: 0.3992
+  Iterations: 22
+
+Clustering with k=5...
+  Silhouette: 0.3713
+  Iterations: 11
+
+Running clustering attack on: predicateCombo
+True classes: single, few, many
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 9
+
+Clustering with k=3...
+  ARI: 0.0011
+  Silhouette: 0.4738
+  Iterations: 13
+
+Clustering with k=4...
+  Silhouette: 0.3991
+  Iterations: 31
+
+Clustering with k=5...
+  Silhouette: 0.3808
+  Iterations: 19
+
+Running clustering attack on: paramType
+True classes: medium, large, small, none
+
+Clustering with k=2...
+  Silhouette: 0.5525
+  Iterations: 8
+
+Clustering with k=3...
+  Silhouette: 0.4738
+  Iterations: 20
+
+Clustering with k=4...
+  ARI: 0.0001
+  Silhouette: 0.3992
+  Iterations: 18
+
+Clustering with k=5...
+  Silhouette: 0.3510
+  Iterations: 21
+
+✓ [3/4] [██████████████████████░░░░░░░░] 75.0% | Running unsupervised clustering attacks
+   Time elapsed: 0m 2s | ETA: 0m 0s
+
+Phase 3: Evaluation & Reporting
+------------------------------------------------------------
+
+▶ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 2s
+
+Structure & Parameter Privacy — multi-seed verdict (30 seeds, policy-disjoint)
+Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction ≥ 0.5 (perm α=0.05); both required, else PASS. Raw accuracy advantage is retained in JSON for legacy diagnostics only.
+Underpowered tasks (median test n < 20) are reported but do not gate.
+Diagnostic tasks are reported but do not gate.
+Task                                  | AUC mean±std    | perm p mean | %sig | medN | verdict
+--------------------------------------+-----------------+-------------+------+------+--------
+structureType: trivial/and_only       | 0.502 ± 0.053   | 0.483       | 3%   | 127  | ✓ PASS
+structureType: trivial/or_only        | 0.541 ± 0.049   | 0.291       | 10%  | 129  | ✓ PASS
+structureType: trivial/and_or_mixed   | 0.542 ± 0.046   | 0.288       | 23%  | 144  | ✓ PASS
+structureType: and_only/or_only       | 0.500 ± 0.032   | 0.493       | 0%   | 179  | ✓ PASS
+structureType: and_only/and_or_mixed  | 0.501 ± 0.038   | 0.489       | 7%   | 193  | ✓ PASS
+structureType: or_only/and_or_mixed   | 0.499 ± 0.034   | 0.483       | 0%   | 195  | ✓ PASS
+predicateCombo: single/few            | 0.529 ± 0.034   | 0.287       | 17%  | 270  | ✓ PASS
+predicateCombo: single/many           | 0.479 ± 0.037   | 0.621       | 0%   | 129  | ✓ PASS
+predicateCombo: few/many              | 0.511 ± 0.039   | 0.418       | 7%   | 246  | ✓ PASS
+paramType: medium/large               | 0.510 ± 0.032   | 0.417       | 0%   | 209  | ✓ PASS
+paramType: medium/small               | 0.513 ± 0.037   | 0.408       | 3%   | 175  | ✓ PASS
+paramType: medium/none                | 0.532 ± 0.054   | 0.341       | 23%  | 149  | ✓ PASS
+paramType: large/small                | 0.495 ± 0.046   | 0.519       | 3%   | 173  | ✓ PASS
+paramType: large/none                 | 0.495 ± 0.056   | 0.506       | 3%   | 147  | ✓ PASS
+paramType: small/none                 | 0.472 ± 0.049   | 0.644       | 0%   | 113  | ✓ PASS
+nestingDepth: flat/shallow            | 0.537 ± 0.041   | 0.316       | 7%   | 102  | ✓ PASS
+nestingDepth: flat/medium             | 0.539 ± 0.055   | 0.301       | 17%  | 139  | ✓ PASS
+nestingDepth: flat/deep               | 0.526 ± 0.049   | 0.372       | 13%  | 159  | ✓ PASS
+nestingDepth: shallow/medium          | 0.518 ± 0.046   | 0.393       | 17%  | 163  | ✓ PASS
+nestingDepth: shallow/deep            | 0.492 ± 0.041   | 0.558       | 3%   | 183  | ✓ PASS
+nestingDepth: medium/deep             | 0.496 ± 0.038   | 0.514       | 0%   | 221  | ✓ PASS
+--------------------------------------+-----------------+-------------+------+--------
+Overall: ✓ PASS
+Saved JSON report to: /root/policy_privacy/experiments/results/crosscheck/spp/polygonAmoy/report.json
+Saved Markdown report to: /root/policy_privacy/experiments/results/crosscheck/spp/polygonAmoy/report.md
+
+✓ [4/4] [██████████████████████████████] 100.0% | Generating evaluation and reports
+   Time elapsed: 0m 6s
+
+
+✓ All steps completed in 0m 6s
+
+Overall status (multi-seed): PASS
+============================================================

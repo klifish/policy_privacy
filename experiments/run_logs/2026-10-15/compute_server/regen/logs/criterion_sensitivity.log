@@ -1,0 +1,57 @@
+
+> zero-knowledge-proof-template@1.0.0 analysis:criterion-sensitivity
+> .venv/bin/python -m experiments.analysis.supervised.criterion_sensitivity --null-replicates 10 --jobs -1
+
+[null 0] pch: 0 FAIL -> []
+[null 0] spp: 0 FAIL -> []
+[null 1] pch: 0 FAIL -> []
+[null 1] spp: 0 FAIL -> []
+[null 2] pch: 0 FAIL -> []
+[null 2] spp: 0 FAIL -> []
+[null 3] pch: 0 FAIL -> []
+[null 3] spp: 0 FAIL -> []
+[null 4] pch: 0 FAIL -> []
+[null 4] spp: 0 FAIL -> []
+[null 5] pch: 0 FAIL -> []
+[null 5] spp: 0 FAIL -> []
+[null 6] pch: 0 FAIL -> []
+[null 6] spp: 0 FAIL -> []
+[null 7] pch: 0 FAIL -> []
+[null 7] spp: 1 FAIL -> ['paramType: medium/large']
+[null 8] pch: 0 FAIL -> []
+[null 8] spp: 0 FAIL -> []
+[null 9] pch: 0 FAIL -> []
+[null 9] spp: 0 FAIL -> []
+# Criterion sensitivity
+
+Of-record criterion: FAIL iff AUC_mean > 0.55 and significant-seed fraction >= 0.5 (alpha = 0.05, 30 seeds). Cells give the number of gating tasks that would FAIL under each alternative pair of thresholds, recomputed from the per-seed AUCs and p-values of the of-record run.
+
+| AUC_max \ sig_min | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 |
+|---|---|---|---|---|---|
+| 0.52 | 2/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.55 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.58 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.6 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+
+Cell format: PCH/SPP/PI failures (gating tasks: pch 20, spp 21, pi 3).
+
+## Single-leg criteria
+
+- PCH: AUC leg alone -> 0.52: 11, 0.55: 2, 0.58: 1, 0.6: 1; significance leg alone -> 0.3: 2, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
+- SPP: AUC leg alone -> 0.52: 13, 0.55: 5, 0.58: 1, 0.6: 0; significance leg alone -> 0.3: 0, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
+- PI: AUC leg alone -> 0.52: 1, 0.55: 0, 0.58: 0, 0.6: 0; significance leg alone -> 0.3: 0, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
+
+## Tasks that fail at the of-record thresholds
+
+- PCH: none
+- SPP: none
+- PI: none
+
+## Null simulation
+
+10 replicates with the two gas features replaced by policy-independent uniform draws from the padding bands; the full protocol is rerun on PCH and SPP.
+Replicates with at least one FAIL: 1/10.
+
+- PCH: mean per-task false-positive rate 0.000; tasks hit: none
+- SPP: mean per-task false-positive rate 0.005; tasks hit: paramType: medium/large (0.1)
+

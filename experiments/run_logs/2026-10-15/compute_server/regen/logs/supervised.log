@@ -1,0 +1,81 @@
+
+> zero-knowledge-proof-template@1.0.0 analysis:supervised
+> npm run analysis:pch && npm run analysis:pi && npm run analysis:spp
+
+
+> zero-knowledge-proof-template@1.0.0 analysis:pch
+> .venv/bin/python -m experiments.analysis.supervised.pch_supervised --seeds 30 --jobs -1
+
+Loading /root/policy_privacy/experiments/data/polygonAmoy/pch_dataset.json (tag=polygonAmoy)...
+1977 executions, 1077 policies.
+
+  [PASS      ] DUO GR                     medN=323.0 rf AUC=0.488 sig=0.03 | lr AUC=0.474 sig=0.00
+  [PASS      ] DUO DS                     medN=323.0 rf AUC=0.537 sig=0.23 | lr AUC=0.491 sig=0.00
+  [PASS      ] DUO RS                     medN=323.0 rf AUC=0.495 sig=0.03 | lr AUC=0.514 sig=0.03
+  [PASS      ] DUO POA                    medN=323.0 rf AUC=0.496 sig=0.03 | lr AUC=0.487 sig=0.00
+  [PASS      ] DUO GS                     medN=323.0 rf AUC=0.507 sig=0.03 | lr AUC=0.494 sig=0.00
+  [PASS      ] DUO CC                     medN=323.0 rf AUC=0.527 sig=0.13 | lr AUC=0.528 sig=0.10
+  [PASS      ] DUO NCU                    medN=323.0 rf AUC=0.491 sig=0.00 | lr AUC=0.529 sig=0.17
+  [PASS      ] DUO HMB                    medN=323.0 rf AUC=0.493 sig=0.00 | lr AUC=0.517 sig=0.10
+  [PASS      ] DUO NMDS                   medN=323.0 rf AUC=0.522 sig=0.07 | lr AUC=0.547 sig=0.37
+  [PASS      ] DUO GSO                    medN=323.0 rf AUC=0.491 sig=0.00 | lr AUC=0.531 sig=0.03
+  [PASS      ] ICD ch0                    medN=127.0 rf AUC=0.509 sig=0.03 | lr AUC=0.520 sig=0.00
+  [PASS      ] ICD ch1                    medN=127.0 rf AUC=0.442 sig=0.00 | lr AUC=0.444 sig=0.00
+  [PASS      ] ICD ch2                    medN=127.0 rf AUC=0.612 sig=0.30 | lr AUC=0.580 sig=0.07
+  [PASS      ] ICD ch3                    medN=127.0 rf AUC=0.500 sig=0.00 | lr AUC=0.507 sig=0.03
+  [PASS      ] ICD ch4                    medN=127.0 rf AUC=0.489 sig=0.00 | lr AUC=0.424 sig=0.00
+  [PASS      ] ICD ch5                    medN=127.0 rf AUC=0.463 sig=0.00 | lr AUC=0.422 sig=0.00
+  [PASS      ] ICD ch6                    medN=127.0 rf AUC=0.475 sig=0.00 | lr AUC=0.523 sig=0.10
+  [PASS      ] ICD ch7                    medN=127.0 rf AUC=0.538 sig=0.00 | lr AUC=0.507 sig=0.00
+  [PASS      ] ICD ch8                    medN=127.0 rf AUC=0.557 sig=0.07 | lr AUC=0.467 sig=0.00
+  [PASS      ] ICD ch9                    medN=127.0 rf AUC=0.536 sig=0.07 | lr AUC=0.440 sig=0.00
+
+Overall PCH supervised verdict [polygonAmoy]: PASS
+Summary -> /root/policy_privacy/experiments/results/supervised/pch_supervised_summary.csv
+Verdict -> /root/policy_privacy/experiments/results/supervised/pch_supervised_verdict.json
+
+> zero-knowledge-proof-template@1.0.0 analysis:pi
+> .venv/bin/python -m experiments.analysis.supervised.pi_supervised --seeds 30 --jobs -1
+
+Loading /root/policy_privacy/experiments/data/polygonAmoy/pi_dataset.json (tag=polygonAmoy)...
+960 executions; pairs: {'semantic_equivalent': 10, 'controlled_difference': 10, 'weak_equivalent': 10}
+
+  [PASS        ] semantic_equivalent pairs= 10 medN=160 rf AUC=0.530 sig=0.10 | lr AUC=0.492 sig=0.00 | control(rf 0.605 lr 0.619) detected
+  [PASS        ] weak_equivalent  pairs= 10 medN=160 rf AUC=0.484 sig=0.03 | lr AUC=0.494 sig=0.00 | control(rf 0.576 lr 0.616) detected
+  [PASS        ] controlled_difference pairs= 10 medN=160 rf AUC=0.463 sig=0.00 | lr AUC=0.497 sig=0.00 | control(rf 0.574 lr 0.626) detected
+
+Overall PI supervised verdict [polygonAmoy]: PASS
+Summary -> /root/policy_privacy/experiments/results/supervised/pi_supervised_summary.csv
+Verdict -> /root/policy_privacy/experiments/results/supervised/pi_supervised_verdict.json
+
+> zero-knowledge-proof-template@1.0.0 analysis:spp
+> .venv/bin/python -m experiments.analysis.supervised.spp_supervised --seeds 30 --jobs -1
+
+Loading /root/policy_privacy/experiments/data/polygonAmoy/shards/shard-0/spp_dataset.json (tag=shard-0)...
+474 executions, 316 policies.
+
+  [PASS      ] structureType: trivial/or_only                   medN=38  rf AUC=0.568 sig=0.10 | lr AUC=0.514 sig=0.03
+  [PASS      ] structureType: trivial/and_only                  medN=36  rf AUC=0.492 sig=0.00 | lr AUC=0.512 sig=0.03
+  [PASS      ] structureType: trivial/and_or_mixed              medN=41  rf AUC=0.561 sig=0.10 | lr AUC=0.437 sig=0.00
+  [PASS      ] structureType: or_only/and_only                  medN=53  rf AUC=0.545 sig=0.10 | lr AUC=0.561 sig=0.13
+  [PASS      ] structureType: or_only/and_or_mixed              medN=59  rf AUC=0.513 sig=0.00 | lr AUC=0.500 sig=0.00
+  [PASS      ] structureType: and_only/and_or_mixed             medN=57  rf AUC=0.485 sig=0.00 | lr AUC=0.523 sig=0.07
+  [PASS      ] predicateCombo: single/few                       medN=80  rf AUC=0.547 sig=0.03 | lr AUC=0.539 sig=0.00
+  [PASS      ] predicateCombo: single/many                      medN=37  rf AUC=0.547 sig=0.03 | lr AUC=0.457 sig=0.00
+  [PASS      ] predicateCombo: few/many                         medN=73  rf AUC=0.571 sig=0.13 | lr AUC=0.572 sig=0.20
+  [PASS      ] paramType: none/small                            medN=37  rf AUC=0.507 sig=0.00 | lr AUC=0.539 sig=0.03
+  [PASS      ] paramType: none/medium                           medN=41  rf AUC=0.499 sig=0.03 | lr AUC=0.523 sig=0.03
+  [PASS      ] paramType: none/large                            medN=46  rf AUC=0.546 sig=0.10 | lr AUC=0.519 sig=0.00
+  [PASS      ] paramType: small/medium                          medN=48  rf AUC=0.457 sig=0.00 | lr AUC=0.499 sig=0.00
+  [PASS      ] paramType: small/large                           medN=54  rf AUC=0.507 sig=0.03 | lr AUC=0.469 sig=0.00
+  [PASS      ] paramType: medium/large                          medN=58  rf AUC=0.390 sig=0.00 | lr AUC=0.455 sig=0.00
+  [PASS      ] nestingDepth: flat/shallow                       medN=28  rf AUC=0.509 sig=0.00 | lr AUC=0.535 sig=0.07
+  [PASS      ] nestingDepth: flat/medium                        medN=39  rf AUC=0.507 sig=0.03 | lr AUC=0.446 sig=0.00
+  [PASS      ] nestingDepth: flat/deep                          medN=48  rf AUC=0.590 sig=0.13 | lr AUC=0.461 sig=0.00
+  [PASS      ] nestingDepth: shallow/medium                     medN=47  rf AUC=0.494 sig=0.00 | lr AUC=0.519 sig=0.03
+  [PASS      ] nestingDepth: shallow/deep                       medN=56  rf AUC=0.468 sig=0.00 | lr AUC=0.476 sig=0.00
+  [PASS      ] nestingDepth: medium/deep                        medN=66  rf AUC=0.535 sig=0.07 | lr AUC=0.440 sig=0.00
+
+Overall SPP supervised verdict [shard-0]: PASS
+Summary -> /root/policy_privacy/experiments/results/supervised/spp_supervised_summary.csv
+Verdict -> /root/policy_privacy/experiments/results/supervised/spp_supervised_verdict.json

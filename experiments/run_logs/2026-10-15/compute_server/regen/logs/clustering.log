@@ -1,0 +1,494 @@
+
+> zero-knowledge-proof-template@1.0.0 analysis:clustering
+> .venv/bin/python -m experiments.analysis.clustering.run_all_clustering
+
+
+### Access outcome: granted
+Reset /root/policy_privacy/experiments/results/clustering/granted/pch
+Reset /root/policy_privacy/experiments/results/clustering/granted/pi
+Reset /root/policy_privacy/experiments/results/clustering/granted/spp
+Input validation passed:
+  PCH DUO: 989 samples / 10 classes
+  PCH ICD-10: 339 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --output-dir /root/policy_privacy/experiments/results/clustering/granted/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0007 | NMI: 0.0201
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --output-dir /root/policy_privacy/experiments/results/clustering/granted/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0028 | NMI: 0.0572
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --output-dir /root/policy_privacy/experiments/results/clustering/granted/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          7                1.6        0.7161        0.7387        0.7835       -0.0227   1.0000        False
+        or_chain         85         10                8.5        0.2571        0.2346        0.2810        0.0225   0.1343        False
+       and_chain        107         10               10.7        0.1916        0.1968        0.2305       -0.0051   0.5771        False
+     mixed_chain        136         10               13.6        0.1440        0.1548        0.1781       -0.0108   0.7811        False
+
+Saved -> /root/policy_privacy/experiments/results/clustering/granted/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.3272
+纯小样本 baseline 平均: 0.3312
+去偏后平均 NMI       : -0.0040
+显著泄露的层 (p<0.05): 0/4
+→ 所有层的 observed NMI 都落在「零泄露」零分布内, ICD10 的高 NMI 可完全由小样本偏差解释, 无真实内容泄露证据。
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --output /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --pairs-file /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/results/clustering/granted/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0139        0.0518       -0.0378 1.000000        False
+pi-controlled_difference-1 designed controlled_difference         16        0.0000        0.0552       -0.0552 1.000000        False
+pi-controlled_difference-2 designed controlled_difference         16        0.0000        0.0495       -0.0495 1.000000        False
+pi-controlled_difference-3 designed controlled_difference         16        0.0115        0.0472       -0.0357 1.000000        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0115        0.0524       -0.0408 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.0000        0.0653       -0.0653 1.000000        False
+pi-controlled_difference-6 designed controlled_difference         16        0.0481        0.0486       -0.0005 0.601990        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0518        0.0537       -0.0019 0.393035        False
+pi-controlled_difference-8 designed controlled_difference         16        0.0115        0.0504       -0.0389 1.000000        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0115        0.0496       -0.0381 0.835821        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.0384        0.0479       -0.0095 0.592040        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.0849        0.0640        0.0208 0.199005        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0000        0.0481       -0.0481 1.000000        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.0499        0.0556       -0.0056 0.661692        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0182        0.0487       -0.0305 0.393035        False
+
+=== 按 mode 汇总 ===
+           n   obs_nmi  base_nmi  debiased  n_sig
+mode                                             
+designed  30  0.031063  0.053117 -0.022047      0
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.01598   0.05237  -0.03637      0
+semantic_equivalent    10  0.05666   0.05356   0.00311      0
+weak_equivalent        10  0.02055   0.05342  -0.03288      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0311
+小样本 baseline 平均 NMI: 0.0531
+去偏后平均 NMI: -0.0220
+显著可区分的对 (p<0.05): 0/30
+→ 平衡 + 去偏后无任何对显著: 聚类口径确认 PI 不可区分 (且不再受 1:30 退化污染)。
+
+Saved -> /root/policy_privacy/experiments/results/clustering/granted/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source --output-dir /root/policy_privacy/experiments/results/clustering/granted/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/granted/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: -0.0013 | NMI: 0.0026
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: -0.0006 | NMI: 0.0044
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: -0.0020 | NMI: 0.0031
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: -0.0012 | NMI: 0.0042
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/results/clustering/granted/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/results/clustering/granted/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/results/clustering/granted/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10      -0.04446       0.01598       0.05237      -0.03637            0
+semantic_equivalent       10      -0.01161       0.05666       0.05356       0.00311            0
+weak_equivalent           10      -0.03789       0.02055       0.05342      -0.03288            0
+
+Overall: 30 pairs, mean ARI=-0.0313, mean observed NMI=0.0311, mean debiased NMI=-0.0220, significant=0/30
+Saved -> /root/policy_privacy/experiments/results/clustering/granted/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/results/clustering/granted/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/results/clustering/granted/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 689
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.001254
+  K-Means NMI: 0.002600
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: nestingDepth
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.000639
+  K-Means NMI: 0.004423
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: predicateCount
+  样本数: 689
+  类别数: 3
+  K-Means ARI: -0.002015
+  K-Means NMI: 0.003127
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.3%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 689
+  类别数: 4
+  K-Means ARI: -0.001196
+  K-Means NMI: 0.004202
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  -0.001276       0.003588        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓✓ 所有4个目标都达到了优秀级别（ARI和NMI都接近0）
+   → 攻击者无法从gas成本中推断任何结构或参数特征
+
+表现最好的目标: logicStructure
+  ARI: -0.001254, NMI: 0.002600
+
+表现最差的目标: nestingDepth
+  ARI: -0.000639, NMI: 0.004423
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: -0.001276, 平均NMI: 0.003588
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/results/clustering/granted/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+### Access outcome: denied
+Reset /root/policy_privacy/experiments/results/clustering/denied/pch
+Reset /root/policy_privacy/experiments/results/clustering/denied/pi
+Reset /root/policy_privacy/experiments/results/clustering/denied/spp
+Input validation passed:
+  PCH DUO: 988 samples / 10 classes
+  PCH ICD-10: 338 samples / 10 classes
+  PI: 30 designed pairs
+  SPP: all targets have >=20 samples and >=2 classes
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --output-dir /root/policy_privacy/experiments/results/clustering/denied/pch --global-analysis --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/pch_dataset.json...
+Running Global Analysis on DUO Terms (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: -0.0011 | NMI: 0.0174
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pch_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --output-dir /root/policy_privacy/experiments/results/clustering/denied/pch --global-analysis --icd10 --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/pch_dataset.json...
+Running Global Analysis on ICD10 Scopes (Ignoring Layers)...
+Global Analysis | Classes: 10 | K-Means ARI: 0.0029 | NMI: 0.0614
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pch_icd10_debias --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --output-dir /root/policy_privacy/experiments/results/clustering/denied/pch --seed 42 --kmeans-seeds 20 --permutations 200
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/pch_dataset.json ...
+De-biasing 4 ICD10 layers (20 seeds, 200 permutations each)...
+
+           layer  n_samples  n_classes  samples_per_class  observed_nmi  baseline_nmi  baseline_p95  debiased_nmi  p_value  significant
+trivial_ontology         11          6                1.8        0.7724        0.6660        0.7687        0.1064   0.0249         True
+        or_chain         85         10                8.5        0.2635        0.2384        0.2739        0.0251   0.1294        False
+       and_chain        108         10               10.8        0.2154        0.1980        0.2347        0.0174   0.1791        False
+     mixed_chain        134         10               13.4        0.1464        0.1553        0.1854       -0.0088   0.7065        False
+
+Saved -> /root/policy_privacy/experiments/results/clustering/denied/pch/pch_icd10_debiased.csv
+
+=== 解读 ===
+原始(单 seed)平均 NMI : 0.3494
+纯小样本 baseline 平均: 0.3144
+去偏后平均 NMI       : 0.0350
+显著泄露的层 (p<0.05): 1/4
+→ 以下层去偏后仍显著, 需进一步关注: ['trivial_ontology']
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.build_balanced_pi_pairs --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --output /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/pi_pairs_balanced.json --seed 42
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/pi_dataset.json ...
+30 designed pairs -> /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/pi_pairs_balanced.json
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_pi_balanced --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --pairs-file /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/pi_pairs_balanced.json --output-dir /root/policy_privacy/experiments/results/clustering/denied/pi --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500 --jobs -1
+========================================================================
+Loading /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/pi_pairs_balanced.json ...
+30 balanced pairs
+
+=== 平衡后逐对 (前 15 行) ===
+                   pair_id     mode             pair_type  n_samples  observed_nmi  baseline_nmi  debiased_nmi  p_value  significant
+pi-controlled_difference-0 designed controlled_difference         16        0.0923        0.0561        0.0362 0.398010        False
+pi-controlled_difference-1 designed controlled_difference         16        0.1064        0.0510        0.0554 0.343284        False
+pi-controlled_difference-2 designed controlled_difference         16        0.1189        0.0567        0.0622 0.208955        False
+pi-controlled_difference-3 designed controlled_difference         16        0.0115        0.0497       -0.0382 1.000000        False
+pi-controlled_difference-4 designed controlled_difference         16        0.0028        0.0573       -0.0545 1.000000        False
+pi-controlled_difference-5 designed controlled_difference         16        0.1970        0.0587        0.1383 0.049751         True
+pi-controlled_difference-6 designed controlled_difference         16        0.0115        0.0577       -0.0461 1.000000        False
+pi-controlled_difference-7 designed controlled_difference         16        0.0747        0.0531        0.0216 0.258706        False
+pi-controlled_difference-8 designed controlled_difference         16        0.1034        0.0502        0.0532 0.343284        False
+pi-controlled_difference-9 designed controlled_difference         16        0.0000        0.0528       -0.0528 1.000000        False
+  pi-semantic_equivalent-0 designed   semantic_equivalent         16        0.1064        0.0518        0.0546 0.149254        False
+  pi-semantic_equivalent-1 designed   semantic_equivalent         16        0.0098        0.0574       -0.0476 1.000000        False
+  pi-semantic_equivalent-2 designed   semantic_equivalent         16        0.0000        0.0511       -0.0511 1.000000        False
+  pi-semantic_equivalent-3 designed   semantic_equivalent         16        0.0000        0.0446       -0.0446 1.000000        False
+  pi-semantic_equivalent-4 designed   semantic_equivalent         16        0.0688        0.0509        0.0179 0.562189        False
+
+=== 按 mode 汇总 ===
+           n  obs_nmi  base_nmi  debiased  n_sig
+mode                                            
+designed  30  0.04792  0.051523 -0.003597      1
+
+=== 按 pair_type 汇总 ===
+                        n  obs_nmi  base_nmi  debiased  n_sig
+pair_type                                                    
+controlled_difference  10  0.07185   0.05433   0.01753      1
+semantic_equivalent    10  0.02285   0.05017  -0.02730      0
+weak_equivalent        10  0.04906   0.05007  -0.00102      0
+
+=== 干净判定 ===
+平衡对总数: 30 (全部 30v30)
+原始观测平均 NMI: 0.0479
+小样本 baseline 平均 NMI: 0.0515
+去偏后平均 NMI: -0.0036
+显著可区分的对 (p<0.05): 1/30
+→ 以下对去偏后仍显著可区分:
+                   pair_id             pair_type  debiased_nmi  p_value
+pi-controlled_difference-5 controlled_difference        0.1383 0.049751
+
+Saved -> /root/policy_privacy/experiments/results/clustering/denied/pi/pi_balanced_debiased.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.analyze_spp_clustering --data-dir /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source --output-dir /root/policy_privacy/experiments/results/clustering/denied/spp --plot --seed 42 --kmeans-seeds 20 --permutations 200 --bootstraps 500
+========================================================================
+Loading dataset from /root/policy_privacy/experiments/.work/clustering/polygonAmoy/denied/source/spp_dataset.json...
+Analyzing target: logicStructure...
+  Target: logicStructure  | Classes: 4 | K-Means ARI: -0.0002 | NMI: 0.0047
+Analyzing target: nestingDepth...
+  Target: nestingDepth    | Classes: 4 | K-Means ARI: 0.0031 | NMI: 0.0071
+Analyzing target: predicateCount...
+  Target: predicateCount  | Classes: 3 | K-Means ARI: 0.0003 | NMI: 0.0011
+Analyzing target: setSize...
+  Target: setSize         | Classes: 4 | K-Means ARI: -0.0017 | NMI: 0.0023
+
+Analysis complete. Summary saved to /root/policy_privacy/experiments/results/clustering/denied/spp/spp_clustering_summary.csv
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.pi_analysis_by_type --input /root/policy_privacy/experiments/results/clustering/denied/pi/pi_balanced_debiased.csv --output /root/policy_privacy/experiments/results/clustering/denied/pi/pi_analysis_by_type.png
+========================================================================
+Balanced PI clustering summary by pair type:
+                       pairs  observed_ari  observed_nmi  baseline_nmi  debiased_nmi  significant
+pair_type                                                                                        
+controlled_difference     10       0.02880       0.07185       0.05433       0.01753            1
+semantic_equivalent       10      -0.03867       0.02285       0.05017      -0.02730            0
+weak_equivalent           10      -0.00308       0.04906       0.05007      -0.00102            0
+
+Overall: 30 pairs, mean ARI=-0.0043, mean observed NMI=0.0479, mean debiased NMI=-0.0036, significant=1/30
+Saved -> /root/policy_privacy/experiments/results/clustering/denied/pi/pi_analysis_by_type.png
+
+========================================================================
+Running: /root/policy_privacy/.venv/bin/python -m experiments.analysis.clustering.spp_detailed_analysis --input /root/policy_privacy/experiments/results/clustering/denied/spp/spp_clustering_summary.csv --output /root/policy_privacy/experiments/results/clustering/denied/spp/spp_detailed_analysis.png
+========================================================================
+================================================================================
+SPP实验 - Structure and Parameter Privacy 聚类分析详细报告
+================================================================================
+
+【1. 实验概览】
+
+SPP实验旨在评估攻击者能否从gas成本中推断策略的结构和参数特征
+
+测试目标（4个隐私属性）:
+  1. logicStructure: 逻辑结构（and_only, and_or_mixed, negation_heavy, or_only）
+  2. nestingDepth: 嵌套深度（deep, flat, medium, shallow）
+  3. predicateCount: 谓词数量（few, many, none, single）
+  4. setSize: 集合大小（large, medium, none, small）
+
+  总测试样本: 688
+  测试目标数: 4
+
+【2. 各目标详细分析】
+
+目标: logicStructure
+  样本数: 688
+  类别数: 4
+  K-Means ARI: -0.000205
+  K-Means NMI: 0.004738
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+目标: nestingDepth
+  样本数: 688
+  类别数: 4
+  K-Means ARI: 0.003134
+  K-Means NMI: 0.007126
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.2%
+  相对随机的提升: 1.01x
+
+目标: predicateCount
+  样本数: 688
+  类别数: 3
+  K-Means ARI: 0.000320
+  K-Means NMI: 0.001114
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 33.3%
+  估计攻击成功率: 33.4%
+  相对随机的提升: 1.00x
+
+目标: setSize
+  样本数: 688
+  类别数: 4
+  K-Means ARI: -0.001706
+  K-Means NMI: 0.002320
+  隐私保护评级: 优秀 ✓✓ (接近完美随机)
+  风险等级: 无风险
+  随机猜测成功率: 25.0%
+  估计攻击成功率: 25.0%
+  相对随机的提升: 1.00x
+
+================================================================================
+
+【3. 与其他实验对比】
+
+实验                   平均ARI           平均NMI           目标                            
+--------------------------------------------------------------------------------
+SPP                  0.000386        0.003825        推断结构和参数特征                     
+
+对比分析:
+
+================================================================================
+
+【4. 关键发现】
+
+✓✓ 所有4个目标都达到了优秀级别（ARI和NMI都接近0）
+   → 攻击者无法从gas成本中推断任何结构或参数特征
+
+表现最好的目标: predicateCount
+  ARI: 0.000320, NMI: 0.001114
+
+表现最差的目标: nestingDepth
+  ARI: 0.003134, NMI: 0.007126
+  → 但仍然在优秀范围内 ✓
+
+================================================================================
+
+【5. 结论】
+
+整体评级: 优秀 ✓✓✓
+  平均ARI: 0.000386, 平均NMI: 0.003825
+  SPP目标完美达成！攻击者无法从gas成本推断任何结构或参数信息
+
+建议: 保持当前padding策略
+
+================================================================================
+
+【附录: 指标解释】
+
+ARI (Adjusted Rand Index)
+  范围: [-1, 1]
+  - ARI ≈ 0: 聚类接近随机分配（理想的隐私保护）
+  - ARI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+NMI (Normalized Mutual Information)
+  范围: [0, 1]
+  - NMI ≈ 0: 聚类与真实标签无关（理想的隐私保护）
+  - NMI → 1: 聚类完美匹配真实标签（完全信息泄露）
+
+可视化图表已保存到: /root/policy_privacy/experiments/results/clustering/denied/spp/spp_detailed_analysis.png
+
+Output validation passed.
+
+All authoritative clustering analyses completed.

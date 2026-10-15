@@ -1,0 +1,10 @@
+Prepared deterministic B2 subset at /root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15
+  executions: 1977/1977
+  policies:   1077
+  PI-paired (or depth-layer) policies retained: 60
+  definitions sha256: 28a0f4fa641fe11bebaeee2de6e4438b099923126963ed2a5d95ecd5692af4c8
+  estimated Amoy transactions: 5933
+  estimated B1 cost at 30 gwei (25% buffer): 81.720 native token
+
+Run B1 with:
+PROTOCOL_CIRCUITS_DIR=$PWD/build/protocol/v3.0.0-rc2/circuits UNIFIED_DATASET_PATH=/root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/shared/policy_definitions.json UNIFIED_CONFIG_PATH=/root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/shared/source_config.json UNIFIED_ARTIFACT_DIR=/root/policy-privacy/policy_privacy/experiments/ablation/gas_padding/polygonAmoy-2026-10-15/b1_unpadded PROTECTION_PROFILE=b1_unpadded npx hardhat run experiments/capture/run.js --network polygonAmoy

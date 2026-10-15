@@ -1,0 +1,112 @@
+
+> zero-knowledge-proof-template@1.0.0 analysis:compare:js
+> .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pch && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment pi && .venv/bin/python -m experiments.analysis.supervised.compare_with_js_verdict --experiment spp
+
+{
+  "experiment": "pch",
+  "pythonVerdict": "/root/policy_privacy/experiments/results/supervised/pch_supervised_verdict.json",
+  "jsReport": "/root/policy_privacy/experiments/results/crosscheck/pch/polygonAmoy/evaluation_report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 20,
+    "js": 20,
+    "shared": 20
+  },
+  "expectedTaskCount": 20,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [],
+  "matches": true
+}
+Comparison -> /root/policy_privacy/experiments/results/supervised/pch_js_comparison.json
+{
+  "experiment": "pi",
+  "pythonVerdict": "/root/policy_privacy/experiments/results/supervised/pi_supervised_verdict.json",
+  "jsReport": "/root/policy_privacy/experiments/results/crosscheck/pi/polygonAmoy/pi_report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 3,
+    "js": 3,
+    "shared": 3
+  },
+  "expectedTaskCount": 3,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [],
+  "matches": true
+}
+Comparison -> /root/policy_privacy/experiments/results/supervised/pi_js_comparison.json
+{
+  "experiment": "spp",
+  "pythonVerdict": "/root/policy_privacy/experiments/results/supervised/spp_supervised_verdict.json",
+  "jsReport": "/root/policy_privacy/experiments/results/crosscheck/spp/polygonAmoy/report.json",
+  "overall": {
+    "python": true,
+    "js": true
+  },
+  "criterion": {
+    "python": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    },
+    "js": {
+      "seeds": 30,
+      "aucMax": 0.55,
+      "permAlpha": 0.05,
+      "sigFractionMax": 0.5,
+      "minTestSamples": 20
+    }
+  },
+  "taskCounts": {
+    "python": 21,
+    "js": 21,
+    "shared": 21
+  },
+  "expectedTaskCount": 21,
+  "onlyPython": [],
+  "onlyJs": [],
+  "taskDiffs": [],
+  "matches": true
+}
+Comparison -> /root/policy_privacy/experiments/results/supervised/spp_js_comparison.json

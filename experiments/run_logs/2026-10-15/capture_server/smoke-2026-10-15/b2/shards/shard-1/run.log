@@ -1,0 +1,109 @@
+======================================================================
+Unified Dataset Pipeline (TPS Workflow)
+======================================================================
+Config: /root/policy-privacy/smoke-2026-10-15/b2/config.json
+Artifacts: /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1
+
+Reusing exact policy definitions: /root/policy-privacy/smoke-2026-10-15/b2/policy_definitions.json
+Policy definitions saved to: /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1/policy_definitions.json
+Protection profile: b2_padded
+Shard 1/4: 9 of 37 executions
+Balance Preflight Check
+------------------------------------------------------------
+  Network: polygonAmoy (chainId: 80002)
+  Gas price used for estimate: 30.0 gwei
+  Deployer (deployment + commitPolicy)
+    Address:         0x2A98e8D050f3a7096Cdd3dc7F5d54854eAD0F9f3
+    Current balance: 0.151875 MATIC
+    Estimated gas:   5062500 units
+    Estimated cost:  0.151875 MATIC
+  TPS (requestAccessBound)
+    Address:         0x00D2A60638ee5E36506cb41146C2371B5c3d3664
+    Current balance: 0.354375 MATIC
+    Estimated gas:   11812500 units
+    Estimated cost:  0.354375 MATIC
+  ✓ Balance check passed
+
+Attaching to PolicyPrivacy at 0xd41DC76191512ADA9fBaF733D66174ff53ccAbd0
+Starting TPS server (port 3102)...
+[TPS] [TPS] Chain signer initialised: 0x00D2A60638ee5E36506cb41146C2371B5c3d3664 → 0xd41DC76191512ADA9fBaF733D66174ff53ccAbd0 (polling 1000 ms)
+[TPS] [TPS] Trusted Proof Service listening on port 3102
+[TPS] [TPS] POST /tps/provision  – provider provisions policy material
+[TPS] POST /tps/prove      – requester requests proof generation
+[TPS] [TPS] GET  /tps/health     – health check
+[TPS] submitOnChain enabled (requestAccessBound)
+TPS server ready.
+
+Execution order seed: tps-zkpi-execution-order-v1
+Executing 9 policy instances via TPS...
+(Checkpoint: /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1/execution_checkpoint.json — safe to Ctrl+C and resume with: npm run unified or npm run unified:testnet)
+Executing 9 policy instances sequentially (0 already done)...
+commit gasUsed: 293246
+[Provider] Registered resourceId=2 for policyId=2
+[Provider] Provisioned policyId=2 to TPS
+[TPS] [TPS] access gas pad target = 1046063
+[TPS] Submitted proof on-chain for policyId=2, requestId=3
+access gasUsed: 1050741
+commit gasUsed: 292746
+[Provider] Registered resourceId=7 for policyId=7
+[Provider] Provisioned policyId=7 to TPS
+[TPS] [TPS] access gas pad target = 1012717
+[TPS] Submitted proof on-chain for policyId=7, requestId=7
+access gasUsed: 1017395
+commit gasUsed: 310566
+[Provider] Registered resourceId=11 for policyId=11
+[Provider] Provisioned policyId=11 to TPS
+[TPS] [TPS] access gas pad target = 1053329
+[TPS] Submitted proof on-chain for policyId=11, requestId=11
+access gasUsed: 1058054
+commit gasUsed: 319926
+[Provider] Registered resourceId=15 for policyId=15
+[Provider] Provisioned policyId=15 to TPS
+[TPS] [TPS] access gas pad target = 1082552
+[TPS] Submitted proof on-chain for policyId=15, requestId=15
+access gasUsed: 1087277
+commit gasUsed: 308263
+[Provider] Registered resourceId=19 for policyId=19
+[Provider] Provisioned policyId=19 to TPS
+[TPS] [TPS] access gas pad target = 1047633
+[TPS] Submitted proof on-chain for policyId=19, requestId=19
+access gasUsed: 1052331
+commit gasUsed: 317226
+[Provider] Registered resourceId=23 for policyId=23
+[Provider] Provisioned policyId=23 to TPS
+[TPS] [TPS] access gas pad target = 1012194
+[TPS] Submitted proof on-chain for policyId=23, requestId=22
+access gasUsed: 1016871
+commit gasUsed: 285996
+[Provider] Registered resourceId=26 for policyId=26
+[Provider] Provisioned policyId=26 to TPS
+[TPS] [TPS] access gas pad target = 1058420
+[TPS] Submitted proof on-chain for policyId=26, requestId=26
+access gasUsed: 1063115
+commit gasUsed: 290856
+[Provider] Registered resourceId=31 for policyId=31
+[Provider] Provisioned policyId=31 to TPS
+[TPS] [TPS] access gas pad target = 1007640
+[TPS] Submitted proof on-chain for policyId=31, requestId=31
+access gasUsed: 1012328
+commit gasUsed: 318523
+[Provider] Registered resourceId=35 for policyId=35
+[Provider] Provisioned policyId=35 to TPS
+[TPS] [TPS] access gas pad target = 1012923
+[TPS] Submitted proof on-chain for policyId=35, requestId=35
+access gasUsed: 1017591
+
+   Saved 9/9 execution results to /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1/executed_dataset.json
+
+TPS server stopped.
+Executed dataset saved to: /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1/executed_dataset.json
+SPP slice saved to:        /root/policy-privacy/smoke-2026-10-15/b2/shards/shard-1/spp_dataset.json
+
+Unified dataset artifacts ready.
+Next steps:
+  1. Run PCH experiment phase 2+:
+     node experiments/analysis/crosscheck/pch/run_experiment.js --use-unified-dataset --phase 2
+  2. Run SPP experiment phase 2+:
+     node experiments/analysis/crosscheck/spp/run_experiment.js --use-unified-dataset --phase 2
+  3. Run PI experiment phase 2+:
+     node experiments/analysis/crosscheck/pi/run_experiment.js --use-unified-dataset --phase 2

@@ -1,0 +1,4938 @@
+[
+  {
+    "policyIndex": 0,
+    "policyId": "trivial_ontology-0",
+    "executionId": 0,
+    "layer": "trivial_ontology",
+    "layerVariant": null,
+    "duoTerm": 1,
+    "duoTerms": [
+      1
+    ],
+    "duoTermCodes": [
+      "DS"
+    ],
+    "semantics": {
+      "layer": "trivial_ontology",
+      "layerVariant": null,
+      "duoTerms": [
+        "DS"
+      ],
+      "duoTermValues": [
+        1
+      ],
+      "primaryDuoTerm": "DS",
+      "primaryDuoTermValue": 1,
+      "hasOntology": true,
+      "hasProfile": false,
+      "hasObligation": false,
+      "hasCredential": true,
+      "predicateCount": 1,
+      "icd10Scope": {
+        "id": "MENTAL",
+        "label": "Mental and behavioural disorders",
+        "level": "chapter",
+        "codeRange": "F01-F99"
+      },
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "DS",
+      "logicNormalized": "(DS & P[ICD10])"
+    },
+    "structure": {
+      "whitelistSize": 12,
+      "merkleDepth": 8,
+      "proofType": "credential_proof",
+      "predicateRoots": {
+        "0": "0x2ee2cd77d332d94b6627de5acf36f30afebb3bebb1178e314e2dfaf32ce7ab58"
+      },
+      "whitelists": {
+        "0": {
+          "namespace": "ICD10",
+          "scopeId": "MENTAL",
+          "scopeLabel": "Mental and behavioural disorders",
+          "configHash": "0x237ba134c0449ce90a198044454bfbbec72aadca67006d0dfbdaf76e706366a",
+          "requestedSize": 12,
+          "leafCount": 12,
+          "selectedTerms": [
+            "F91",
+            "F20",
+            "F43",
+            "F18",
+            "F70",
+            "F02",
+            "F60",
+            "F65",
+            "F32",
+            "F24",
+            "F19",
+            "F45"
+          ],
+          "codeRange": "F01-F99",
+          "level": "chapter"
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x29f55486390ccdf8b53b91b7841a02cf68f267c8112d54f57379cfa37d13f8ca",
+      "randomizer": "0x1c8e2bbd9ffee775f5d7152d8d2eadbd7c123f0acb726367c38cb3a7b8b1fc",
+      "policyCommitment": "0x2a4e2952caf4fa6d9c216af0e80b76ca4e4dd6b191f882ecfb22779194ee6de3",
+      "paramsCommitment": "8285722116337202679338432113283785933206779392407631449096002191107595673556"
+    },
+    "policy": [
+      1,
+      13,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      1,
+      13,
+      24
+    ],
+    "numOperations": 3,
+    "predicateSlots": [
+      0
+    ],
+    "predicateValuesBySlot": {
+      "0": 4
+    },
+    "predicateEvidenceBySlot": {
+      "0": {
+        "ontologyCode": "108589003302166660053148534333788464528935094250",
+        "leaf": "17349714499434174692894630970968535021022421108339163595499436664567226850857",
+        "pathElements": [
+          "10318151733378725370872430979259730954193988158800097811776664308434477886651",
+          "15684251359209602562916437470815320174539258248394262948449381656316197144495",
+          "10680157998675101787236416582775829929138505325886273467970054025500160063505",
+          "7948744683276111507234718986939510615330667872250271522114262355848167781427",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0x2ee2cd77d332d94b6627de5acf36f30afebb3bebb1178e314e2dfaf32ce7ab58",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 0,
+    "satisfy": true,
+    "randomizer": "0x1c8e2bbd9ffee775f5d7152d8d2eadbd7c123f0acb726367c38cb3a7b8b1fc",
+    "policyCommitment": "19135238915239608526443468760447241053076738098219197209594615754499998772707",
+    "depthLayer": false,
+    "executionTier": "pi",
+    "piPair": {
+      "pairId": "pi-semantic_equivalent-0",
+      "pairType": "semantic_equivalent",
+      "side": 1,
+      "shapeDistance": 1
+    },
+    "ontologyNamespace": "ICD10",
+    "ontologyValue": 4,
+    "requiresOntology": true,
+    "logicStructure": "trivial",
+    "nestingDepth": "flat",
+    "predicateCount": "single",
+    "setSize": "medium",
+    "rangeWidth": "none",
+    "structureType": "trivial",
+    "predicateCombo": "single",
+    "paramType": "medium",
+    "structureStats": {
+      "source": "(DS & P[ICD10])",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 1,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 1,
+      "predicateCount": 1,
+      "predicateNamespaces": [
+        "ICD10"
+      ],
+      "attributeTokens": [
+        "DS"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "trivial__single__medium__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219724",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723504",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 10860,
+      "proofWitnessTime": 1208,
+      "proofProveTime": 4654,
+      "proofVerifyTime": 94,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183904,
+      "accessBlockNumber": 50183919,
+      "blockDifference": 15
+    },
+    "paramsCommitment": "8285722116337202679338432113283785933206779392407631449096002191107595673556",
+    "blockchainPolicyId": "16",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": true,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x51c6cb4bb69a9c9c910d3eeb0c9277426a4617f60b3c27f410353ad43a768668",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 24,
+          "gasLimit": "222635",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda92a4e2952caf4fa6d9c216af0e80b76ca4e4dd6b191f882ecfb22779194ee6de312518d725e385c71cbc0192b01fd12709129967a7f5c4a0614f3ac43e9079fd400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183904,
+          "gasUsed": "219724",
+          "cumulativeGasUsed": "219724",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x2a4e2952caf4fa6d9c216af0e80b76ca4e4dd6b191f882ecfb22779194ee6de312518d725e385c71cbc0192b01fd12709129967a7f5c4a0614f3ac43e9079fd4",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000010"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176b185182e9c4000000000000000000000000000000000000000000000000013e354b4591f000000000000000000000000000000000000000000000008e48380235f0a56698270000000000000000000000000000000000000000000000000126ca32f40f063c000000000000000000000000000000000000000000008e483819a108f6e981eb",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x26e5d6d6d587343611e791f2eb6048ed2031584d2c8b9997fae773d3d64c4345",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 25,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000010"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183908,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000010",
+                "0x0000000000000000000000000000000000000000000000000000000000000010"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c3628b3e10bc0000000000000000000000000000000000000000000000000126ca28dc82e000000000000000000000000000000000000000000000008e4838828f4a1a87c4dd000000000000000000000000000000000000000000000000011d06c65144cf44000000000000000000000000000000000000000000008e48388c52aca5c5d599",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0x9582264cff39e7e469d3144e2c7c0209d67a1d240782e789cf2b2215325faae8",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 12,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000013b4193c325d00777d5ff0cc692900a312fb9316878bf76ece9b09d44cc881a62db3fe6b1012b27678d767100514b07b0000000000000000000000000000000000000000000000000000000000079873049a99f2d0c2137847844def72303ad5ab347911b51335d22cfb9dab219dbdaf153f7e160df139ea06f3de6874a55f726065c287640fd545570fc3e2023539701cde17426c4f493a6452a71680c7b6ac1e82356ef2e7eb9296546e8d8876a24c1e333ace1a9b8ef4ef97ce20792614b1c37047c5ba2f2b19cbf814179954cab929259878c9e5c7a045b11f703823c45e5b79b5724252a65f3fba74e541bfdf7713c24cd633a0e74e1d3214b096205ad49986b7ad192f3f93bdd66e1d9665eca21544b6502b770f761460ceb5136a4d3e720a8e0e7e8a67c60033d0d448154109278d4a5fe3ee76b6d813d03edd8d7b8d20c878ec4babfeceaab8780e52bd418b00000000000000000000000000000000000000000000000000000000000000012a4e2952caf4fa6d9c216af0e80b76ca4e4dd6b191f882ecfb22779194ee6de312518d725e385c71cbc0192b01fd12709129967a7f5c4a0614f3ac43e9079fd42d27fe39ce61f9ca5d6d84d9a1f113c235bd22515420420e35cfb83df83341c90000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183919,
+          "gasUsed": "723504",
+          "cumulativeGasUsed": "723504",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000000f",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000010"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000000f",
+              "topics": [
+                "0xb045361b5312ffd670a2941e0b6fa95fbd69b7ba26cbdc140da5f6ce128e9762",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000010"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1c925ee94ab000000000000000000000000000000000000000000000000002d5fa5e0ef48000000000000000000000000000000000000000000000008e48450c5b5f11cd506b0000000000000000000000000000000000000000000000000288ddcbb00b3550000000000000000000000000000000000000000000008e48455977f170b69b1b",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 3
+  },
+  {
+    "policyIndex": 0,
+    "policyId": "trivial_ontology-0",
+    "executionId": 3,
+    "layer": "trivial_ontology",
+    "layerVariant": null,
+    "duoTerm": 1,
+    "duoTerms": [
+      1
+    ],
+    "duoTermCodes": [
+      "DS"
+    ],
+    "semantics": {
+      "layer": "trivial_ontology",
+      "layerVariant": null,
+      "duoTerms": [
+        "DS"
+      ],
+      "duoTermValues": [
+        1
+      ],
+      "primaryDuoTerm": "DS",
+      "primaryDuoTermValue": 1,
+      "hasOntology": true,
+      "hasProfile": false,
+      "hasObligation": false,
+      "hasCredential": true,
+      "predicateCount": 1,
+      "icd10Scope": {
+        "id": "MENTAL",
+        "label": "Mental and behavioural disorders",
+        "level": "chapter",
+        "codeRange": "F01-F99"
+      },
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "DS",
+      "logicNormalized": "(DS & P[ICD10])"
+    },
+    "structure": {
+      "whitelistSize": 12,
+      "merkleDepth": 8,
+      "proofType": "credential_proof",
+      "predicateRoots": {
+        "0": "0x2ee2cd77d332d94b6627de5acf36f30afebb3bebb1178e314e2dfaf32ce7ab58"
+      },
+      "whitelists": {
+        "0": {
+          "namespace": "ICD10",
+          "scopeId": "MENTAL",
+          "scopeLabel": "Mental and behavioural disorders",
+          "configHash": "0x237ba134c0449ce90a198044454bfbbec72aadca67006d0dfbdaf76e706366a",
+          "requestedSize": 12,
+          "leafCount": 12,
+          "selectedTerms": [
+            "F91",
+            "F20",
+            "F43",
+            "F18",
+            "F70",
+            "F02",
+            "F60",
+            "F65",
+            "F32",
+            "F24",
+            "F19",
+            "F45"
+          ],
+          "codeRange": "F01-F99",
+          "level": "chapter"
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x29f55486390ccdf8b53b91b7841a02cf68f267c8112d54f57379cfa37d13f8ca",
+      "randomizer": "0x16364283862157a6f1cc43b5bb6cf606b73ca21e0aded41e21bbad5c10752c",
+      "policyCommitment": "0x3283afeec9cca49b2128d0e3ed7c4310f4e98eeb7ca483b75cce60ae8fa902",
+      "paramsCommitment": "12155710414765553450844610361103859419523937238630642848334606761275332109367"
+    },
+    "policy": [
+      1,
+      13,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      1,
+      13,
+      24
+    ],
+    "numOperations": 3,
+    "predicateSlots": [
+      0
+    ],
+    "predicateValuesBySlot": {
+      "0": 4
+    },
+    "predicateEvidenceBySlot": {
+      "0": {
+        "ontologyCode": "108589003302166660053148534333788464528935094250",
+        "leaf": "17349714499434174692894630970968535021022421108339163595499436664567226850857",
+        "pathElements": [
+          "10318151733378725370872430979259730954193988158800097811776664308434477886651",
+          "15684251359209602562916437470815320174539258248394262948449381656316197144495",
+          "10680157998675101787236416582775829929138505325886273467970054025500160063505",
+          "7948744683276111507234718986939510615330667872250271522114262355848167781427",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0x2ee2cd77d332d94b6627de5acf36f30afebb3bebb1178e314e2dfaf32ce7ab58",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 0,
+    "satisfy": false,
+    "randomizer": "0x16364283862157a6f1cc43b5bb6cf606b73ca21e0aded41e21bbad5c10752c",
+    "policyCommitment": "89251225148356401428762354408162168141116801945114073391918241326954424578",
+    "depthLayer": false,
+    "executionTier": "pi",
+    "piPair": {
+      "pairId": "pi-semantic_equivalent-0",
+      "pairType": "semantic_equivalent",
+      "side": 1,
+      "shapeDistance": 1
+    },
+    "ontologyNamespace": "ICD10",
+    "ontologyValue": 4,
+    "requiresOntology": true,
+    "logicStructure": "trivial",
+    "nestingDepth": "flat",
+    "predicateCount": "single",
+    "setSize": "medium",
+    "rangeWidth": "none",
+    "structureType": "trivial",
+    "predicateCombo": "single",
+    "paramType": "medium",
+    "structureStats": {
+      "source": "(DS & P[ICD10])",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 1,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 1,
+      "predicateCount": 1,
+      "predicateNamespaces": [
+        "ICD10"
+      ],
+      "attributeTokens": [
+        "DS"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "trivial__single__medium__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219688",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723434",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 6670,
+      "proofWitnessTime": 638,
+      "proofProveTime": 2337,
+      "proofVerifyTime": 34,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183973,
+      "accessBlockNumber": 50183984,
+      "blockDifference": 11
+    },
+    "paramsCommitment": "12155710414765553450844610361103859419523937238630642848334606761275332109367",
+    "blockchainPolicyId": "27",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": false,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0xe20b694f63992834455b8231c6aab5367c05a9de9562b784f4e9cf58c18a955e",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 30,
+          "gasLimit": "222599",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda9003283afeec9cca49b2128d0e3ed7c4310f4e98eeb7ca483b75cce60ae8fa9021adfe3665d3e8778bb57a100d2aaca2e0c9f005f862c762a3db08262501a243700000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183973,
+          "gasUsed": "219688",
+          "cumulativeGasUsed": "943170",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x003283afeec9cca49b2128d0e3ed7c4310f4e98eeb7ca483b75cce60ae8fa9021adfe3665d3e8778bb57a100d2aaca2e0c9f005f862c762a3db08262501a2437",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000001b"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176a201daf39c000000000000000000000000000000000000000000000000000daaa0436dd8000000000000000000000000000000000000000000000008e486f4c571038ae302900000000000000000000000000000000000000000000000000c33fe4192e4640000000000000000000000000000000000000000000008e486f63c130565d69e9",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x60b831438e1ba9fc83bdea0b75ef5bafa3f43f9747dfa75ce8fb5a0e093b3729",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 31,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f24537000000000000000000000000000000000000000000000000000000000000001b"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183977,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000001b",
+                "0x000000000000000000000000000000000000000000000000000000000000001b"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c363d00dc61000000000000000000000000000000000000000000000000000c33fdd42d2a000000000000000000000000000000000000000000000008e486fcc5fae24e79fc700000000000000000000000000000000000000000000000000b97c7972c4d9f0000000000000000000000000000000000000000000008e486fd62311f4f565d7",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0xfae496c5dd33284c8cb21048b694686146bfb5f46068f1e08564455f91bc524a",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 15,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad000000000000000000000000000000000000000000000000000000000000001b000000000000000000000000000000000000000000000000000000000000001b00000000000000000000000000000000fb45df1ce4c103dd9f2526881c5cdcb10f72262fa7abd6a4b8e2054e8b06bd6c6774b1ef649b3c12c5d2599ef5b8529b000000000000000000000000000000000000000000000000000000000007987321c94b6f9b732826afa1a8e333efbbd7b4272ca61628d264b9fc800132be4059283039ad526c4036939e44dd88571b0e3c11cdef7c996120be3951e86fe900e8001c5aad00747d9988840d7f958213dd1ff5275a86899401971a24362122cc140ed866de94deb9db1ba5be564e9487d81557166bce77176c26d5bc7b339476892b27fe741e69301f6dafe82bee6bfd4b44b24763d27e6d80a53709bc71474d5b2ced21a8279dbc0d74a79c63de30a102ed27b5ab224ee195890c0e87be2e59f718002ad6faefd12b976ffda8d1dbb6ccbdac6cdd7311b00c876166e1a01215da1533aad629679e056f2aa030754d5f3067d9c4596aa3b9b8f69322bd97f01a330000000000000000000000000000000000000000000000000000000000000000003283afeec9cca49b2128d0e3ed7c4310f4e98eeb7ca483b75cce60ae8fa9021adfe3665d3e8778bb57a100d2aaca2e0c9f005f862c762a3db08262501a24372c2c35bb951144261f0848b8c952e16e7d284c62f940afbc96be757928172a440000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183984,
+          "gasUsed": "723434",
+          "cumulativeGasUsed": "723434",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000001b",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000001b"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000001b",
+              "topics": [
+                "0x300f13652ff856507791d33fe737c50e3dd0964e4374c6e0b1e4347b365f9cb4",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000001b"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1ab2a69c078800000000000000000000000000000000000000000000000001eea482c1d92000000000000000000000000000000000000000000000008e4874499e19ca65b26700000000000000000000000000000000000000000000000001a189d01b3d1878000000000000000000000000000000000000000000008e487496b8cc7101b9ef",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 6
+  },
+  {
+    "policyIndex": 3,
+    "policyId": "trivial_ontology-3",
+    "executionId": 1,
+    "layer": "trivial_ontology",
+    "layerVariant": null,
+    "duoTerm": 1,
+    "duoTerms": [
+      1
+    ],
+    "duoTermCodes": [
+      "DS"
+    ],
+    "semantics": {
+      "layer": "trivial_ontology",
+      "layerVariant": null,
+      "duoTerms": [
+        "DS"
+      ],
+      "duoTermValues": [
+        1
+      ],
+      "primaryDuoTerm": "DS",
+      "primaryDuoTermValue": 1,
+      "hasOntology": true,
+      "hasProfile": false,
+      "hasObligation": false,
+      "hasCredential": true,
+      "predicateCount": 1,
+      "icd10Scope": {
+        "id": "NERVOUS",
+        "label": "Diseases of the nervous system",
+        "level": "chapter",
+        "codeRange": "G00-G99"
+      },
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "DS",
+      "logicNormalized": "(DS & P[ICD10])"
+    },
+    "structure": {
+      "whitelistSize": 20,
+      "merkleDepth": 8,
+      "proofType": "credential_proof",
+      "predicateRoots": {
+        "0": "0x7e7cf844a735ea172775bbddab9513eaf5364630cf35e58e0a7f8be479a4a96"
+      },
+      "whitelists": {
+        "0": {
+          "namespace": "ICD10",
+          "scopeId": "NERVOUS",
+          "scopeLabel": "Diseases of the nervous system",
+          "configHash": "0x4fd72c1a9c23e772da1b29631dea075fbc6aa8f4d28eec6e8fa134f32025249d",
+          "requestedSize": 20,
+          "leafCount": 20,
+          "selectedTerms": [
+            "G41",
+            "G71",
+            "G25",
+            "G00",
+            "G05",
+            "G64",
+            "G56",
+            "G11",
+            "G46",
+            "G22",
+            "G45",
+            "G98",
+            "G63",
+            "G37",
+            "G31",
+            "G32",
+            "G26",
+            "G92",
+            "G94",
+            "G30"
+          ],
+          "codeRange": "G00-G99",
+          "level": "chapter"
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x29f55486390ccdf8b53b91b7841a02cf68f267c8112d54f57379cfa37d13f8ca",
+      "randomizer": "0x19dca2f9ef04a4f113dd3f86c47b19c4aa39c318f00c4f81c21813bc14915",
+      "policyCommitment": "0x4d8f1ab0376208600a3a841eea6d9e8efff8b4e50b7f3f669094037b941ca10",
+      "paramsCommitment": "9575355001725455604130988938820412070416021224551860199550346035998616380639"
+    },
+    "policy": [
+      1,
+      13,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      1,
+      13,
+      24
+    ],
+    "numOperations": 3,
+    "predicateSlots": [
+      0
+    ],
+    "predicateValuesBySlot": {
+      "0": 5
+    },
+    "predicateEvidenceBySlot": {
+      "0": {
+        "ontologyCode": "1374734145606720539947132924730541420296638826474",
+        "leaf": "13715769485276205729560456816923747968665177403690380456278738271663938196560",
+        "pathElements": [
+          "8038097827454436714809027935923925425849862183487285815958983863880425502504",
+          "12669990536180281906011711045277635240781388132559842609770071706522586320156",
+          "160207856704473224404206829581400540049201945566024766582647183345843453666",
+          "6773245716164173041847607969937291558705982281864825232396220642677836160641",
+          "11590350393618116100615635871187815953279730088650123390109627694894563527690",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0x7e7cf844a735ea172775bbddab9513eaf5364630cf35e58e0a7f8be479a4a96",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 0,
+    "satisfy": false,
+    "randomizer": "0x19dca2f9ef04a4f113dd3f86c47b19c4aa39c318f00c4f81c21813bc14915",
+    "policyCommitment": "2192558291710184699926836783930029680351676712871369709077962728620601494032",
+    "depthLayer": false,
+    "executionTier": "pi",
+    "piPair": {
+      "pairId": "pi-semantic_equivalent-0",
+      "pairType": "semantic_equivalent",
+      "side": 0,
+      "shapeDistance": 1
+    },
+    "ontologyNamespace": "ICD10",
+    "ontologyValue": 5,
+    "requiresOntology": true,
+    "logicStructure": "trivial",
+    "nestingDepth": "flat",
+    "predicateCount": "single",
+    "setSize": "large",
+    "rangeWidth": "none",
+    "structureType": "trivial",
+    "predicateCombo": "single",
+    "paramType": "large",
+    "structureStats": {
+      "source": "(DS & P[ICD10])",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 1,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 1,
+      "predicateCount": 1,
+      "predicateNamespaces": [
+        "ICD10"
+      ],
+      "attributeTokens": [
+        "DS"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "trivial__single__large__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219712",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723494",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 10522,
+      "proofWitnessTime": 587,
+      "proofProveTime": 4614,
+      "proofVerifyTime": 101,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183951,
+      "accessBlockNumber": 50183965,
+      "blockDifference": 14
+    },
+    "paramsCommitment": "9575355001725455604130988938820412070416021224551860199550346035998616380639",
+    "blockchainPolicyId": "23",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": false,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x149234c231f67502651a34af8d0c1aa5cdb87a8ef7da235579dfe0af489209ae",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 28,
+          "gasLimit": "222623",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda904d8f1ab0376208600a3a841eea6d9e8efff8b4e50b7f3f669094037b941ca10152b7578ac9580e9e82b5582c479eebcff56e0d404747844c23a9fdc2c3ee4df00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183951,
+          "gasUsed": "219712",
+          "cumulativeGasUsed": "219712",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x04d8f1ab0376208600a3a841eea6d9e8efff8b4e50b7f3f669094037b941ca10152b7578ac9580e9e82b5582c479eebcff56e0d404747844c23a9fdc2c3ee4df",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000017"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176ac6958169c000000000000000000000000000000000000000000000000000fbd8395aa6f000000000000000000000000000000000000000000000008e48640204fbba466ede00000000000000000000000000000000000000000000000000e46d72c5258640000000000000000000000000000000000000000000008e4864196fc24fc7d89e",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x9a6f64b6281d5e93a9206139f9c8c742989f970236126db8667a7f890b4e9023",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 29,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000017"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183955,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000017",
+                "0x0000000000000000000000000000000000000000000000000000000000000017"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c3633026cb9800000000000000000000000000000000000000000000000000e46d6ac343f000000000000000000000000000000000000000000000008e4869eca8b02c41c77900000000000000000000000000000000000000000000000000daaa07931d2468000000000000000000000000000000000000000000008e4869f66c135c689311",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0x049c468f6e4c734064dd12c77a07ea75fe2c121071ba9b4c4ec25a538adc133a",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 14,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad00000000000000000000000000000000000000000000000000000000000000170000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000007fa95246f3798000ec24a72eb2b1a6cb067ebcae9a3d335c7495ed7f72133e4dcedf9a463452262ef2dd89a2b59cdf2200000000000000000000000000000000000000000000000000000000000798730b2d5ed97244618a091b6eeb53bbe5de5a142de161d91c7f2ee9e610f63b7ecd1bdeabb47c234dbf2b3dad0eb4556c1597fa9a2e79256f29ebddd301dfca6b0f03bddd2a11a7c0d839a7c4649d409910a70d226a0ed4eb97fb22df1944d50e16200fde3d60aa4c887ea02941b81ff7623acfb07c243f512840bc87f406575024024aed772d74bd909a72b0b2eb1317e7ee5b8711f97676b1929f563b019e87731d3c18faf8aa58b5e2e4dc264ac62bb148baeb3de2bf645d13c64cc9eaa12d1e281b647fe97a5a9fbc583470ef75b2c9cc32979be4950182d62626732d73326c02027f468ae1f5ee4c1125accece15d8d2781f537537e709621f5f4bf36abe51000000000000000000000000000000000000000000000000000000000000000004d8f1ab0376208600a3a841eea6d9e8efff8b4e50b7f3f669094037b941ca10152b7578ac9580e9e82b5582c479eebcff56e0d404747844c23a9fdc2c3ee4df2460a9be43e68f89996516e9a0ae6b39bc05bd25b4b3dc2256fe74c9c67954820000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183965,
+          "gasUsed": "723494",
+          "cumulativeGasUsed": "723494",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000017",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000017"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000017",
+              "topics": [
+                "0x300f13652ff856507791d33fe737c50e3dd0964e4374c6e0b1e4347b365f9cb4",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000017"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1c533eb07f5a000000000000000000000000000000000000000000000000023bc0edf7dca800000000000000000000000000000000000000000000008e486c4e5f703cfa86d100000000000000000000000000000000000000000000000001eea49ab92c28a6000000000000000000000000000000000000000000008e486c9b7bc37bab062b",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 5
+  },
+  {
+    "policyIndex": 7,
+    "policyId": "and_chain-7",
+    "executionId": 0,
+    "layer": "and_chain",
+    "layerVariant": null,
+    "duoTerm": 7,
+    "duoTerms": [
+      7,
+      4,
+      5
+    ],
+    "duoTermCodes": [
+      "HMB",
+      "GS",
+      "CC"
+    ],
+    "semantics": {
+      "layer": "and_chain",
+      "layerVariant": null,
+      "duoTerms": [
+        "HMB",
+        "GS",
+        "CC"
+      ],
+      "duoTermValues": [
+        7,
+        4,
+        5
+      ],
+      "primaryDuoTerm": "HMB",
+      "primaryDuoTermValue": 7,
+      "hasOntology": true,
+      "hasProfile": true,
+      "hasObligation": false,
+      "hasCredential": false,
+      "predicateCount": 3,
+      "icd10Scope": null,
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": {
+        "id": "OCEANIA",
+        "label": "Oceania"
+      },
+      "clinicalScope": {
+        "id": "COUNSELING",
+        "label": "Counseling services"
+      },
+      "logicOriginal": "((GS & CC) & HMB)",
+      "logicNormalized": "(((GS & P[ISO3166]) & (CC & P[SNOMED])) & (HMB & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 16,
+      "merkleDepth": 8,
+      "proofType": "null_proof",
+      "predicateRoots": {
+        "3": "0x1374dbe6961983c2aaf4bdb1ac93a56a2b42ed01cfd8aa42bfd04af9c85694f9",
+        "4": "0x2fa267af2576909dc87e210823a8359a3eb707158707c5db6c4461d2463e7cae"
+      },
+      "whitelists": {
+        "3": {
+          "namespace": "ISO3166",
+          "scopeId": "OCEANIA",
+          "scopeLabel": "Oceania",
+          "configHash": "0xd1f0667fc9ffba859f991032ec48356d16a7f21bf2a5cdde6accad3eeae71005",
+          "requestedSize": 16,
+          "leafCount": 16,
+          "selectedTerms": [
+            "NF",
+            "HM",
+            "NC",
+            "NR",
+            "CC",
+            "CX",
+            "PF",
+            "TO",
+            "NU",
+            "PN",
+            "PW",
+            "NZ",
+            "SB",
+            "FM",
+            "PG",
+            "GU"
+          ]
+        },
+        "4": {
+          "namespace": "SNOMED",
+          "scopeId": "COUNSELING",
+          "scopeLabel": "Counseling services",
+          "configHash": "0xf62883a67f1207682385579482b4e3d0654bb3578e0abbaa93ba2fc9f9f85757",
+          "requestedSize": 16,
+          "leafCount": 16,
+          "selectedTerms": [
+            "SNOMED:46964002",
+            "SNOMED:313073008",
+            "SNOMED:410288009",
+            "SNOMED:410274005",
+            "SNOMED:410290005",
+            "SNOMED:410284006",
+            "SNOMED:171008008",
+            "SNOMED:66800001",
+            "SNOMED:171003004",
+            "SNOMED:24165007",
+            "SNOMED:413473000",
+            "SNOMED:410276007",
+            "SNOMED:171001002",
+            "SNOMED:105393000",
+            "SNOMED:60112009",
+            "SNOMED:410272009"
+          ]
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x24a8c9e07cb35150562b4e225a77ab6623a6c76cb808257ae3bd4b0ad60052ad",
+      "randomizer": "0xe50f978894956aa659ee7e8aa3fd6c3b6043164f0c66253af413f3c4a7da6c",
+      "policyCommitment": "0x2b722f776e52089d768d031f12464f621d17770c929ec760fdb1c71c4e20475e",
+      "paramsCommitment": "16754678332462828521225061967374134075957578529541775329748056356981743630562"
+    },
+    "policy": [
+      4,
+      16,
+      24,
+      5,
+      17,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      4,
+      16,
+      24,
+      5,
+      17,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24
+    ],
+    "numOperations": 11,
+    "predicateSlots": [
+      3,
+      4,
+      10
+    ],
+    "predicateValuesBySlot": {
+      "3": 3,
+      "4": 4
+    },
+    "predicateEvidenceBySlot": {
+      "3": {
+        "ontologyCode": "5322673185643824859298393378045333267385537267690",
+        "leaf": "6656541775999720181936444279034563009761471965946828982955744684566937175779",
+        "pathElements": [
+          "19621277727640865838589735393155366392919422522400604768445281686553126277180",
+          "6211060025643461863848021932933736533330227495672988702083044493342527893390",
+          "6143006763117287980151878271085504497199915528232690336318438195168060432624",
+          "5342702135288708359742660566256422751312768814996435328999305158337686795425",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "4": {
+        "ontologyCode": "6228990717309518767866887089733478630528032704490",
+        "leaf": "6198447990010770616105605752255235632099542038924163233197354036330287608772",
+        "pathElements": [
+          "6485456650783163712277955952179775020035661005636985567322730868080740536717",
+          "4006753886977959873643574616287155015502223026649006143425678753219646493157",
+          "4069487570834675446545403033879422879716454831056068005072888782663625306107",
+          "14537207341793193771248441481480670427991059676479847972705281605243849578881",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0",
+        "0",
+        "0",
+        "0x1374dbe6961983c2aaf4bdb1ac93a56a2b42ed01cfd8aa42bfd04af9c85694f9",
+        "0x2fa267af2576909dc87e210823a8359a3eb707158707c5db6c4461d2463e7cae",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 2,
+    "satisfy": true,
+    "randomizer": "0xe50f978894956aa659ee7e8aa3fd6c3b6043164f0c66253af413f3c4a7da6c",
+    "policyCommitment": "19651200656395241831932139456382123118759372716184218608488674030794091546462",
+    "depthLayer": false,
+    "executionTier": "pi",
+    "piPair": {
+      "pairId": "pi-controlled_difference-0",
+      "pairType": "controlled_difference",
+      "side": 1,
+      "shapeDistance": 4
+    },
+    "ontologyNamespace": "ISO3166",
+    "ontologyValue": 3,
+    "requiresOntology": true,
+    "logicStructure": "and_only",
+    "nestingDepth": "medium",
+    "predicateCount": "few",
+    "setSize": "medium",
+    "rangeWidth": "none",
+    "structureType": "and_only",
+    "predicateCombo": "few",
+    "paramType": "medium",
+    "structureStats": {
+      "source": "(((GS & P[ISO3166]) & (CC & P[SNOMED])) & (HMB & P[DUO_PROFILE]))",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 5,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 3,
+      "predicateCount": 3,
+      "predicateNamespaces": [
+        "ISO3166",
+        "SNOMED",
+        "DUO_PROFILE"
+      ],
+      "attributeTokens": [
+        "GS",
+        "CC",
+        "HMB"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_only__few__medium__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219712",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723516",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 11469,
+      "proofWitnessTime": 2070,
+      "proofProveTime": 4431,
+      "proofVerifyTime": 32,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183876,
+      "accessBlockNumber": 50183896,
+      "blockDifference": 20
+    },
+    "paramsCommitment": "16754678332462828521225061967374134075957578529541775329748056356981743630562",
+    "blockchainPolicyId": "12",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": true,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x5ed1d9d95d64fe9c410720b88aaddf72be5e7bb6fde27f41cccc561d94f71782",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 22,
+          "gasLimit": "222623",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda92b722f776e52089d768d031f12464f621d17770c929ec760fdb1c71c4e20475e250acfd73c5089ec22f0e8243dad9a7d875ce34830b0ce825c7f00a3784138e200000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183876,
+          "gasUsed": "219712",
+          "cumulativeGasUsed": "242442",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x2b722f776e52089d768d031f12464f621d17770c929ec760fdb1c71c4e20475e250acfd73c5089ec22f0e8243dad9a7d875ce34830b0ce825c7f00a3784138e2",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000000c"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176ac345827380000000000000000000000000000000000000000000000000015f6380695b6000000000000000000000000000000000000000000000008e481c41afc42f01c3d60000000000000000000000000000000000000000000000000147f8bd23d8ec80000000000000000000000000000000000000000000008e481c591a8774843756",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x103fb4541a21771d0ea1d6f21743c9a11319c60b6102ba88f7034d56aae44d9f",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 23,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f24537000000000000000000000000000000000000000000000000000000000000000c"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183880,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000000c",
+                "0x000000000000000000000000000000000000000000000000000000000000000c"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c361c6f193fc0000000000000000000000000000000000000000000000000147f8b1d1f86000000000000000000000000000000000000000000000008e4823cf0ca06cb4b43b000000000000000000000000000000000000000000000000013e35500b06cc04000000000000000000000000000000000000000000008e4823d8d00233a64837",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0x21a97face8c1c11c2e5769c5892b288d4958ddaa18f35424b5963b69fed5e010",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 11,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000008582196af7e433b2a214764ce28f729324e4fd3d16c8f200d1bcc87b267fa2cdea52093fcf2e57f1114684faec794b0f000000000000000000000000000000000000000000000000000000000007987307fbb48eec2fac058a87135a935979cc3ef0f88ed05461ba634f287781599a0e0af085ec54a574d27c6b24a9cddb8874a89312e02bc827c3ba3a111893ba2c071fcbab541f9a88a91b354da6de071b292c277d1dc92537018b3f0c7bc6dfb8f22f45f00fecbc6315b29bdd218d0f28ffc75a9cc28aa1ac4e38499aeeaaee1ec52340df6cd03151d21231c271c9a1b190dd175cdeb4467182148694c6d35424451ea1028e4f71abe630a0b817fb108ed46acd762a0c0dd2cba6e74cc49755096c0bec3cfad12aa5f03a1c3ae3e4b77ea826b0f8e4d43eacc3897a7a18dedc573d2e8c84bef04b6ce3c28a50ef19c55d09b327fab9e9a67a20bb3f18b4c3633a8300000000000000000000000000000000000000000000000000000000000000012b722f776e52089d768d031f12464f621d17770c929ec760fdb1c71c4e20475e250acfd73c5089ec22f0e8243dad9a7d875ce34830b0ce825c7f00a3784138e21b5073dac4544bc19a120216e4782b86c4fdcab664259dfe57f3539bb4deb9f30000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183896,
+          "gasUsed": "723516",
+          "cumulativeGasUsed": "1469738",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000000c",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000000c"
+              ],
+              "index": null,
+              "transactionIndex": 2
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000000c",
+              "topics": [
+                "0xb045361b5312ffd670a2941e0b6fa95fbd69b7ba26cbdc140da5f6ce128e9762",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000000c"
+              ],
+              "index": null,
+              "transactionIndex": 2
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1ce2546b0f1800000000000000000000000000000000000000000000000003231762f008d000000000000000000000000000000000000000000000008e4830db1ad436fefdde00000000000000000000000000000000000000000000000002d5fa809b9dc0e8000000000000000000000000000000000000000000008e48312837b68b6a0cf6",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 2
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 2
+  },
+  {
+    "policyIndex": 7,
+    "policyId": "and_chain-7",
+    "executionId": 2,
+    "layer": "and_chain",
+    "layerVariant": null,
+    "duoTerm": 7,
+    "duoTerms": [
+      7,
+      4,
+      5
+    ],
+    "duoTermCodes": [
+      "HMB",
+      "GS",
+      "CC"
+    ],
+    "semantics": {
+      "layer": "and_chain",
+      "layerVariant": null,
+      "duoTerms": [
+        "HMB",
+        "GS",
+        "CC"
+      ],
+      "duoTermValues": [
+        7,
+        4,
+        5
+      ],
+      "primaryDuoTerm": "HMB",
+      "primaryDuoTermValue": 7,
+      "hasOntology": true,
+      "hasProfile": true,
+      "hasObligation": false,
+      "hasCredential": false,
+      "predicateCount": 3,
+      "icd10Scope": null,
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": {
+        "id": "OCEANIA",
+        "label": "Oceania"
+      },
+      "clinicalScope": {
+        "id": "COUNSELING",
+        "label": "Counseling services"
+      },
+      "logicOriginal": "((GS & CC) & HMB)",
+      "logicNormalized": "(((GS & P[ISO3166]) & (CC & P[SNOMED])) & (HMB & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 16,
+      "merkleDepth": 8,
+      "proofType": "null_proof",
+      "predicateRoots": {
+        "3": "0x1374dbe6961983c2aaf4bdb1ac93a56a2b42ed01cfd8aa42bfd04af9c85694f9",
+        "4": "0x2fa267af2576909dc87e210823a8359a3eb707158707c5db6c4461d2463e7cae"
+      },
+      "whitelists": {
+        "3": {
+          "namespace": "ISO3166",
+          "scopeId": "OCEANIA",
+          "scopeLabel": "Oceania",
+          "configHash": "0xd1f0667fc9ffba859f991032ec48356d16a7f21bf2a5cdde6accad3eeae71005",
+          "requestedSize": 16,
+          "leafCount": 16,
+          "selectedTerms": [
+            "NF",
+            "HM",
+            "NC",
+            "NR",
+            "CC",
+            "CX",
+            "PF",
+            "TO",
+            "NU",
+            "PN",
+            "PW",
+            "NZ",
+            "SB",
+            "FM",
+            "PG",
+            "GU"
+          ]
+        },
+        "4": {
+          "namespace": "SNOMED",
+          "scopeId": "COUNSELING",
+          "scopeLabel": "Counseling services",
+          "configHash": "0xf62883a67f1207682385579482b4e3d0654bb3578e0abbaa93ba2fc9f9f85757",
+          "requestedSize": 16,
+          "leafCount": 16,
+          "selectedTerms": [
+            "SNOMED:46964002",
+            "SNOMED:313073008",
+            "SNOMED:410288009",
+            "SNOMED:410274005",
+            "SNOMED:410290005",
+            "SNOMED:410284006",
+            "SNOMED:171008008",
+            "SNOMED:66800001",
+            "SNOMED:171003004",
+            "SNOMED:24165007",
+            "SNOMED:413473000",
+            "SNOMED:410276007",
+            "SNOMED:171001002",
+            "SNOMED:105393000",
+            "SNOMED:60112009",
+            "SNOMED:410272009"
+          ]
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x24a8c9e07cb35150562b4e225a77ab6623a6c76cb808257ae3bd4b0ad60052ad",
+      "randomizer": "0xc5e141dbc70658fe99d69aec5d0d35b98b98230e2bed0593cb499bda3541ae",
+      "policyCommitment": "0x2bea4ef07b7b330ec48550f37de747fa8fdb0d1c780a2a20412e11ca9f5a7f34",
+      "paramsCommitment": "9225849078885559476629935078483814724438902577551305022022481348202375924193"
+    },
+    "policy": [
+      4,
+      16,
+      24,
+      5,
+      17,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      4,
+      16,
+      24,
+      5,
+      17,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24
+    ],
+    "numOperations": 11,
+    "predicateSlots": [
+      3,
+      4,
+      10
+    ],
+    "predicateValuesBySlot": {
+      "3": 3,
+      "4": 4
+    },
+    "predicateEvidenceBySlot": {
+      "3": {
+        "ontologyCode": "5322673185643824859298393378045333267385537267690",
+        "leaf": "6656541775999720181936444279034563009761471965946828982955744684566937175779",
+        "pathElements": [
+          "19621277727640865838589735393155366392919422522400604768445281686553126277180",
+          "6211060025643461863848021932933736533330227495672988702083044493342527893390",
+          "6143006763117287980151878271085504497199915528232690336318438195168060432624",
+          "5342702135288708359742660566256422751312768814996435328999305158337686795425",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "4": {
+        "ontologyCode": "6228990717309518767866887089733478630528032704490",
+        "leaf": "6198447990010770616105605752255235632099542038924163233197354036330287608772",
+        "pathElements": [
+          "6485456650783163712277955952179775020035661005636985567322730868080740536717",
+          "4006753886977959873643574616287155015502223026649006143425678753219646493157",
+          "4069487570834675446545403033879422879716454831056068005072888782663625306107",
+          "14537207341793193771248441481480670427991059676479847972705281605243849578881",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        4,
+        4,
+        4,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0",
+        "0",
+        "0",
+        "0x1374dbe6961983c2aaf4bdb1ac93a56a2b42ed01cfd8aa42bfd04af9c85694f9",
+        "0x2fa267af2576909dc87e210823a8359a3eb707158707c5db6c4461d2463e7cae",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 2,
+    "satisfy": true,
+    "randomizer": "0xc5e141dbc70658fe99d69aec5d0d35b98b98230e2bed0593cb499bda3541ae",
+    "policyCommitment": "19863439521844939600212918860706621646828094209333009767567838238863745777460",
+    "depthLayer": false,
+    "executionTier": "pi",
+    "piPair": {
+      "pairId": "pi-controlled_difference-0",
+      "pairType": "controlled_difference",
+      "side": 1,
+      "shapeDistance": 4
+    },
+    "ontologyNamespace": "ISO3166",
+    "ontologyValue": 3,
+    "requiresOntology": true,
+    "logicStructure": "and_only",
+    "nestingDepth": "medium",
+    "predicateCount": "few",
+    "setSize": "medium",
+    "rangeWidth": "none",
+    "structureType": "and_only",
+    "predicateCombo": "few",
+    "paramType": "medium",
+    "structureStats": {
+      "source": "(((GS & P[ISO3166]) & (CC & P[SNOMED])) & (HMB & P[DUO_PROFILE]))",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 5,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 3,
+      "predicateCount": 3,
+      "predicateNamespaces": [
+        "ISO3166",
+        "SNOMED",
+        "DUO_PROFILE"
+      ],
+      "attributeTokens": [
+        "GS",
+        "CC",
+        "HMB"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_only__few__medium__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219724",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723516",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 14472,
+      "proofWitnessTime": 2809,
+      "proofProveTime": 6462,
+      "proofVerifyTime": 85,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183846,
+      "accessBlockNumber": 50183868,
+      "blockDifference": 22
+    },
+    "paramsCommitment": "9225849078885559476629935078483814724438902577551305022022481348202375924193",
+    "blockchainPolicyId": "8",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": true,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x5c8ec6338ba24166bbb703841d4dd3e8f56f7f1fa7521bfc479da5c90eb6f59b",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 20,
+          "gasLimit": "222635",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda92bea4ef07b7b330ec48550f37de747fa8fdb0d1c780a2a20412e11ca9f5a7f341465a5417cb6a5d17ec3af8f34ebeb0a6d3deba2d4824bc66fd385dfb53bc9e100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183846,
+          "gasUsed": "219724",
+          "cumulativeGasUsed": "439448",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x2bea4ef07b7b330ec48550f37de747fa8fdb0d1c780a2a20412e11ca9f5a7f341465a5417cb6a5d17ec3af8f34ebeb0a6d3deba2d4824bc66fd385dfb53bc9e1",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000008"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176b182c117b00000000000000000000000000000000000000000000000000018092095ed0e000000000000000000000000000000000000000000000008e47f68bed46ec355fbe000000000000000000000000000000000000000000000000016926f132bf6500000000000000000000000000000000000000000000008e47f6a3585f1846dabe",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0xc195bb49e21f03eec2b506220649928824633bdd044a63c3b77e96a26ffd7039",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 21,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000008"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183850,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000007",
+                "0x0000000000000000000000000000000000000000000000000000000000000008"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c3627e6c1c4c000000000000000000000000000000000000000000000000016926e6f5c1d000000000000000000000000000000000000000000000008e47f6e1d8c4098c4ada000000000000000000000000000000000000000000000000015f63847755b3b4000000000000000000000000000000000000000000008e47f6eb9c2687f86726",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0xc74874517488a37c8079b34360ac27df2891e14261341ba73393ab34ddf31eee",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 10,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad00000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000007000000000000000000000000000000009c4db33fbcd3e2930bc57413f84456f6062112fb6e5070e1077c60a031178cfb1b281d302d656564251131a9a72295d500000000000000000000000000000000000000000000000000000000000798730484813f092610abfe8a711d165f1cf03920319f9a2053a02cf95525e44c9f3c2b3ec3c1b94dba5d65adac88f8a6ef22ce337c750d15cfedf1325b620b91100020f2c807355c0be00669e209fd3dd5e954ea2624e0d124a6bd2fdd05656429011705b0acd0dac7bdbad48e3521d1a6d170776dd45c7d671b1bfffcbbb3f9176a26b644ff18d0108e816c262728495b4709e9255ebbc231a691f28ee4c39e28fe070de64445f66ef74edba80947956896d5da56f8aa64c5e5f0ec21c7267541562cea41bab1a67ee26059a34e494da59ac05a9ba1d287619a5483a300b57f060e146ed5f0bbfca009f9cb7accfc7007486c890bb1e7da0a7994656bf048db394900000000000000000000000000000000000000000000000000000000000000012bea4ef07b7b330ec48550f37de747fa8fdb0d1c780a2a20412e11ca9f5a7f341465a5417cb6a5d17ec3af8f34ebeb0a6d3deba2d4824bc66fd385dfb53bc9e1169408c5cb452c8b4383d25f7ef225cfb97d68bb14a9a58b43d0f738f8e23c560000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183868,
+          "gasUsed": "723516",
+          "cumulativeGasUsed": "723516",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000007",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000008"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000007",
+              "topics": [
+                "0xb045361b5312ffd670a2941e0b6fa95fbd69b7ba26cbdc140da5f6ce128e9762",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000008"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1ce07fd2a86000000000000000000000000000000000000000000000000003703467d11d2000000000000000000000000000000000000000000000008e4810156649cd13d21000000000000000000000000000000000000000000000000003231787514a77a0000000000000000000000000000000000000000000008e481062832a4ce67a70",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 1
+  },
+  {
+    "policyIndex": 8,
+    "policyId": "and_chain-8",
+    "executionId": 0,
+    "layer": "and_chain",
+    "layerVariant": null,
+    "duoTerm": 0,
+    "duoTerms": [
+      0,
+      7,
+      8,
+      1,
+      2
+    ],
+    "duoTermCodes": [
+      "GRU",
+      "HMB",
+      "NMDS",
+      "DS",
+      "RS"
+    ],
+    "semantics": {
+      "layer": "and_chain",
+      "layerVariant": null,
+      "duoTerms": [
+        "GRU",
+        "HMB",
+        "NMDS",
+        "DS",
+        "RS"
+      ],
+      "duoTermValues": [
+        0,
+        7,
+        8,
+        1,
+        2
+      ],
+      "primaryDuoTerm": "GRU",
+      "primaryDuoTermValue": 0,
+      "hasOntology": true,
+      "hasProfile": true,
+      "hasObligation": true,
+      "hasCredential": false,
+      "predicateCount": 3,
+      "icd10Scope": {
+        "id": "NERVOUS",
+        "label": "Diseases of the nervous system",
+        "level": "chapter",
+        "codeRange": "G00-G99"
+      },
+      "obiScope": {
+        "id": "CLINICAL_TRIAL",
+        "label": "Clinical trials and interventional designs"
+      },
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "((((RS & GRU) & NMDS) & DS) & HMB)",
+      "logicNormalized": "(((((RS & P[OBI]) & (GRU & P[DUO_PROFILE])) & (NMDS & P[DUO_PROFILE])) & (DS & P[ICD10])) & (HMB & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 24,
+      "merkleDepth": 8,
+      "proofType": "null_proof",
+      "predicateRoots": {
+        "0": "0x1bab39645a568209e9985e8baabf8ef8d7274d9196e30d8380b25c057fdaf863",
+        "1": "0x1c24b03891c0184e854acde0fb190ce73da287b85408318a141de381ddd06404"
+      },
+      "whitelists": {
+        "0": {
+          "namespace": "ICD10",
+          "scopeId": "NERVOUS",
+          "scopeLabel": "Diseases of the nervous system",
+          "configHash": "0x8164fcba2094902d4448b45e6ce73b3b547e54694b5f3cfc5ff45c76c37c49db",
+          "requestedSize": 24,
+          "leafCount": 24,
+          "selectedTerms": [
+            "G99",
+            "G60",
+            "G90",
+            "G36",
+            "G26",
+            "G37",
+            "G80",
+            "G64",
+            "G03",
+            "G91",
+            "G20",
+            "G95",
+            "G00",
+            "G44",
+            "G81",
+            "G94",
+            "G35",
+            "G09",
+            "G40",
+            "G21",
+            "G97",
+            "G02",
+            "G11",
+            "G32"
+          ],
+          "codeRange": "G00-G99",
+          "level": "chapter"
+        },
+        "1": {
+          "namespace": "OBI",
+          "scopeId": "CLINICAL_TRIAL",
+          "scopeLabel": "Clinical trials and interventional designs",
+          "configHash": "0xc0ff87500e57e32c4ba1de8cb6b7bb45ce4398ccfa80b4a91a123d543fd3279a",
+          "requestedSize": 24,
+          "leafCount": 24,
+          "selectedTerms": [
+            "OBI:0003700",
+            "OBI:0500001",
+            "OBI:0001401",
+            "OBI:0004002",
+            "OBI:0500004",
+            "OBI:0500003",
+            "OBI:0003697",
+            "OBI:0500015",
+            "OBI:0003699",
+            "OBI:0500016",
+            "OBI:0500002",
+            "OBI:0000355",
+            "OBI:0500008",
+            "OBI:0500020",
+            "OBI:0004001",
+            "OBI:0000951",
+            "OBI:0001440",
+            "OBI:0500005",
+            "OBI:0300310",
+            "OBI:0001336",
+            "OBI:0500010",
+            "OBI:0500018",
+            "OBI:0500007",
+            "OBI:0500014"
+          ],
+          "termId": "OBI:0003699"
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x28547612ff0b876587ca2c57b5490483c6a896ddc73a9336322744ca39451043",
+      "randomizer": "0x4321bde1a4b03e7e75eba693507a009f9543359228f608a83473ca7f206f6b",
+      "policyCommitment": "0x53c35fc9d55bf4439713b5f0b9876301c3dbed88c7c54f87e821853e5d73091",
+      "paramsCommitment": "876625648559386148551457243714095669184690710029035669257345693595484156378"
+    },
+    "policy": [
+      2,
+      14,
+      24,
+      0,
+      23,
+      24,
+      24,
+      7,
+      23,
+      24,
+      24,
+      1,
+      13,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      2,
+      14,
+      24,
+      0,
+      23,
+      24,
+      24,
+      7,
+      23,
+      24,
+      24,
+      1,
+      13,
+      24,
+      24,
+      6,
+      23,
+      24,
+      24
+    ],
+    "numOperations": 19,
+    "predicateSlots": [
+      0,
+      1,
+      10
+    ],
+    "predicateValuesBySlot": {
+      "0": 5,
+      "1": 0
+    },
+    "predicateEvidenceBySlot": {
+      "0": {
+        "ontologyCode": "1374734145606720539947132924730541420296638826474",
+        "leaf": "13715769485276205729560456816923747968665177403690380456278738271663938196560",
+        "pathElements": [
+          "18322053407881358523033146390890100708196214718900914149670419214140799441981",
+          "19997311565754372877180727841362660460771882316615680006377512144072290557379",
+          "4426644526646067088740537908353472834454505730186765913084891429128770722818",
+          "2615786572613371895463487908805505323228923967728735397672162530328289940401",
+          "11480887145132315550797872299466234182139756466291232718413644043552199770751",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "1": {
+        "ontologyCode": "1598183503233488267311525174580032753689767708650",
+        "leaf": "19433969181885538766397061497619418469481071534304013231987324640687346338206",
+        "pathElements": [
+          "11494270270310824507515667835212224174429837823899739948052137315986063631010",
+          "10950851732690897770198756458307132612640352774822110196040308843298526325914",
+          "5570372383545352621346489499220213229842009499253167811773876780810314517997",
+          "3874920676823505217699116644518115639595038303073704485207778682497579179981",
+          "10241640841988604345754467690288693939729135480560075506307178283541604329036",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0x1bab39645a568209e9985e8baabf8ef8d7274d9196e30d8380b25c057fdaf863",
+        "0x1c24b03891c0184e854acde0fb190ce73da287b85408318a141de381ddd06404",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 3,
+    "satisfy": true,
+    "randomizer": "0x4321bde1a4b03e7e75eba693507a009f9543359228f608a83473ca7f206f6b",
+    "policyCommitment": "2367947669835279140707987759006497998212151126274326389172541823624806871185",
+    "depthLayer": false,
+    "executionTier": "coverage",
+    "piPair": null,
+    "ontologyNamespace": "ICD10",
+    "ontologyValue": 5,
+    "requiresOntology": true,
+    "logicStructure": "and_only",
+    "nestingDepth": "deep",
+    "predicateCount": "few",
+    "setSize": "large",
+    "rangeWidth": "none",
+    "structureType": "and_only",
+    "predicateCombo": "few",
+    "paramType": "large",
+    "structureStats": {
+      "source": "(((((RS & P[OBI]) & (GRU & P[DUO_PROFILE])) & (NMDS & P[DUO_PROFILE])) & (DS & P[ICD10])) & (HMB & P[DUO_PROFILE]))",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 9,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 5,
+      "predicateCount": 5,
+      "predicateNamespaces": [
+        "OBI",
+        "DUO_PROFILE",
+        "ICD10"
+      ],
+      "attributeTokens": [
+        "RS",
+        "GRU",
+        "NMDS",
+        "DS",
+        "HMB"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_only__few__large__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219724",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723516",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 6639,
+      "proofWitnessTime": 592,
+      "proofProveTime": 2423,
+      "proofVerifyTime": 29,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50184011,
+      "accessBlockNumber": 50184024,
+      "blockDifference": 13
+    },
+    "paramsCommitment": "876625648559386148551457243714095669184690710029035669257345693595484156378",
+    "blockchainPolicyId": "35",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": true,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x3d0a4fb14b14abc490fe64d17c4c9b5df6369b4ce98cd9cceebe8583d2064c53",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 34,
+          "gasLimit": "222635",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda9053c35fc9d55bf4439713b5f0b9876301c3dbed88c7c54f87e821853e5d7309101f0270c7990f731f6b0fbfcb04a373038175985b46ca14ae8fcaef4f679f1da00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50184011,
+          "gasUsed": "219724",
+          "cumulativeGasUsed": "240724",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x053c35fc9d55bf4439713b5f0b9876301c3dbed88c7c54f87e821853e5d7309101f0270c7990f731f6b0fbfcb04a373038175985b46ca14ae8fcaef4f679f1da",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000023"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176b1d003383d800000000000000000000000000000000000000000000000000984dedc0f6b000000000000000000000000000000000000000000000008e487e898753ddf6f5f30000000000000000000000000000000000000000000000000080e2d0c0c32c28000000000000000000000000000000000000000000008e487ea0f270de2a79cb",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x4ee0fc7d34bae72497422b750c3a47b8028b34bb40c073a961accaf488b7a7c0",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 35,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000023"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50184016,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000023",
+                "0x0000000000000000000000000000000000000000000000000000000000000023"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c364560c5a140000000000000000000000000000000000000000000000000080e2cb57e7a000000000000000000000000000000000000000000000008e48810c3d5b9e36bf1700000000000000000000000000000000000000000000000000771f6701db45ec000000000000000000000000000000000000000000008e48811600bff443192b",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0xecd313d59abdece7e9fb65f34b9f3e30bc7d52185f824a89d49760a9750dc8b3",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 17,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad0000000000000000000000000000000000000000000000000000000000000023000000000000000000000000000000000000000000000000000000000000002300000000000000000000000000000000bf21bef1f43808f494c63cbf9d9985402a94fee1f6e9bbf746672575a32a052aa63ff1e472324f9f30a0a7b82c7f682c00000000000000000000000000000000000000000000000000000000000798732cbb5b72dc12b55603655bfb4d1112a1b5734a6231dea90aa50e8a05957355790d7ab921cac863bcde81f86f34b30674fbc683c55979d1c55b7f5128536bcee5140f3229c2a1b47db03a08e65b038f72b871c82e1f81840011a6d187c6fb526a2d36a264f7eeb3791159cc7d983e6e54d58f0131ba23a0b0075aa384f277004c0bc297202af5975032c71e9850c70e9daf092897f0aa92954f92b197c40a14d61a5168db6ebd649b9d93745f4ba0d892aadd42b5fea081c64b02a22ea0a4559b12e37695ff5eb7fc752967f2c9358fcd257dfc1ea083536a8a143515621b3be4026c81f4eb0b62165d38089f0bbd839ea8cddfc14eac16b360395b9c9dc04a190000000000000000000000000000000000000000000000000000000000000001053c35fc9d55bf4439713b5f0b9876301c3dbed88c7c54f87e821853e5d7309101f0270c7990f731f6b0fbfcb04a373038175985b46ca14ae8fcaef4f679f1da12d6bea7b8ba968fe7c6eb8d58551b745154a20fe454c5d1735ce11a6809e3b50000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50184024,
+          "gasUsed": "723516",
+          "cumulativeGasUsed": "723516",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000023",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000023"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000023",
+              "topics": [
+                "0xb045361b5312ffd670a2941e0b6fa95fbd69b7ba26cbdc140da5f6ce128e9762",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000023"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1cf4683d2e5800000000000000000000000000000000000000000000000001546cfb9c825000000000000000000000000000000000000000000000008e4883d88b21ea7bad1f00000000000000000000000000000000000000000000000001075007344521a8000000000000000000000000000000000000000000008e488425a81652b8db77",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 8
+  },
+  {
+    "policyIndex": 15,
+    "policyId": "mixed_chain-15",
+    "executionId": 0,
+    "layer": "mixed_chain",
+    "layerVariant": null,
+    "duoTerm": 0,
+    "duoTerms": [
+      0,
+      7,
+      8,
+      9,
+      3
+    ],
+    "duoTermCodes": [
+      "GRU",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "POA"
+    ],
+    "semantics": {
+      "layer": "mixed_chain",
+      "layerVariant": null,
+      "duoTerms": [
+        "GRU",
+        "HMB",
+        "NMDS",
+        "GSO",
+        "POA"
+      ],
+      "duoTermValues": [
+        0,
+        7,
+        8,
+        9,
+        3
+      ],
+      "primaryDuoTerm": "GRU",
+      "primaryDuoTermValue": 0,
+      "hasOntology": true,
+      "hasProfile": true,
+      "hasObligation": false,
+      "hasCredential": true,
+      "predicateCount": 2,
+      "icd10Scope": null,
+      "obiScope": null,
+      "populationScope": {
+        "id": "AFRICAN",
+        "label": "African ancestry"
+      },
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "((((POA & GSO) & NMDS) | HMB) & GRU)",
+      "logicNormalized": "(((((POA & P[HANCESTRO]) & (GSO & P[DUO_PROFILE])) & (NMDS & P[DUO_PROFILE])) | (HMB & P[DUO_PROFILE])) & (GRU & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 4,
+      "merkleDepth": 8,
+      "proofType": "credential_proof",
+      "predicateRoots": {
+        "2": "0x7f65fa44497c66b5c2e7d7c3684cbb6fc3a05ffb70b6347cc995df3046a05d6"
+      },
+      "whitelists": {
+        "2": {
+          "namespace": "HANCESTRO",
+          "scopeId": "AFRICAN",
+          "scopeLabel": "African ancestry",
+          "configHash": "0xd251913f94e75dfa55dc563f93261b9afd124db78a17ef440d45e43545cbecad",
+          "requestedSize": 4,
+          "leafCount": 4,
+          "selectedTerms": [
+            "HANCESTRO:0655",
+            "HANCESTRO:0662",
+            "HANCESTRO:0644",
+            "HANCESTRO:0666"
+          ]
+        }
+      },
+      "policyDepth": 64,
+      "policyHash": "0x1629d43eda9ed3e46c8355e9876d1e391ebac2600f79a09fd67abcaf2e42a32b",
+      "randomizer": "0x79475138f10483c16685f36332ea25efa8af7764430addf328a9aa6c8bc50b",
+      "policyCommitment": "0x10dfd649493f52ec17cb2aae5c92b847dd3ccb6a943c0ccb0a050813b76cb950",
+      "paramsCommitment": "20818117397295290129103215031157897230765745418714700073519807720758609292961"
+    },
+    "policy": [
+      3,
+      15,
+      24,
+      8,
+      23,
+      24,
+      24,
+      7,
+      23,
+      24,
+      24,
+      6,
+      23,
+      24,
+      25,
+      0,
+      23,
+      24,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      3,
+      15,
+      24,
+      8,
+      23,
+      24,
+      24,
+      7,
+      23,
+      24,
+      24,
+      6,
+      23,
+      24,
+      25,
+      0,
+      23,
+      24,
+      24
+    ],
+    "numOperations": 19,
+    "predicateSlots": [
+      2,
+      10
+    ],
+    "predicateValuesBySlot": {
+      "2": 1
+    },
+    "predicateEvidenceBySlot": {
+      "2": {
+        "ontologyCode": "3057921146058486136613520938693352757795559049194",
+        "leaf": "19332629855765561955914886496340694150837416195241826342899238297586814539542",
+        "pathElements": [
+          "695788102406433623733962648000787963655195492282058035320281591454425294897",
+          "1214993605567884122834091566886354165710991570591547829839938215732049861758",
+          "7423237065226347324353380772367382631490014989348495481811164164159255474657",
+          "11286972368698509976183087595462810875513684078608517520839298933882497716792",
+          "3607627140608796879659380071776844901612302623152076817094415224584923813162",
+          "19712377064642672829441595136074946683621277828620209496774504837737984048981",
+          "20775607673010627194014556968476266066927294572720319469184847051418138353016",
+          "3396914609616007258851405644437304192397291162432396347162513310381425243293"
+        ],
+        "pathIndices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "predicateParameters": {
+      "predicateTypes": [
+        4,
+        4,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0",
+        "0",
+        "0x7f65fa44497c66b5c2e7d7c3684cbb6fc3a05ffb70b6347cc995df3046a05d6",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 0,
+    "satisfy": false,
+    "randomizer": "0x79475138f10483c16685f36332ea25efa8af7764430addf328a9aa6c8bc50b",
+    "policyCommitment": "7632491422286009041599018231835276852450953126004969227793573963822629960016",
+    "depthLayer": false,
+    "executionTier": "coverage",
+    "piPair": null,
+    "ontologyNamespace": "HANCESTRO",
+    "ontologyValue": 1,
+    "requiresOntology": true,
+    "logicStructure": "and_or_mixed",
+    "nestingDepth": "deep",
+    "predicateCount": "few",
+    "setSize": "small",
+    "rangeWidth": "none",
+    "structureType": "and_or_mixed",
+    "predicateCombo": "few",
+    "paramType": "small",
+    "structureStats": {
+      "source": "(((((POA & P[HANCESTRO]) & (GSO & P[DUO_PROFILE])) & (NMDS & P[DUO_PROFILE])) | (HMB & P[DUO_PROFILE])) & (GRU & P[DUO_PROFILE]))",
+      "hasOr": true,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 8,
+      "orCount": 1,
+      "notCount": 0,
+      "maxDepth": 5,
+      "predicateCount": 5,
+      "predicateNamespaces": [
+        "HANCESTRO",
+        "DUO_PROFILE"
+      ],
+      "attributeTokens": [
+        "POA",
+        "GSO",
+        "NMDS",
+        "HMB",
+        "GRU"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_or_mixed__few__small__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219724",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723506",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 7879,
+      "proofWitnessTime": 600,
+      "proofProveTime": 2355,
+      "proofVerifyTime": 31,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183991,
+      "accessBlockNumber": 50184004,
+      "blockDifference": 13
+    },
+    "paramsCommitment": "20818117397295290129103215031157897230765745418714700073519807720758609292961",
+    "blockchainPolicyId": "31",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": false,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0xe672b2ab15ae5183d84f89ee7e071691d24daa4f1cd8f325a9d4b1133e27c370",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 32,
+          "gasLimit": "222635",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda910dfd649493f52ec17cb2aae5c92b847dd3ccb6a943c0ccb0a050813b76cb9502e06a30af532b5cf9472efae485443fe9fd0b6c6eabc3f178018076ec1f9aea100000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183991,
+          "gasUsed": "219724",
+          "cumulativeGasUsed": "219724",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x10dfd649493f52ec17cb2aae5c92b847dd3ccb6a943c0ccb0a050813b76cb9502e06a30af532b5cf9472efae485443fe9fd0b6c6eabc3f178018076ec1f9aea1",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000001f"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176b1c7535131c00000000000000000000000000000000000000000000000000b97c76b66c3000000000000000000000000000000000000000000000008e48750170d7c75f0d6f00000000000000000000000000000000000000000000000000a2115a41371ce4000000000000000000000000000000000000000000008e487518dbf43c94208b",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x330bbc0e9b0f60317c059ac44f2bd29faa5ef2c1263f507af87c11b5673b2f4c",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 33,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f24537000000000000000000000000000000000000000000000000000000000000001f"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183995,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x000000000000000000000000000000000000000000000000000000000000001f",
+                "0x000000000000000000000000000000000000000000000000000000000000001f"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c36418a2475400000000000000000000000000000000000000000000000000a211544d5d2000000000000000000000000000000000000000000000008e48773bf28ac5d068ab00000000000000000000000000000000000000000000000000984df034bad8ac000000000000000000000000000000000000000000008e487745b5eede72afff",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0xd95dbe32296425e2695309ed08da24c037b9d50d89e11de8c1d3f0576459395d",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 16,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad000000000000000000000000000000000000000000000000000000000000001f000000000000000000000000000000000000000000000000000000000000001f000000000000000000000000000000006996ce10a273da80c7db2d5102f51ae10d99db33ab319502a0ade40d4ea017856a2ef2900f054dc67bb75eb6042c134e00000000000000000000000000000000000000000000000000000000000798730d317e5356ee46e53bb95e202510adee632ce137f3afe60add3568a5123f70402f35430105c1ce57ea1dccfd0ecb1520dc9a507dea9b1b971bd45dad75c3ac5023cb3b40a9a683355e3602e14c6b6beefb309f553a7c184287f9c2e9ff89b7b72cad6f4c4096e6097ae77358d75829b2ad186483b3432078175a8f6dab63aa272560f1dc5bdc960b9aa7e7de4561936161e0a0210dcaa9799bebe9726ef70d85093666d6c49301c9ed5ee8ca0d7e052930d8ac8352c52b43abf09d00bcbbd91a07ad31f2d2143e15c0e702d6b5ba858951ef2a8adf45f3a3f094455a5dc868f4212d272216c2b24567d6e22734ac2d91658f75c33aa670168ae3153d434bb0f0000000000000000000000000000000000000000000000000000000000000000010dfd649493f52ec17cb2aae5c92b847dd3ccb6a943c0ccb0a050813b76cb9502e06a30af532b5cf9472efae485443fe9fd0b6c6eabc3f178018076ec1f9aea11d3232b8e89a6e96e3fc06d5d81ef3e0c76a42946572bb688fee6305b3721c150000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50184004,
+          "gasUsed": "723506",
+          "cumulativeGasUsed": "723506",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000001f",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000001f"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x000000000000000000000000000000000000000000000000000000000000001f",
+              "topics": [
+                "0x300f13652ff856507791d33fe737c50e3dd0964e4374c6e0b1e4347b365f9cb4",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x000000000000000000000000000000000000000000000000000000000000001f"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1cacd086264600000000000000000000000000000000000000000000000001a189baa431e800000000000000000000000000000000000000000000008e487ab535b5084aa55b00000000000000000000000000000000000000000000000001546d0dd3abc1ba000000000000000000000000000000000000000000008e487b025261d8d0cba1",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 7
+  },
+  {
+    "policyIndex": 16,
+    "policyId": "profile_only-16",
+    "executionId": 0,
+    "layer": "profile_only",
+    "layerVariant": null,
+    "duoTerm": 0,
+    "duoTerms": [
+      0,
+      7
+    ],
+    "duoTermCodes": [
+      "GRU",
+      "HMB"
+    ],
+    "semantics": {
+      "layer": "profile_only",
+      "layerVariant": null,
+      "duoTerms": [
+        "GRU",
+        "HMB"
+      ],
+      "duoTermValues": [
+        0,
+        7
+      ],
+      "primaryDuoTerm": "GRU",
+      "primaryDuoTermValue": 0,
+      "hasOntology": false,
+      "hasProfile": true,
+      "hasObligation": false,
+      "hasCredential": false,
+      "predicateCount": 1,
+      "icd10Scope": null,
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "(HMB & GRU)",
+      "logicNormalized": "((HMB & P[DUO_PROFILE]) & (GRU & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 0,
+      "merkleDepth": 8,
+      "proofType": "null_proof",
+      "predicateRoots": {},
+      "whitelists": {},
+      "policyDepth": 64,
+      "policyHash": "0x22d0cb6de6337d65d01e036abb223404f46c430b39f4b2de211ddf687467b4bf",
+      "randomizer": "0x4b2ea481e50f6e6c0a87cb7022b9a17ab9189c4101473cb8a8bb902ddcb375",
+      "policyCommitment": "0x17e97148c8ce278ec376777f9ca197e5df3cc3d2c8171f1da34d37ba89abe4ed",
+      "paramsCommitment": "7050928395068244336527191515184287158945649494682646425052647615242668117748"
+    },
+    "policy": [
+      6,
+      23,
+      24,
+      0,
+      23,
+      24,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      6,
+      23,
+      24,
+      0,
+      23,
+      24,
+      24
+    ],
+    "numOperations": 7,
+    "predicateSlots": [
+      10
+    ],
+    "predicateValuesBySlot": {},
+    "predicateEvidenceBySlot": {},
+    "predicateParameters": {
+      "predicateTypes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 3,
+    "satisfy": true,
+    "randomizer": "0x4b2ea481e50f6e6c0a87cb7022b9a17ab9189c4101473cb8a8bb902ddcb375",
+    "policyCommitment": "10815652743109103235071794273575181825970713597976162148323693900499799237869",
+    "depthLayer": false,
+    "executionTier": "coverage",
+    "piPair": null,
+    "ontologyNamespace": null,
+    "ontologyValue": null,
+    "requiresOntology": false,
+    "logicStructure": "and_only",
+    "nestingDepth": "shallow",
+    "predicateCount": "single",
+    "setSize": "none",
+    "rangeWidth": "none",
+    "structureType": "and_only",
+    "predicateCombo": "single",
+    "paramType": "none",
+    "structureStats": {
+      "source": "((HMB & P[DUO_PROFILE]) & (GRU & P[DUO_PROFILE]))",
+      "hasOr": false,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 3,
+      "orCount": 0,
+      "notCount": 0,
+      "maxDepth": 2,
+      "predicateCount": 2,
+      "predicateNamespaces": [
+        "DUO_PROFILE"
+      ],
+      "attributeTokens": [
+        "HMB",
+        "GRU"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_only__single__none__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "237664",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "741480",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 15546,
+      "proofWitnessTime": 2743,
+      "proofProveTime": 6270,
+      "proofVerifyTime": 693,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183814,
+      "accessBlockNumber": 50183839,
+      "blockDifference": 25
+    },
+    "paramsCommitment": "7050928395068244336527191515184287158945649494682646425052647615242668117748",
+    "blockchainPolicyId": "4",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": true,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0x702141a252a314acc600ced18c92c6fd6de43b6e7daf25f03b8cd3e03526a6d5",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 18,
+          "gasLimit": "240717",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda917e97148c8ce278ec376777f9ca197e5df3cc3d2c8171f1da34d37ba89abe4ed0f96af1db5df3672a8a33e0131fb6d2a406802b7b680df95220b35f6384c8ef400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183814,
+          "gasUsed": "237664",
+          "cumulativeGasUsed": "733992",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x17e97148c8ce278ec376777f9ca197e5df3cc3d2c8171f1da34d37ba89abe4ed0f96af1db5df3672a8a33e0131fb6d2a406802b7b680df95220b35f6384c8ef4",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000004"
+              ],
+              "index": null,
+              "transactionIndex": 3
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000001954944a6c69c000000000000000000000000000000000000000000000000001a3aa0fc817d000000000000000000000000000000000000000000000008e47cbc5d25884833cc3000000000000000000000000000000000000000000000000018a557b7dab6640000000000000000000000000000000000000000000008e47cbdf26ecceefa683",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 3
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0x706712a9bf024e13bc8705f006921e10da9c368a384f85c48b73c39e2e320f4f",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 19,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000004"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183818,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "274812",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000004",
+                "0x0000000000000000000000000000000000000000000000000000000000000004"
+              ],
+              "index": null,
+              "transactionIndex": 2
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c3620628ea04000000000000000000000000000000000000000000000000018a556feb375000000000000000000000000000000000000000000000008e47d140e68c382b57230000000000000000000000000000000000000000000000000180920de50e65fc000000000000000000000000000000000000000000008e47d14aa9ee3e544127",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 2
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0x77cdaaad2cd223391f3273a41258d0bec97ff41d15548d1fe81533d866c00610",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 9,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000c2cb11e03592e2df9239564b231e850d0ac8d9fa8528371ef9579e1bc6c9181c9de155e4e09f481560ce09908591d3a8000000000000000000000000000000000000000000000000000000000007987324904b51fb48dcd3c5c38829de7bd76fec1e54acb1f2e39991d05d01b59ddb3b128006e8b5b85f46b29f6cf672c7e39f3c8bfc081ecf50c7ba7dd312b15c7f9d2951484c6046c2513aa7f839216789588cf7c4ab334679c3f13613f8f657f7b32398c7b4bab51ab4d7d9d47a86b97ab64f9880e60ffd69421bc4eedc36561aea20cf8ad550b74c83ab188a994fc47d9c65f1a94fd5bb9eb63bc921ac6dab257a0434c44321d461d2edc807ce94c9ea7c813749801b3c0daa76fd22b1b8769f0a1e5bdc31081edfcc17d8219bd376fba07fe4e1cf8578fd6a1491762535dcc89115abd07408b4fd1f32caaf926644088a326862ef5aaba36da5aaa29f12fe269f000000000000000000000000000000000000000000000000000000000000000117e97148c8ce278ec376777f9ca197e5df3cc3d2c8171f1da34d37ba89abe4ed0f96af1db5df3672a8a33e0131fb6d2a406802b7b680df95220b35f6384c8ef42d1c6ee17b0c73f240baec260579d3b755d6cd3f639481f0ccd59f25f071d43e0000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183839,
+          "gasUsed": "741480",
+          "cumulativeGasUsed": "1117517",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000003",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000004"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000003",
+              "topics": [
+                "0xb045361b5312ffd670a2941e0b6fa95fbd69b7ba26cbdc140da5f6ce128e9762",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000004"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004f0706e2ab30a800000000000000000000000000000000000000000000000003bf3b91c95b0000000000000000000000000000000000000000000000008e47f18cc6de3c6f03930000000000000000000000000000000000000000000000000370348ae6afcf58000000000000000000000000000000000000000000008e47f1dbcde51f1a343b",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 0
+  },
+  {
+    "policyIndex": 18,
+    "policyId": "profile_only-18",
+    "executionId": 0,
+    "layer": "profile_only",
+    "layerVariant": null,
+    "duoTerm": 0,
+    "duoTerms": [
+      0,
+      7,
+      8,
+      9,
+      6
+    ],
+    "duoTermCodes": [
+      "GRU",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NCU"
+    ],
+    "semantics": {
+      "layer": "profile_only",
+      "layerVariant": null,
+      "duoTerms": [
+        "GRU",
+        "HMB",
+        "NMDS",
+        "GSO",
+        "NCU"
+      ],
+      "duoTermValues": [
+        0,
+        7,
+        8,
+        9,
+        6
+      ],
+      "primaryDuoTerm": "GRU",
+      "primaryDuoTermValue": 0,
+      "hasOntology": false,
+      "hasProfile": true,
+      "hasObligation": false,
+      "hasCredential": false,
+      "predicateCount": 1,
+      "icd10Scope": null,
+      "obiScope": null,
+      "populationScope": null,
+      "geoScope": null,
+      "clinicalScope": null,
+      "logicOriginal": "((((HMB & NMDS) & NCU) | GRU) | GSO)",
+      "logicNormalized": "(((((HMB & P[DUO_PROFILE]) & (NMDS & P[DUO_PROFILE])) & (NCU & P[DUO_PROFILE])) | (GRU & P[DUO_PROFILE])) | (GSO & P[DUO_PROFILE]))"
+    },
+    "structure": {
+      "whitelistSize": 0,
+      "merkleDepth": 8,
+      "proofType": "null_proof",
+      "predicateRoots": {},
+      "whitelists": {},
+      "policyDepth": 64,
+      "policyHash": "0x292a204b967d94af0f70c5e263f4eecd810bb28cb9df5723f1c52056636d53af",
+      "randomizer": "0x829900318ff4397745647131c422ab40263349f890e1765f3469921ed1a6ac",
+      "policyCommitment": "0x9a4e4e2a83e6066223cf8c284dbc9ef081544140afa6a829cffa256dd02e832",
+      "paramsCommitment": "3190382945536622737199270535056370393622112994643516264422845363956943599535"
+    },
+    "policy": [
+      6,
+      23,
+      24,
+      7,
+      23,
+      24,
+      24,
+      12,
+      23,
+      24,
+      24,
+      0,
+      23,
+      24,
+      25,
+      8,
+      23,
+      24,
+      25,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "tokens": [
+      6,
+      23,
+      24,
+      7,
+      23,
+      24,
+      24,
+      12,
+      23,
+      24,
+      24,
+      0,
+      23,
+      24,
+      25,
+      8,
+      23,
+      24,
+      25
+    ],
+    "numOperations": 19,
+    "predicateSlots": [
+      10
+    ],
+    "predicateValuesBySlot": {},
+    "predicateEvidenceBySlot": {},
+    "predicateParameters": {
+      "predicateTypes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        9
+      ],
+      "predicateSchemaTags": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2006
+      ],
+      "scopeKinds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "approvedScopeIds": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "merkleRoots": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "credPublicKeys": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "5588552839299838125888269000128268289324625789106777931236096150745739985780"
+      ],
+      "moratoriumUntilEpoch": "0",
+      "timeLimitEpochs": "0"
+    },
+    "attributeOrder": [
+      "GRU",
+      "DS",
+      "RS",
+      "POA",
+      "GS",
+      "CC",
+      "HMB",
+      "NMDS",
+      "GSO",
+      "NPUNCU",
+      "NPOA",
+      "NPU",
+      "NCU"
+    ],
+    "requesterAttrs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "duoProfileClaims": 0,
+    "satisfy": false,
+    "randomizer": "0x829900318ff4397745647131c422ab40263349f890e1765f3469921ed1a6ac",
+    "policyCommitment": "4362158264706192778111936386942099702679927709274608326564767381706464487474",
+    "depthLayer": false,
+    "executionTier": "coverage",
+    "piPair": null,
+    "ontologyNamespace": null,
+    "ontologyValue": null,
+    "requiresOntology": false,
+    "logicStructure": "and_or_mixed",
+    "nestingDepth": "deep",
+    "predicateCount": "single",
+    "setSize": "none",
+    "rangeWidth": "none",
+    "structureType": "and_or_mixed",
+    "predicateCombo": "single",
+    "paramType": "none",
+    "structureStats": {
+      "source": "(((((HMB & P[DUO_PROFILE]) & (NMDS & P[DUO_PROFILE])) & (NCU & P[DUO_PROFILE])) | (GRU & P[DUO_PROFILE])) | (GSO & P[DUO_PROFILE]))",
+      "hasOr": true,
+      "hasAnd": true,
+      "hasNot": false,
+      "andCount": 7,
+      "orCount": 2,
+      "notCount": 0,
+      "maxDepth": 5,
+      "predicateCount": 5,
+      "predicateNamespaces": [
+        "DUO_PROFILE"
+      ],
+      "attributeTokens": [
+        "HMB",
+        "NMDS",
+        "NCU",
+        "GRU",
+        "GSO"
+      ],
+      "hasPredicates": true
+    },
+    "familyId": "and_or_mixed__single__none__none",
+    "captureShard": 2,
+    "features": {
+      "commitGasUsed": "219724",
+      "commitCalldataLength": 164,
+      "accessGasUsed": "723506",
+      "accessCalldataLength": 580,
+      "proofSize": 938,
+      "proofGenerationTime": 10673,
+      "proofWitnessTime": 1088,
+      "proofProveTime": 5689,
+      "proofVerifyTime": 124,
+      "commitLogsCount": 1,
+      "commitLogsSize": 180,
+      "accessLogsCount": 2,
+      "accessLogsSize": 296,
+      "commitBlockNumber": 50183926,
+      "accessBlockNumber": 50183944,
+      "blockDifference": 18
+    },
+    "paramsCommitment": "3190382945536622737199270535056370393622112994643516264422845363956943599535",
+    "blockchainPolicyId": "19",
+    "protectionProfile": "b1_unpadded",
+    "accessGranted": false,
+    "transactions": {
+      "commit": {
+        "tx": {
+          "hash": "0xf4794cfe9acb80e7b9a5b69e8e12cc95f7b43754e66017db8170cf802832d21d",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 26,
+          "gasLimit": "222635",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 164,
+          "data": "0x15dbeda909a4e4e2a83e6066223cf8c284dbc9ef081544140afa6a829cffa256dd02e832070db15872427b68431abf6bf9e64bdc9ad25118037472db3a5a457d7762b7af00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000016697066733a2f2f706f6c6963792d6d6574616461746100000000000000000000"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183926,
+          "gasUsed": "219724",
+          "cumulativeGasUsed": "242454",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x09a4e4e2a83e6066223cf8c284dbc9ef081544140afa6a829cffa256dd02e832070db15872427b68431abf6bf9e64bdc9ad25118037472db3a5a457d7762b7af",
+              "topics": [
+                "0xb65b8c70213228ea798a3f19a9db4989de9408f0c41772fce36b413cca0af646",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000013"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x00000000000000000000000000000000000000000000000000176b1934e83a68000000000000000000000000000000000000000000000000011d06c2501c7000000000000000000000000000000000000000000000008e484d3fcfc9a9fe2cf700000000000000000000000000000000000000000000000001059ba91b343598000000000000000000000000000000000000000000008e484d573ae2dee6675f",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 1
+            }
+          ]
+        }
+      },
+      "resource": {
+        "tx": {
+          "hash": "0xc2aff4dc905161755c50541c1ed52cba341eabcbcb6057e0229caeeaca34e4eb",
+          "from": "0xA07F159F7f67998550E91DeA109b51A0A8395AF7",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 27,
+          "gasLimit": "92550",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 36,
+          "data": "0x49f245370000000000000000000000000000000000000000000000000000000000000013"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183931,
+          "gasUsed": "91604",
+          "cumulativeGasUsed": "91604",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x",
+              "topics": [
+                "0xf21141168bedb27c5a3590d13273a6e017785a1e7ba85415c7ae61766b4c0515",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000000000000000000000000000000000000000000013",
+                "0x0000000000000000000000000000000000000000000000000000000000000013"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x0000000000000000000000000000000000000000000000000009c362bee2232400000000000000000000000000000000000000000000000001059b9fe70d6000000000000000000000000000000000000000000000008e485386e5cf1b9548d500000000000000000000000000000000000000000000000000fbd83d282b3cdc000000000000000000000000000000000000000000008e485390a931da776bf9",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x000000000000000000000000a07f159f7f67998550e91dea109b51a0a8395af7",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      },
+      "access": {
+        "tx": {
+          "hash": "0xce144c692ae57857112229bb203c679cb66f5402af2a0bb133c2a21db071ff09",
+          "from": "0x49EeD01877be924546e732840cc20A2b5Fb994c8",
+          "to": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+          "nonce": 13,
+          "gasLimit": "980000",
+          "maxFeePerGas": "30000000000",
+          "maxPriorityFeePerGas": "30000000000",
+          "value": "0",
+          "type": 2,
+          "chainId": null,
+          "dataLength": 580,
+          "data": "0x8f0b27ad0000000000000000000000000000000000000000000000000000000000000013000000000000000000000000000000000000000000000000000000000000001300000000000000000000000000000000e942a7f729fdc17d8243568837d1cb73281f890639cfc9edaff8c98991867998b1c954ea1ef61b5e0da73ed105a36d0d00000000000000000000000000000000000000000000000000000000000798732e4d47a8e146608ff89c7de2e7a593236fa27874155aed727e86c6c72e88caa52e4dff84832384b30166caa88ede6e8bb442892d72961169f80593a99c1601850d6189549c0dcfd8e0c5c5c8ab8ad224162953cb15acd80502b17c92ab1795dd1fc052a305387cc2e5d9147f5b2bd6bb67bf8da4b42374cf44bfeb859718c4011646d41f34dce358682c9b901e5109f617114023b7c3ffab637c9981007c4a7f28705f7ad373cf707814809f1e7999c8812ca0a79bcd1d74981c64ea7aa2ab251bcccf7033ff9e698a2d425c6c3b96da076553d4c924ac80d80b0d7edd6e47d1087e9dedff437abb858be913ee505dbb74442f43735c579ece5b6783b5b9e150000000000000000000000000000000000000000000000000000000000000000009a4e4e2a83e6066223cf8c284dbc9ef081544140afa6a829cffa256dd02e832070db15872427b68431abf6bf9e64bdc9ad25118037472db3a5a457d7762b7af01b9d7e9958aa5565bb9729018a6518611a859eefcfeb106d538fa83b865f3b70000000000000000000000000000000000000000000000000000000000079873"
+        },
+        "receipt": {
+          "transactionHash": null,
+          "blockNumber": 50183944,
+          "gasUsed": "723506",
+          "cumulativeGasUsed": "723506",
+          "status": 1,
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000013",
+              "topics": [
+                "0xc26c174058363a597757dd638c6ee7805d4601045aeb054c3e1746719148cc08",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000013"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0xAd2F38e4ef398428607b0BA7e8644D12516a553D",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000013",
+              "topics": [
+                "0x300f13652ff856507791d33fe737c50e3dd0964e4374c6e0b1e4347b365f9cb4",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000000000000000000000000000000000000000000013"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            },
+            {
+              "address": "0x0000000000000000000000000000000000001010",
+              "data": "0x000000000000000000000000000000000000000000000000004d1ca2a20c0f640000000000000000000000000000000000000000000000000288ddacff8c4000000000000000000000000000000000000000000000008e4862ad421bbd00096c000000000000000000000000000000000000000000000000023bc10a5d80309c000000000000000000000000000000000000000000008e4862fa5ebe5f0c18d0",
+              "topics": [
+                "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+                "0x0000000000000000000000000000000000000000000000000000000000001010",
+                "0x00000000000000000000000049eed01877be924546e732840cc20a2b5fb994c8",
+                "0x0000000000000000000000007ee41d8a25641000661b1ef5e6ae8a00400466b0"
+              ],
+              "index": null,
+              "transactionIndex": 0
+            }
+          ]
+        }
+      }
+    },
+    "executionSequence": 4
+  }
+]

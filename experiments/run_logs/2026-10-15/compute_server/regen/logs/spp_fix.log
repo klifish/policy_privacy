@@ -1,0 +1,32 @@
+
+> zero-knowledge-proof-template@1.0.0 analysis:spp
+> .venv/bin/python -m experiments.analysis.supervised.spp_supervised --seeds 30 --jobs -1
+
+Loading /root/policy_privacy/experiments/data/polygonAmoy/spp_dataset.json (tag=polygonAmoy)...
+1377 executions, 1077 policies.
+
+  [PASS      ] structureType: trivial/or_only                   medN=130 rf AUC=0.544 sig=0.27 | lr AUC=0.546 sig=0.10
+  [PASS      ] structureType: trivial/and_only                  medN=127 rf AUC=0.495 sig=0.00 | lr AUC=0.506 sig=0.10
+  [PASS      ] structureType: trivial/and_or_mixed              medN=144 rf AUC=0.522 sig=0.00 | lr AUC=0.546 sig=0.13
+  [PASS      ] structureType: or_only/and_only                  medN=179 rf AUC=0.510 sig=0.10 | lr AUC=0.511 sig=0.07
+  [PASS      ] structureType: or_only/and_or_mixed              medN=196 rf AUC=0.492 sig=0.00 | lr AUC=0.484 sig=0.00
+  [PASS      ] structureType: and_only/and_or_mixed             medN=193 rf AUC=0.491 sig=0.00 | lr AUC=0.498 sig=0.00
+  [PASS      ] predicateCombo: single/few                       medN=271 rf AUC=0.507 sig=0.03 | lr AUC=0.526 sig=0.13
+  [PASS      ] predicateCombo: single/many                      medN=130 rf AUC=0.487 sig=0.00 | lr AUC=0.470 sig=0.00
+  [PASS      ] predicateCombo: few/many                         medN=246 rf AUC=0.523 sig=0.03 | lr AUC=0.511 sig=0.03
+  [PASS      ] paramType: none/small                            medN=114 rf AUC=0.445 sig=0.00 | lr AUC=0.473 sig=0.00
+  [PASS      ] paramType: none/medium                           medN=150 rf AUC=0.503 sig=0.03 | lr AUC=0.537 sig=0.13
+  [PASS      ] paramType: none/large                            medN=148 rf AUC=0.504 sig=0.00 | lr AUC=0.511 sig=0.00
+  [PASS      ] paramType: small/medium                          medN=175 rf AUC=0.480 sig=0.00 | lr AUC=0.519 sig=0.00
+  [PASS      ] paramType: small/large                           medN=173 rf AUC=0.472 sig=0.00 | lr AUC=0.485 sig=0.00
+  [PASS      ] paramType: medium/large                          medN=209 rf AUC=0.517 sig=0.10 | lr AUC=0.506 sig=0.03
+  [PASS      ] nestingDepth: flat/shallow                       medN=102 rf AUC=0.534 sig=0.10 | lr AUC=0.529 sig=0.07
+  [PASS      ] nestingDepth: flat/medium                        medN=140 rf AUC=0.535 sig=0.10 | lr AUC=0.538 sig=0.07
+  [PASS      ] nestingDepth: flat/deep                          medN=160 rf AUC=0.503 sig=0.03 | lr AUC=0.553 sig=0.27
+  [PASS      ] nestingDepth: shallow/medium                     medN=164 rf AUC=0.503 sig=0.07 | lr AUC=0.525 sig=0.07
+  [PASS      ] nestingDepth: shallow/deep                       medN=184 rf AUC=0.507 sig=0.03 | lr AUC=0.482 sig=0.03
+  [PASS      ] nestingDepth: medium/deep                        medN=221 rf AUC=0.488 sig=0.03 | lr AUC=0.502 sig=0.03
+
+Overall SPP supervised verdict [polygonAmoy]: PASS
+Summary -> /root/policy_privacy/experiments/results/supervised/spp_supervised_summary.csv
+Verdict -> /root/policy_privacy/experiments/results/supervised/spp_supervised_verdict.json
