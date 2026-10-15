@@ -19,7 +19,8 @@ In blockchain settings, zero-knowledge proofs are widely used to combine public 
 For example, Zerocash and Tornado Cash use these proofs to conceal transaction details or provide transaction anonymity~\cite{sasson2014zerocash, nadler2023tornado}.
 
 In healthcare data sharing, zero-knowledge proofs can support authentication before access to encrypted medical records is granted.
-Sharma et al.~\cite{sharma2020blockchain} combine zk-SNARK-based authentication with PRE: a smart contract verifies a proof of knowledge of a patient's authentication secret before enabling delegated access to electronic health records (EHRs), while PRE handles access to the encrypted records.
+Sharma et al.~\cite{sharma2020blockchain} combine zk-SNARK-based authentication with PRE to support delegated access to electronic health records (EHRs).
+In this work, a smart contract verifies a proof of knowledge of the patient's authentication secret, while PRE enables the authorized healthcare provider to decrypt the records.
 Madine et al.~\cite{madine2025zero} combine transparent zero-knowledge proofs with anonymous credentials to authenticate patients on public and private blockchains while limiting identity disclosure and linkability across interactions.
 These applications illustrate how zero-knowledge proofs can protect authentication information within a data-sharing workflow.
 
