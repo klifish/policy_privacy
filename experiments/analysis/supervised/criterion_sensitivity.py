@@ -115,8 +115,7 @@ def null_simulation(replicates: int, seeds: int, jobs: int, perm_iters: int, spl
             for task in build_tasks(synthetic):
                 key = task["key"]
                 res = analyze_contrast(task["X"], task["y"], task["groups"], seeds, ["lr", "rf"], jobs=jobs,
-                                       perm_iters=perm_iters, task_key=key, split_candidates=split_candidates,
-                                       strata=task["outcome"])
+                                       perm_iters=perm_iters, task_key=key, split_candidates=split_candidates)
                 counts[exp].setdefault(key, 0)
                 if not res["passed"]:
                     failed.append(key)

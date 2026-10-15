@@ -111,41 +111,6 @@ function permutationTestAUC(yTrue, probabilities, iterations = 500, rng = Math.r
 }
 
 /**
- * AUC within each stratum of o (the public access decision), averaged over the
- * strata holding both classes, and its permutation p-value with labels shuffled
- * within strata. o is given to the classifier as an input; averaging
- * within-stratum AUCs keeps it from scoring as label information when its share
- * differs by chance between the classes, and the within-stratum permutation
- * keeps that difference in the null. A single stratum reduces to calculateAUC
- * and permutationTestAUC. Mirrors stratified_auc_pvalue in
- * experiments/analysis/supervised/common.py.
- */
-function stratifiedPermutationTestAUC(yTrue, probabilities, strata, iterations = 500, rng = Math.random) {
-  const levels = [...new Set(strata)].sort();
-  if (levels.length <= 1) return permutationTestAUC(yTrue, probabilities, iterations, rng);
-  const cells = levels.map((level) => {
-    const idx = strata.map((s, i) => i).filter((i) => strata[i] === level);
-    return { labels: idx.map((i) => yTrue[i]), scores: idx.map((i) => probabilities[i]) };
-  }).filter((cell) => cell.labels.some((y) => y === 1) && cell.labels.some((y) => y === 0));
-  if (cells.length === 0) return { auc: 0.5, pValue: 1 };
-  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  const auc = mean(cells.map((cell) => calculateAUC(cell.labels, cell.scores)));
-  let count = 0;
-  for (let it = 0; it < iterations; it++) {
-    const permuted = cells.map((cell) => {
-      const labels = cell.labels.slice();
-      for (let j = labels.length - 1; j > 0; j--) {
-        const k = Math.floor(rng() * (j + 1));
-        [labels[j], labels[k]] = [labels[k], labels[j]];
-      }
-      return calculateAUC(labels, cell.scores);
-    });
-    if (mean(permuted) >= auc) count += 1;
-  }
-  return { auc, pValue: (count + 1) / (iterations + 1) };
-}
-
-/**
  * Calculate advantage over random baseline
  */
 function calculateAdvantage(accuracy, numClasses) {
@@ -299,7 +264,6 @@ function checkPrivacyThresholds(evaluation, thresholds = { aucMax: 0.55 }) {
 }
 
 module.exports = {
-  stratifiedPermutationTestAUC,
   calculateAccuracy,
   calculateConfusionMatrix,
   calculatePrecisionRecall,

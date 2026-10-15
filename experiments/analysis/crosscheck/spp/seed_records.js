@@ -11,7 +11,7 @@
 
 const { runSupervisedAttacks } = require('./attacks');
 const { createRng } = require('../../../core/random');
-const { oneExecutionPerPolicy, outcomeOf, outcomeStrata, stratumKey } = require('../../../core/subsample');
+const { oneExecutionPerPolicy, outcomeStrata, stratumKey } = require('../../../core/subsample');
 
 /**
  * Build per-classifier verdict records (one LR, one RF) from a single
@@ -59,8 +59,8 @@ function buildPerClassifierRecords(key, r) {
  *          permutationIterations:number, balanceMethod:string}} ctx
  */
 function buildSppRecordsForSeed(seedIndex, ctx, baseSeed) {
-  // Default: every policy in one contrast, with o as an input and the AUC
-  // taken within o. ctx.perOutcome (diagnostic): each contrast once per outcome.
+  // Default: every policy in one contrast, granted and denied executions
+  // pooled. ctx.perOutcome (diagnostic): each contrast once per outcome.
   if (ctx.perOutcome) {
     return outcomeStrata(ctx.executionResults).flatMap(({ outcome, rows }) =>
       buildSppStratumRecords(rows, outcome, ctx, baseSeed));
@@ -93,8 +93,6 @@ function buildSppStratumRecords(executionResults, outcome, ctx, baseSeed) {
         perClassifierPermutation: true,
         rngMode: isolated ? 'isolated' : 'legacy',
         baseSeed,
-        // o as a model input and AUC stratum when the rows hold both outcomes.
-        outcomeAdjusted: !outcome && new Set(sampled.map(outcomeOf)).size > 1,
         skipLegacyPermutation
       });
     } finally {

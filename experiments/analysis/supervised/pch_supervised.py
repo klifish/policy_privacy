@@ -23,7 +23,6 @@ from .common import (
     PERM_ITERS,
     TEST_RATIO,
     analyze_contrast,
-    outcome_codes,
     outcome_strata,
     stratum_key,
     build_verdict,
@@ -126,7 +125,6 @@ def build_base_arrays(dataset: List[dict]):
 
 def build_tasks(dataset: List[dict]):
     X, groups = build_base_arrays(dataset)
-    outcome = outcome_codes(dataset)
     tasks = []
     all_indices = np.arange(len(dataset), dtype=int)
 
@@ -146,7 +144,6 @@ def build_tasks(dataset: List[dict]):
             "X": X,
             "y": y,
             "groups": groups,
-            "outcome": outcome,
             # Original dataset row indices for this task (diagnostics only; the
             # of-record pipeline ignores this key).
             "indices": all_indices,
@@ -176,7 +173,6 @@ def build_tasks(dataset: List[dict]):
                 "X": X[indices],
                 "y": y,
                 "groups": groups[indices],
-                "outcome": outcome[indices],
                 "indices": indices,
             })
     return tasks
@@ -196,9 +192,9 @@ def run_dataset(
     perm_iters: int = PERM_ITERS,
     per_outcome: bool = False,
 ) -> Dict:
-    """All PCH tasks. Default: every policy in one task, with o as an input and
-    the AUC taken within o. ``per_outcome`` (diagnostic): each task once per
-    outcome on that outcome's executions."""
+    """All PCH tasks. Default: every policy in one task, granted and denied
+    executions pooled. ``per_outcome`` (diagnostic): each task once per outcome
+    on that outcome's executions."""
     results = []
     if csv_path is not None and csv_path.exists():
         csv_path.unlink()
@@ -213,7 +209,6 @@ def run_dataset(
                 split_candidates=split_candidates,
                 split_manifest_in=split_manifest_in,
                 split_manifest_out=split_manifest_out,
-                strata=None if per_outcome else task["outcome"],
             )
             res.update({
                 "dataset": dataset_tag,

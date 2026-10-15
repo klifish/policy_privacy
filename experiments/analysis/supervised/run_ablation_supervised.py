@@ -83,7 +83,7 @@ def align_records(b1: List[dict], b2: List[dict], dataset_name: str) -> Tuple[Li
 
 
 def _task_map(builder, rows: List[dict]) -> Dict[str, dict]:
-    """Tasks keyed as in the verdicts (all policies, o as an input)."""
+    """Tasks keyed as in the verdicts (all policies, outcomes pooled)."""
     return {task["key"]: task for task in builder(rows)}
 
 
@@ -121,17 +121,15 @@ def _paired_pi_seed(pairs1, pairs2, seed, model):
 def _subsample(task, seed):
     """One execution per policy for this seed (same rule as analyze_contrast)."""
     keep = one_execution_per_group(task["groups"], seed, task.get("execIds"))
-    outcome = task.get("outcome")
     return (np.asarray(task["X"])[keep], np.asarray(task["y"])[keep],
-            np.asarray(task["groups"], dtype=object)[keep],
-            None if outcome is None else np.asarray(outcome)[keep])
+            np.asarray(task["groups"], dtype=object)[keep])
 
 
 def _paired_seed(task1, task2, seed, model, candidates):
     if split_task_hash(task1["y"], task1["groups"]) != split_task_hash(task2["y"], task2["groups"]):
         raise ValueError(f"B1/B2 task data mismatch: {task1['key']}")
-    X1, y1, g1, o1 = _subsample(task1, seed)
-    X2, y2, g2, o2 = _subsample(task2, seed)
+    X1, y1, g1 = _subsample(task1, seed)
+    X2, y2, g2 = _subsample(task2, seed)
     plan1 = repeated_stratified_group_holdout(y1, g1, seed, candidates=candidates)
     if plan1 is None:
         return None
@@ -142,9 +140,9 @@ def _paired_seed(task1, task2, seed, model, candidates):
         raise ValueError(f"shared B1/B2 split cannot be replayed: {task1['key']} seed {seed}")
     # One permutation is enough here because the ablation consumes AUC only.
     r1 = evaluate_seed(X1, y1, g1, seed, [model], 1,
-                       perm_iters=1, split_plan=plan1, split_candidates=candidates, strata=o1)
+                       perm_iters=1, split_plan=plan1, split_candidates=candidates)
     r2 = evaluate_seed(X2, y2, g2, seed, [model], 1,
-                       perm_iters=1, split_plan=plan2, split_candidates=candidates, strata=o2)
+                       perm_iters=1, split_plan=plan2, split_candidates=candidates)
     return {"seed": seed, "b1": r1[model]["auc"], "b2": r2[model]["auc"], "split": r1["split"]}
 
 

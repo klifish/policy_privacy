@@ -89,32 +89,6 @@ describe('Outcome strata', () => {
   });
 });
 
-describe('Outcome-stratified AUC', () => {
-  const { stratifiedPermutationTestAUC, permutationTestAUC } = require('../experiments/core/evaluator');
-  const { createRng } = require('../experiments/core/random');
-
-  it('equals the plain AUC and permutation test for one stratum', () => {
-    const y = [0, 1, 0, 1, 1, 0, 1, 0];
-    const p = [0.1, 0.9, 0.3, 0.6, 0.4, 0.2, 0.8, 0.7];
-    expect(stratifiedPermutationTestAUC(y, p, y.map(() => 0), 50, createRng(1, 'a')))
-      .to.deep.equal(permutationTestAUC(y, p, 50, createRng(1, 'a')));
-  });
-
-  it('does not score an outcome imbalance between the classes', () => {
-    // Class 1 is 80% granted, class 0 20%; the score is o itself.
-    const y = [];
-    const o = [];
-    for (let i = 0; i < 100; i++) {
-      y.push(i < 50 ? 1 : 0);
-      o.push((i < 50 ? i < 40 : i < 60) ? 1 : 0);
-    }
-    const scores = o.map((v, i) => v + (i % 7) * 1e-6);
-    const { auc, pValue } = stratifiedPermutationTestAUC(y, scores, o, 200, createRng(2, 'b'));
-    expect(Math.abs(auc - 0.5)).to.be.below(0.2);
-    expect(pValue).to.be.above(0.05);
-  });
-});
-
 describe('PI layer capture design (smoke config)', function () {
   this.timeout(300000);
   let dataset;

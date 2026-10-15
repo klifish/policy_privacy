@@ -55,14 +55,12 @@ The independent JavaScript reports compared by
   calibration keeps the run cheaper and close to the JS attack framing.
 - **Access outcome:** the decision o is public. Coverage policies run once, with
   granted and denied requests split evenly within each (layer, DUO term set)
-  group, so o is independent of the PCH/SPP labels by design. Each PCH/SPP task
-  uses every policy; o is a model input, and the AUC is computed within each
-  value of o and averaged, with the permutation test shuffling labels within o.
-  A chance difference in the granted share between two classes therefore does
-  not score as leakage, even where o moves the gas (unpadded B1). `--per-outcome`
-  runs each task once per outcome instead (keys `granted | ...`,
-  `denied | ...`), as a diagnostic. Captures with granted executions only are
-  analysed exactly as before.
+  group, so o is independent of the PCH/SPP labels by design, and o itself
+  carries no information about the policy. Each PCH/SPP task uses every policy
+  with granted and denied executions pooled; o is not a model input, and the
+  AUC and its permutation test are computed over all test executions.
+  `--per-outcome` runs each task once per outcome instead (keys
+  `granted | ...`, `denied | ...`), as a diagnostic.
 - **Protocol (PCH/SPP):** one execution per policy per seed, then a
   deterministic repeated stratified group holdout (test 0.3), 30 seeds by
   default. Each seed evaluates 512 whole-policy candidates and selects the
@@ -84,10 +82,11 @@ The independent JavaScript reports compared by
   set, different logical form) and `controlled_difference` (different DUO term
   sets, drawn evenly over 0-4 differing SPP axes). The attacker knows both candidate
   policies, so it trains on executions of the pair itself: per seed, each
-  (side, outcome) cell is split half train / half test, one classifier per pair
-  is trained on both outcomes (o is an input), and the test AUC is computed
-  within each (pair, outcome) cell. The type statistic is the mean cell AUC; its
-  permutation null shuffles test labels within cells. Every execution commits
+  (side, outcome) cell is split half train / half test, so both outcomes appear
+  on both sides of the split; one classifier per pair is trained on the
+  observable features (o is not an input), and the test AUC is computed over the
+  pair's test executions. The type statistic is the mean pair AUC; its
+  permutation null shuffles test labels within pairs. Every execution commits
   its own policy instance, so training and test executions never share a
   commitment. A positive control adds one synthetic column shifted by 0.75 SD on
   side 1; a type whose control is not detected is INCONCLUSIVE. All three types

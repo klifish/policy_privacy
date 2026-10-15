@@ -5,14 +5,14 @@ The PI attacker knows the two candidate policies P0 and P1 of a pair and can
 deploy and run each of them, so it trains on executions of the pair itself
 and classifies held-out executions.  Every execution commits its own policy
 instance (fresh randomizer), so training and test executions never share a
-commitment.  The decision o is public; executions are compared within the
-same outcome.
+commitment.
 
 Per seed and pair, each (side, outcome) cell is split half train / half test,
-one classifier is trained per pair on both outcomes (o is an input), and the
-test AUC is computed within each (pair, outcome) cell.  A pair type's
-statistic is the mean cell AUC over its pairs; its permutation null shuffles
-the test labels within cells on fixed scores.  The verdict per type uses the
+so that both outcomes appear on both sides of the split; one classifier is
+trained per pair on the observable features (the decision o is not an input),
+and the test AUC is computed over the pair's test executions.  A pair type's
+statistic is the mean pair AUC over its pairs; its permutation null shuffles
+the test labels within pairs on fixed scores.  The verdict per type uses the
 shared double criterion (mean AUC over seeds > 0.55 and >= 50% of seeds with
 p < 0.05, for either classifier).
 
@@ -108,35 +108,31 @@ def control_column(y, seed_parts, shift: float) -> np.ndarray:
     return rng.normal(0.0, 1.0, len(y)) + shift * y
 
 
-def score_pair(X, y, o, test, model: str, seed: int):
+def score_pair(X, y, test, model: str, seed: int):
     """Test scores of one pair, from a classifier trained on its other executions."""
-    features = np.column_stack([X, o])
     train = ~test
-    keep = features[train].var(axis=0) > 0
+    keep = X[train].var(axis=0) > 0
     if not keep.any():
         return np.full(int(test.sum()), 0.5)
-    return fit_predict_proba(model, features[train][:, keep], y[train], features[test][:, keep], seed, rf_n_jobs=1)
+    return fit_predict_proba(model, X[train][:, keep], y[train], X[test][:, keep], seed, rf_n_jobs=1)
 
 
-def cell_aucs(scores, y_test, o_test, perm_iters: int, rng):
-    """Observed AUC and permuted AUCs of each outcome cell of one pair."""
-    observed, null = [], []
-    for outcome in (0, 1):
-        mask = o_test == outcome
-        labels = y_test[mask]
-        ranks = _average_ranks(np.asarray(scores[mask], dtype=float))
-        n_pos = int(labels.sum())
-        n_neg = len(labels) - n_pos
-        observed.append(_auc_from_ranks(labels, ranks, n_pos, n_neg))
-        perms = np.argsort(rng.random((perm_iters, len(labels))), axis=1)
-        permuted = labels[perms]
-        null.append(((permuted * ranks).sum(axis=1) - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg))
+def pair_auc(scores, y_test, perm_iters: int, rng):
+    """Observed AUC of one pair's test executions and its permuted AUCs."""
+    labels = np.asarray(y_test, dtype=int)
+    ranks = _average_ranks(np.asarray(scores, dtype=float))
+    n_pos = int(labels.sum())
+    n_neg = len(labels) - n_pos
+    observed = _auc_from_ranks(labels, ranks, n_pos, n_neg)
+    perms = np.argsort(rng.random((perm_iters, len(labels))), axis=1)
+    permuted = labels[perms]
+    null = ((permuted * ranks).sum(axis=1) - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
     return observed, null
 
 
 def evaluate_type_seed(pairs: Dict[str, Dict], seed: int, models: Sequence[str], perm_iters: int,
                        control_shift: Optional[float]) -> Dict:
-    """One seed of one pair type: mean cell AUC and its within-cell permutation p-value per model."""
+    """One seed of one pair type: mean pair AUC and its within-pair permutation p-value per model."""
     out = {"testN": 0, "pairAuc": {}}
     per_model = {m: {"observed": [], "null": []} for m in models}
     for pair_id, pair in pairs.items():
@@ -147,11 +143,11 @@ def evaluate_type_seed(pairs: Dict[str, Dict], seed: int, models: Sequence[str],
         out["testN"] += int(test.sum())
         for m in models:
             rng = np.random.default_rng(stable_int("pi-perm", seed, pair_id, m))
-            scores = score_pair(X, y, o, test, m, seed)
-            observed, null = cell_aucs(scores, y[test], o[test], perm_iters, rng)
-            per_model[m]["observed"].extend(observed)
-            per_model[m]["null"].extend(null)
-            out["pairAuc"].setdefault(m, {})[pair_id] = float(np.mean(observed))
+            scores = score_pair(X, y, test, m, seed)
+            observed, null = pair_auc(scores, y[test], perm_iters, rng)
+            per_model[m]["observed"].append(observed)
+            per_model[m]["null"].append(null)
+            out["pairAuc"].setdefault(m, {})[pair_id] = float(observed)
     for m in models:
         stat = float(np.mean(per_model[m]["observed"]))
         null = np.mean(np.vstack(per_model[m]["null"]), axis=0)

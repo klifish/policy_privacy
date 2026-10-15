@@ -9,10 +9,11 @@
  * so it trains on executions of the pair itself. Every execution commits its
  * own policy instance, so training and test executions never share a
  * commitment. Per seed and pair, each (side, outcome) cell is split half train /
- * half test, one classifier per pair is trained on both outcomes (o is an
- * input), and the test AUC is computed within each (pair, outcome) cell. A pair
- * type's statistic is the mean cell AUC; its permutation null shuffles test
- * labels within cells on fixed scores. Mirrors
+ * half test, so both outcomes appear on both sides of the split; one classifier
+ * per pair is trained on the observable features (the decision o is not an
+ * input), and the test AUC is computed over the pair's test executions. A pair
+ * type's statistic is the mean pair AUC; its permutation null shuffles test
+ * labels within pairs on fixed scores. Mirrors
  * experiments/analysis/supervised/pi_supervised.py.
  */
 
@@ -113,8 +114,8 @@ function aucFromRanks(labels, ranks) {
 }
 
 /**
- * Records for ONE seed: per pair type and classifier, the mean cell AUC and its
- * within-cell permutation p-value.
+ * Records for ONE seed: per pair type and classifier, the mean pair AUC and its
+ * within-pair permutation p-value.
  *
  * @param {number} seedIndex
  * @param {{pairs:Array, permutationIterations:number, rfOpts:{trees:number,maxDepth:number},
@@ -128,10 +129,10 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
   for (const pairType of PAIR_TYPES) {
     const typePairs = pairs.filter((p) => p.pairType === pairType);
     if (typePairs.length === 0) continue;
-    const cells = { lr: [], rf: [] };
+    const perPair = { lr: [], rf: [] };
     let testN = 0;
     for (const pair of typePairs) {
-      let X = pair.rows.map((r) => [...r.x, r.o]);
+      let X = pair.rows.map((r) => [...r.x]);
       if (controlShift !== null) {
         const control = rng('control', pair.pairId);
         X = X.map((x, i) => [...x, gaussian(control) + controlShift * pair.rows[i].side]);
@@ -157,24 +158,21 @@ function buildPiRecordsForSeed(seedIndex, ctx, baseSeed) {
       }
       for (const classifier of ['lr', 'rf']) {
         const permRng = rng('perm', pair.pairId, classifier);
-        for (const o of [0, 1]) {
-          const members = teIdx.map((i, k) => [i, k]).filter(([i]) => pair.rows[i].o === o);
-          const labels = members.map(([i]) => pair.rows[i].side);
-          const cellScores = members.map(([, k]) => scores[classifier][k]);
-          const ranks = averageRanks(cellScores);
-          const observed = calculateAUC(labels, cellScores);
-          const permuted = labels.slice();
-          const nullAucs = new Array(iters);
-          for (let it = 0; it < iters; it++) {
-            shuffleInPlace(permuted, permRng);
-            nullAucs[it] = aucFromRanks(permuted, ranks);
-          }
-          cells[classifier].push({ observed, nullAucs });
+        const labels = teIdx.map((i) => pair.rows[i].side);
+        const pairScores = scores[classifier];
+        const ranks = averageRanks(pairScores);
+        const observed = calculateAUC(labels, pairScores);
+        const permuted = labels.slice();
+        const nullAucs = new Array(iters);
+        for (let it = 0; it < iters; it++) {
+          shuffleInPlace(permuted, permRng);
+          nullAucs[it] = aucFromRanks(permuted, ranks);
         }
+        perPair[classifier].push({ observed, nullAucs });
       }
     }
     for (const classifier of ['lr', 'rf']) {
-      const list = cells[classifier];
+      const list = perPair[classifier];
       const stat = list.reduce((a, c) => a + c.observed, 0) / list.length;
       let exceed = 0;
       for (let it = 0; it < iters; it++) {

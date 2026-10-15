@@ -27,7 +27,6 @@ from .common import (
     TEST_RATIO,
     analyze_contrast,
     build_verdict,
-    outcome_codes,
     outcome_strata,
     stratum_key,
     feature_row,
@@ -71,7 +70,6 @@ def build_feature_matrix(dataset: List[dict]):
 
 def build_tasks(dataset: List[dict]):
     X, groups, labels_by_target = build_feature_matrix(dataset)
-    outcome = outcome_codes(dataset)
     tasks = []
     for target in TARGET_ATTRS:
         labels = labels_by_target[target]
@@ -88,7 +86,6 @@ def build_tasks(dataset: List[dict]):
                 "X": X[mask],
                 "y": (labels[mask] == c1).astype(int),
                 "groups": groups[mask],
-                "outcome": outcome[mask],
             })
     return tasks
 
@@ -108,8 +105,8 @@ def run_dataset(
     per_outcome: bool = False,
 ) -> Dict:
     """Run all SPP contrasts, checkpointing after each contrast. Default: every
-    policy in one task, with o as an input and the AUC taken within o.
-    ``per_outcome`` (diagnostic): each contrast once per access outcome."""
+    policy in one task, granted and denied executions pooled. ``per_outcome``
+    (diagnostic): each contrast once per access outcome."""
     tasks = []
 
     writer = None
@@ -131,7 +128,6 @@ def run_dataset(
                 split_candidates=split_candidates,
                 split_manifest_in=split_manifest_in,
                 split_manifest_out=split_manifest_out,
-                strata=None if per_outcome else task["outcome"],
             )
             res.update({
                 "dataset": dataset_tag,

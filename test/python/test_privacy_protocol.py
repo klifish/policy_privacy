@@ -12,7 +12,6 @@ from experiments.analysis.supervised.common import (
     new_split_manifest,
     outcome_strata,
     repeated_stratified_group_holdout,
-    stratified_auc_pvalue,
     stratum_key,
 )
 from experiments.analysis.supervised import pch_supervised, spp_supervised
@@ -185,41 +184,6 @@ class OutcomeStrataTests(unittest.TestCase):
         self.assertEqual([o for o, _ in outcome_strata([{"satisfy": 1}])], [None])
         self.assertEqual(stratum_key(None, "DUO GR"), "DUO GR")
         self.assertEqual(stratum_key("granted", "DUO GR"), "granted | DUO GR")
-
-
-class OutcomeAdjustedTests(unittest.TestCase):
-    def test_single_stratum_matches_plain_analysis(self):
-        rng = np.random.default_rng(3)
-        groups = np.repeat([f"p{i}" for i in range(60)], 1)
-        y = np.array([i % 2 for i in range(60)])
-        X = rng.normal(size=(60, 2))
-        plain = analyze_contrast(X, y, groups, 3, ["lr"], perm_iters=50, task_key="t")
-        ones = analyze_contrast(X, y, groups, 3, ["lr"], perm_iters=50, task_key="t", strata=np.ones(60, int))
-        self.assertEqual(plain["models"]["lr"]["perSeed"], ones["models"]["lr"]["perSeed"])
-
-    def test_outcome_imbalance_is_not_leakage(self):
-        # Unpadded case: o moves gas by a large constant, and the label classes
-        # differ in their granted share (70% vs 30%); the policy label itself
-        # has no effect on any feature.
-        rng = np.random.default_rng(4)
-        n = 400
-        y = np.array([i % 2 for i in range(n)])
-        o = np.where(y == 1, rng.random(n) < 0.7, rng.random(n) < 0.3).astype(int)
-        X = np.column_stack([1e6 + 20000 * o + rng.normal(0, 15, n), rng.normal(size=n)])
-        groups = np.array([f"p{i}" for i in range(n)])
-        naive = analyze_contrast(X, y, groups, 5, ["lr"], perm_iters=100, task_key="t")
-        adjusted = analyze_contrast(X, y, groups, 5, ["lr"], perm_iters=100, task_key="t", strata=o)
-        self.assertFalse(naive["passed"])
-        self.assertTrue(adjusted["passed"])
-
-    def test_stratified_auc_detects_a_real_effect(self):
-        rng = np.random.default_rng(5)
-        y = np.repeat([0, 1], 50)
-        o = np.tile([0, 1], 50)
-        score = y + rng.normal(0, 0.5, 100)
-        auc, p = stratified_auc_pvalue(y, score, o, 200, rng)
-        self.assertGreater(auc, 0.8)
-        self.assertLess(p, 0.01)
 
 
 class WithinPairPITests(unittest.TestCase):

@@ -15,7 +15,7 @@ const {
 const { LogisticRegression, RandomForest } = require('../../../core/classifiers');
 const {
   calculateAUC,
-  stratifiedPermutationTestAUC,
+  permutationTestAUC,
   evaluateBinaryClassification,
   calculateConfusionMatrix
 } = require('../../../core/evaluator');
@@ -83,8 +83,7 @@ function bothAttacks(
   teY,
   permIterations,
   rfOpts = {},
-  rngs = {},
-  teStrata = null
+  rngs = {}
 ) {
   const { trees = 50, maxDepth = 10 } = rfOpts;
 
@@ -105,12 +104,9 @@ function bothAttacks(
     const permutationRng = classifier === 'lr'
       ? rngs.lrPermutation
       : rngs.rfPermutation;
-    // AUC within o and its within-o permutation p-value (plain AUC and
-    // permutation test when o takes one value).
-    const { auc, pValue } = stratifiedPermutationTestAUC(
+    const { auc, pValue } = permutationTestAUC(
       teY,
       proba,
-      teStrata || teY.map(() => 0),
       permIterations,
       permutationRng || Math.random
     );
@@ -142,8 +138,8 @@ function bothAttacks(
  *          permutationIterations:number, rfOpts:{trees:number,maxDepth:number}}} ctx
  */
 function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
-  // Default: every policy in one task, with o as an input and the AUC taken
-  // within o. ctx.perOutcome (diagnostic): each task once per access outcome.
+  // Default: every policy in one task, granted and denied executions pooled.
+  // ctx.perOutcome (diagnostic): each task once per access outcome.
   if (ctx.perOutcome) {
     return outcomeStrata(ctx.normalizedFeatures).flatMap(({ outcome, rows }) =>
       buildPchStratumRecords(rows, outcome, ctx, baseSeed));
@@ -151,11 +147,8 @@ function buildPchRecordsForSeed(seedIndex, ctx, baseSeed) {
   return buildPchStratumRecords(ctx.normalizedFeatures, null, ctx, baseSeed);
 }
 
-// Feature matrix of `rows`, with o appended as a model input when `adjust`
-// (the capture holds both outcomes).
-function featureMatrix(rows, labelKey, adjust) {
-  const X = prepareClassificationData(rows, labelKey).X;
-  return adjust ? X.map((x, i) => [...x, rows[i].satisfy]) : X;
+function featureMatrix(rows, labelKey) {
+  return prepareClassificationData(rows, labelKey).X;
 }
 
 function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
@@ -174,11 +167,8 @@ function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
     testRatio,
     rng('duo', 'split')
   );
-  // o enters as a model input and AUC stratum only when both outcomes occur,
-  // so granted-only captures keep their original computation.
-  const adjust = new Set(sampled.map((f) => f.satisfy)).size > 1;
-  const trX = featureMatrix(train, 'duoTerm', adjust);
-  const teX = featureMatrix(test, 'duoTerm', adjust);
+  const trX = featureMatrix(train, 'duoTerm');
+  const teX = featureMatrix(test, 'duoTerm');
   const records = [];
   for (const termId of observedDuoTermIds) {
     const code = DUO_TO_ATTRIBUTE_CODE[termId];
@@ -199,8 +189,7 @@ function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
         rfBootstrap: rng(key, 'rf-bootstrap'),
         lrPermutation: rng(key, 'lr-permutation'),
         rfPermutation: rng(key, 'rf-permutation')
-      },
-      adjust ? test.map((f) => f.satisfy) : null
+      }
     ));
   }
 
@@ -217,8 +206,8 @@ function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
         testRatio,
         rng('icd', 'split')
       );
-      const icdTrX = featureMatrix(icdTrain, 'icd10Chapter', adjust);
-      const icdTeX = featureMatrix(icdTest, 'icd10Chapter', adjust);
+      const icdTrX = featureMatrix(icdTrain, 'icd10Chapter');
+      const icdTeX = featureMatrix(icdTest, 'icd10Chapter');
       for (const ch of icdChapters) {
         const labelOf = f => (f.icd10Chapter === ch ? 1 : 0);
         const trY = icdTrain.map(labelOf);
@@ -237,8 +226,7 @@ function buildPchStratumRecords(normalizedFeatures, outcome, ctx, baseSeed) {
             rfBootstrap: rng(key, 'rf-bootstrap'),
             lrPermutation: rng(key, 'lr-permutation'),
             rfPermutation: rng(key, 'rf-permutation')
-          },
-          adjust ? icdTest.map((f) => f.satisfy) : null
+          }
         ));
       }
     }
