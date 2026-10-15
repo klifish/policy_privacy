@@ -22,6 +22,7 @@ TPS-ZKPI therefore focuses on limiting policy information exposed during public-
 
 Self-sovereign identity (SSI) architectures give holders control over their verifiable claims, including the ability to determine which verifiers may access them.
 Buccafurri et al.~\cite{buccafurri2024holder} support this control through ciphertext-policy attribute-based proxy re-encryption. The holder stores encrypted claims off-chain under a self-defined attribute policy, and a semi-trusted, non-colluding consensus provider re-encrypts them for verifiers whose certified attributes satisfy that policy. A smart contract notarizes hashes of storage, policy-change, and access operations so that they can later be attributed to their parties, and a trusted key-generation authority issues all attribute keys.
+In healthcare data sharing, Sharma et al.~\cite{sharma2020blockchain} combine zero-knowledge authentication with PRE-based EHR access delegation; the proof establishes knowledge of an authentication secret rather than satisfaction of a hidden consent policy.
 Zero-knowledge credential presentations likewise let a patient authenticate anonymously on public or private chains~\cite{madine2025zero}, and surveys of zero-knowledge proofs for blockchain privacy catalogue this design space~\cite{shashidhara2024promise,zhou2024leveraging}.
 TPS-ZKPI focuses on protecting the provider's consent policy during authorization.
 The requester's claims serve as private witness inputs to a reusable zero-knowledge circuit that verifies satisfaction of the committed policy.
