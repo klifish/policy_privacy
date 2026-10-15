@@ -6,6 +6,6 @@
 
 | Pair type | LR AUC | LR sig | RF AUC | RF sig | control LR / RF AUC | status |
 |---|---:|---:|---:|---:|---:|---|
-| semantic_equivalent | 0.518 | 0.00 | 0.534 | 0.10 | 0.638 / 0.597 | PASS |
-| weak_equivalent | 0.498 | 0.03 | 0.477 | 0.00 | 0.622 / 0.572 | PASS |
-| controlled_difference | 0.517 | 0.13 | 0.494 | 0.00 | 0.622 / 0.585 | PASS |
+| semantic_equivalent | 0.528 | 0.07 | 0.544 | 0.23 | 0.656 / 0.623 | PASS |
+| weak_equivalent | 0.472 | 0.00 | 0.496 | 0.00 | 0.603 / 0.585 | PASS |
+| controlled_difference | 0.474 | 0.00 | 0.435 | 0.00 | 0.605 / 0.553 | PASS |

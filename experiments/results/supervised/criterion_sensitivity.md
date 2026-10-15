@@ -4,17 +4,17 @@ Of-record criterion: FAIL iff AUC_mean > 0.55 and significant-seed fraction >= 0
 
 | AUC_max \ sig_min | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 |
 |---|---|---|---|---|---|
-| 0.52 | 2/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
-| 0.55 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
-| 0.58 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
-| 0.6 | 1/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.52 | 1/2/0 | 0/1/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.55 | 0/2/0 | 0/1/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.58 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| 0.6 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
 
 Cell format: PCH/SPP/PI failures (gating tasks: pch 20, spp 21, pi 3).
 
 ## Single-leg criteria
 
-- PCH: AUC leg alone -> 0.52: 11, 0.55: 2, 0.58: 1, 0.6: 1; significance leg alone -> 0.3: 2, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
-- SPP: AUC leg alone -> 0.52: 9, 0.55: 1, 0.58: 0, 0.6: 0; significance leg alone -> 0.3: 0, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
+- PCH: AUC leg alone -> 0.52: 10, 0.55: 6, 0.58: 2, 0.6: 0; significance leg alone -> 0.3: 1, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
+- SPP: AUC leg alone -> 0.52: 12, 0.55: 3, 0.58: 0, 0.6: 0; significance leg alone -> 0.3: 2, 0.4: 1, 0.5: 0, 0.6: 0, 0.7: 0
 - PI: AUC leg alone -> 0.52: 1, 0.55: 0, 0.58: 0, 0.6: 0; significance leg alone -> 0.3: 0, 0.4: 0, 0.5: 0, 0.6: 0, 0.7: 0
 
 ## Tasks that fail at the of-record thresholds

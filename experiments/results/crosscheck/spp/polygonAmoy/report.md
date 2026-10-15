@@ -1,6 +1,6 @@
 # Structure & Parameter Privacy Evaluation Report
 
-**Date:** 10/15/2026, 5:01:09 PM
+**Date:** 10/15/2026, 8:34:12 PM
 
 ## Objective
 
@@ -52,30 +52,30 @@ after applying postfix interpreter + padding protections.
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5525 (threshold: 0.3)
-- k=3 / silhouette: 0.4738 (threshold: 0.3)
-- k=4 / silhouette: 0.3992 (threshold: 0.3)
-- k=5 / silhouette: 0.3713 (threshold: 0.3)
+- k=2 / silhouette: 0.9990 (threshold: 0.3)
+- k=3 / silhouette: 0.5451 (threshold: 0.3)
+- k=4 / silhouette: 0.5227 (threshold: 0.3)
+- k=5 / silhouette: 0.5026 (threshold: 0.3)
 
 #### Target: predicateCombo
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5525 (threshold: 0.3)
-- k=3 / silhouette: 0.4738 (threshold: 0.3)
-- k=4 / silhouette: 0.3991 (threshold: 0.3)
-- k=5 / silhouette: 0.3808 (threshold: 0.3)
+- k=2 / silhouette: 0.9990 (threshold: 0.3)
+- k=3 / silhouette: 0.5451 (threshold: 0.3)
+- k=4 / silhouette: 0.5227 (threshold: 0.3)
+- k=5 / silhouette: 0.5168 (threshold: 0.3)
 
 #### Target: paramType
 
 **Status:** ✗ FAIL
 
 **Failures:**
-- k=2 / silhouette: 0.5525 (threshold: 0.3)
-- k=3 / silhouette: 0.4738 (threshold: 0.3)
-- k=4 / silhouette: 0.3992 (threshold: 0.3)
-- k=5 / silhouette: 0.3510 (threshold: 0.3)
+- k=2 / silhouette: 0.9990 (threshold: 0.3)
+- k=3 / silhouette: 0.5451 (threshold: 0.3)
+- k=4 / silhouette: 0.5227 (threshold: 0.3)
+- k=5 / silhouette: 0.4953 (threshold: 0.3)
 
 ## Conclusion
 
