@@ -9,6 +9,18 @@ The clustering analysis yields one nominally significant result across twelve te
 
 The commitment-only interface and fixed circuit avoid exposing policy logic directly in the public transcript, and the gas that follows from them varies only with the transaction type, the authorization output, and the byte cost of values that do not depend on the policy content (Section~\ref{sec:eval-performance}).
 
+\textbf{Limitations of the privacy evaluation.}
+The evaluated attacks analyze individual executions, each of which commits a separate policy instance (Section~\ref{sec:eval-dataset}).
+In a deployment, a single commitment may govern many requests, with each recorded outcome publicly associated with a requester pseudonym.
+Because the pseudonym is derived from the requester's holder secret, reusing that secret preserves the same pseudonym across requests, as required when reusing holder-bound credentials or allowlist entries.
+This allows observers to link a requester's authorization outcomes across policies and over time.
+For comparable requests, similar patterns of grants and denials may suggest similar policy conditions, while differing outcomes may help distinguish policies.
+The evaluation does not assess such inference from outcomes across sessions.
+
+The evaluation also excludes prior knowledge about the data provider and the resource.
+For example, an address publicly associated with a diabetes registry may suggest the subject matter of its policies before any transaction metadata is analyzed.
+TPS-ZKPI keeps policy logic out of the public-chain transcript, while the committing address remains visible and may be linked to a known institution.
+
 \textbf{Costs.} Within the evaluated circuit, policy complexity has little effect on on-chain costs.
 All proofs require the same verification operations and use a fixed public-input format with five signals.
 The costs of witness generation and proving for larger circuit capacities or different policy contents are incurred off-chain (Tables~\ref{tab:cost-scaling} and~\ref{tab:workload-scaling}).

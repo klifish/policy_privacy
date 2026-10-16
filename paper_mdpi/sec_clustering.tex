@@ -4,10 +4,13 @@
 The clustering attacker stated in Section~\ref{sec:eval-method} tests whether the on-chain observables group by a hidden label without access to that label.
 Table~\ref{tab:clustering-summary} summarizes the clustering results across the three privacy objectives.
 
-ARI stays within $\pm 0.006$ for every PCH, PI, and SPP target, indicating little agreement between the clusters and the hidden labels, and the PCH and SPP NMI values are at most $0.044$.
-Of the twelve permutation tests for the six PCH and SPP targets, one is nominally significant: the NMI for \texttt{nestingDepth} ($0.0072$, $p_{\mathrm{NMI}}=0.04$), whose ARI is not ($p_{\mathrm{ARI}}=0.20$).
-With twelve tests at the $5\%$ level, one such result is consistent with chance, and all six supervised \texttt{nestingDepth} tasks pass (Section~\ref{sec:eval-spp}).
-For PI, $1$ of the $30$ pairs ($3\%$) has $p_{\mathrm{NMI}}<0.05$, consistent with the nominal $5\%$ level.
-These findings complement the supervised results on the same dataset.
+For PCH and SPP, ARI remains within $\pm 0.006$, indicating little agreement between the clusters and the hidden labels, and NMI is at most $0.044$.
+Across the twelve permutation tests for these targets, only the NMI for \texttt{nestingDepth} is nominally significant ($0.0072$, $p_{\mathrm{NMI}}=0.04$).
+Its ARI is not statistically significant ($p_{\mathrm{ARI}}=0.20$).
+The isolated NMI result should be interpreted cautiously in the context of twelve tests at the $5\%$ significance level.
+In the separate supervised evaluation, all \texttt{nestingDepth} tasks are classified as PASS under the leakage criterion (Section~\ref{sec:eval-spp}).
+
+For PI, the mean ARI and NMI across the $30$ policy pairs are $-0.0020$ and $0.0242$, respectively.
+These clustering findings complement the supervised results on the same dataset.
 
 \input{tables/tab_clustering_summary.tex}
