@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23T11:33:05+0200",
+  "generatedAt": "2026-10-16T11:03:20+0200",
   "null": "all classes i.i.d. N(0, I_d); labels by construction order",
   "clustering": "StandardScaler, KMeans(K = classes, n_init=10)",
   "dim": 2,
@@ -118,51 +118,60 @@
     {
       "structure": "10-class",
       "classes": 10,
-      "perClass": 77,
-      "n": 770,
-      "nmiMean": 0.023862118110285976,
-      "nmiP95": 0.030313340135868685,
-      "ariMean": -0.0001022406745857434
+      "perClass": 42,
+      "n": 420,
+      "nmiMean": 0.04593715243157634,
+      "nmiP95": 0.05770124202089374,
+      "ariMean": -8.329148489405872e-05
     },
     {
       "structure": "ICD-10 sizes",
       "classes": 10,
-      "perClass": "49-135",
-      "n": 770,
-      "nmiMean": 0.02438602736091955,
-      "nmiP95": 0.03141463590952922,
-      "ariMean": -0.00010039348799495495
+      "perClass": "33-55",
+      "n": 422,
+      "nmiMean": 0.046584547552943334,
+      "nmiP95": 0.05994088454461004,
+      "ariMean": 0.0001038303399622317
+    },
+    {
+      "structure": "PI-like",
+      "classes": 2,
+      "perClass": 16,
+      "n": 32,
+      "nmiMean": 0.025018342279698274,
+      "nmiP95": 0.09801748729396832,
+      "ariMean": 0.0007537770259022074
     }
   ],
   "matchedIcd10": {
     "sizes": [
-      131,
+      44,
       49,
-      62,
+      33,
       55,
-      70,
-      63,
-      135,
-      77,
-      62,
-      66
+      41,
+      34,
+      48,
+      48,
+      33,
+      37
     ],
     "kmeansSeedsPerTrial": 20,
-    "nmiMean": 0.02462080931715063,
-    "nmiP95": 0.030186112449769008,
-    "ariMean": 6.231740203500263e-05,
-    "observedNmi": 0.028138867015640452,
-    "trialsAtOrAboveObserved": 145,
-    "empiricalP": 0.14585414585414586
+    "nmiMean": 0.04630216778482117,
+    "nmiP95": 0.056972364326541645,
+    "ariMean": -1.1051020725920325e-05,
+    "observedNmi": 0.04369092944650338,
+    "trialsAtOrAboveObserved": 637,
+    "empiricalP": 0.6373626373626373
   },
   "observedIcd10": {
-    "n": 770,
+    "n": 422,
     "classes": 10,
-    "nmi": 0.028138867015640452,
-    "ari": 0.002065329179354153,
-    "permutationBaselineNmi": 0.023748514449836566,
-    "debiasedNmi": 0.0043903525658038865,
-    "permutationNmiP": 0.0845771144278607
+    "nmi": 0.04369092944650338,
+    "ari": -0.0007927637207217411,
+    "permutationBaselineNmi": 0.04562098373892191,
+    "debiasedNmi": -0.0019300542924185274,
+    "permutationNmiP": 0.6218905472636815
   },
-  "runtimeSeconds": 758.2
+  "runtimeSeconds": 412.7
 }

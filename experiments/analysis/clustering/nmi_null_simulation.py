@@ -30,8 +30,8 @@ ROOT = Path(__file__).resolve().parents[3]
 OUT_DIR = ROOT / "experiments" / "results" / "clustering" / "null"
 ICD10_CLUSTERING = ROOT / "experiments" / "results" / "clustering" / "pch" / "pch_global_icd10_clustering.csv"
 
-# Executions per ICD-10 chapter in the evaluated corpus (paper Table 7, ch0..ch9).
-ICD10_CHAPTER_SIZES = [131, 49, 62, 55, 70, 63, 135, 77, 62, 66]
+# Policies per ICD-10 chapter (tab:corpus, ch0..ch9): the PCH clustering uses one execution per policy.
+ICD10_CHAPTER_SIZES = [44, 49, 33, 55, 41, 34, 48, 48, 33, 37]
 
 CONFIGS = [
     ("PI-like", [3] * 2),
@@ -43,8 +43,10 @@ CONFIGS = [
     ("5-class", [100] * 5),
     ("10-class", [3] * 10),
     ("10-class", [10] * 10),
-    ("10-class", [77] * 10),
+    ("10-class", [42] * 10),
     ("ICD-10 sizes", ICD10_CHAPTER_SIZES),
+    # Appended so that the rows above keep their seeds: the size of a designed PI pair.
+    ("PI-like", [16] * 2),
 ]
 
 # Values printed in the submitted and revised manuscript, for the reproduction check.

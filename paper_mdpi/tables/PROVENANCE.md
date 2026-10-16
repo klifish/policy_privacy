@@ -639,7 +639,7 @@ SPP nestingDepth    n 1077  k  4  ARI 0.0022  p 0.204  NMI 0.0072  p 0.045
 ## `tab:nmi-sample-size-sensitivity` (inline in `sec_nmi_sensitivity.tex`)
 
 Last checked against the source: 2026-10-16, after rerunning the script with the ICD-10 chapter sizes of the unpadded
-capture (677 executions) and an appended `n = 16` binary row. All 72 cells match; the nine rows whose configuration did
+capture counted in policies (422; the PCH clustering uses one execution per policy) and an appended `n = 16` binary row. All 72 cells match; the nine rows whose configuration did
 not change reproduce their earlier values exactly, because each row's seed depends on its position in `CONFIGS` and
 the new row was appended last.
 
@@ -650,31 +650,31 @@ prints `rows[11]`, the `n = 16` binary row, inside the two-class block). Code: `
 ### Columns
 
 - **Structure**, **G**, **n**, and **N** come from the configuration (`CONFIGS`): the row's label, `classes`, `perClass`
-  (`"33-104"` for the ICD row, i.e. min–max of `ICD10_CHAPTER_SIZES`), and `n` = sum of the class sizes.
+  (`"33-55"` for the ICD row, i.e. min–max of `ICD10_CHAPTER_SIZES`, the policies per chapter), and `n` = sum of the class sizes.
 - **NMI-bar** and **ARI-bar** are `nmiMean` and `ariMean`, the means over 1000 trials. Each trial draws all classes from
   N(0, I₂), standardizes them, and runs **one** K-Means fit (`n_init = 10`, `kmeans_seeds = 1`) scored
   against the construction-order labels.
 
 ### The two ICD-10 simulations
 
-The table's last row (NMI 0.0280) and the text's ICD-10 numbers come from **different runs**:
+The table's last row (NMI 0.0466) and the text's ICD-10 numbers come from **different runs**:
 
 | | Table row "ICD-10 sizes" | Text ("averaging each trial over 20 K-Means seeds") |
 |---|---|---|
 | JSON field | `rows[10]` | `matchedIcd10` |
 | K-Means fits per trial | 1 | 20, averaged (as in the evaluation) |
-| NMI mean | 0.0280 | 0.0282 |
-| NMI p95 | 0.0361 | 0.0345 |
-| Observed ICD NMI 0.0311 reached | n/a | 234 of 1000 trials, p = 0.235 (not cited; the paper uses the label-permutation `nmi_p_value` = 0.24 instead) |
+| NMI mean | 0.0466 | 0.0463 |
+| NMI p95 | 0.0599 | 0.0570 |
+| Observed ICD NMI 0.0437 reached | n/a | 637 of 1000 trials, p = 0.637 (not cited; the paper uses the label-permutation `nmi_p_value` = 0.62 instead) |
 
 Since 2026-10-03 the table note states "one K-Means fit with ten initializations per trial", and the text
-calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0280 vs 0.0282)
+calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0466 vs 0.0463)
 are no longer conflated.
 
 ### Text that cites this table (all consistent)
 
 `sec_nmi_sensitivity.tex` Results: 0.2074 → 0.0420 → 0.0250 (n = 16, a designed PI pair) → 0.0072/0.0034 (PI-like);
-0.4152 → 0.0102 (5-class); 0.5346 → 0.0274 (10-class); 33–104 executions per chapter, N = 677 (= `ICD10_CHAPTER_SIZES`, which
+0.4152 → 0.0102 (5-class); 0.5346 → 0.0459 (10-class); 33–55 policies per chapter, N = 422 (= `ICD10_CHAPTER_SIZES`, which
 the script asserts against the observed ICD clustering). The `published` field in some JSON rows holds
 an earlier manuscript version's values and is not used.
 
@@ -705,10 +705,10 @@ PI-like       n    100  G  2  N 200  NMI 0.0034  ARI -0.0004
 5-class       n    100  G  5  N 500  NMI 0.0102  ARI -0.0000
 10-class      n      3  G 10  N  30  NMI 0.5346  ARI -0.0009
 10-class      n     10  G 10  N 100  NMI 0.2087  ARI 0.0003
-10-class      n     68  G 10  N 680  NMI 0.0274  ARI -0.0000
-ICD-10 sizes  n 33-104  G 10  N 677  NMI 0.0280  ARI -0.0001
+10-class      n     42  G 10  N 420  NMI 0.0459  ARI -0.0001
+ICD-10 sizes  n  33-55  G 10  N 422  NMI 0.0466  ARI 0.0001
 PI-like       n     16  G  2  N  32  NMI 0.0250  ARI 0.0008
-matched ICD-10 (20 K-Means seeds/trial): NMI mean 0.0282  p95 0.0345  observed 0.0311 reached 234/1000  p 0.23
+matched ICD-10 (20 K-Means seeds/trial): NMI mean 0.0463  p95 0.0570  observed 0.0437 reached 637/1000  p 0.64
 ```
 
 ---
