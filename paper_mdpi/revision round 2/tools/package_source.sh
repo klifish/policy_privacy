@@ -18,6 +18,8 @@ rm -rf "$STAGE" && mkdir -p "$STAGE/paper_mdpi/figures" "$STAGE/check"
 cd "$PAPER"
 cp main.tex evaluation.tex sec_*.tex reference.bib "$STAGE/paper_mdpi/"
 cp -R tables Definitions "$STAGE/paper_mdpi/"
+# tables/PROVENANCE.md is an internal audit note, not manuscript source.
+rm -f "$STAGE/paper_mdpi/tables/PROVENANCE.md"
 # Only the figures the manuscript includes (\graphicspath resolves them in figures/).
 grep -ho '\\includegraphics\(\[[^]]*\]\)\?{[^}]*}' *.tex tables/*.tex |
   sed 's/.*{\(.*\)}/\1/' | sort -u |
