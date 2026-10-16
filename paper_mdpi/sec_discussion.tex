@@ -45,6 +45,51 @@ This context-binding guarantee applies within a single ACM deployment.
 The digest does not bind the transaction submitter, chain identifier, or contract address.
 Additional checks are therefore needed to prevent another party from copying and submitting the same request first, or reusing the proof on another chain or contract.
 
+\textbf{Healthcare data-access walkthrough.}
+To complement the synthetic-policy evaluation, we trace an illustrative consent condition through the prototype's compiler, circuit, and ACM, distinguishing cryptographic checks from external responsibilities (Table~\ref{tab:walkthrough}).
+Consider a dataset whose consent permits diabetes research by researchers affiliated with approved institutions, subject to ethics approval.
+The provider represents these requirements using the DUO terms DS (restricted to ICD-10 codes E10--E14), IS, and IRB.
+The compiler encodes DS as a whitelist-membership predicate and IS as membership in an allowlist of requester pseudonyms.
+The compiler rejects IRB; ethics approval must therefore be reviewed outside the proof before data release.
+For the compiled DS and IS conditions, an accepted proof establishes that the declared disease code is in the committed whitelist and that the requester pseudonym is in the committed allowlist.
+Institutional affiliation is attested outside the circuit before the provider adds a requester's pseudonym to the allowlist.
+Because the allowlist root is bound in the parameter commitment, adding or removing a researcher requires a successor policy.
+Although IS is supported by the circuit, it is not included in the evaluation corpus (Section~\ref{sec:eval-dataset}).
+
+\input{tables/tab_walkthrough.tex}
+
+The walkthrough also clarifies the responsibilities of deployment participants.
+The TPS is operated by a third party independent of all data providers (Section~\ref{subsec:trust-model}); this could be the operator of a trusted research environment accepted by the participating data providers and requesters.
+The provider's data access committee, for example, reviews ethics approval outside the proof before data release.
+For policies that also include profile-backed terms, an institution issues the profile credential, and the provider binds the institution's issuer key into the policy (Section~\ref{subsec:credential}), subject to the issuer governance discussed above.
+
+Following an on-chain grant, the data access layer checks that the request was granted in the current hour and that the resource remains bound to an active policy.
+The prototype implements the authorization check, leaving actual data delivery to the deployment.
+The same check enforces consent withdrawal by rejecting earlier grants once the policy is revoked or the resource is rebound to a successor policy.
+
+\textbf{Fidelity of the policy encoding.}
+The fidelity of the encoded policy depends on the provider's interpretation of consent and the compiler's expressive capabilities.
+The provider translates consent text into DUO terms, and the prototype verifies compliance with the resulting policy without validating this translation.
+Unsupported conditions, such as IRB, are rejected and must be addressed outside the proof.
+Table~\ref{tab:policy-support} lists the supported conditions and restrictions on combining terms.
+Ontology-linked conditions also depend on the vocabulary used at encoding time, when concepts are expanded into fixed code whitelists.
+Updating these whitelists to reflect later vocabulary revisions requires a successor policy.
+Deployment therefore requires the provider to review the encoded policy against the original consent and document any conditions that remain outside the proof.
+
+\textbf{Public blockchain versus an institutional audit log.}
+An institutionally governed access system with an audit log can enforce the same authorization conditions at lower cost and without exposing public-chain metadata.
+Because the institution maintains the log of its own decisions, auditors rely on it to provide a complete and unaltered record.
+In TPS-ZKPI, the ACM grants a request only after verifying a proof against the committed policy, and replacing that policy requires a public successor commitment.
+Any party can therefore verify that each recorded grant is supported by a valid proof for the committed policy, without relying on the operator's account of the decision or joining a consortium.
+
+This verifiability is limited to authorization decisions.
+The on-chain record does not establish whether data were released only for granted requests or whether ethics approval was reviewed.
+The permanence of these records must also be reconciled with data-protection requirements such as the right to erasure~\cite{haque2021gdpr}.
+Each request additionally incurs gas costs and exposes the public-chain metadata evaluated in Section~\ref{sec:eval}.
+
+A public blockchain is therefore suited to settings that require independently verifiable authorization decisions across institutions without a shared trusted operator.
+Within a single institution, or where all parties trust a common operator, an institutional access system with an audit log offers a simpler alternative.
+
 \textbf{Future directions.}
 Based on the TPS trust assumption, its effect on accountability, and the deployment scope of context binding discussed above, we identify several directions for future work.
 For example, adding an explicit chain/contract domain and an authenticated submission channel would extend context binding beyond a single deployment and reduce front-running risk.

@@ -1,0 +1,31 @@
+% Healthcare data-access walkthrough (Discussion). Each row follows the compiler
+% (compiler/policy_generator.js: DS AND IS compiles to DS P[ICD10] AND P[IS] AND;
+% IRB is rejected as procedural), the circuit, and the ACM (PolicyPrivacy.sol:
+% revokePolicy, commitPolicyVersion, rebindResourcePolicy, isAuthorizationCurrent).
+\begin{table}[htbp]
+	\centering\footnotesize
+	\caption{The diabetes-research example: what the prototype establishes at each step and what is left to people or external systems.}
+	\label{tab:walkthrough}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}p{0.39\linewidth}>{\raggedright\arraybackslash}p{0.37\linewidth}}
+		\toprule
+		Step                  & Prototype                                                                                                                                         & People or external systems                                                                                       \\
+		\midrule
+		Consent encoding      & Compiles DS, with a whitelist of the ICD-10 codes E10--E14, and IS, with an allowlist of requester pseudonyms; commits the policy and registers the resource & Translating the consent into DS, IS, and IRB; deciding which researchers enter the allowlist; handling IRB, which the compiler rejects \\
+		\addlinespace
+		Requester evidence    & The TPS constructs the witness from the holder secret, the disease code declared in the request, and the allowlist membership path, and generates the proof & Attesting the researcher's affiliation before the provider lists the pseudonym; obtaining and presenting the ethics approval \\
+		\addlinespace
+		Authorization decision & The ACM verifies the proof against the policy and parameter commitments and the request context, and records the grant or denial on-chain       & Reviewing the ethics approval                                                                                    \\
+		\addlinespace
+		Data release          & The data access layer checks that the request was granted in the current hour and that the resource is still bound to the active policy          & Delivering the data, for example by releasing a decryption key; confirming the ethics approval before release     \\
+		\addlinespace
+		Consent withdrawal    & Revoking the policy, or rebinding the resource to a successor policy, makes earlier grants fail the data-release check                           & Retracting or deleting data already released                                                                     \\
+		\addlinespace
+		Expiry and change     & A changed allowlist or whitelist takes effect through a successor policy; policy validity windows are checked in-circuit                         & Tracking the expiry of the ethics approval and the end of a researcher's affiliation                             \\
+		\bottomrule
+	\end{tabular}
+
+	\begin{tablenote}
+		DS: disease-specific research; IS: institution-specific restriction; IRB: ethics approval required (Section~\ref{subsec:duo}).
+	\end{tablenote}
+\end{table}
