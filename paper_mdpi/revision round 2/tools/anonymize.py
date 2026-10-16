@@ -21,8 +21,9 @@ BLANK = {
     '\\corres': '',
     '\\authorcontributions': 'Withheld for review.',
     '\\funding': 'Withheld for review.',
-    '\\acknowledgments': 'Withheld for review.',
 }
+# \acknowledgments is kept: it holds only the generative-AI use statement, which names no
+# person or institution and is meant for the reviewers too.
 
 # The archive record on Zenodo names the authors, so its link is withheld too. latexdiff
 # leaves \url outside its added-text markup, so the replacement is marked as added.

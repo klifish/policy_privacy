@@ -9,7 +9,7 @@ make -C "paper_mdpi/revision round 2" all
 This writes to `output/`:
 
 - `manuscript_revised_clean.pdf` and `manuscript_revised_marked.pdf`: the revised manuscript, clean and with new or revised text in red (deleted text is not shown). The baseline is commit `efc5237`, the first-round revision submitted in September 2026, so only second-round changes are marked.
-  Both are anonymized review copies: `tools/anonymize.py` removes the author names, affiliations, correspondence address, and PDF author field, and withholds the author contributions and funding statements. Build with `ANONYMIZE=0` for a version with the author information; the LaTeX source itself is not changed.
+  Both are anonymized review copies: `tools/anonymize.py` removes the author names, affiliations, correspondence address, and PDF author field, and withholds the author contributions and funding statements; the acknowledgments, which hold only the AI-use statement, are kept. Build with `ANONYMIZE=0` for a version with the author information; the LaTeX source itself is not changed.
 - One letter per reviewer, `reviewerN_response.pdf`, once the entry points are listed in `SOURCES` in the `Makefile`.
 
 `make manuscript` runs `tools/build_manuscripts.sh`, and `make letters` rebuilds only the letters.
