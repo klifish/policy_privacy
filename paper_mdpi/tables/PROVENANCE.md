@@ -74,63 +74,35 @@ FAILs, the higher-AUC model is also the one that triggers the failure (see `tab:
 
 ## `tab:privacy-summary` (`tab_privacy_summary.tex`)
 
-Last checked against the source: commit `df7c32a`, 2026-10-05.
+Last checked against the source: results commit `6b45855` (unpadded capture of 2026-10-15), 2026-10-16. The table is
+currently not \input in the manuscript (commented out in `evaluation.tex`); its values are kept current.
 
-**Sources.** `experiments/results/supervised/{pch,pi,spp}_supervised_verdict.json`,
-field `tasks[]`.
+**Sources.** `experiments/results/supervised/{pch,pi,spp}_supervised_verdict.json`, field `tasks[]`.
 
 ### Column "Hidden target"
 
-This column is definitional, not computed. It names the label the attacker tries to recover in each
-objective; see `sec_pch.tex`, `sec_pi.tex`, and `sec_spp.tex`.
+Definitional, not computed (see `sec_pch.tex`, `sec_pi.tex`, `sec_spp.tex`).
 
 | Row | Tasks in the JSON | Label |
 |---|---|---|
 | PCH | 20: `DUO <term>` ×10 (GR, DS, RS, POA, GS, CC, NCU, HMB, NMDS, GSO), `ICD ch0`–`ch9` ×10 | Term or chapter present vs absent (one-vs-rest) |
-| PI | 4: `overall`, `semantic_equivalent`, `weak_equivalent`, `controlled_difference` | Which policy of a pair, `policy0`/`policy1`, produced the execution |
+| PI | 3: `semantic_equivalent`, `weak_equivalent`, `controlled_difference` (10 designed pairs each, all gating) | Which policy of a pair, `P0`/`P1`, produced the execution |
 | SPP | 21 pairwise contrasts: `structureType` 6, `predicateCombo` 3, `paramType` 6, `nestingDepth` 6 | One bucket vs the other |
 
-### Column "Passing"
+### Columns "Passing" and "Results"
 
-`passed == true` count over `nonGating == false` count: PCH 19/20, PI 3/3, SPP 20/21.
-The 42 passing tasks, the 2 FAILs, and the non-gating PI positive control
-(`controlled_difference`) make up the 45 supervised tasks cited in the text.
+`passed == true` count over `nonGating == false` count: PCH 20/20, PI 3/3, SPP 21/21, i.e. the 44 supervised tasks
+cited in the text, all passing. For each task take the higher-`aucMean` model; AUC range = min–max `aucMean`; median
+significant seeds = median `sigFraction` (PCH 0.05 → 5%, PI and SPP 2/30 → 7%).
 
-### Column "Results"
-
-For each row, take the verdict-relevant tasks (`nonGating == false`). For each task, take
-the higher-AUC model, then aggregate over the **passing** tasks:
-
-| Cell | Formula | PCH | PI | SPP |
-|---|---|---|---|---|
-| Verdict tasks | count of `nonGating == false` | 20 | 3 | 21 |
-| Passing tasks | count of `passed == true` among them | 19 | 3 | 20 |
-| AUC range | min–max `aucMean` over passing tasks | 0.464–0.570 | 0.509–0.549 | 0.468–0.571 |
-| Significant seeds median | median `sigFraction` over passing tasks | 1/30 → 3% | 2/30 → 7% | 2/30 → 7% |
-
-The extremes behind the ranges:
-
-- PCH: min `ICD ch6` (RF 0.464), max `ICD ch1` (RF 0.570).
-- PI: min `overall` (RF 0.509), max `semantic_equivalent` (LR 0.549).
-- SPP: min `nestingDepth: flat/deep` (RF 0.468), max `paramType: none/small` (LR 0.571).
-
-The median is the same whether it is taken over passing tasks or over all verdict tasks
-(3% / 7% / 7%), so that choice does not change the table.
-
-**FAILs** (named in the tablenote with the failing model's `aucMean` and `sigFraction`):
-
-| Task | LR `aucMean` / `sigFraction` | RF `aucMean` / `sigFraction` | Failing model |
-|---|---|---|---|
-| PCH `ICD ch5` | 0.667 / 16/30 (53%) | 0.628 / 11/30 (37%) | LR |
-| SPP `nestingDepth: medium/deep` | 0.563 / 16/30 (53%) | 0.558 / 12/30 (40%) | LR |
-
-Both FAILs are explained by the padding target in
-`experiments/results/supervised/pad_residual_diagnostic.md` (`npm run analysis:pad-residual`).
+Extremes: PCH min `DUO RS` (RF 0.494), max `ICD ch0` (RF 0.566); PI min `controlled_difference` (LR 0.478), max
+`semantic_equivalent` (RF 0.549); SPP min `paramType: none/small` (RF 0.490), max `structureType: trivial/or_only`
+(RF 0.559) and `nestingDepth: flat/medium` (LR 0.559).
 
 ### Recompute
 
 ```bash
-python3 - <<'EOF'
+python3 - <<'PY'
 import json, statistics as st
 for exp in ["pch", "pi", "spp"]:
     tasks = json.load(open(f"experiments/results/supervised/{exp}_supervised_verdict.json"))["tasks"]
@@ -145,35 +117,28 @@ for exp in ["pch", "pi", "spp"]:
           f"AUC {min(r[1] for r in ok):.3f}-{max(r[1] for r in ok):.3f};",
           f"median sig {st.median(r[2] for r in ok):.0%};",
           "FAIL:", [r[0] for r in rows if not r[3]])
-EOF
+PY
 ```
 
 Expected output:
 
 ```
-pch 19/20 pass; AUC 0.464-0.570; median sig 3%; FAIL: ['ICD ch5']
-pi 3/3 pass; AUC 0.509-0.549; median sig 7%; FAIL: []
-spp 20/21 pass; AUC 0.468-0.571; median sig 7%; FAIL: ['nestingDepth: medium/deep']
+pch 20/20 pass; AUC 0.494-0.566; median sig 5%; FAIL: []
+pi 3/3 pass; AUC 0.478-0.549; median sig 7%; FAIL: []
+spp 21/21 pass; AUC 0.490-0.559; median sig 7%; FAIL: []
 ```
-
-
 
 ---
 
 ## `tab:corpus` (`tab_corpus.tex`)
 
-Last checked against the source: commit `5e6d81e`, 2026-10-02. All 39 cells match.
-Since 2026-10-11 the groupings are set in pairs, side by side: DUO terms beside ICD-10 chapters, then the four SPP
-groupings two by two, with the corpus total as the last row (values unchanged). The ICD-10 group heading was shortened
-to "DS policies" to fit its half.
+Last checked against the source: commit `7c9dd3c` data (`experiments/data/polygonAmoy/`, the unpadded capture of
+2026-10-15), 2026-10-16. All cells match. The groupings are set in pairs, side by side: DUO terms beside ICD-10
+chapters, then the four SPP groupings two by two, with the corpus total as the last row.
 
-**Source.** `experiments/data/polygonAmoy/executed_dataset.json`: a list of 1,773 records,
-one per executed (on-chain committed and accessed) policy instance. This is the dataset of record. Do not count from
-`policy_definitions.json`: it predates the third Amoy attempt, and some of its fields
-(for example `randomizer`) are valid only for the policies that attempt regenerated. `metadata.json` → `summary` holds the generator's
-per-policy bucket counts; they agree with the Policies column for the four SPP groupings,
-but they use the generator's legacy field names (`logicStructures`, `nestingDepths`,
-`predicateCounts`, `setSizes`).
+**Source.** `experiments/data/polygonAmoy/executed_dataset.json`: a list of 1,977 records,
+one per execution (commit, resource registration and access on chain). Every execution commits its own policy
+instance, so `policyId` (the generator's policy) groups executions while `blockchainPolicyId` is unique per record.
 
 **No analysis code produces this table.** It is a direct count over the dataset.
 
@@ -182,11 +147,11 @@ but they use the generator's legacy field names (`logicStructures`, `nestingDept
 - **Policies** = number of distinct `policyId` among the matching records.
 - **Executions** = number of matching records.
 
-Executions exceed policies because of the two-layer design: 1,053 *coverage* policies are
-executed once (`executionTier == "coverage"`), and 24 *depth* policies are executed 30
-times (`depthLayer == true`), giving 1,053 + 24 = 1,077 policies and 1,053 + 720 = 1,773
-executions. A row whose two counts are equal, such as `trivial`, `flat`, `ch1`, or `ch3`, contains no
-depth policy.
+Executions exceed policies because of the two-layer design: 1,017 *coverage* policies are
+executed once (`executionTier == "coverage"`), and the 60 policies of the 30 designed PI pairs are executed
+16 times each, 8 granted and 8 denied (`executionTier == "pi"`), giving 1,017 + 60 = 1,077 policies and
+1,017 + 960 = 1,977 executions. A row whose two counts are equal, such as `ch2` or `ch7`, contains no PI-layer
+policy.
 
 ### Rows
 
@@ -195,21 +160,19 @@ belongs to exactly one bucket of each SPP grouping.
 
 | Group | Record field and match rule | Notes |
 |---|---|---|
-| DUO data-use term | `t in duoTermCodes` | Multi-label: rows overlap, so the column sums exceed the totals. `duoTermCodes` equals `semantics.duoTerms` on every record. |
-| ICD-10 chapter | `ontologyNamespace == "ICD10" and ontologyValue == i` for `ch<i>` | Single-label within the policies that have an ICD-10 scope (the DS policies). The footnote's code ranges equal `semantics.icd10Scope.codeRange` for each `ontologyValue` (ch0 `A00-B99` … ch9 `M00-M99`). |
-| Subtotal (ICD-10 group) | `ontologyNamespace == "ICD10"` | Equals the sum of ch0–ch9. The same 422 policies have a non-null `semantics.icd10Scope` and contain DS (checked). The 370 policies with ICD-10 and another vocabulary scope all record `ontologyNamespace == "ICD10"`, so none is missed. |
-| SPP `structureType` / `nestingDepth` / `predicateCombo` / `paramType` | `record[field] == bucket` | Bucket boundaries are defined in `sec_spp.tex`. Each grouping partitions the corpus, so each sums to 1,077 / 1,773. |
+| DUO data-use term | `t in duoTermCodes` | Multi-label: rows overlap, so the column sums exceed the totals. |
+| ICD-10 chapter | `ontologyNamespace == "ICD10" and ontologyValue == i` for `ch<i>` | Single-label within the policies that have an ICD-10 scope (the DS policies). |
+| Subtotal (ICD-10 group) | `ontologyNamespace == "ICD10"` | Equals the sum of ch0–ch9 and the DS row (422 policies). |
+| SPP `structureType` / `nestingDepth` / `predicateCombo` / `paramType` | `record[field] == bucket` | Bucket boundaries are defined in `sec_spp.tex`. Each grouping partitions the corpus, so each sums to 1,077 / 1,977. |
 | Corpus total | all records | |
 
 ### How the analyses use these counts
 
 - **PCH DUO tasks:** one-vs-rest over all 1,077 policies. The task key in
   `pch_supervised_verdict.json` is `DUO GR` for the term printed here as `GRU`.
-- **PCH ICD tasks:** one-vs-rest **within the DS policies** (those with an ICD-10 scope) only (422 policies,
-  `_icd_chapter` in `pch_supervised.py`). The subtotal row is therefore the population
-  of every ICD task.
-- **SPP:** uses 1,125 of the 1,773 executions, keeping three executions per depth policy
-  (`sec_dataset.tex`). The SPP rows here count the full corpus, not the SPP subset.
+- **PCH ICD tasks:** one-vs-rest **within the DS policies** (422 policies, `_icd_chapter` in `pch_supervised.py`).
+- **SPP:** `spp_dataset.json` keeps the 1,017 coverage executions and 3 granted and 3 denied executions of each
+  PI-layer policy (1,377 executions). The SPP rows here count the full corpus.
 - Every supervised task samples one execution per policy per seed, so the effective
   sample size of a task is its **Policies** count, not its Executions count.
 
@@ -226,14 +189,14 @@ def count(pred):
 
 print("DUO ", {t: count(lambda e, t=t: t in e["duoTermCodes"])
                for t in ["GRU", "DS", "RS", "POA", "GS", "CC", "NCU", "HMB", "NMDS", "GSO"]})
-print("ICD ", {f"ch{i}": count(lambda e, i=i: e["ontologyNamespace"] == "ICD10" and e["ontologyValue"] == i)
+print("ICD ", {f"ch{i}": count(lambda e, i=i: e.get("ontologyNamespace") == "ICD10" and e.get("ontologyValue") == i)
                for i in range(10)})
-print("ICD subtotal", count(lambda e: e["ontologyNamespace"] == "ICD10"))
+print("ICD subtotal", count(lambda e: e.get("ontologyNamespace") == "ICD10"))
 for field, buckets in [("structureType", ["trivial", "and_only", "or_only", "and_or_mixed"]),
                        ("nestingDepth", ["flat", "shallow", "medium", "deep"]),
                        ("predicateCombo", ["single", "few", "many"]),
                        ("paramType", ["none", "small", "medium", "large"])]:
-    print(field, {b: count(lambda e, b=b: e[field] == b) for b in buckets})
+    print(field, {b: count(lambda e, b=b: e.get(field) == b) for b in buckets})
 print("total", count(lambda e: True))
 PY
 ```
@@ -241,22 +204,22 @@ PY
 Expected output (`policies/executions`):
 
 ```
-DUO  {'GRU': '302/447', 'DS': '422/770', 'RS': '412/760', 'POA': '392/624', 'GS': '382/556', 'CC': '392/769', 'NCU': '206/380', 'HMB': '331/447', 'NMDS': '237/469', 'GSO': '236/352'}
-ICD  {'ch0': '44/131', 'ch1': '49/49', 'ch2': '33/62', 'ch3': '55/55', 'ch4': '41/70', 'ch5': '34/63', 'ch6': '48/135', 'ch7': '48/77', 'ch8': '33/62', 'ch9': '37/66'}
-ICD subtotal 422/770
-structureType {'trivial': '130/130', 'and_only': '294/526', 'or_only': '303/535', 'and_or_mixed': '350/582'}
-nestingDepth {'flat': '130/130', 'shallow': '210/413', 'medium': '335/509', 'deep': '402/721'}
-predicateCombo {'single': '257/344', 'few': '645/1080', 'many': '175/349'}
-paramType {'none': '147/234', 'small': '232/406', 'medium': '352/584', 'large': '346/549'}
-total 1077/1773
+DUO  {'GRU': '302/617', 'DS': '422/677', 'RS': '412/742', 'POA': '392/737', 'GS': '382/682', 'CC': '392/632', 'NCU': '206/506', 'HMB': '331/661', 'NMDS': '237/387', 'GSO': '236/551'}
+ICD  {'ch0': '44/104', 'ch1': '49/94', 'ch2': '33/33', 'ch3': '55/100', 'ch4': '41/56', 'ch5': '34/49', 'ch6': '48/63', 'ch7': '48/48', 'ch8': '33/63', 'ch9': '37/67'}
+ICD subtotal 422/677
+structureType {'trivial': '130/235', 'and_only': '294/579', 'or_only': '303/513', 'and_or_mixed': '350/650'}
+nestingDepth {'flat': '130/235', 'shallow': '210/360', 'medium': '335/575', 'deep': '402/807'}
+predicateCombo {'single': '257/497', 'few': '645/1185', 'many': '175/295'}
+paramType {'none': '147/297', 'small': '232/457', 'medium': '352/547', 'large': '346/676'}
+total 1077/1977
 ```
 
 ---
 
 ## `tab:pch-terms` (`tab_pch_terms.tex`)
 
-Last checked against the source: commit `da1bab3`, 2026-10-02. All 50 cells match.
-The test-size column was moved into the table note on 2026-10-04 (40 cells plus the note; values unchanged).
+Last checked against the source: results commit `6b45855` (unpadded capture of 2026-10-15, granted and denied
+executions pooled), 2026-10-16. All 40 cells and the note match.
 
 **Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
 `tasks[]` whose `key` starts with `DUO`. The pipeline is the shared supervised pipeline
@@ -301,9 +264,9 @@ of the median positive test count per task (`splitDiagnostics.classes["1"].media
 
 Range 62–127, as stated in the note.
 
-Selected models: LR for GRU, POA, CC, NCU, and HMB; RF for DS, RS, GS, NMDS, and GSO. All 10
-tasks pass, and no model meets either leg of the criterion (max `aucMean` 0.540, max
-`sigFraction` 7/30 = 23%, both GRU/LR).
+Selected models: LR for GRU, CC, HMB, and NMDS; RF for DS, RS, POA, GS, NCU, and GSO. All 10
+tasks pass, and no model meets either leg of the criterion (max `aucMean` 0.535 and max
+`sigFraction` 8/30 = 27%, both POA/RF).
 
 ### Recompute
 
@@ -333,24 +296,24 @@ PY
 Expected output:
 
 ```
-GRU   lr  0.540 ± 0.026  gap 0.041  sig 23%  n 323
-DS    rf  0.514 ± 0.029  gap 0.027  sig 3%  n 323
-RS    rf  0.498 ± 0.028  gap 0.022  sig 0%  n 323
-POA   lr  0.477 ± 0.024  gap 0.027  sig 0%  n 323
-GS    rf  0.502 ± 0.027  gap 0.023  sig 0%  n 323
-CC    lr  0.515 ± 0.029  gap 0.025  sig 3%  n 323
-NCU   lr  0.528 ± 0.027  gap 0.031  sig 7%  n 323
-HMB   lr  0.509 ± 0.027  gap 0.024  sig 3%  n 323
-NMDS  rf  0.516 ± 0.030  gap 0.025  sig 3%  n 323
-GSO   rf  0.502 ± 0.031  gap 0.026  sig 3%  n 323
+GRU   lr  0.507 ± 0.034  gap 0.028  sig 7%  n 323
+DS    rf  0.502 ± 0.022  gap 0.018  sig 3%  n 323
+RS    rf  0.494 ± 0.029  gap 0.022  sig 3%  n 323
+POA   rf  0.535 ± 0.024  gap 0.036  sig 27%  n 323
+GS    rf  0.512 ± 0.023  gap 0.022  sig 0%  n 323
+CC    lr  0.496 ± 0.027  gap 0.021  sig 0%  n 323
+NCU   rf  0.506 ± 0.034  gap 0.026  sig 0%  n 323
+HMB   lr  0.499 ± 0.041  gap 0.031  sig 3%  n 323
+NMDS  lr  0.523 ± 0.032  gap 0.033  sig 17%  n 323
+GSO   rf  0.526 ± 0.034  gap 0.033  sig 20%  n 323
 ```
 
 ---
 
 ## `tab:pch-icd10` (`tab_pch_icd10.tex`)
 
-Last checked against the source: commit `6f785a7` plus uncommitted text edits, 2026-10-02. All 50 cells match.
-The test-size column was moved into the table note on 2026-10-04 (40 cells plus the note; values unchanged).
+Last checked against the source: results commit `6b45855` (unpadded capture of 2026-10-15, granted and denied
+executions pooled), 2026-10-16. All 40 cells and the note match.
 
 **Source.** `experiments/results/supervised/pch_supervised_verdict.json`, the 10 entries of
 `tasks[]` whose `key` starts with `ICD`. The pipeline and the column definitions are
@@ -375,18 +338,16 @@ test set is the negative class:
 
 (`splitDiagnostics.classes["1"].medianTestGroups`.) With only 10 to 17 positives per seed,
 a chance-level AUC has a standard deviation of roughly 0.08 to 0.10. The rows' ± values
-(0.061 to 0.078) are of the same order, which is why several chapters drift past 0.55
+(0.062 to 0.085) are of the same order, which is why several chapters drift past 0.55
 without reproducing.
 
-Selected models: LR for ch0, ch5, and ch9; RF for the other seven.
+Selected models: LR for ch1, ch4, ch5, and ch7; RF for the other six.
 
 ### Text that cites this table (all consistent)
 
-- `sec_pch.tex`: "$127$ test policies per seed", "passes nine chapters and fails one".
-- `sec_pch.tex`: ch1, ch2, ch4 "mean AUC $0.558$--$0.570$", "at most $23\%$ of seeds"
-  (ch1 7/30, ch2 3/30, ch4 4/30).
-- `sec_pch.tex`: ch5 "mean AUC $0.667$ with $53\%$ of seeds significant" (LR, 16/30). The
-  RF leg for ch5 is 0.628 with 11/30, so it does not fail on its own (see `tab:privacy-summary`).
+- `sec_pch.tex`: "All ten tasks are classified as PASS".
+- `sec_pch.tex`: ch0, ch2, ch6 "mean AUCs of $0.552$--$0.566$", "at most $10\%$" of seeds
+  significant (ch0 2/30, ch2 2/30, ch6 3/30).
 
 ### Recompute
 
@@ -416,168 +377,101 @@ PY
 Expected output:
 
 ```
-ch0 lr  0.472 ± 0.078  gap 0.064  sig 0%  n 127 (pos 13)  PASS
-ch1 rf  0.570 ± 0.066  gap 0.075  sig 23%  n 127 (pos 15)  PASS
-ch2 rf  0.565 ± 0.071  gap 0.081  sig 10%  n 127 (pos 10)  PASS
-ch3 rf  0.540 ± 0.061  gap 0.061  sig 7%  n 127 (pos 17)  PASS
-ch4 rf  0.558 ± 0.061  gap 0.070  sig 13%  n 127 (pos 12)  PASS
-ch5 lr  0.667 ± 0.069  gap 0.167  sig 53%  n 127 (pos 10)  FAIL
-ch6 rf  0.464 ± 0.077  gap 0.065  sig 0%  n 127 (pos 14)  PASS
-ch7 rf  0.525 ± 0.064  gap 0.058  sig 3%  n 127 (pos 14)  PASS
-ch8 rf  0.478 ± 0.078  gap 0.063  sig 0%  n 127 (pos 10)  PASS
-ch9 lr  0.511 ± 0.074  gap 0.062  sig 0%  n 127 (pos 11)  PASS
+ch0 rf  0.566 ± 0.064  gap 0.081  sig 7%  n 127 (pos 13)  PASS
+ch1 lr  0.508 ± 0.070  gap 0.063  sig 3%  n 127 (pos 15)  PASS
+ch2 rf  0.561 ± 0.065  gap 0.077  sig 7%  n 127 (pos 10)  PASS
+ch3 rf  0.509 ± 0.062  gap 0.050  sig 0%  n 127 (pos 17)  PASS
+ch4 lr  0.538 ± 0.085  gap 0.076  sig 10%  n 127 (pos 12)  PASS
+ch5 lr  0.517 ± 0.080  gap 0.067  sig 3%  n 127 (pos 10)  PASS
+ch6 rf  0.552 ± 0.073  gap 0.068  sig 10%  n 127 (pos 14)  PASS
+ch7 lr  0.512 ± 0.071  gap 0.060  sig 7%  n 127 (pos 14)  PASS
+ch8 rf  0.539 ± 0.079  gap 0.075  sig 7%  n 127 (pos 10)  PASS
+ch9 rf  0.499 ± 0.069  gap 0.057  sig 3%  n 127 (pos 11)  PASS
 ```
 
 ---
 
 ## `tab:pi-pairs` (`tab_pi_pairs.tex`)
 
-Last checked against the source: commit `4f14316`, 2026-10-02. All 24 cells match.
+Last checked against the source: results commit `6b45855` (unpadded capture of 2026-10-15), 2026-10-16. All cells
+match.
 
-**Sources.**
+**Source.** `experiments/results/supervised/pi_supervised_verdict.json`, one entry of `tasks[]` per pair type,
+produced by `pi_supervised.py` from `experiments/data/polygonAmoy/pi_dataset.json` (the 960 PI-layer executions).
+The pairs are the ones the capture was designed with (`piPair` on each record): 10 per type, each policy in one
+pair, sides drawn at random (`selectPiPairs` in `experiments/core/data_generator.js`).
 
-- `experiments/results/supervised/pi_supervised_verdict.json`, the 4 entries of `tasks[]`, keyed
-  `overall`, `semantic_equivalent`, `weak_equivalent`, `controlled_difference`.
-- `experiments/results/supervised/pi_pairs_generated.json`, the pair list. Its SHA-256
-  (`e2fd1bc2…7a25b`) equals `pairSource.sha256` recorded in the verdict, so it is exactly
-  the file the of-record run used. Its 832 pair executions are identical, feature by feature,
-  to the matching `(policyId, executionId)` records of
-  `experiments/data/polygonAmoy/executed_dataset.json` (checked).
+### Pair types (generator predicates)
 
-**Code.** The pairs come from `scripts/generate_pi_pairs.js` →
-`experiments/analysis/crosscheck/pi/pi_data_generator.js` (`determinePairType`). The verdict
-comes from `pi_supervised.py` (`build_scope_arrays`) plus the shared pipeline above.
+| Type | Rule (`PI_PAIR_PREDICATES`) |
+|---|---|
+| `semantic_equivalent` | same `logicNormalized`, different `scopeParameters` |
+| `weak_equivalent` | same DUO term set, different `logicNormalized` |
+| `controlled_difference` | different DUO term sets; 2 pairs at each shape distance 0–4 (number of the four SPP axes on which the policies differ) |
 
-### How pairs are typed (`determinePairType`)
+### Protocol and columns
 
-`similarity` = `computeSemanticSimilarity` (DUO-term Jaccard combined with scope-field
-agreement; 1 for identical normalized logic). `fingerprint` = `merkleDepth:policyDepth:whitelistSize:proofType`.
+Per seed and pair, half of the executions of every (side, outcome) cell are tested (16 of a pair's 32); one LR and
+one RF are trained per pair on the other half; o is not a feature. The pair AUC is over its test executions; the
+type statistic is the mean pair AUC; the permutation null shuffles test labels within pairs (500 permutations).
 
-1. `similarity ≥ 0.999` **and fingerprints differ** → `semantic_equivalent`
-2. else `similarity ≥ 0.95` → `weak_equivalent`
-3. else → `controlled_difference`
+For each row, take the model with the higher `aucMean`:
 
-From the 579,426 candidate couples, 1,760 qualify as semantic and 71 as weak, and 577,595
-fall into controlled. The generator samples up to 100 pairs per type (`pi-experiment`
-seed), so the counts are 100 / 71 (all) / 100.
+| Column | Field |
+|---|---|
+| Pairs | `nPairs` |
+| AUC mean ± std | `aucMean`, `aucStd` (population std over the 30 per-seed statistics) |
+| AUC gap (mean) | `advantageMean` = mean of `|perSeed.auc − 0.5|` |
+| %sig | `sigFraction` |
+| med n | `medianTestN` (10 pairs × 16) |
+| Control AUC (%sig) | `positiveControl.models.<m>` for the model with the higher control `aucMean` (LR for all three) |
 
-### Rows and columns
-
-Each row's task gives every execution of each pair's policy 0 the label 0, and of policy 1
-the label 1. Rows are grouped by `policyId`, and the split is policy-disjoint. The
-`overall` row uses all 271 pairs, including `controlled_difference`.
-
-| Row | Pairs | Unique policies | Policies on both sides | Similarity range |
-|---|---|---|---|---|
-| overall | 271 | 379 | 61 | 0.245–1.000 |
-| semantic_equivalent | 100 | 150 | 17 | 1.000 |
-| weak_equivalent | 71 | 114 | 8 | 0.960–1.000 |
-| controlled_difference | 100 | 189 | 3 | 0.245–0.677 |
-
-- **Pairs** = number of pairs of that type in the pair file.
-- **AUC, ± std, gap, %sig** have the same definitions as in `tab:pch-terms`, taken from the higher-`aucMean` model
-  (RF for overall and controlled_difference, LR for the two equivalence types).
-- **med n** = median test-set size in **rows**. Each seed keeps one execution per
-  policy, but keeps every copy of that execution when the policy sits in several pairs.
-  The test set therefore has more rows than policies (semantic: about 50 test policies
-  give 60 rows), and its size varies by seed. The two classes are balanced per seed
-  (median test rows 81/81, 30/30, 21/21, 30/30).
-- `controlled_difference` is set `nonGating` in `run_pairs`, which gives it the † mark.
+`positiveControl.detected` is true when the control run fails the leakage criterion for either model; a type whose
+control is not detected would be INCONCLUSIVE. All three types gate (`controlled_difference` included).
+RF on `controlled_difference` has mean AUC 0.442 (below 0.5); the table shows the LR row (0.478), the higher one.
 
 ### Recompute
 
 ```bash
 python3 - <<'PY'
-import json, hashlib, statistics as st, collections as C
-src = "experiments/results/supervised/pi_pairs_generated.json"
+import json, statistics as st
 v = json.load(open("experiments/results/supervised/pi_supervised_verdict.json"))
-assert hashlib.sha256(open(src, "rb").read()).hexdigest() == v["pairSource"]["sha256"]
-pairs = C.Counter(p["pairType"] for p in json.load(open(src))["pairs"])
-pairs["overall"] = sum(pairs.values())
 for t in v["tasks"]:
     m = max(t["models"], key=lambda k: t["models"][k]["aucMean"])
-    md = t["models"][m]
-    aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
+    md = t["models"][m]; aucs, pv = md["perSeed"]["auc"], md["perSeed"]["pval"]
     mean, std = sum(aucs) / len(aucs), st.pstdev(aucs)
     gap = sum(abs(a - 0.5) for a in aucs) / len(aucs)
     sig = sum(p < 0.05 for p in pv) / len(pv)
-    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12
-    assert abs(gap - md["advantageMean"]) < 1e-12 and sig == md["sigFraction"]
-    tag = "non-gating" if t["nonGating"] else ("PASS" if t["passed"] else "FAIL")
-    print(f"{t['key']:22s} pairs {pairs[t['key']]:3d}  {m}  {mean:.3f} ± {std:.3f}  "
-          f"gap {gap:.3f}  sig {sig:.0%}  n {t['medianTestN']:.0f}  {tag}")
+    assert abs(mean - md["aucMean"]) < 1e-12 and abs(std - md["aucStd"]) < 1e-12 and sig == md["sigFraction"]
+    c = t["positiveControl"]["models"]; cm = max(c, key=lambda k: c[k]["aucMean"])
+    print(f"{t['key']:22s} {m} {mean:.3f} ± {std:.3f} gap {gap:.3f} sig {sig:.0%} n {t['medianTestN']:.0f} "
+          f"pairs {t['nPairs']} control {cm} {c[cm]['aucMean']:.3f} ({c[cm]['sigFraction']:.0%}) {t['status']}")
 PY
 ```
 
 Expected output:
 
 ```
-overall                pairs 271  rf  0.509 ± 0.035  gap 0.027  sig 3%  n 162  PASS
-semantic_equivalent    pairs 100  lr  0.549 ± 0.064  gap 0.070  sig 7%  n 60  PASS
-weak_equivalent        pairs  71  lr  0.544 ± 0.079  gap 0.079  sig 10%  n 42  PASS
-controlled_difference  pairs 100  rf  0.544 ± 0.064  gap 0.062  sig 13%  n 60  non-gating
+semantic_equivalent    rf 0.549 ± 0.035 gap 0.052 sig 20% n 160 pairs 10 control lr 0.649 (93%) PASS
+weak_equivalent        rf 0.520 ± 0.045 gap 0.042 sig 7% n 160 pairs 10 control lr 0.611 (63%) PASS
+controlled_difference  lr 0.478 ± 0.026 gap 0.028 sig 0% n 160 pairs 10 control lr 0.621 (87%) PASS
 ```
-
-### Text that cites this table
-
-`sec_pi.tex`: "$0.509\pm0.035$ with $3\%$", "$0.549$ ($7\%$)", "$0.544$ ($10\%$)", and
-controlled_difference "$0.544$ with $13\%$". All four agree. The "$71$
-\texttt{weak\_equivalent} pairs" also agrees.
-
-### Caveats
-
-- **How the similarity score actually behaves.** `computeSemanticSimilarity`
-  (`experiments/analysis/crosscheck/pi/data_generator.js`) returns 1 as a shortcut whenever the two
-  `logicNormalized` strings are equal. These strings name the vocabulary (`P[ICD10]`) but not the
-  scope value (which chapter, country, …). Only otherwise does it compute the weighted sum
-  (0.25 DUO Jaccard, 0.2 ICD, 0.2 OBI, 0.1 population, 0.1 geo, 0.05 clinical, 0.1 layer).
-  The weighted branch ignores the Boolean form entirely. A Python reimplementation reproduces
-  the stored `semanticSimilarity` of all 271 pairs. Breakdown:
-
-  | Type | Pairs | Via shortcut (sim = 1) | Same logic, different scope value | Same logic and scope values, different whitelist (roots) | Identical on chain except commitment randomness | Via weighted sum |
-  |---|---|---|---|---|---|---|
-  | semantic_equivalent | 100 | 100 | 85 | 11 | 4 (differ in proof type only) | 0 |
-  | weak_equivalent | 71 | 70 | 36 | 4 | 30 | 1 (sim 0.960) |
-
-  (For the "identical on chain" pairs, `tokens`, `merkleRoots`, and scope IDs are equal.)
-- **Checked over the whole candidate set.** Recomputing the score and the type for all
-  579,426 couples of the 1,077 policies reproduces the generator's `stats.distribution`
-  exactly (semantic 1,760, weak 71, controlled 577,595), and every couple at or above
-  0.999 comes through the shortcut. This supports the statement in `sec_pi.tex` that "every policy couple at
-  or above $0.999$ shares the logical form" for this corpus; the function itself does not
-  guarantee it.
-- **`weak_equivalent` is not a looser version of `semantic_equivalent`.** 70 of its 71
-  pairs have the identical normalized logic and an **identical** fingerprint. They fail rule 1
-  only because their parameters do *not* differ. 30 of them are content-identical
-  policies. The single weighted pair (`mixed_chain-726::mixed_chain-766`) has the same five DUO
-  terms and the same scopes except population, but a different Boolean form.
-  `sec_pi.tex` describes the type as "$\ge 0.95$ semantic overlap" and as "close
-  approximations", which does not match the pair file.
-- **"near-identical semantics" overstates `semantic_equivalent`.** 85 of its 100 pairs share
-  the logical form but restrict a different scope value (e.g. DS for ICD-10 chapter X vs Y),
-  so the two policies admit different data uses.
-- **Some policies sit on both sides of different pairs** (61 in `overall`, 17 in
-  semantic, 8 in weak, 3 in controlled). In a seed, all copies of the chosen execution
-  are kept, so the same feature vector can appear with label 0 and with label 1. Such
-  copies cannot be separated, and they pull the AUC toward 0.5.
-- **`overall` includes the `controlled_difference` pairs**, so it counts as a verdict
-  task (see `tab:privacy-summary`).
 
 ---
 
 ## `tab:spp-contrasts` (`tab_spp_contrasts.tex`)
 
-Last checked against the source: commit `4f14316` plus uncommitted text edits, 2026-10-02. All 105 cells match.
+Last checked against the source: results commit `6b45855` (unpadded capture of 2026-10-15, granted and denied
+executions pooled), 2026-10-16. All 105 cells match.
 
 **Source.** `experiments/results/supervised/spp_supervised_verdict.json`, all 21 entries of
 `tasks[]`, which appear in the same order as the table rows. The driver is `spp_supervised.py`
 (`build_tasks`), and the pipeline is the shared one above.
 
-**Input.** `experiments/data/polygonAmoy/spp_dataset.json` holds 1,125 records: the 1,053
-coverage policies once each, plus the 24 depth policies with `executionId` 0–2 only. Every
-record equals its `(policyId, executionId)` counterpart in `executed_dataset.json` in all nine features
-and all four labels (checked). Each seed keeps one execution per policy, so a seed always has 1,077
-rows. The 1,125 subset only limits which execution a depth policy can contribute.
+**Input.** `experiments/data/polygonAmoy/spp_dataset.json` holds 1,377 records: the 1,017
+coverage policies once each, plus 3 granted and 3 denied executions of each of the 60 PI-layer policies.
+Each seed keeps one execution per policy, so a seed always has 1,077 rows; the subset only limits which
+execution a PI-layer policy can contribute.
 
 ### Task and label
 
@@ -595,13 +489,10 @@ AUC, ± std, gap, and %sig are defined as in `tab:pch-terms`, taken from the hig
 
 `sec_spp.tex`:
 
-- "`none`/`small` ($0.571$, $40\%$)", "`none`/`large` ($0.568$, $33\%$)", "`flat`/`medium`
-  ($0.555$, $27\%$)", and "`medium`/`deep` (mean AUC $0.563$, $53\%$) ... FAIL" all agree
-  (12/30, 10/30, 8/30, and 16/30 significant seeds).
-- "$147$ policies form the smallest minority class of the axis" agrees (`paramType` `none`).
-- **"Most contrasts sit at chance, with mean AUC between $0.47$ and $0.54$" is slightly off.** The
-  other 17 contrasts span 0.468 (`flat/deep`) to 0.533 (`shallow/deep`), which rounds to
-  0.47–0.53.
+- "ranging from $0.490$ to $0.546$" for the 19 contrasts other than the two below (min `none/small`,
+  max `shallow/medium`).
+- "`trivial`/`or_only` and `flat`/`medium` both have a mean AUC of $0.559$", with "$27\%$ and $37\%$"
+  significant seeds (8/30 and 11/30); "all $21$ tasks are classified as PASS".
 
 ### Recompute
 
@@ -629,38 +520,37 @@ PY
 Expected output:
 
 ```
-structureType: trivial/or_only        lr  0.520 ± 0.048  gap 0.043  sig 0%  n 130  PASS
-structureType: trivial/and_only       lr  0.502 ± 0.040  gap 0.033  sig 3%  n 127  PASS
-structureType: trivial/and_or_mixed   lr  0.502 ± 0.042  gap 0.034  sig 0%  n 144  PASS
-structureType: or_only/and_only       rf  0.506 ± 0.034  gap 0.027  sig 0%  n 179  PASS
-structureType: or_only/and_or_mixed   rf  0.518 ± 0.035  gap 0.032  sig 10%  n 196  PASS
-structureType: and_only/and_or_mixed  rf  0.503 ± 0.040  gap 0.032  sig 7%  n 193  PASS
-predicateCombo: single/few            rf  0.523 ± 0.035  gap 0.033  sig 13%  n 271  PASS
-predicateCombo: single/many           lr  0.519 ± 0.048  gap 0.041  sig 7%  n 130  PASS
-predicateCombo: few/many              rf  0.527 ± 0.048  gap 0.045  sig 17%  n 246  PASS
-paramType: none/small                 lr  0.571 ± 0.046  gap 0.071  sig 40%  n 114  PASS
-paramType: none/medium                lr  0.525 ± 0.035  gap 0.035  sig 3%  n 150  PASS
-paramType: none/large                 lr  0.568 ± 0.038  gap 0.069  sig 33%  n 148  PASS
-paramType: small/medium               lr  0.530 ± 0.037  gap 0.037  sig 20%  n 175  PASS
-paramType: small/large                lr  0.504 ± 0.036  gap 0.028  sig 3%  n 173  PASS
-paramType: medium/large               lr  0.493 ± 0.027  gap 0.022  sig 0%  n 209  PASS
-nestingDepth: flat/shallow            lr  0.522 ± 0.038  gap 0.036  sig 3%  n 102  PASS
-nestingDepth: flat/medium             lr  0.555 ± 0.032  gap 0.055  sig 27%  n 140  PASS
-nestingDepth: flat/deep               rf  0.468 ± 0.046  gap 0.047  sig 3%  n 160  PASS
-nestingDepth: shallow/medium          rf  0.521 ± 0.041  gap 0.039  sig 7%  n 164  PASS
-nestingDepth: shallow/deep            rf  0.533 ± 0.036  gap 0.039  sig 17%  n 184  PASS
-nestingDepth: medium/deep             lr  0.563 ± 0.028  gap 0.063  sig 53%  n 221  FAIL
+structureType: trivial/or_only        rf  0.559 ± 0.045  gap 0.063  sig 27%  n 130  PASS
+structureType: trivial/and_only       lr  0.533 ± 0.050  gap 0.047  sig 7%  n 127  PASS
+structureType: trivial/and_or_mixed   lr  0.537 ± 0.040  gap 0.042  sig 7%  n 144  PASS
+structureType: or_only/and_only       rf  0.510 ± 0.038  gap 0.032  sig 7%  n 179  PASS
+structureType: or_only/and_or_mixed   rf  0.541 ± 0.032  gap 0.045  sig 13%  n 196  PASS
+structureType: and_only/and_or_mixed  lr  0.506 ± 0.039  gap 0.029  sig 3%  n 193  PASS
+predicateCombo: single/few            rf  0.501 ± 0.037  gap 0.028  sig 7%  n 271  PASS
+predicateCombo: single/many           lr  0.498 ± 0.038  gap 0.031  sig 3%  n 130  PASS
+predicateCombo: few/many              rf  0.504 ± 0.029  gap 0.023  sig 3%  n 246  PASS
+paramType: none/small                 rf  0.490 ± 0.045  gap 0.038  sig 3%  n 114  PASS
+paramType: none/medium                lr  0.520 ± 0.044  gap 0.036  sig 10%  n 150  PASS
+paramType: none/large                 rf  0.522 ± 0.044  gap 0.038  sig 13%  n 148  PASS
+paramType: small/medium               lr  0.532 ± 0.041  gap 0.043  sig 17%  n 175  PASS
+paramType: small/large                lr  0.518 ± 0.040  gap 0.033  sig 10%  n 173  PASS
+paramType: medium/large               lr  0.491 ± 0.032  gap 0.026  sig 0%  n 209  PASS
+nestingDepth: flat/shallow            lr  0.533 ± 0.058  gap 0.056  sig 7%  n 102  PASS
+nestingDepth: flat/medium             lr  0.559 ± 0.056  gap 0.067  sig 37%  n 140  PASS
+nestingDepth: flat/deep               lr  0.541 ± 0.053  gap 0.055  sig 23%  n 160  PASS
+nestingDepth: shallow/medium          rf  0.546 ± 0.037  gap 0.049  sig 23%  n 164  PASS
+nestingDepth: shallow/deep            rf  0.493 ± 0.042  gap 0.034  sig 3%  n 184  PASS
+nestingDepth: medium/deep             lr  0.507 ± 0.024  gap 0.020  sig 0%  n 221  PASS
 ```
 
 ---
 
 ## `tab:clustering-summary` (`tab_clustering_summary.tex`)
 
-Last checked against the source: 2026-10-10. All 40 cells match (n, #cls., ARI, NMI × 7 rows;
-$p_{\mathrm{ARI}}$, $p_{\mathrm{NMI}}$ × 6 PCH/SPP rows).
-The $p_{\mathrm{ARI}}$ column was removed on 2026-10-03 and restored in `aadc96f` (2026-10-10);
-the $p_{\mathrm{NMI}}$ column was added on 2026-10-10. PI shows "---" in both, because no pooled
-test over the pairs exists (see the PI paragraph below).
+Last checked against the source: 2026-10-16, clustering rerun locally (macOS, same Python lock as the server) after
+the PCH/SPP inputs were reduced to one execution per policy; granted and denied pooled. All 40 cells match (n, #cls., ARI, NMI × 7 rows;
+$p_{\mathrm{ARI}}$, $p_{\mathrm{NMI}}$ × 6 PCH/SPP rows). PI shows "---" in both p columns, because no pooled test over
+the pairs exists.
 
 **Sources** (`experiments/results/clustering/`):
 
@@ -668,11 +558,16 @@ test over the pairs exists (see the PI paragraph below).
 |---|---|---|
 | PCH DUO | `pch/pch_global_duo_clustering.csv` (1 row) | direct |
 | PCH ICD-10 | `pch/pch_global_icd10_clustering.csv` (1 row) | direct |
-| PI | `pi/pi_balanced_debiased.csv` (127 rows, one per pair) | **mean over pairs** |
+| PI | `pi/pi_balanced_debiased.csv` (30 rows, one per designed pair) | **mean over pairs** |
 | SPP ×4 | `spp/spp_clustering_summary.csv` (4 rows) | direct; `logicStructure` → structureType, `predicateCount` → predicateCombo, `setSize` → paramType |
 
 **Code.** `experiments/analysis/clustering/` (`run_all_clustering.py`, `npm run analysis:clustering`);
-shared statistics in `clustering_stats.py`.
+shared statistics in `clustering_stats.py`. `policy_sources` writes the PCH and SPP inputs to
+`<work>/source/`: one execution per policy (the earliest `executionSequence`, i.e. the first submitted in the
+label-independent shuffled order), taken from `pch_dataset.json`, so PCH and SPP cluster the same 1,077
+executions. Clustering every execution would count the 16 executions of each depth-layer policy as independent
+rows under the row-level label permutation and make the p-values anti-conservative (all executions: nestingDepth
+p_NMI 0.010; one per policy: 0.045). PI keeps its dataset (it clusters the 32 executions of each designed pair).
 
 ### Method (`ensemble_permutation_analysis`)
 
@@ -680,10 +575,9 @@ shared statistics in `clustering_stats.py`.
   use all nine.
 - K-Means with K = number of classes, run with 20 seeds (`n_init = 10` each). **ARI and NMI are the means
   over the 20 runs** (`kmeans_ari`, `kmeans_nmi`).
-- **p_ARI / p_NMI** (`ari_p_value` / `nmi_p_value`, tabulated to two decimals): the 20 cluster assignments
-  are fixed, the labels are permuted 200 times, both metrics are recomputed on each permutation, and
-  `p = (#null ≥ observed + 1) / 201`. **The smallest attainable p is 1/201 = 0.005**, so
-  `nestingDepth`'s 0.005 (both metrics, shown as $<0.01$) means that the observed value beat all 200 permutations.
+- **p_ARI / p_NMI** (`ari_p_value` / `nmi_p_value`, tabulated to two decimals, ROUND_HALF_UP): the 20 cluster
+  assignments are fixed, the labels are permuted 200 times, both metrics are recomputed on each permutation, and
+  `p = (#null ≥ observed + 1) / 201`.
 - The CSV column `n` (500) is the number of policy-bootstrap iterations behind `ariCi95`/`nmiCi95`,
   **not** a sample size. The table's n is `n_samples`.
 
@@ -691,42 +585,22 @@ shared statistics in `clustering_stats.py`.
 
 | Row | n | Labels |
 |---|---|---|
-| PCH DUO | 1,773 executions | **primary** DUO term (`duoTerm`, single-label, 10 classes). This differs from the multi-label presence used by the supervised PCH tasks and `tab:corpus`. |
-| PCH ICD-10 | 770 executions | `semantics.icd10Scope.id` (10 chapters, DS policies only) |
-| SPP | 1,125 executions (`spp_dataset.json`) | the four axis labels |
-| PI | **127 pairs** (each 60 executions, 30 vs 30) | which policy of the pair |
+| PCH DUO | 1,077 executions (one per policy) | **primary** DUO term (`duoTerm`, single-label, 10 classes). This differs from the multi-label presence used by the supervised PCH tasks and `tab:corpus`. |
+| PCH ICD-10 | 422 executions (one per DS policy) | ICD-10 chapter (10 chapters, DS policies only) |
+| SPP | the same 1,077 executions as PCH DUO | the four axis labels |
+| PI | **30 pairs** (each 32 executions, 16 vs 16) | which policy of the pair |
 
-**PI is built differently from the supervised PI pairs.** `build_balanced_pi_pairs.py` pairs only
-policies with at least 30 executions, which are the **24 depth-layer policies**. Each side carries all 30 executions.
-The 127 pairs are 67 same-layer and 60 cross-layer pairs. The script's own types are `cross_structure` 60,
-`same_structure_diff_content` 53, and `same_content` 14, so the 127 pairs reuse the same 24 policies many times.
-(The script's docstring still says 32 such policies; that refers to an older capture.)
-Table ARI 0.0020 = mean `observed_ari`, and NMI 0.0139 = mean `observed_nmi`. The per-pair `p_value`
-tests **NMI**, not ARI. The pipeline computes the per-pair ARI p-value in
-`ensemble_permutation_analysis`, but `debias_pair` does not save it, and no pooled test over the pairs exists;
-this is why the PI row shows "---" in both p columns.
-6 of 127 pairs (4.7%) have p < 0.05, and 0 survive BH-FDR (`significant_fdr`).
+**PI** uses the 30 designed pairs of the capture (`mode == "designed"`), 10 per type. Table ARI = mean
+`observed_ari`, NMI = mean `observed_nmi`. The per-pair `p_value` tests **NMI**. 1 of 30 pairs
+(`pi-semantic_equivalent-5`, NMI 0.210, p 0.034) has p < 0.05, and none survives BH-FDR (`significant_fdr`).
 
 ### Text that cites this table (`sec_clustering.tex`)
 
-- "ARI within ±0.003 and NMI below 0.03 for every DUO, PI, and SPP target except one" agrees.
-- "apart from `nestingDepth` none is significant ($p_{\mathrm{NMI}}\ge 0.08$)": the smallest non-`nestingDepth`
-  `nmi_p_value` is ICD-10's 0.085 → "0.08". Agrees. (Until 2026-10-10 the text instead compared the ICD-10
-  NMI with the appendix null, `matchedIcd10.empiricalP` = 0.146; that p is no longer cited, see
-  `tab:nmi-sample-size-sensitivity`.)
-- PI "$6$ of the $127$ pairs ($5\%$) have $p_{\mathrm{NMI}}<0.05$" (text, first paragraph; moved out of the
-  tablenote on 2026-10-10, which now only explains the PI dashes) agrees: the pipeline's
-  `significant` column is exactly `p_value` < 0.05 (`analyze_pi_balanced.py`), true for 6 rows. The paper's earlier
-  rule "debiased NMI positive and $p_{\mathrm{NMI}}<0.05$" added a condition the code never applied (all 6 have
-  positive debiased NMI, so the count was unaffected). Since 2026-10-10 the paper no longer uses debiased NMI;
-  the tablenote previously also cited the mean debiased NMI 0.001 (0.0014).
-- PI per-pair ARI p-values do not exist in any result file: `ensemble_permutation_analysis` computes
-  `nullAri.pValue` for every pair, but `debias_pair` does not return it, so the CSV has `observed_ari` only.
-- Residual values in the text (moved out of the tablenote on 2026-10-10) come from `pad_residual_diagnostic.json`,
-  `experiments.spp.clustering.<axis>.residual` (`ari`, `ariP`, `nmiP`): `nestingDepth` ARI −0.0004,
-  p_ARI 0.602 → "0.60", p_NMI 0.692 → "0.69"; `paramType` ARI 0.0026, p_ARI 0.040 → "0.04",
-  p_NMI 0.095 → "0.09". Agrees. The text calls the `paramType` ARI "nominally significant" and states that its
-  NMI is not; `structureType` and `predicateCombo` stay non-significant on both metrics.
+- "ARI stays within $\pm 0.006$ for every PCH, PI, and SPP target" (max |ARI| 0.0051, `predicateCombo`) and
+  "the PCH and SPP NMI values are at most $0.044$" (ICD-10 0.0437).
+- "one is nominally significant: the NMI for `nestingDepth` ($0.0072$, $p_{\mathrm{NMI}}=0.04$), whose ARI is not
+  ($p_{\mathrm{ARI}}=0.20$)": `nmi_p_value` 0.0447, `ari_p_value` 0.2039; every other PCH/SPP p is ≥ 0.104.
+- PI "$1$ of the $30$ pairs ($3\%$) has $p_{\mathrm{NMI}}<0.05$".
 
 ### Recompute
 
@@ -740,7 +614,6 @@ print("PCH ICD-10         ", fmt(R("pch/pch_global_icd10_clustering.csv")[0]))
 pi = R("pi/pi_balanced_debiased.csv")
 print(f"PI (mean of {len(pi)} pairs) ARI {st.mean(float(r['observed_ari']) for r in pi):.4f}  "
       f"NMI {st.mean(float(r['observed_nmi']) for r in pi):.4f}  "
-      f"debiased NMI {st.mean(float(r['debiased_nmi']) for r in pi):.4f}  "
       f"p<0.05: {sum(r['significant'] == 'True' for r in pi)}  FDR: {sum(r['significant_fdr'] == 'True' for r in pi)}")
 spp = {r["target"]: r for r in R("spp/spp_clustering_summary.csv")}
 for raw, name in [("logicStructure", "structureType"), ("predicateCount", "predicateCombo"),
@@ -752,53 +625,56 @@ PY
 Expected output:
 
 ```
-PCH DUO             n 1773  k 10  ARI 0.0000  p 0.483  NMI 0.0109  p 0.413
-PCH ICD-10          n  770  k 10  ARI 0.0021  p 0.065  NMI 0.0281  p 0.085
-PI (mean of 127 pairs) ARI 0.0020  NMI 0.0139  debiased NMI 0.0014  p<0.05: 6  FDR: 0
-SPP structureType   n 1125  k  4  ARI 0.0004  p 0.328  NMI 0.0034  p 0.343
-SPP predicateCombo  n 1125  k  3  ARI -0.0005  p 0.577  NMI 0.0015  p 0.507
-SPP paramType       n 1125  k  4  ARI -0.0000  p 0.488  NMI 0.0030  p 0.433
-SPP nestingDepth    n 1125  k  4  ARI 0.0071  p 0.005  NMI 0.0088  p 0.005
+PCH DUO             n 1077  k 10  ARI 0.0024  p 0.104  NMI 0.0167  p 0.692
+PCH ICD-10          n  422  k 10  ARI -0.0008  p 0.577  NMI 0.0437  p 0.622
+PI (mean of 30 pairs) ARI -0.0020  NMI 0.0242  p<0.05: 1  FDR: 0
+SPP structureType   n 1077  k  4  ARI -0.0022  p 0.871  NMI 0.0053  p 0.179
+SPP predicateCombo  n 1077  k  3  ARI -0.0051  p 0.692  NMI 0.0020  p 0.647
+SPP paramType       n 1077  k  4  ARI -0.0004  p 0.562  NMI 0.0023  p 0.776
+SPP nestingDepth    n 1077  k  4  ARI 0.0022  p 0.204  NMI 0.0072  p 0.045
 ```
 
 ---
 
 ## `tab:nmi-sample-size-sensitivity` (inline in `sec_nmi_sensitivity.tex`)
 
-Last checked against the source: commit `1b36fc0`, 2026-10-03. All 66 cells match.
+Last checked against the source: 2026-10-16, after rerunning the script with the ICD-10 chapter sizes of the unpadded
+capture (677 executions) and an appended `n = 16` binary row. All 72 cells match; the nine rows whose configuration did
+not change reproduce their earlier values exactly, because each row's seed depends on its position in `CONFIGS` and
+the new row was appended last.
 
-**Source.** `experiments/results/clustering/null/nmi_null_simulation.json`, field `rows[]` (11 rows,
-in table order). Code: `experiments/analysis/clustering/nmi_null_simulation.py` (seed `20260923`,
+**Source.** `experiments/results/clustering/null/nmi_null_simulation.json`, field `rows[]` (12 rows; the table
+prints `rows[11]`, the `n = 16` binary row, inside the two-class block). Code: `experiments/analysis/clustering/nmi_null_simulation.py` (seed `20260923`,
 `trials` 1000, `dim` 2).
 
 ### Columns
 
 - **Structure**, **G**, **n**, and **N** come from the configuration (`CONFIGS`): the row's label, `classes`, `perClass`
-  (`"49-135"` for the ICD row, i.e. min–max of `ICD10_CHAPTER_SIZES`), and `n` = sum of the class sizes.
+  (`"33-104"` for the ICD row, i.e. min–max of `ICD10_CHAPTER_SIZES`), and `n` = sum of the class sizes.
 - **NMI-bar** and **ARI-bar** are `nmiMean` and `ariMean`, the means over 1000 trials. Each trial draws all classes from
   N(0, I₂), standardizes them, and runs **one** K-Means fit (`n_init = 10`, `kmeans_seeds = 1`) scored
   against the construction-order labels.
 
 ### The two ICD-10 simulations
 
-The table's last row (NMI 0.0244) and the text's ICD-10 numbers come from **different runs**:
+The table's last row (NMI 0.0280) and the text's ICD-10 numbers come from **different runs**:
 
 | | Table row "ICD-10 sizes" | Text ("averaging each trial over 20 K-Means seeds") |
 |---|---|---|
 | JSON field | `rows[10]` | `matchedIcd10` |
 | K-Means fits per trial | 1 | 20, averaged (as in the evaluation) |
-| NMI mean | 0.0244 | 0.0246 |
-| NMI p95 | 0.0314 | 0.0302 |
-| Observed ICD NMI 0.0281 reached | n/a | 145 of 1000 trials, p = (145+1)/1001 = 0.146 (no longer cited since 2026-10-10; the paper uses the label-permutation `nmi_p_value` = 0.085 instead) |
+| NMI mean | 0.0280 | 0.0282 |
+| NMI p95 | 0.0361 | 0.0345 |
+| Observed ICD NMI 0.0311 reached | n/a | 234 of 1000 trials, p = 0.235 (not cited; the paper uses the label-permutation `nmi_p_value` = 0.24 instead) |
 
 Since 2026-10-03 the table note states "one K-Means fit with ten initializations per trial", and the text
-calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0244 vs 0.0246)
+calls the 20-seed run "a separate null run", so the two "ICD-10 sizes" null means (0.0280 vs 0.0282)
 are no longer conflated.
 
 ### Text that cites this table (all consistent)
 
-`sec_nmi_sensitivity.tex` Results: 0.2074 → 0.0420 → 0.0072/0.0034 (PI-like); 0.4152 → 0.0102
-(5-class); 0.5346 → 0.0239 (10-class); 49–135 executions per chapter, N = 770 (= `ICD10_CHAPTER_SIZES`, which
+`sec_nmi_sensitivity.tex` Results: 0.2074 → 0.0420 → 0.0250 (n = 16, a designed PI pair) → 0.0072/0.0034 (PI-like);
+0.4152 → 0.0102 (5-class); 0.5346 → 0.0274 (10-class); 33–104 executions per chapter, N = 677 (= `ICD10_CHAPTER_SIZES`, which
 the script asserts against the observed ICD clustering). The `published` field in some JSON rows holds
 an earlier manuscript version's values and is not used.
 
@@ -829,195 +705,56 @@ PI-like       n    100  G  2  N 200  NMI 0.0034  ARI -0.0004
 5-class       n    100  G  5  N 500  NMI 0.0102  ARI -0.0000
 10-class      n      3  G 10  N  30  NMI 0.5346  ARI -0.0009
 10-class      n     10  G 10  N 100  NMI 0.2087  ARI 0.0003
-10-class      n     77  G 10  N 770  NMI 0.0239  ARI -0.0001
-ICD-10 sizes  n 49-135  G 10  N 770  NMI 0.0244  ARI -0.0001
-matched ICD-10 (20 K-Means seeds/trial): NMI mean 0.0246  p95 0.0302  observed 0.0281 reached 145/1000  p 0.15
-```
-
----
-
-## `tab:ablation-gas-padding` (`tab_ablation_gas_padding.tex`)
-
-Last checked against the source: commit `1b36fc0`, 2026-10-03. All 24 numbers match.
-
-**Data.** `experiments/ablation/gas_padding/polygonAmoy/{b1_unpadded,b2_padded}/executed_dataset.json`:
-1,119 executions each, aligned by `(policyId, executionId)` (checked). B1 = 2026-09-20 run without
-padding. **B2 is not a new run.** Its 1,119 records equal the corresponding of-record Amoy executions
-(gas checked), so B1 and B2 are non-contemporaneous.
-
-### Three blocks, three sources
-
-| Block | Source | Code |
-|---|---|---|
-| Supervised (4 tasks) | `experiments/results/supervised/gas_padding_supervised_deltaLeakage.csv` (45 tasks × LR/RF = 90 rows) | `experiments/analysis/supervised/run_ablation_supervised.py` |
-| Unsupervised (3 rows) | `…/comparison/ablation_report.json` → `clustering` | `experiments/ablation/gas_padding/compare.py` |
-| Gas cost (2 rows) | `…/comparison/ablation_report.json` → `gas`; equals direct means over the two datasets | `compare.py` |
-
-**Trap: `ablation_report.md` also has a "Supervised attacks" table, and its numbers differ from
-the paper.** `compare.py` builds it from the **JS** multiseed per-profile reports
-(`comparison/supervised/{b1,b2}/…`); for example, SPP `trivial/and_or_mixed` RF reads 0.856/0.456/Δ0.290 there,
-against 0.902/0.490/Δ0.347 in the CSV. The paper's supervised numbers (table, Figure `fig:ablation-paired`,
-and the medians in `sec_ablation.tex`) all come from the **CSV**, the Python paired analysis, which samples one execution per
-policy and in which B1 and B2 share the test policies of each split. Use the report only for its clustering and gas sections.
-
-### Supervised rows
-
-RF row of the CSV. Columns: `aucMean_b1_unpadded`, `aucMean_b2_padded`, `deltaLeakage`, and `ciLow`/`ciHigh`
-(percentile interval over the 30 paired splits).
-
-- `deltaLeakage` is the **mean of the per-split Δ** (Equation `eq:delta-leak`), so it does not equal
-  |mean B1 − 0.5| − |mean B2 − 0.5|. For example, trivial/and_or_mixed gives |0.902 − 0.5| − |0.490 − 0.5| = 0.392 against
-  Δ = 0.347, because B2's per-split AUCs scatter around 0.5.
-- **Selection rule.** Among RF tasks whose interval excludes zero, the table takes the top Δ **per experiment and per SPP
-  axis**. SPP ranks trivial/and_or_mixed 0.347, trivial/or_only 0.329 (same axis, skipped), and
-  predicateCombo single/few 0.301. PCH takes DUO HMB 0.337 (then GR 0.297). PI takes controlled_difference 0.088, its only task
-  with an interval that excludes zero. The caption now says "per experiment (per axis for SPP)".
-- Counts in the header comment and the text: RF 27 reduce / 12 no effect / 6 increase; LR 25 / 16 / 4.
-
-### Unsupervised rows
-
-| Row | JSON path | Interval |
-|---|---|---|
-| PCH DUO terms 0.349 [0.316, 0.407] | `policyGroupBootstrap.pch_duo.deltaB1MinusB2.nmi` | policy-group bootstrap (2,000) |
-| SPP logic structure 0.102 [0.018, 0.138] | `policyGroupBootstrap.logicStructure.deltaB1MinusB2.nmi` | policy-group bootstrap |
-| PI balanced pairs 0.670 [0.592, 0.743] | `piBalancedPairs.observed_nmi` | **bootstrap over the 127 pairs**, not policy-group |
-
-**B1/B2 NMI levels (added 2026-10-11).** The rows used to span both columns with the difference alone. They now give
-the B1 and B2 NMI in their columns, as the supervised rows give the B1 and B2 AUC.
-
-**Fifth column (2026-10-11, values unchanged).** The difference and its interval moved from a second line under each
-supervised and unsupervised row into a fifth column, $\Delta$ [$95\%$ CI], and the table is set in `\footnotesize` to fit.
-Each block header defines $\Delta$ for its rows ($\Delta_{\text{leak}}$, or $\Delta_{\text{NMI}}$ = B1 − B2). The gas rows
-keep their percentage increase in the B2 column and leave the fifth column empty.
-
-| Row | B1 | B2 | Source |
-|---|---|---|---|
-| PCH DUO terms | 0.369 (0.36889) | 0.020 (0.02013) | `policyGroupBootstrap.pch_duo.{b1,b2}.nmi` |
-| SPP logic structure | 0.108 (0.10777) | 0.005 (0.00546) | `policyGroupBootstrap.logicStructure.{b1,b2}.nmi` |
-| PI balanced pairs | 0.684 (0.68355) | 0.014 (0.01387) | mean `observed_nmi` over the 127 pairs in `comparison/clustering/{b1_unpadded,b2_padded}/results/pi/pi_balanced_debiased.csv` (not stored in the JSON) |
-
-For PCH and SPP the difference equals B1 − B2 of the full-sample NMI. For PI it equals the difference of the two pair
-means. The rounded SPP values give 0.108 − 0.005 = 0.103, against 0.102 from the unrounded values, so the
-tablenote says that $\Delta_{\text{NMI}}$ is computed from unrounded values.
-
-**PI interval (resolved 2026-10-03, values unchanged).** The header used to say "policy-group bootstrap" for all
-three rows, but the PI interval resamples pairs, which share only 24 policies. The header now says "bootstrap" without naming the method;
-a footnote naming both methods was added and then removed at the author's request (2026-10-03). The same JSON holds the
-policy-weighted bootstrap, `piBalancedPairs.policyWeightedDebiasedNmi`: mean 0.670, **[0.442, 0.831]**. Both intervals
-exclude zero; the policy-weighted interval is not shown in the paper.
-
-**PI row switched to raw NMI (2026-10-10).** The row used `piBalancedPairs.debiased_nmi`, 0.670 [0.591, 0.743], until
-the paper stopped using debiased NMI. `compare_pi_clustering` bootstraps the per-pair B1−B2 difference of each metric
-over the same 127 pairs; the B1 and B2 per-pair null means are both 0.0125, so debiasing cancels in the difference and
-`observed_nmi` gives 0.670 [0.592, 0.743]. The policy-weighted interval exists only for the debiased NMI.
-
-### Gas rows
-
-Means over the 1,119 aligned executions: commit 219,737 → 304,098 (+38.4%), and access 723,462 → 1,056,674 (+46.1%).
-
-### Text that cites these sources (`sec_ablation.tex`, all consistent)
-
-- 21 tasks with B1 deviation > 0.15, all below 0.15 under B2; median deviation 0.137 → 0.038.
-- Median Δ: SPP +0.173, PCH +0.058, PI −0.011. PI's other three tasks have B1 deviations of 0.075, 0.010, and 0.040 (≤ 0.08).
-- Positive control 0.68 → 0.45.
-- B1 access gas 723,288–723,564, with a cold start at 741,276. All values are multiples of 12 apart. The two clusters are
-  723,288–723,372 and 723,480–723,564: offset 192, span 84 each.
-- Nine ICD chapters have B1 RF AUC 0.455–0.536 (min ch5, max ch2); ch6 is 0.713, with 9 policies in the subset.
-  ch0 has only 8 policies yet stays at 0.512, so the policy count alone does not explain ch6.
-- The six negative-Δ tasks are ICD ch5, ch7, and ch9, paramType small/medium, nestingDepth shallow/medium, and nestingDepth medium/deep.
-
-### Recompute
-
-```bash
-python3 - <<'PY'
-import csv, json, statistics as st
-R = {(r["experiment"], r["target"]): r for r in csv.DictReader(open(
-    "experiments/results/supervised/gas_padding_supervised_deltaLeakage.csv")) if r["model"] == "rf"}
-for key in [("spp", "structureType: trivial/and_or_mixed"), ("spp", "predicateCombo: single/few"),
-            ("pch", "DUO HMB"), ("pi", "controlled_difference")]:
-    r = R[key]
-    print(f"{key[0]} {key[1]:37s} B1 {float(r['aucMean_b1_unpadded']):.3f}  B2 {float(r['aucMean_b2_padded']):.3f}  "
-          f"Δ {float(r['deltaLeakage']):.3f} [{float(r['ciLow']):.3f}, {float(r['ciHigh']):.3f}]")
-c = json.load(open("experiments/ablation/gas_padding/polygonAmoy/comparison/ablation_report.json"))["clustering"]
-for k in ["pch_duo", "logicStructure"]:
-    g = c["policyGroupBootstrap"][k]
-    d = g["deltaB1MinusB2"]["nmi"]
-    print(f"NMI {k:15s} B1 {g['b1']['nmi']:.3f}  B2 {g['b2']['nmi']:.3f}  "
-          f"B1-B2 {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  (policy-group)")
-b = "experiments/ablation/gas_padding/polygonAmoy/"
-p1, p2 = (st.mean(float(r["observed_nmi"]) for r in csv.DictReader(open(
-    b + "comparison/clustering/" + p + "/results/pi/pi_balanced_debiased.csv"))) for p in ("b1_unpadded", "b2_padded"))
-print(f"NMI PI pairs        B1 {p1:.3f}  B2 {p2:.3f}")
-for k, how in [("observed_nmi", "pair bootstrap"), ("policyWeightedDebiasedNmi", "policy-weighted, debiased; not shown")]:
-    d = c["piBalancedPairs"][k]
-    print(f"NMI B1-B2 PI pairs       {d['mean']:.3f} [{d['ci95'][0]:.3f}, {d['ci95'][1]:.3f}]  ({how})")
-B1, B2 = (json.load(open(b + p + "/executed_dataset.json")) for p in ("b1_unpadded", "b2_padded"))
-for f in ["commitGasUsed", "accessGasUsed"]:
-    m1, m2 = (st.mean(int(e["features"][f]) for e in D) for D in (B1, B2))
-    print(f"{f:14s} B1 {m1:,.0f}  B2 {m2:,.0f}  (+{(m2 / m1 - 1) * 100:.1f}%)")
-PY
-```
-
-Expected output:
-
-```
-spp structureType: trivial/and_or_mixed   B1 0.902  B2 0.490  Δ 0.347 [0.334, 0.360]
-spp predicateCombo: single/few            B1 0.844  B2 0.494  Δ 0.301 [0.287, 0.314]
-pch DUO HMB                               B1 0.876  B2 0.495  Δ 0.337 [0.319, 0.352]
-pi controlled_difference                 B1 0.676  B2 0.446  Δ 0.088 [0.062, 0.111]
-NMI pch_duo         B1 0.369  B2 0.020  B1-B2 0.349 [0.316, 0.407]  (policy-group)
-NMI logicStructure  B1 0.108  B2 0.005  B1-B2 0.102 [0.018, 0.138]  (policy-group)
-NMI PI pairs        B1 0.684  B2 0.014
-NMI B1-B2 PI pairs       0.670 [0.592, 0.743]  (pair bootstrap)
-NMI B1-B2 PI pairs       0.670 [0.442, 0.831]  (policy-weighted, debiased; not shown)
-commitGasUsed  B1 219,737  B2 304,098  (+38.4%)
-accessGasUsed  B1 723,462  B2 1,056,674  (+46.1%)
+10-class      n     68  G 10  N 680  NMI 0.0274  ARI -0.0000
+ICD-10 sizes  n 33-104  G 10  N 677  NMI 0.0280  ARI -0.0001
+PI-like       n     16  G  2  N  32  NMI 0.0250  ARI 0.0008
+matched ICD-10 (20 K-Means seeds/trial): NMI mean 0.0282  p95 0.0345  observed 0.0311 reached 234/1000  p 0.23
 ```
 
 ---
 
 ## `tab:cost-profile` (`tab_cost_profile.tex`)
 
-Last checked against the source: commit `81f4b4d`, 2026-10-03. All 17 numbers match.
+Last checked against the source: 2026-10-16 (unpadded capture of 2026-10-15, rc2 artifacts). All numbers match.
 
 **Sources.**
 
-- **Circuit rows**: `protocol/releases/v3.0.0-rc1.json` → `circuit.r1cs` (constraints 81,740, wires 80,884,
-  publicInputs 4, outputs 1, privateInputs 496). The header of `build/circuits/policy_privacy_main_instance.r1cs`
-  has the same values (read directly, without snarkjs), and its SHA-256 equals `artifacts.r1cs.sha256` of the
-  release.
-- **All other rows**: `experiments/data/polygonAmoy/executed_dataset.json` (1,773 executions), field
-  `features`. The dataset was captured with the rc1 artifacts: `metadata.json` → `provenance.zkeySha256` equals the
-  release's `artifacts.provingKey.sha256`, at capture commit `faf3bb0`.
+- **Circuit rows**: `protocol/releases/v3.0.0-rc2.json` → `circuit.r1cs` (constraints 81,980, wires 81,124,
+  publicInputs 4, outputs 1, privateInputs 496). The rc2 circuit has 240 constraints more than rc1 (81,740), from the
+  commitment randomizer that now blinds the parameter commitment.
+- **All other rows**: `experiments/data/polygonAmoy/executed_dataset.json` (1,977 executions), field
+  `features`. The capture used the rc2 artifacts: `metadata.json` → `provenance.zkeySha256` (9a018e91…) equals the
+  release's `artifacts.provingKey.sha256`, at capture commit `f9039e1`.
 
 | Row | Field(s) | Value |
 |---|---|---|
-| Padded on-chain gas | mean `commitGasUsed`, `accessGasUsed` | 304,167.3; 1,057,283.3 |
+| On-chain gas | mean `commitGasUsed`, `accessGasUsed` | 219,757.0; 723,565.3 |
 | Event logs | `commit/accessLogsCount`, `…LogsSize` | constant: 1 / 180 B; 2 / 296 B |
-| Calldata length | `commit/accessCalldataLength` | constant: 196 B; 612 B (also `proofSize` constant 938 B) |
-| Witness time | mean `proofWitnessTime` | 763.6 ms (min 628, max 4,589) |
-| Prove time | mean `proofProveTime` | 2,884.2 ms (min 2,512, max 7,679) |
+| Calldata length | `commit/accessCalldataLength` | constant: 164 B; 580 B (also `proofSize` constant 938 B) |
+| Witness time | mean `proofWitnessTime` | 1,140.0 ms (min 571, max 4,792) |
+| Prove time | mean `proofProveTime` | 3,990.3 ms (min 2,298, max 12,719) |
 
-The timings come from the two-core capture server during the Amoy run, not from the Apple M1 of
-`tab:cost-scaling`/`tab:workload-scaling`.
+The calldata is 32 bytes shorter per transaction than in the padded capture, which passed a `targetGas` argument.
+The timings come from the two-core capture server during the Amoy run, which ran four capture shards concurrently, not
+from the Apple M1 of `tab:cost-scaling`/`tab:workload-scaling` (those tables were measured on the rc1 circuit).
 
 ### Text that cites this table
 
-- `sec_ablation.tex`: "$81{,}740$ constraints", "$763.6$ ms and $2{,}884.2$ ms" agree. "together $18\%$ of the mean
-  unpadded access cost": (64,022 + 68,946) / 723,462 = 18.4% agrees. The 88 / 605 constraint and 64,022 / 68,946 gas figures in
-  the same paragraph come from other sources and are not checked here.
-- **The padded means used elsewhere differ from this table.** `sec_ablation.tex` (Cost) and `sec_discussion.tex`
-  ("each padded access costs $1{,}056{,}674$ gas on average", commit "$304{,}098$") use the **1,119-execution ablation
-  subset** means, while this table gives the **full-corpus** means 1,057,283 / 304,167. In the ablation the subset is
-  correct, because it is compared with B1. The discussion's per-request estimate now uses the full-corpus means and cites this table
-  (changed 2026-10-03). The POL values do not change: 1,057,283 × 30 gwei = 0.0317 and 304,167 × 30 gwei = 0.0091.
+- `sec_performance.tex`: "$81{,}980$ constraints", means "$219{,}757$" and "$723{,}565$", ranges
+  219,688–237,664 and 723,446–741,458, and the execution costs per transaction type (gas − 21,000 − EIP-2028 calldata
+  cost: commit 196,964 ×1,973 and 214,904 ×4; resource 70,400 ×1,977; access denied 695,254 ×986 and 713,194 ×2;
+  granted 695,264 ×987 and 713,204 ×2; the +17,940 cases are the first transaction of each of the 4 deployer and
+  4 TPS accounts); witness and proving "$1.140$ and $3.990$~s".
+- `sec_discussion.tex`: access "$723{,}565$ gas ... about $0.022$~POL" and commit "$219{,}757$ gas ($0.007$~POL)"
+  at the 30 gwei tip (`maxPriorityFeePerGas` = `maxFeePerGas` = 30 gwei on every access tx):
+  723,565 × 30 gwei = 0.0217, 219,757 × 30 gwei = 0.0066.
 
 ### Recompute
 
 ```bash
 python3 - <<'PY'
 import json, statistics as st, collections as C
-r = json.load(open("protocol/releases/v3.0.0-rc1.json"))["circuit"]["r1cs"]
+r = json.load(open("protocol/releases/v3.0.0-rc2.json"))["circuit"]["r1cs"]
 print(f"r1cs: constraints {r['constraints']}  wires {r['wires']}  public in {r['publicInputs']}  out {r['outputs']}")
 D = json.load(open("experiments/data/polygonAmoy/executed_dataset.json"))
 f = lambda k: [float(e["features"][k]) for e in D]
@@ -1032,17 +769,17 @@ PY
 Expected output:
 
 ```
-r1cs: constraints 81740  wires 80884  public in 4  out 1
-commitGasUsed        mean 304,167.3  (n 1773)
-accessGasUsed        mean 1,057,283.3  (n 1773)
-proofWitnessTime     mean 763.6  (n 1773)
-proofProveTime       mean 2,884.2  (n 1773)
-commitLogsCount      values {1: 1773}
-commitLogsSize       values {180: 1773}
-accessLogsCount      values {2: 1773}
-accessLogsSize       values {296: 1773}
-commitCalldataLength values {196: 1773}
-accessCalldataLength values {612: 1773}
+r1cs: constraints 81980  wires 81124  public in 4  out 1
+commitGasUsed        mean 219,757.0  (n 1977)
+accessGasUsed        mean 723,565.3  (n 1977)
+proofWitnessTime     mean 1,140.0  (n 1977)
+proofProveTime       mean 3,990.3  (n 1977)
+commitLogsCount      values {1: 1977}
+commitLogsSize       values {180: 1977}
+accessLogsCount      values {2: 1977}
+accessLogsSize       values {296: 1977}
+commitCalldataLength values {164: 1977}
+accessCalldataLength values {580: 1977}
 ```
 
 ---
@@ -1074,7 +811,7 @@ gives a last digit that differs by 1 in five cells. Use `decimal.ROUND_HALF_UP` 
 sweep uses `DS AND RS AND POA AND GS AND CC` (five ontology slots). The DEPTH = 64 / 8-level circuit therefore appears twice, with
 different policies and separate measurements: 350/521 against 347/499. Its constraint count, 81,740, equals the rc1 release.
 
-### Text that cites this table (`sec_ablation.tex`, all consistent)
+### Text that cites this table (`sec_performance.tex`, all consistent)
 
 "$64{,}945$ to $134{,}009$ constraints", "median proving time from $0.411$ to $0.734$~s"
 (733.5 ms), "$73{,}876$ to $97{,}468$", "$0.512$ to $0.571$~s" (511.5 ms), "30 verified proofs", "Apple M1",
@@ -1155,12 +892,12 @@ The throughput is therefore conservative.
 
 ### Text that cites this table
 
-- `sec_ablation.tex`: witness 0.335–0.354 s, prove 0.484–0.545 s, 3–61 tokens, "one to all 11" slots,
+- `sec_performance.tex`: witness 0.335–0.354 s, prove 0.484–0.545 s, 3–61 tokens, "one to all 11" slots,
   throughput 0.79–0.94, latency 1.2–4.1 s. All agree.
 - `sec_discussion.tex`: 0.936 proofs/s at c = 4, 4.113 / 5.854 s, "about 80,900 requests per day"
   (0.936 × 86,400 = 80,870), and "about 53,900" with a third held in reserve (× 2/3 = 53,914). All agree.
-- **`sec_ablation.tex`: "The larger end-to-end time for profile-backed cases reflects off-circuit credential and
-  allowlist preparation" misattributes the gap.** The gap is the harness issuing a credential per request; see above.
+- `sec_performance.tex`: "the harness adds about $0.64$~s by issuing a fresh credential per request" attributes the
+  profile-backed gap correctly (see above).
 
 ### Recompute
 

@@ -193,8 +193,44 @@ def main():
     validate_dataset_files(source_dir)
     # Granted and denied executions are analysed together; o carries no
     # information about the policy.
-    run_pipeline(source_dir, work_dir, results_dir, args, env)
+    run_pipeline(policy_sources(source_dir, work_dir), work_dir, results_dir, args, env)
     print("\nAll authoritative clustering analyses completed.")
+
+
+def first_submitted(rows):
+    """One execution per policy: the one submitted first in the capture.
+
+    The submission order is shuffled with a fixed seed, independently of the
+    labels and outcomes; the per-policy execution ids are not (the first
+    executions of a repeatedly executed policy are all granted).
+    """
+    chosen = {}
+    for row in rows:
+        key = row["policyId"]
+        rank = (row.get("executionSequence", float("inf")), row.get("executionId", 0))
+        if key not in chosen or rank < chosen[key][0]:
+            chosen[key] = (rank, row)
+    return [row for _, row in sorted(chosen.values(), key=lambda item: item[0])]
+
+
+def policy_sources(source_dir: Path, work_dir: Path) -> Path:
+    """Inputs with one execution per policy for the PCH and SPP clustering.
+
+    PCH and SPP compare policies, and executions of one policy share its label
+    and nearly all of its observables, so clustering every execution would let
+    repeatedly executed policies dominate and a row-level label permutation
+    would count their executions as independent. Both analyses use the same
+    executions, taken from the full PCH dataset. PI clusters the executions
+    of each designed pair, which are its units, so its dataset is unchanged.
+    """
+    target = work_dir / "source"
+    target.mkdir(parents=True, exist_ok=True)
+    rows = first_submitted(load_json(source_dir / "pch_dataset.json"))
+    for name in ("pch_dataset.json", "spp_dataset.json"):
+        (target / name).write_text(json.dumps(rows), encoding="utf-8")
+    shutil.copyfile(source_dir / "pi_dataset.json", target / "pi_dataset.json")
+    print(f"Clustering inputs: {len(rows)} executions (one per policy) for PCH and SPP")
+    return target
 
 
 def run_pipeline(source_dir: Path, work_dir: Path, results_dir: Path, args, env):
