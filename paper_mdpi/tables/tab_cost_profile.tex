@@ -1,25 +1,26 @@
 % Single-point DEPTH=64 cost profile of the evaluated prototype configuration.
-% R1CS source: protocol/releases/v3.0.0-rc1.json and
-%   npx snarkjs r1cs info build/circuits/policy_privacy_main_instance.r1cs
+% R1CS source: protocol/releases/v3.0.0-rc2.json (constraints, wires).
 % Transaction/timing source: experiments/data/polygonAmoy/executed_dataset.json
-% (1773 executions, captured 2026-09-17 with v3.0.0-rc1 artifacts).
+% (1977 executions of the unpadded capture of 2026-10-15, v3.0.0-rc2 artifacts; means of
+% features.{commitGasUsed, accessGasUsed, proofWitnessTime, proofProveTime}; calldata and log
+% sizes are constant).
 \begin{table}[htbp]
 	\centering
 	\caption{Single-point cost profile of the evaluated prototype configuration at $L=64$.
-		Gas, logs, calldata, and local prover timings are summarized over the $1{,}773$ Polygon Amoy executions.}
+		Gas, logs, calldata, and local prover timings are summarized over the $1{,}977$ Polygon Amoy executions.}
 	\label{tab:cost-profile}
 	\footnotesize
 	\begin{tabular}{p{0.34\linewidth}p{0.54\linewidth}}
 		\toprule
 		Metric              & Value / source                                                    \\
 		\midrule
-		Circuit size        & $81{,}740$ constraints; $80{,}884$ wires; $L=64$        \\
+		Circuit size        & $81{,}980$ constraints; $81{,}124$ wires; $L=64$        \\
 		Public interface    & $4$ public inputs plus $1$ output                                 \\
-		Padded on-chain gas & Commit $304{,}167$; access $1{,}057{,}283$ mean gas               \\
+		On-chain gas        & Commit $219{,}757$; access $723{,}565$ mean gas                   \\
 		Event logs          & Commit: $1$ log / $180$ bytes; access: $2$ logs / $296$ bytes     \\
-		Calldata length     & Commit $196$ bytes; access $612$ bytes (constant across policies) \\
-		Local witness time  & $763.6$ ms mean                                                   \\
-		Local prove time    & $2{,}884.2$ ms mean                                               \\
+		Calldata length     & Commit $164$ bytes; access $580$ bytes (constant across policies) \\
+		Local witness time  & $1{,}140.0$ ms mean                                               \\
+		Local prove time    & $3{,}990.3$ ms mean                                               \\
 		\bottomrule
 	\end{tabular}
 \end{table}

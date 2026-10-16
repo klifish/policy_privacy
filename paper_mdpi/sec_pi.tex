@@ -2,26 +2,25 @@
 \subsection{Policy Indistinguishability (PI)}
 \label{sec:eval-pi}
 
-To evaluate PI, we form policy pairs based on semantic similarity and parameter fingerprints.
-The semantic similarity heuristic assigns a score of $1$ to pairs with identical normalized logic strings, which encode the same DUO terms and Boolean structure.
-These strings identify the vocabulary used by each condition but omit its values, so policies with identical strings may restrict different ICD-10 chapters.
-For other pairs, the score combines the Jaccard overlap of DUO terms~\cite{jaccard1912distribution} with agreement in the ICD-10, OBI, and other scope fields.
-Each policy's parameter fingerprint consists of its whitelist size, Merkle depth, and proof type.
+PI evaluates whether an observer can identify which of two semantically related policies governs a given execution.
+We evaluate PI using $30$ designed policy pairs, divided into three types with $10$ pairs each:
+\begin{itemize}
+	\item \texttt{semantic\_equivalent}: The two policies share the same logical form, consisting of the same DUO terms and Boolean structure, but differ in predicate parameter values, such as whitelist codes.
+	\item \texttt{weak\_equivalent}: The two policies share the same set of DUO terms but differ in Boolean structure.
+	\item \texttt{controlled\_difference}: The two policies differ in their sets of DUO terms. For each $k \in \{0,1,2,3,4\}$, we include two pairs whose policies differ in exactly $k$ of the four SPP dimensions (Section~\ref{sec:eval-spp}).
+\end{itemize}
+Each policy belongs to one pair, and which of its two policies is $P_0$ and which is $P_1$ is drawn at random.
 
-We classify candidate policy pairs into three types.
-Pairs with similarity $\ge 0.999$ and different parameter fingerprints are labeled \texttt{semantic\_equivalent}.
-The remaining pairs with similarity $\ge 0.95$ are labeled \texttt{weak\_equivalent}, while those with similarity $<0.95$ are labeled \texttt{controlled\_difference}.
-The \texttt{controlled\_difference} pairs serve as a positive control and are excluded from the PASS/FAIL decision.
-We sample $100$ pairs per type, or use all available pairs when fewer exist, yielding $71$ \texttt{weak\_equivalent} pairs.
+The attacker knows both policies in a pair and can execute each policy to obtain labeled training examples.
+Given the on-chain observables of an execution, the attacker predicts whether it was governed by $P_0$ or $P_1$.
+For each random seed and policy pair, we split the executions of each policy equally between training and testing, separately for granted and denied outcomes.
+We train LR and RF on the training executions and evaluate each classifier using test AUC.
+Each execution commits a separate policy instance (Section~\ref{sec:eval-dataset}), so training and test executions never share a commitment.
 
-In this corpus, the two policies in every pair with similarity $\ge 0.999$ have the same logical form.
-The policies in \texttt{semantic\_equivalent} pairs have different parameter fingerprints and may also differ in their scope values.
-In $70$ of the $71$ \texttt{weak\_equivalent} pairs, the two policies also share the same logical form.
-Of these, $30$ pairs contain content-identical policies that differ only in their commitment randomness.
+For each pair type and classifier, we first average the test AUCs across the $10$ pairs for each seed.
+To assess significance, we construct a null distribution of this average by repeatedly permuting the test labels within each pair, recomputing each pair's AUC, and averaging across pairs.
+This yields one mean AUC and one permutation $p$-value per seed.
+We then apply the leakage criterion (Section~\ref{sec:eval-method}) using the AUC averaged over the $30$ seeds and the fraction of seeds with $p<0.05$.
 
-We represent each policy pair as an ordered pair $(P_0, P_1)$.
-Given the on-chain observables of a single execution, the attacker predicts whether it was produced by $P_0$ or $P_1$.
-This defines a binary classification task, with an AUC of $0.5$ indicating chance.
-
-We apply the supervised attacks described in Section~\ref{sec:eval-method} to a pooled task combining all three pair types and to separate tasks for \texttt{semantic\_equivalent} and \texttt{weak\_equivalent} pairs.
-All three tasks are classified as PASS under the leakage criterion (Table~\ref{tab:pi-pairs}), with mean AUCs close to $0.5$ and low significant-seed fractions.
+All three pair types are classified as PASS (Table~\ref{tab:pi-pairs}).
+The highest mean AUC, $0.549$ for \texttt{semantic\_equivalent} pairs with RF, remains below the $0.55$ threshold, with $20\%$ of seeds significant.

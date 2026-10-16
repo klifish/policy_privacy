@@ -6,45 +6,16 @@ This attack predicts DUO-term presence and ICD-10 chapter membership for the ten
 
 For each DUO term, we distinguish policies containing that term from those without it using the supervised attack described in Section~\ref{sec:eval-method}.
 Table~\ref{tab:pch-terms} reports the results for all ten terms.
-Mean AUCs range from $0.477$ to $0.540$, all below the $0.55$ threshold.
-The significant-seed fraction is highest for GRU at $23\%$, also below the $50\%$ threshold.
+Mean AUCs range from $0.494$ to $0.535$, all below the $0.55$ threshold.
+The significant-seed fraction is highest for POA at $27\%$, also below the $50\%$ threshold.
 All ten tasks are therefore classified as PASS under the leakage criterion.
 
 \input{tables/tab_pch_terms.tex}
 
 We apply the same supervised attacks to the ten ICD-10 chapters, restricting the analysis to DS policies, which carry the ICD-10 scope.
 Each task distinguishes policies associated with a given chapter from those associated with the other chapters.
-Nine tasks are classified as PASS and one as FAIL (Table~\ref{tab:pch-icd10}).
-The tasks for ch1, ch2, and ch4 have mean AUCs of $0.558$--$0.570$, slightly above the $0.55$ threshold.
-However, their significant-seed fractions are at most $23\%$, below the $50\%$ threshold, so these tasks are classified as PASS.
-Only the task for ch5 (diseases of the nervous system) is flagged under the leakage criterion, with a mean AUC of $0.667$ and a significant-seed fraction of $53\%$.
+All ten tasks are classified as PASS (Table~\ref{tab:pch-icd10}).
+The tasks for ch0, ch2, and ch6 have mean AUCs of $0.552$--$0.566$, slightly above the $0.55$ threshold.
+However, their significant-seed fractions are at most $10\%$, below the $50\%$ threshold, so these tasks are classified as PASS.
 
 \input{tables/tab_pch_icd10.tex}
-
-To investigate the FAIL outcome for ch5, we examine the contribution of the padding target to the observed separation.
-For each padded access transaction, we decompose the recorded gas as
-\begin{equation}
-	g_{\mathrm{acc}} = g_{\mathrm{tgt}} + g_{\mathrm{res}},
-	\label{eq:gas-decomp}
-\end{equation}
-where $g_{\mathrm{acc}}$ is the recorded access gas (\texttt{accessGasUsed}).
-The padding target $g_{\mathrm{tgt}}$ is drawn uniformly by the TPS from a fixed band of $945{,}000$--$1{,}155{,}000$ gas (Section~\ref{sec:design}).
-The residual overhead $g_{\mathrm{res}} = g_{\mathrm{acc}} - g_{\mathrm{tgt}}$ is the gas consumed beyond that target.
-
-Across all $1{,}773$ executions on Polygon Amoy, the residual overhead ranges from $4{,}661$ to $4{,}750$ gas, whereas the padding target spans $210{,}000$ gas.
-The padded access gas therefore varies almost entirely with the padding target.
-Although the observer sees only the total gas, our execution logs also record the padding target for each transaction, allowing us to compute $g_{\mathrm{res}}$ for diagnostic analysis.
-
-For each of the $20$ PCH tasks, we separately use the recorded access gas $g_{\mathrm{acc}}$, the padding target $g_{\mathrm{tgt}}$, and the residual $g_{\mathrm{res}}$ as prediction scores to compute single-feature AUCs over all executions in that task, without training a classifier.
-In contrast, Tables~\ref{tab:pch-terms} and~\ref{tab:pch-icd10} report classifier test AUCs averaged over $30$ seeds.
-Across all tasks, the AUCs for $g_{\mathrm{acc}}$ and $g_{\mathrm{tgt}}$ agree to three decimal places, while those for $g_{\mathrm{res}}$ range from $0.47$ to $0.52$.
-
-For ch5, the mean padding target $g_{\mathrm{tgt}}$ is $33{,}000$ gas higher than for the remaining DS policies.
-Across the $30$ evaluation seeds, we vary the train/test split while reusing the same recorded padding targets for coverage-layer policies.
-The association between these targets and the ch5 label can therefore persist across seeds.
-
-We then rerun the supervised attacks to investigate whether the padding-target association explains the ch5 FAIL outcome.
-Replacing the access-gas feature $g_{\mathrm{acc}}$ with $g_{\mathrm{res}}$ yields mean AUCs of $0.556$ for LR and $0.561$ for RF, with significant-seed fractions of $10\%$ and $17\%$, respectively.
-Both attacks are classified as PASS because their significant-seed fractions remain below the $50\%$ threshold.
-Using $g_{\mathrm{tgt}}$ as the sole input feature yields FAIL, with a mean AUC of $0.686$ and a significant-seed fraction of $63\%$.
-These results suggest that the ch5 FAIL reflects a chance association between the random padding targets and the ch5 labels in the evaluated dataset.

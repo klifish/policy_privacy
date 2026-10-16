@@ -2,9 +2,8 @@
 %   PCH: experiments/results/supervised/pch_supervised_verdict.json
 %   PI:  experiments/results/supervised/pi_supervised_verdict.json
 %   SPP: experiments/results/supervised/spp_supervised_verdict.json
-% (all 30 policy-disjoint seeds, deterministic per-seed RNG.)
-% Residual diagnostic for the two FAILs: experiments/results/supervised/pad_residual_diagnostic.md
-% Dataset: Polygon Amoy, fixed circuit + commitment-only interface + randomized gas padding.
+% (30 seeds each: policy-disjoint splits for PCH/SPP, within-pair splits for PI.)
+% Dataset: Polygon Amoy unpadded capture of 2026-10-15 (fixed circuit + commitment-only interface).
 \begin{table}[htbp]
 	\centering
 	\caption{Supervised attack results on the Polygon Amoy dataset.}
@@ -12,20 +11,19 @@
 	% Column widths sum to <1 so that the inter-column glue fits inside the text block.
 	\begin{tabular}{p{0.11\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}}
 		\toprule
-		Objective & Hidden target                                              & Passing                                                      & Results (passing tasks) \\
+		Objective & Hidden target                                              & Passing                                                      & Results                 \\
 		\midrule
 		PCH       & DUO terms and ICD-10 chapters
-		          & $19/20$                                                    & AUC $0.464$--$0.570$, median significant-seed fraction $3\%$                           \\
+		          & $20/20$                                                    & AUC $0.494$--$0.566$, median significant-seed fraction $5\%$                           \\
 		PI        & Which policy of a related pair is executed
-		          & $3/3$                                                      & AUC $0.509$--$0.549$, median significant-seed fraction $7\%$                           \\
+		          & $3/3$                                                      & AUC $0.478$--$0.549$, median significant-seed fraction $7\%$                           \\
 		SPP       & Structure, predicate, parameter, and nesting-depth buckets
-		          & $20/21$                                                    & AUC $0.468$--$0.571$, median significant-seed fraction $7\%$                           \\
+		          & $21/21$                                                    & AUC $0.490$--$0.559$, median significant-seed fraction $7\%$                           \\
 		\bottomrule
 	\end{tabular}
 
 	\begin{tablenote}
-		Significant-seed fraction: share of the $30$ policy-disjoint splits (seeds) whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
+		Significant-seed fraction: share of the $30$ splits (seeds) whose permutation test rejects at $\alpha=0.05$ (Section~\ref{sec:eval-method}).
 		Passing: tasks not flagged by the leakage criterion, which flags a task when its mean AUC exceeds $0.55$ and its significant-seed fraction is at least $50\%$.
-		Failing tasks: PCH ICD-10 ch5 (AUC $0.667$, significant-seed fraction $53\%$) and SPP \texttt{nestingDepth} \texttt{medium}/\texttt{deep} (AUC $0.563$, $53\%$); both trace to the padding target (Sections~\ref{sec:eval-pch} and~\ref{sec:eval-spp}).
 	\end{tablenote}
 \end{table}

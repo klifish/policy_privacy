@@ -16,12 +16,6 @@ Each pair of categories within a dimension defines a binary classification task.
 Using the observables, the attacker predicts which of the two categories the executed policy belongs to.
 
 Table~\ref{tab:spp-contrasts} reports the results for all pairwise classification tasks.
-For most tasks, mean AUCs are close to the chance level of $0.5$, ranging from $0.47$ to $0.54$.
-The \texttt{paramType} tasks \texttt{none}/\texttt{small} and \texttt{none}/\texttt{large}, and the \texttt{nestingDepth} task \texttt{flat}/\texttt{medium}, have mean AUCs of $0.571$, $0.568$, and $0.555$, respectively.
-Although these values exceed the $0.55$ threshold, the corresponding significant-seed fractions are $40\%$, $33\%$, and $27\%$, all below the $50\%$ threshold, so these tasks are classified as PASS.
-Only the \texttt{nestingDepth} task \texttt{medium}/\texttt{deep} is flagged under the leakage criterion, with a mean AUC of $0.563$ and a significant-seed fraction of $53\%$.
-
-To investigate this result, we apply the padding diagnostic used for the PCH ch5 case (Section~\ref{sec:eval-pch}).
-For the \texttt{medium}/\texttt{deep} task, access gas and the padding target have identical single-feature rank AUCs.
-Replacing access gas with the residual obtained by subtracting the padding target yields PASS for both LR and RF, whereas using the target alone yields FAIL.
-These findings are consistent with a chance association between the randomly drawn per-policy padding targets and the nesting-depth categories in the evaluated dataset.
+For most tasks, mean AUCs are close to the chance level of $0.5$, ranging from $0.490$ to $0.546$.
+The \texttt{structureType} task \texttt{trivial}/\texttt{or\_only} and the \texttt{nestingDepth} task \texttt{flat}/\texttt{medium} both have a mean AUC of $0.559$.
+Although these values exceed the $0.55$ threshold, their significant-seed fractions are $27\%$ and $37\%$, below the $50\%$ threshold, so all $21$ tasks are classified as PASS.

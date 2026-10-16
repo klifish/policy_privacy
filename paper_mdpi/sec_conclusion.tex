@@ -5,5 +5,5 @@ This paper presented TPS-ZKPI, a Trusted Proof Service-assisted zero-knowledge a
 In TPS-ZKPI, the data provider commits to a hidden consent policy on-chain, the TPS generates a zero-knowledge proof of each access decision under this policy, and a smart contract verifies the proof.
 Each policy is compiled into a fixed-length program for a reusable zero-knowledge policy interpreter, so all policies share one verification interface and a fixed-format public-chain transcript.
 We evaluated TPS-ZKPI on the Polygon Amoy testnet with supervised and unsupervised attacks in which a passive public-chain observer tried to infer hidden policy properties from public-chain metadata.
-The results showed no leakage under our criterion in 43 of the 45 supervised tasks; the other two traced to chance correlations with the padding, and unsupervised clustering found no policy structure beyond the same padding effect.
+The results showed no leakage under our criterion in any of the 44 supervised tasks, and unsupervised clustering recovered no policy structure beyond chance level.
 Overall, this paper showed empirically that TPS-ZKPI resists the modeled metadata attacks and provides auditable consent enforcement on a public blockchain.

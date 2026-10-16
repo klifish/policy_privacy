@@ -36,8 +36,8 @@ Fourth, transcript normalization fixes the format of the calldata, event logs, a
 We evaluate TPS-ZKPI against a passive public-chain observer who sees only the public-chain transcript.
 The evaluation expresses consent policy privacy as three objectives: Policy Content Hiding (PCH), Policy Indistinguishability (PI), and Structure and Parameter Privacy (SPP).
 For these objectives, supervised and unsupervised attacks test whether the public-chain metadata allow the observer to recover hidden policy content, to distinguish otherwise-equivalent policies, or to infer structural and parameter properties of a policy.
-The results show no leakage in $43$ of the $45$ supervised tasks under our leakage criterion, which flags a task only when its mean area under the receiver operating characteristic curve (AUC) exceeds $0.55$ and the attack is statistically significant in at least half of $30$ policy-disjoint splits; the other two trace to chance correlations with the randomly drawn padding targets.
-Unsupervised clustering likewise finds no policy structure beyond the same padding effect.
+The results show no leakage in any of the $44$ supervised tasks under our leakage criterion, which flags a task only when its mean area under the receiver operating characteristic curve (AUC) exceeds $0.55$ and the attack is statistically significant in at least half of $30$ random splits.
+Unsupervised clustering likewise recovers no policy structure beyond chance level.
 
 This paper makes the following contributions:
 

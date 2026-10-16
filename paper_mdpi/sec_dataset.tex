@@ -1,18 +1,18 @@
 % Dataset and corpus generation. \input from evaluation.tex after sec_threat_model.tex
 % and before sec_methodology.tex. Numbers are of-record from
-% experiments/data/polygonAmoy/metadata.json, policy_definitions.json and
-% executed_dataset.json (capture of 2026-09-17, v3.0.0-rc1 artifacts).
+% experiments/data/polygonAmoy/executed_dataset.json and config.json (unpadded capture
+% of 2026-10-15, v3.0.0-rc2 artifacts; see that directory's README.md).
 \subsection{Dataset and Corpus Generation}
 \label{sec:eval-dataset}
 
-The PCH, PI, and SPP evaluations use policies from a common dataset.
-The dataset holds 1077 distinct policies run as 1773 on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
-The policies are produced by a deterministic generator with a fixed seed (\texttt{unified-decoupled-2026}).
+The PCH, PI, and SPP evaluations use policies from a dataset of $1{,}077$ distinct policies, run as $1{,}977$ on-chain executions on \emph{Polygon~Amoy}, each execution being one commit transaction followed by one access transaction.
+The policies are produced by a deterministic generator with a fixed seed (\texttt{unified-decoupled-2026}), and the number of executions per policy follows from the two execution layers described below.
 For reproducibility, the generator uses a deterministic test issuer to construct private credential witnesses for policies that require credential verification.
 
 For each policy, the generator selects a set of DUO data-use terms and a logical form that combines them.
 Five ontology-linked terms (Section~\ref{subsec:duo}) use code whitelists drawn from external vocabularies: DS uses ICD-10, RS uses the Ontology for Biomedical Investigations (OBI)~\cite{bandrowski2016ontology}, POA uses the Human Ancestry Ontology (HANCESTRO), GS uses ISO~3166 country codes, and CC uses SNOMED Clinical Terms (SNOMED~CT).
-The other five terms (GRU, HMB, NMDS, GSO, NCU) are evaluated using signed claims from the requester's profile credential (Section~\ref{sec:design}).
+The other five terms (GRU, HMB, NMDS, GSO, NCU), which we call profile terms, are evaluated using signed claims from the requester's profile credential (Section~\ref{sec:design}).
+The generator draws a fixed number of policies from each of six families defined by the terms and connectives they use: a single ontology-linked term, a single profile term, AND-only, OR-only, and mixed AND/OR combinations of several terms, and combinations of profile terms only.
 
 Each policy contains one whitelist for each ontology-linked term it includes.
 We draw a target whitelist size once per policy from $\{2, 4, 8, 12, 16, 20, 24, 32\}$, independently of its logical form.
@@ -29,14 +29,19 @@ The RS predicate uses a whitelist of $8$ OBI study-design codes, while the DS pr
 Both whitelist sizes fall within the ``medium'' parameter-size bucket in Table~\ref{tab:corpus}.
 
 We execute the policies in two layers.
-The \emph{coverage layer} executes $1053$ distinct policies once each, spanning the content labels and structural buckets to support training and testing on disjoint policy sets.
-The \emph{depth layer} executes $24$ policies $30$ times each ($720$ executions), providing repeated observations for the per-pair PI clustering analysis.
-All $1{,}773$ executions produced the expected authorization outcomes.
-Sampling is configured to provide at least $30$ executions in the smallest content-label class.
-Table~\ref{tab:corpus} summarizes the counts for each content label and structural bucket.
+The \emph{coverage layer} executes $1{,}017$ distinct policies once each, spanning the content labels and the categories of policy structure and parameter size and allowing training and testing to use disjoint policies to assess generalization to unseen policies.
+The \emph{depth layer} executes each of the $60$ policies in $30$ designed policy pairs $16$ times ($960$ executions), allowing training and testing to use different executions of the same policies to assess whether an observer can distinguish the policies within each pair.
+For each request, the generator constructs requester evidence that either satisfies or violates the policy, so that the request is granted or denied.
+In the coverage layer, granted and denied requests are balanced as closely as possible within each group of policies sharing a logical-form family and a set of DUO terms, to reduce associations between authorization outcomes and content labels.
+Each depth-layer policy receives $8$ granted and $8$ denied requests.
+All $1{,}977$ executions produced the planned authorization outcomes ($989$ granted and $988$ denied).
+
+Every execution commits its own instance of its policy with fresh commitment randomness, so no two executions share a policy commitment, a parameter commitment, or an on-chain policy identifier.
+The executions are submitted in an order shuffled with a fixed seed, independently of the policy labels, so the identifiers assigned in registration order carry no label information.
+Every content label has at least $33$ policies, and Table~\ref{tab:corpus} summarizes the counts for each content label and each category of policy structure or parameter size.
 
 \input{tables/tab_corpus.tex}
 
 The evaluated content labels cover ten DUO data-use terms and ten ICD-10 chapters (Table~\ref{tab:corpus}).
 Evaluating every DUO term and individual ICD-10 code would require a substantially larger on-chain dataset.
-We therefore evaluate DUO-term presence and ICD-10 chapter membership rather than individual ICD-10 codes.
+We therefore evaluate DUO-term presence and ICD-10 chapter membership.

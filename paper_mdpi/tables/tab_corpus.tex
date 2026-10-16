@@ -1,6 +1,5 @@
-% Source of record: experiments/data/polygonAmoy/metadata.json
-%   (policyCount=1077, datasetEntries=1773, generator seed "unified-decoupled-2026")
-%   and experiments/data/polygonAmoy/executed_dataset.json (per-label policy and
+% Source of record: experiments/data/polygonAmoy/executed_dataset.json (1077 policies,
+%   1977 executions, generator seed "unified-decoupled-2026"; per-label policy and
 %   execution counts: duoTermCodes, ontologyNamespace/ontologyValue, structureType,
 %   nestingDepth, predicateCombo, paramType).
 % DUO is multi-label: an execution carries every term its policy references, so the
@@ -21,33 +20,33 @@
 		\midrule
 		\multicolumn{3}{@{}l@{}}{\textit{DUO data-use term} (multi-label)} & & \multicolumn{3}{@{}l@{}}{\textit{ICD-10 chapter} (DS policies)} \\
 		\cmidrule{1-3}\cmidrule{5-7}
-		GRU           & $302$    & $447$      & & ch0               & $44$     & $131$      \\
-		DS            & $422$    & $770$      & & ch1               & $49$     & $49$       \\
-		RS            & $412$    & $760$      & & ch2               & $33$     & $62$       \\
-		POA           & $392$    & $624$      & & ch3               & $55$     & $55$       \\
-		GS            & $382$    & $556$      & & ch4               & $41$     & $70$       \\
-		CC            & $392$    & $769$      & & ch5               & $34$     & $63$       \\
-		NCU           & $206$    & $380$      & & ch6               & $48$     & $135$      \\
-		HMB           & $331$    & $447$      & & ch7               & $48$     & $77$       \\
-		NMDS          & $237$    & $469$      & & ch8               & $33$     & $62$       \\
-		GSO           & $236$    & $352$      & & ch9               & $37$     & $66$       \\
-		              &          &            & & \textit{Subtotal} & $422$    & $770$      \\
+		GRU           & $302$    & $617$      & & ch0               & $44$     & $104$      \\
+		DS            & $422$    & $677$      & & ch1               & $49$     & $94$       \\
+		RS            & $412$    & $742$      & & ch2               & $33$     & $33$       \\
+		POA           & $392$    & $737$      & & ch3               & $55$     & $100$       \\
+		GS            & $382$    & $682$      & & ch4               & $41$     & $56$       \\
+		CC            & $392$    & $632$      & & ch5               & $34$     & $49$       \\
+		NCU           & $206$    & $506$      & & ch6               & $48$     & $63$      \\
+		HMB           & $331$    & $661$      & & ch7               & $48$     & $48$       \\
+		NMDS          & $237$    & $387$      & & ch8               & $33$     & $63$       \\
+		GSO           & $236$    & $551$      & & ch9               & $37$     & $67$       \\
+		              &          &            & & \textit{Subtotal} & $422$    & $677$      \\
 		\addlinespace
 		\multicolumn{3}{@{}l@{}}{\textit{SPP structureType}} & & \multicolumn{3}{@{}l@{}}{\textit{SPP nestingDepth}} \\
 		\cmidrule{1-3}\cmidrule{5-7}
-		trivial       & $130$    & $130$      & & flat              & $130$    & $130$      \\
-		and\_only     & $294$    & $526$      & & shallow           & $210$    & $413$      \\
-		or\_only      & $303$    & $535$      & & medium            & $335$    & $509$      \\
-		and\_or\_mixed & $350$   & $582$      & & deep              & $402$    & $721$      \\
+		trivial       & $130$    & $235$      & & flat              & $130$    & $235$      \\
+		and\_only     & $294$    & $579$      & & shallow           & $210$    & $360$      \\
+		or\_only      & $303$    & $513$      & & medium            & $335$    & $575$      \\
+		and\_or\_mixed & $350$   & $650$      & & deep              & $402$    & $807$      \\
 		\addlinespace
 		\multicolumn{3}{@{}l@{}}{\textit{SPP predicateCombo}} & & \multicolumn{3}{@{}l@{}}{\textit{SPP paramType}} \\
 		\cmidrule{1-3}\cmidrule{5-7}
-		single        & $257$    & $344$      & & none              & $147$    & $234$      \\
-		few           & $645$    & $1080$     & & small             & $232$    & $406$      \\
-		many          & $175$    & $349$      & & medium            & $352$    & $584$      \\
-		              &          &            & & large             & $346$    & $549$      \\
+		single        & $257$    & $497$      & & none              & $147$    & $297$      \\
+		few           & $645$    & $1185$     & & small             & $232$    & $457$      \\
+		many          & $175$    & $295$      & & medium            & $352$    & $547$      \\
+		              &          &            & & large             & $346$    & $676$      \\
 		\midrule
-		\textbf{Corpus total} & $\mathbf{1077}$ & $\mathbf{1773}$ & & & & \\
+		\textbf{Corpus total} & $\mathbf{1077}$ & $\mathbf{1977}$ & & & & \\
 		\bottomrule
 	\end{tabular}
 

@@ -4,16 +4,10 @@
 The clustering attacker stated in Section~\ref{sec:eval-method} tests whether the on-chain observables group by a hidden label without access to that label.
 Table~\ref{tab:clustering-summary} summarizes the clustering results across the three privacy objectives.
 
-ARI stays within $\pm 0.003$ for every PCH, PI, and SPP target except the SPP \texttt{nestingDepth}, indicating little agreement between the clusters and the hidden labels.
-The PCH and SPP NMI values are below $0.03$, and apart from \texttt{nestingDepth} none is significant under the label-permutation test ($p_{\mathrm{NMI}}\ge 0.08$).
-For PI, $6$ of the $127$ pairs ($5\%$) have $p_{\mathrm{NMI}}<0.05$, consistent with the nominal $5\%$ level.
-
-
-For \texttt{nestingDepth}, the ARI and NMI are small but statistically significant under the label-permutation test reported in Table~\ref{tab:clustering-summary}.
-To investigate this association, we repeat clustering on the same executions, retaining commit gas and replacing access gas with the residual defined in Equation~\eqref{eq:gas-decomp}.
-The nesting-depth ARI then falls to $-0.0004$, and neither ARI nor NMI remains statistically significant ($p_{\mathrm{ARI}}=0.60$, $p_{\mathrm{NMI}}=0.69$).
-Together with the diagnostic for the \texttt{medium}/\texttt{deep} contrast in Section~\ref{sec:eval-spp}, this result is consistent with a chance association between the randomly drawn padding targets and nesting depth in the evaluated dataset.
-However, the residual analysis yields a small but nominally significant ARI for \texttt{paramType} ($0.0026$, $p_{\mathrm{ARI}}=0.04$), whose NMI is not significant ($p_{\mathrm{NMI}}=0.09$).
+ARI stays within $\pm 0.006$ for every PCH, PI, and SPP target, indicating little agreement between the clusters and the hidden labels, and the PCH and SPP NMI values are at most $0.044$.
+Of the twelve permutation tests for the six PCH and SPP targets, one is nominally significant: the NMI for \texttt{nestingDepth} ($0.0072$, $p_{\mathrm{NMI}}=0.04$), whose ARI is not ($p_{\mathrm{ARI}}=0.20$).
+With twelve tests at the $5\%$ level, one such result is consistent with chance, and all six supervised \texttt{nestingDepth} tasks pass (Section~\ref{sec:eval-spp}).
+For PI, $1$ of the $30$ pairs ($3\%$) has $p_{\mathrm{NMI}}<0.05$, consistent with the nominal $5\%$ level.
 These findings complement the supervised results on the same dataset.
 
 \input{tables/tab_clustering_summary.tex}

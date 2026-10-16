@@ -23,10 +23,12 @@ SPP tasks distinguish between two categories defined by policy structure or para
 
 For each task, we train logistic regression (LR)~\cite{cox1958regression} and random forest (RF)~\cite{breiman2001random} classifiers to evaluate linear and non-linear attacks, respectively.
 Both classifiers use the nine features listed in Section~\ref{sec:eval-threat}.
-We repeat the evaluation with $30$ random seeds, following the same protocol for PCH, PI, and SPP.
+We repeat the evaluation with $30$ random seeds.
+For PCH and SPP, training and testing use disjoint policies.
+For PI, the attacker knows both policies in a pair, so training and testing use different executions of those same policies (Section~\ref{sec:eval-pi}).
 
-For each seed, we randomly select one execution per policy.
-We then generate $512$ random candidate splits, each assigning $70\%$ of the policies to training and $30\%$ to testing, with no policy appearing in both sets.
+For each PCH or SPP task and each seed, we randomly select one execution per policy.
+We then generate $512$ random candidate splits of these selected executions, assigning $70\%$ of the policies to training and $30\%$ to testing.
 To preserve class balance, we aim to place $30\%$ of each class in the test set.
 We discard splits that do not contain both classes in both sets.
 For each remaining split, we calculate the percentage of each class assigned to the test set and its absolute deviation from the $30\%$ target.
@@ -78,8 +80,8 @@ Higher values indicate that clustering more closely recovers the hidden categori
 Values close to $0$ indicate limited recovery by this attack, but do not establish the absence of leakage.
 ARI is adjusted for chance~\cite{hubert1985comparing}, whereas NMI is not~\cite{vinh2010information} and can be positive even when the clusters and labels are unrelated (Appendix~\ref{app:nmi-sensitivity}); NMI must therefore be compared against a null distribution rather than against $0$.
 
-For PCH, we cluster all executions together.
-For SPP, we use a subset of $1{,}125$ executions (Section~\ref{sec:eval-dataset}) and perform clustering separately for each dimension defined in Section~\ref{sec:eval-spp}, setting $K$ to the number of categories.
+For PCH and SPP, we cluster one execution per policy, the one submitted first (Section~\ref{sec:eval-dataset}), so that each policy counts once, as in the supervised attacks; this gives $1{,}077$ executions, or $422$ for the ICD-10 chapters of the DS policies.
+For SPP, we perform clustering separately for each dimension defined in Section~\ref{sec:eval-spp}, setting $K$ to the number of categories.
 For both analyses, we report ARI and NMI averaged over $20$ K-Means seeds.
 
 To assess the statistical significance of the observed ARI and NMI, we keep the cluster assignments fixed and randomly permute the true labels $R=200$ times, recomputing both metrics for each permutation.
@@ -87,10 +89,7 @@ For each metric, we calculate the corresponding $p$-value using Equation~\eqref{
 We denote these $p$-values by $p_{\mathrm{ARI}}$ and $p_{\mathrm{NMI}}$.
 The smallest attainable $p$-value is $1/201 \approx 0.005$.
 
-For PI, we assess whether the executions of two policies can be distinguished, evaluating each policy pair separately.
-The pairs used in the supervised PI attack (Section~\ref{sec:eval-pi}) contain either one execution per policy or one execution for one policy and $30$ for the other.
-Such small or imbalanced samples limit the reliability of clustering-based comparisons.
-We therefore construct $127$ balanced policy pairs from the depth-layer executions (Section~\ref{sec:eval-dataset}), with $30$ executions per policy in each pair.
+For PI, we assess whether the executions of two policies can be distinguished, evaluating each of the $30$ designed policy pairs (Section~\ref{sec:eval-pi}) separately on its $32$ executions, $16$ per policy.
 
 For each pair, we apply K-Means with $K=2$ and compare the resulting clusters with the policy labels.
 We test the statistical significance of NMI using the label-permutation procedure described above and flag the pair if $p_{\mathrm{NMI}}<0.05$.

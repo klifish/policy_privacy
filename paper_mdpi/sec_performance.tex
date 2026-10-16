@@ -3,8 +3,10 @@
 \label{sec:eval-performance}
 
 \input{tables/tab_cost_profile.tex}
-At $L=64$ and eight Merkle levels, the prototype has $81{,}740$ constraints and mean padded gas costs of $304{,}167$ for commit and $1{,}057{,}283$ for access (Table~\ref{tab:cost-profile}).
-Across $1{,}773$ Amoy executions on the two-vCPU capture server, mean witness and proving times are $0.764$ and $2.884$~s.
+At $L=64$ and eight Merkle levels, the prototype has $81{,}980$ constraints and mean gas costs of $219{,}757$ for commit and $723{,}565$ for access (Table~\ref{tab:cost-profile}).
+The gas varies only within narrow ranges, from $219{,}688$ to $237{,}664$ for commit and from $723{,}446$ to $741{,}458$ for access.
+Subtracting the base cost of $21{,}000$ and the calldata cost from each transaction (Section~\ref{subsec:transcript-normalization}) leaves an execution cost of $196{,}964$ gas for every commit, $70{,}400$ for every resource registration, and $695{,}254$ and $695{,}264$ for every denied and granted access, respectively, apart from $17{,}940$ additional gas on the first transaction of each sending account.
+Across the $1{,}977$ Amoy executions on the two-vCPU capture server, which ran four capture processes concurrently, mean witness and proving times are $1.140$ and $3.990$~s.
 
 \input{tables/tab_cost_scaling.tex}
 To assess how circuit capacity affects proving costs, we generate $30$ verified proofs per configuration using rapidsnark on an Apple M1 (Table~\ref{tab:cost-scaling}).

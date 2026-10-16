@@ -3,7 +3,6 @@
 % Multi-seed (30 policy-disjoint seeds).
 % Criterion: FAIL iff AUC_mean > 0.55 AND %sig >= 50%; both conditions required, else PASS.
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
-% The ch5 FAIL is analysed in experiments/results/supervised/pad_residual_diagnostic.md.
 \begin{table}[htbp]
 	\centering
 	\caption{Policy Content Hiding: per-chapter ICD-10 supervised attack over 30
@@ -13,16 +12,16 @@
 		\toprule
 		Chapter & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  \\
 		\midrule
-		ICD-10 ch0 & $0.472 \pm 0.078$      & $0.064$        & $0\%$ \\
-		ICD-10 ch1 & $0.570 \pm 0.066$      & $0.075$        & $23\%$ \\
-		ICD-10 ch2 & $0.565 \pm 0.071$      & $0.081$        & $10\%$ \\
-		ICD-10 ch3 & $0.540 \pm 0.061$      & $0.061$        & $7\%$ \\
-		ICD-10 ch4 & $0.558 \pm 0.061$      & $0.070$        & $13\%$ \\
-		ICD-10 ch5 & $0.667 \pm 0.069$      & $0.167$        & $53\%$ \\
-		ICD-10 ch6 & $0.464 \pm 0.077$      & $0.065$        & $0\%$ \\
-		ICD-10 ch7 & $0.525 \pm 0.064$      & $0.058$        & $3\%$ \\
-		ICD-10 ch8 & $0.478 \pm 0.078$      & $0.063$        & $0\%$ \\
-		ICD-10 ch9 & $0.511 \pm 0.074$      & $0.062$        & $0\%$ \\
+		ICD-10 ch0 & $0.566 \pm 0.064$      & $0.081$        & $7\%$ \\
+		ICD-10 ch1 & $0.508 \pm 0.070$      & $0.063$        & $3\%$ \\
+		ICD-10 ch2 & $0.561 \pm 0.065$      & $0.077$        & $7\%$ \\
+		ICD-10 ch3 & $0.509 \pm 0.062$      & $0.050$        & $0\%$ \\
+		ICD-10 ch4 & $0.538 \pm 0.085$      & $0.076$        & $10\%$ \\
+		ICD-10 ch5 & $0.517 \pm 0.080$      & $0.067$        & $3\%$ \\
+		ICD-10 ch6 & $0.552 \pm 0.073$      & $0.068$        & $10\%$ \\
+		ICD-10 ch7 & $0.512 \pm 0.071$      & $0.060$        & $7\%$ \\
+		ICD-10 ch8 & $0.539 \pm 0.079$      & $0.075$        & $7\%$ \\
+		ICD-10 ch9 & $0.499 \pm 0.069$      & $0.057$        & $3\%$ \\
 		\bottomrule
 	\end{tabular}
 	\begin{tablenote}

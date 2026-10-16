@@ -10,9 +10,8 @@ The supervised attacks attempt to predict the hidden labels, while the unsupervi
 We then assess whether the resulting clusters correspond to the hidden labels.
 
 % Table~\ref{tab:privacy-summary} summarizes the supervised results across the three privacy objectives.
-% Under the leakage criterion, $43$ of the $45$ supervised tasks are classified as PASS and the remaining two as FAIL.
-% The unsupervised analysis shows little agreement between the clusters and the hidden labels, with only a weak clustering signal observed.
-% Diagnostic analyses suggest that the two FAIL outcomes and this weak signal reflect chance associations between the randomly drawn padding targets and the hidden labels.
+% Under the leakage criterion, all $44$ supervised tasks are classified as PASS.
+% The unsupervised analysis shows little agreement between the clusters and the hidden labels.
 
 Beyond privacy, we evaluate the system's computational and on-chain costs, including gas consumption for commit and access transactions, calldata sizes, circuit constraint count, and proving time.
 We also examine how these costs vary with circuit capacity and policy complexity within a fixed circuit, and how offline proof generation throughput scales with workload.

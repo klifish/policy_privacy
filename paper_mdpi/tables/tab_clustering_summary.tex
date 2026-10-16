@@ -1,18 +1,16 @@
 % Sources of record:
 %   PCH-DUO:   experiments/results/clustering/pch/pch_global_duo_clustering.csv
-%              (global, all 1773 executions, no layering; K = 10 primary DUO terms)
+%              (one execution per policy, the first submitted: 1077; K = 10 primary DUO terms)
 %   PCH-ICD10: experiments/results/clustering/pch/pch_global_icd10_clustering.csv
-%              (global, all 770 executions of the DS policies, which carry the ICD-10 scope; no layering)
+%              (one execution per policy: the 422 DS policies, which carry the ICD-10 scope)
 %   PI:        experiments/results/clustering/pi/pi_balanced_debiased.csv
-%              (127 balanced 30v30 pairs; observed means)
+%              (30 designed pairs, 16v16 executions; observed means)
 %   SPP:       experiments/results/clustering/spp/spp_clustering_summary.csv
-%              (raw field names logicStructure/predicateCount/setSize map to the
-%               supervised axes structureType/predicateCombo/paramType)
-% Dataset: experiments/data/polygonAmoy/ (same executions as the supervised verdicts).
+%              (the same 1077 executions as PCH DUO; raw field names logicStructure/predicateCount/
+%               setSize map to the supervised axes structureType/predicateCombo/paramType)
+% Dataset: experiments/data/polygonAmoy/ (unpadded capture); PCH/SPP inputs built by
+%   run_all_clustering.policy_sources (one execution per policy, earliest executionSequence).
 % p_ARI / p_NMI are the permutation p-values of the ensemble ARI / NMI (ari_p_value / nmi_p_value).
-% Residual diagnostics (cited in sec_clustering.tex, not in this table):
-%   experiments/results/supervised/pad_residual_diagnostic.json
-%   experiments.spp.clustering.{nestingDepth,paramType}.residual
 \begin{table}[htbp]
 	\centering
 	\caption{Unsupervised clustering attack (K-Means, $K$ = number of classes, $K=2$ for
@@ -24,18 +22,18 @@
 		\toprule
 		Objective & Target                   & $n$    & \#cls. & ARI       & $p_{\mathrm{ARI}}$ & NMI      & $p_{\mathrm{NMI}}$ \\
 		\midrule
-		PCH       & DUO terms                & $1773$ & $10$   & $0.0000$  & $0.48$             & $0.0109$ & $0.41$             \\
-		PCH       & ICD-10 chapters          & $770$  & $10$   & $0.0021$  & $0.06$             & $0.0281$ & $0.08$             \\
-		PI        & policy pairs ($30$v$30$) & $127$  & $2$    & $0.0020$  & ---                & $0.0139$ & ---                \\
-		SPP       & \texttt{structureType}   & $1125$ & $4$    & $0.0004$  & $0.33$             & $0.0034$ & $0.34$             \\
-		SPP       & \texttt{predicateCombo}  & $1125$ & $3$    & $-0.0005$ & $0.58$             & $0.0015$ & $0.51$             \\
-		SPP       & \texttt{paramType}       & $1125$ & $4$    & $-0.0000$ & $0.49$             & $0.0030$ & $0.43$             \\
-		SPP       & \texttt{nestingDepth}    & $1125$ & $4$    & $0.0071$  & $<0.01$            & $0.0088$ & $<0.01$            \\
+		PCH       & DUO terms                & $1077$ & $10$   & $0.0024$  & $0.10$             & $0.0167$ & $0.69$             \\
+		PCH       & ICD-10 chapters          & $422$  & $10$   & $-0.0008$ & $0.58$             & $0.0437$ & $0.62$             \\
+		PI        & policy pairs ($16$v$16$) & $30$   & $2$    & $-0.0020$ & ---                & $0.0242$ & ---                \\
+		SPP       & \texttt{structureType}   & $1077$ & $4$    & $-0.0022$ & $0.87$             & $0.0053$ & $0.18$             \\
+		SPP       & \texttt{predicateCombo}  & $1077$ & $3$    & $-0.0051$ & $0.69$             & $0.0020$ & $0.65$             \\
+		SPP       & \texttt{paramType}       & $1077$ & $4$    & $-0.0004$ & $0.56$             & $0.0023$ & $0.78$             \\
+		SPP       & \texttt{nestingDepth}    & $1077$ & $4$    & $0.0022$  & $0.20$             & $0.0072$ & $0.04$             \\
 		\bottomrule
 	\end{tabular}
 
 	\begin{tablenote}
-		For PI, ARI and NMI are means across the $127$ balanced policy pairs.
+		For PI, ARI and NMI are means across the $30$ designed policy pairs.
 		Each pair is clustered and tested separately, so no single $p$-value applies to these means (---).
 	\end{tablenote}
 \end{table}

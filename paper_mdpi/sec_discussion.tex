@@ -2,13 +2,12 @@
 \label{sec:discussion}
 
 \textbf{Privacy findings.}
-Under the passive public-chain observer model, the evaluated attacks generally perform near chance.
-Two supervised tasks are classified as FAIL under the leakage criterion, and the clustering analysis detects one small signal.
-The diagnostics attribute these signals to the randomly sampled gas-padding targets (Sections~\ref{sec:eval-pch}--\ref{sec:eval-clustering}).
-Such padding-induced failures are a property of the criterion on a corpus in which coverage-layer policies are executed once, so the thirty seeds resample the same random draws;
-we keep the criterion as stated and document the diagnostic, since raising the significant-seed or AUC threshold far enough to absorb these cases would also weaken it against genuine leaks.
+Under the passive public-chain observer model, the evaluated attacks achieve performance close to chance.
+None of the supervised tasks meets the leakage criterion for FAIL.
+The highest mean AUC is $0.566$ for ICD-10 chapter ch0, with statistically significant results in only $7\%$ of seeds (Section~\ref{sec:eval-pch}).
+The clustering analysis yields one nominally significant result across twelve tests, which is consistent with chance at the $5\%$ significance level (Section~\ref{sec:eval-clustering}).
 
-The commitment-only interface and fixed circuit avoid exposing policy logic directly in the public transcript.
+The commitment-only interface and fixed circuit avoid exposing policy logic directly in the public transcript, and the gas that follows from them varies only with the transaction type, the authorization output, and the byte cost of values that do not depend on the policy content (Section~\ref{sec:eval-performance}).
 
 \textbf{Costs.} Within the evaluated circuit, policy complexity has little effect on on-chain costs.
 All proofs require the same verification operations and use a fixed public-input format with five signals.
@@ -17,7 +16,7 @@ The costs of witness generation and proving for larger circuit capacities or dif
 The offline load benchmark in Table~\ref{tab:workload-scaling} rotates the four policy classes through $100$ verified requests at each concurrency level.
 The best observed batch throughput is $0.936$ proofs/s at concurrency four, with median and p95 request latencies of $4.113$ and $5.854$~s; CPU contention makes the concurrency-two result slightly lower.
 At this throughput, one prover on the benchmark host handles about $80{,}900$ requests per day, or about $53{,}900$ if a third of its capacity is held in reserve; the estimate is conservative, because half of the rotated requests include the harness's credential issuance (Section~\ref{sec:eval-performance}).
-On-chain, each padded access costs $1{,}057{,}283$ gas on average (about $0.032$~POL, the native token of Polygon, at the $30$~gwei tip of the evaluation, against $0.022$~POL unpadded; Table~\ref{tab:cost-profile}), and each policy commit adds a one-time $304{,}167$ gas ($0.009$~POL).
+On-chain, each access costs $723{,}565$ gas on average (about $0.022$~POL, the native token of Polygon, at the $30$~gwei tip of the evaluation; Table~\ref{tab:cost-profile}), and each policy commit adds a one-time $219{,}757$ gas ($0.007$~POL).
 
 
 \textbf{TPS trust and credential provenance.}

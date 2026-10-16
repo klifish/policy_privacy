@@ -5,8 +5,6 @@
 % "stronger attacker" classifier used for gating).
 % Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05).
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
-% The nestingDepth medium/deep FAIL is analysed in
-% experiments/results/supervised/pad_residual_diagnostic.md.
 \begin{table}[htbp]
   \caption{Structure and Parameter Privacy: 21 pairwise contrasts across four annotation
     axes over 30 policy-disjoint seeds (higher-mean-AUC classifier per contrast).}
@@ -17,33 +15,33 @@
     Contrast & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig & med $n$ \\
     \midrule
     \multicolumn{5}{l}{\textit{structureType}} \\
-    trivial / or\_only          & $0.520 \pm 0.048$ & $0.043$ & $0\%$  & $130$ \\
-    trivial / and\_only         & $0.502 \pm 0.040$ & $0.033$ & $3\%$  & $127$ \\
-    trivial / and\_or\_mixed    & $0.502 \pm 0.042$ & $0.034$ & $0\%$  & $144$ \\
-    or\_only / and\_only        & $0.506 \pm 0.034$ & $0.027$ & $0\%$  & $179$ \\
-    or\_only / and\_or\_mixed   & $0.518 \pm 0.035$ & $0.032$ & $10\%$ & $196$ \\
-    and\_only / and\_or\_mixed  & $0.503 \pm 0.040$ & $0.032$ & $7\%$  & $193$ \\
+    trivial / or\_only          & $0.559 \pm 0.045$ & $0.063$ & $27\%$  & $130$ \\
+    trivial / and\_only         & $0.533 \pm 0.050$ & $0.047$ & $7\%$  & $127$ \\
+    trivial / and\_or\_mixed    & $0.537 \pm 0.040$ & $0.042$ & $7\%$  & $144$ \\
+    or\_only / and\_only        & $0.510 \pm 0.038$ & $0.032$ & $7\%$  & $179$ \\
+    or\_only / and\_or\_mixed   & $0.541 \pm 0.032$ & $0.045$ & $13\%$ & $196$ \\
+    and\_only / and\_or\_mixed  & $0.506 \pm 0.039$ & $0.029$ & $3\%$  & $193$ \\
     \midrule
     \multicolumn{5}{l}{\textit{predicateCombo}} \\
-    single / few                & $0.523 \pm 0.035$ & $0.033$ & $13\%$ & $271$ \\
-    single / many               & $0.519 \pm 0.048$ & $0.041$ & $7\%$  & $130$ \\
-    few / many                  & $0.527 \pm 0.048$ & $0.045$ & $17\%$ & $246$ \\
+    single / few                & $0.501 \pm 0.037$ & $0.028$ & $7\%$ & $271$ \\
+    single / many               & $0.498 \pm 0.038$ & $0.031$ & $3\%$  & $130$ \\
+    few / many                  & $0.504 \pm 0.029$ & $0.023$ & $3\%$ & $246$ \\
     \midrule
     \multicolumn{5}{l}{\textit{paramType}} \\
-    none / small                & $0.571 \pm 0.046$ & $0.071$ & $40\%$ & $114$ \\
-    none / medium               & $0.525 \pm 0.035$ & $0.035$ & $3\%$  & $150$ \\
-    none / large                & $0.568 \pm 0.038$ & $0.069$ & $33\%$ & $148$ \\
-    small / medium              & $0.530 \pm 0.037$ & $0.037$ & $20\%$ & $175$ \\
-    small / large               & $0.504 \pm 0.036$ & $0.028$ & $3\%$  & $173$ \\
-    medium / large              & $0.493 \pm 0.027$ & $0.022$ & $0\%$  & $209$ \\
+    none / small                & $0.490 \pm 0.045$ & $0.038$ & $3\%$ & $114$ \\
+    none / medium               & $0.520 \pm 0.044$ & $0.036$ & $10\%$  & $150$ \\
+    none / large                & $0.522 \pm 0.044$ & $0.038$ & $13\%$ & $148$ \\
+    small / medium              & $0.532 \pm 0.041$ & $0.043$ & $17\%$ & $175$ \\
+    small / large               & $0.518 \pm 0.040$ & $0.033$ & $10\%$  & $173$ \\
+    medium / large              & $0.491 \pm 0.032$ & $0.026$ & $0\%$  & $209$ \\
     \midrule
     \multicolumn{5}{l}{\textit{nestingDepth}} \\
-    flat / shallow              & $0.522 \pm 0.038$ & $0.036$ & $3\%$  & $102$ \\
-    flat / medium               & $0.555 \pm 0.032$ & $0.055$ & $27\%$ & $140$ \\
-    flat / deep                 & $0.468 \pm 0.046$ & $0.047$ & $3\%$  & $160$ \\
-    shallow / medium            & $0.521 \pm 0.041$ & $0.039$ & $7\%$  & $164$ \\
-    shallow / deep              & $0.533 \pm 0.036$ & $0.039$ & $17\%$ & $184$ \\
-    medium / deep               & $0.563 \pm 0.028$ & $0.063$ & $53\%$ & $221$ \\
+    flat / shallow              & $0.533 \pm 0.058$ & $0.056$ & $7\%$  & $102$ \\
+    flat / medium               & $0.559 \pm 0.056$ & $0.067$ & $37\%$ & $140$ \\
+    flat / deep                 & $0.541 \pm 0.053$ & $0.055$ & $23\%$  & $160$ \\
+    shallow / medium            & $0.546 \pm 0.037$ & $0.049$ & $23\%$  & $164$ \\
+    shallow / deep              & $0.493 \pm 0.042$ & $0.034$ & $3\%$ & $184$ \\
+    medium / deep               & $0.507 \pm 0.024$ & $0.020$ & $0\%$ & $221$ \\
     \bottomrule
   \end{tabular}
   \begin{tablenote}

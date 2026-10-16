@@ -1,28 +1,28 @@
 % Source of record: experiments/results/supervised/pi_supervised_verdict.json
-%   (higher-AUC model per pair type; cross-checked against the JS pi_report.json verdict).
-% Policy Indistinguishability — supervised distinguisher, multi-seed (30 policy-disjoint seeds).
-% Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05).
-% controlled_difference is diagnostic, non-gating.
+%   (higher-mean-AUC model per pair type; cross-checked against the JS pi_report.json verdict).
+% Policy Indistinguishability -- within-pair supervised attack, 30 seeds; each seed tests
+% half of the executions of every (policy, outcome) cell of every pair.
+% Criterion: FAIL iff AUC_mean > 0.55 AND significant-seed fraction >= 0.5 (perm alpha=0.05,
+% labels permuted within pairs). All three pair types gate.
 % AUC gap = mean over seeds of |AUC_s - 0.5| from models.<m>.perSeed.auc.
-% Pair budget (experiments/results/supervised/pi_pairs_generated.json): 100 semantic_equivalent,
-% 71 weak_equivalent (all available), 100 controlled_difference.
+% Positive control: positiveControl.models (synthetic N(0,1) feature shifted by 0.75 on P1);
+% the column shows the model with the higher control mean AUC.
 \begin{table}[htbp]
-	\caption{Policy Indistinguishability: single-execution supervised attack over 30
-		policy-disjoint seeds, by policy-pair type (higher-mean-AUC classifier per type).}
+	\caption{Policy Indistinguishability: within-pair supervised attack over 30 seeds, by
+		policy-pair type (higher-mean-AUC classifier per type).}
 	\label{tab:pi-pairs}
 	\centering\footnotesize
-	\begin{tabular}{lccccc}
+	\begin{tabular}{lcccccc}
 		\toprule
-		Pair type                            & Pairs & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  & med $n$ \\
+		Pair type              & Pairs & AUC (mean\,$\pm$\,std) & AUC gap (mean) & \%sig  & med $n$ & Control AUC (\%sig) \\
 		\midrule
-		overall (all types)                  & $271$ & $0.509 \pm 0.035$      & $0.027$        & $3\%$  & $162$   \\
-		semantic\_equivalent                 & $100$ & $0.549 \pm 0.064$      & $0.070$        & $7\%$  & $60$    \\
-		weak\_equivalent                     & $71$  & $0.544 \pm 0.079$      & $0.079$        & $10\%$ & $42$    \\
-		controlled\_difference\,$^{\dagger}$ & $100$ & $0.544 \pm 0.064$      & $0.062$        & $13\%$ & $60$    \\
+		semantic\_equivalent   & $10$  & $0.549 \pm 0.035$      & $0.052$        & $20\%$ & $160$   & $0.649$ ($93\%$)    \\
+		weak\_equivalent       & $10$  & $0.520 \pm 0.045$      & $0.042$        & $7\%$  & $160$   & $0.611$ ($63\%$)    \\
+		controlled\_difference & $10$  & $0.478 \pm 0.026$      & $0.028$        & $0\%$  & $160$   & $0.621$ ($87\%$)    \\
 		\bottomrule
 	\end{tabular}
 
 	\begin{tablenote}
-		med $n$: median test-set size over seeds. $^{\dagger}$ Reported for reference; excluded from the PI PASS/FAIL decision.
+		med $n$: median test-set size over seeds, summed over the $10$ pairs of a type ($16$ of the $32$ executions of each pair). Control: the attack with one added synthetic feature drawn from a standard normal distribution and shifted by $0.75$ for $P_1$; shown for the classifier with the higher control mean AUC (LR for all three types).
 	\end{tablenote}
 \end{table}
