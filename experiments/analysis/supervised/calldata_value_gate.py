@@ -32,7 +32,8 @@ limit.
 
 Usage:
     .venv/bin/python -m experiments.analysis.supervised.calldata_value_gate \
-        --data-dir experiments/data/localhost --output-dir <dir>
+        --data-dir experiments/data/polygonAmoy \
+        --output-dir experiments/results/value_gate/b1_unpadded
 """
 
 from __future__ import annotations

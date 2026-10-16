@@ -10,7 +10,7 @@
 experiments/
 ├── capture/                         # 统一采集入口、配置、切片和验证
 ├── data/polygonAmoy/                # 当前权威 Amoy capture(B1,无 padding)
-├── data/polygonAmoy-b2-padded/      # 同一批执行的 padded(B2)capture,消融用
+├── data/polygonAmoy-b2-padded/      # 同一批执行的 padded(B2)capture,消融证据
 ├── core/                            # capture 与 JS crosscheck 共享实现
 ├── analysis/
 │   ├── supervised/                  # MDPI 正式 Python 监督分析
@@ -22,16 +22,21 @@ experiments/
 │   ├── clustering/                  # 聚类 CSV 和图
 │   ├── crosscheck/                  # JavaScript 报告
 │   ├── capture/                     # capture validator 输出
+│   ├── cost/                        # 电路容量、深度扫描、可扩展性与 context-binding gas
+│   ├── value_gate/{b1_unpadded,b2_padded}/  # calldata 值通道 gate
 │   └── legacy/                      # 历史综合 runner 输出
-├── ablation/gas_padding/            # B1/B2 capture 与消融编排
+├── ablation/gas_padding/            # B1/B2 capture 与消融编排(仅留作证据)
+├── run_logs/                        # 正式采集与结果重算的服务器日志
 ├── legacy/                          # 非论文 source-of-record 工具
+├── scripts/{test,verify}/           # 早期零散校验脚本，不在正式链路中
 ├── docs/                            # 实验文档
 └── requirements.txt                 # Python 分析依赖
 ```
 
 `unified/archive/`、PCH 的 `results_archive/` 与
 `polygonAmoy_before_groupsplit/`、以及 `multiseed_results/` 是冻结历史证据，
-不属于活跃入口。
+不属于活跃入口。`.work/` 是本地临时工作区(已 gitignore);
+`data/localhost/` 是本地运行的默认输出位置(已 gitignore),不是正式数据。
 
 ## 环境
 
@@ -56,6 +61,17 @@ npm run analysis:supervised
 npm run analysis:clustering
 npm run analysis:ablation
 npm run analysis:all
+npm run analysis:value-gate -- --data-dir experiments/data/polygonAmoy \
+  --output-dir experiments/results/value_gate/b1_unpadded
+```
+
+成本测量(电路容量、深度扫描、可扩展性、context-binding gas;输出到
+`results/cost/`):
+
+```bash
+npm run cost:scalability
+npm run cost:depth-sweep
+npm run cost:context-binding
 ```
 
 运行 JavaScript 独立复核并比较 verdict：
@@ -79,10 +95,16 @@ npm 命令仍是兼容别名，但旧文件路径不再兼容。
 
 - `data/polygonAmoy/`：链上 capture source of record(2026-10-15,B1 无 padding)。
 - `data/polygonAmoy-b2-padded/`：同一批 1977 条执行的 padded(B2)capture，只作消融对照。
+- 其余 `data/` 子目录是历史彩排或作废 capture:`polygonAmoy-2026-09-17/` 采自有 bug
+  的实现(见其 `SUPERSEDED.md`),`localhost-*` 是本地彩排，均不作论文来源。
 - `results/supervised/`：MDPI 监督表格 source of record。
 - `results/clustering/`：MDPI 聚类表格与图 source of record。
 - `results/crosscheck/`：独立 JavaScript 复核，不覆盖正式 Python verdict。
-- `ablation/gas_padding/`：B1/B2 gas-padding 消融证据。
+- `results/cost/`：成本与可扩展性测量结果。
+- `results/value_gate/`：calldata 值通道 gate 在 B1/B2 上的结果。
+- `ablation/gas_padding/`：B1/B2 gas-padding 消融证据。gas padding 已从评估设计中
+  移除，论文不再包含消融一节；该目录只作为移除决定的依据保留。
+- `run_logs/`：产出上述正式数据与结果的运行日志(见其 README)。
 
 当前 capture 生成器已经适配生产 DUO V3：13 个属性、11 个固定谓词槽、
 DEPTH=64、8 层 Merkle 路径，以及 slot 10 的签名 profile credential。

@@ -18,16 +18,29 @@ This repository implements a zero-knowledge approach for privacy-preserving cons
 │   ├── compiler/              # Compiler test files
 │   └── *.js                   # Unit and integration tests
 ├── lib/                       # SDK Library (Compiler, Prover, Contracts)
+├── tps/                       # Trusted Proof Service (proves and submits on behalf of requesters)
 ├── api/                       # REST API Server
+├── protocol/                  # Protocol release manifests and trust records
+│   ├── releases/              # v3.0.0-rc1, v3.0.0-rc2
+│   └── trust/                 # Powers of Tau record
 ├── experiments/               # Capture, canonical data, analyses, and results
 ├── utils/                     # Utility scripts
+│   ├── merkle/                # Ontology whitelist and requester allowlist trees
+│   ├── policy/                # Random policy generation
 │   └── validation/            # Validation and debugging tools
 ├── docs/                      # Documentation
 │   └── analysis/              # Research and analysis documents
-└── examples/                  # Usage examples
-    ├── diabetes_case/         # Healthcare consent example
-    └── icd10_case/           # Medical code verification example
+├── examples/                  # Usage examples
+│   ├── diabetes_case/         # Healthcare consent example
+│   └── icd10_case/            # Medical code verification example
+├── paper_mdpi/                # MDPI Blockchains manuscript and revision rounds
+├── cover_letter/              # Submission cover letter
+└── Journals/                  # MDPI article template
 ```
+
+Local build outputs are git-ignored and can be regenerated: `build/` (circuit
+builds, zkeys, rapidsnark, cost-sweep intermediates), `dist/` (packaged
+protocol releases), and Hardhat's `artifacts/` and `cache/`.
 
 ## Core Implementation
 
