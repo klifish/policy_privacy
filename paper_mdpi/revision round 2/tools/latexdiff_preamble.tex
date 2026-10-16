@@ -22,4 +22,9 @@
 \lstdefinestyle{DIFverbatimstyle}{language=DIFcode,basicstyle=\ttfamily,columns=fullflexible,keepspaces=true}
 \lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{}
 \lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle,showspaces=true}}{}
+% A table whose float was deleted keeps its \resizebox around cells that are all deleted and
+% not shown; scaling that empty box divides by zero. Skip a box that has no width.
+\newsavebox{\DIFresizebox}
+\let\DIForigresizebox\resizebox
+\renewcommand{\resizebox}[3]{\sbox{\DIFresizebox}{#3}\ifdim\wd\DIFresizebox=0pt\else\DIForigresizebox{#1}{#2}{\usebox{\DIFresizebox}}\fi}
 %DIF END PREAMBLE
